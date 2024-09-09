@@ -37,7 +37,6 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.tabs
-    - navigation.expand
     - navigation.path
     - toc.follow
     - navigation.top
@@ -64,7 +63,6 @@ plugins:
   - search
   - privacy
   - macros
-  # - spellcheck
 
 markdown_extensions:
   - admonition
@@ -155,6 +153,7 @@ nav:
   - Tools:
       - Tools/index.md
       - Tools/devtools.md
+  - Pub: https://pub.dev/packages/drift
 
 docs_dir: "../docs"
 
