@@ -501,8 +501,6 @@ class DelegatedDatabase extends _BaseExecutor {
             this, context, noTransactionDelegate);
       case SupportedTransactionDelegate supported:
         return _WrappingTransactionExecutor(this, supported);
-      default:
-        throw StateError('Unknown transaction delegate: $transactionDelegate');
     }
   }
 

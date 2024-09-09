@@ -403,9 +403,6 @@ class NodeSqlBuilder extends AstVisitor<void, void> {
         keyword(TokenType.instead);
         keyword(TokenType.of);
         break;
-      default:
-        // Can happen if e.mode == null
-        break;
     }
 
     visit(e.target, arg);
