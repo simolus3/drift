@@ -1,6 +1,0 @@
-name: sqlite3_flutter_libs
-publish_to: none
-description: Fake "sqlite3_flutter_libs" package so that we can import it in snippets without depending on Flutter.
-
-environment:
-  sdk: ^2.16.0

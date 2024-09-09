@@ -8,7 +8,6 @@ Folder Structure:
 - `lib` Contains the code snippets for the documentation.
 - `test` Contains the tests for the documentation.
 - `web` Contains some dart which code which is compiled to JavaScript and served with the documentation.
-- `stubs` Contains dummy projects for the snippets to reference.
 - `mkdocs` Contains the MkDocs configuration.
 
 ### Building the Documentation
@@ -37,10 +36,6 @@ If you would like changes to snippets to be available in real-time, you can run 
 docs.sh serve --with-build-runner
 ```
 
-### Syntax Highlighting
-The CSS for the syntax highlighting rarely changes. It can be found in the `docs/docs/css` folder. If you need to update it, run the `docs/builders/src/css_classes.dart` file which outputs the contents of the CSS file.
-
-
 ### Understanding the Build Process
 
 Behind the scenes, the `docs.sh` script does the following:
@@ -52,4 +47,22 @@ Behind the scenes, the `docs.sh` script does the following:
 2. Running `mkdocs`:
     - Compile the markdown files in `docs` to HTML.
 3. Combine the output of the two steps into the `deploy` folder.
+
+
+
+### Syntax Highlighting
+
+Code which is included in markdown using \`\`\` \`\`\` snippets is highlighted by mkdocs automatically. These colors can be modified by following the instructions in the [MkDocs documentation](https://squidfunk.github.io/mkdocs-material/reference/code-blocks/#custom-syntax-theme).
+
+Code snippets which are included in the documentation using the `{{ load_snippet() }}` macro are highlighted too. If they are from a `.dart` file we use a custom syntax highlighter, otherwise we use the default MkDocs syntax highlighter.
+
+When `build_runner` runs, it will create a `*.excerpt.json` next to each snippet file which contains each snippet in styled HTML (`dart`) or in raw text (all other languages). The `{{ load_snippet() }}` macro injects the snippets from these `*.excerpt.json` files. The code for this macro can be found in `/docs/mkdocs/main.py`.
+
+#### CSS Processing 
+
+The highlighter for `dart` has been sourced from the Dart Team and the Serverpod Team. It uses VS Code themes and the Dart Grammar spec to generate HTML. However, once this HTML is generated, we replace the inlined styles with class names instead. `docs/builders/src/css_classes.dart` contains a `styles` map which maps each style to a class name. This `styles` map needs to be updated if there are any changes to the theme.
+
+The CSS for the syntax highlighting rarely changes. It can be found in the `docs/docs/css` folder.
+If you need to update it, run the `docs/builders/src/css_classes.dart` file which outputs the contents of the CSS file which then should be put in the `docs/docs/css/syntax_highlight.css` file
+
 
