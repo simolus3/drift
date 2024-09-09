@@ -21,12 +21,12 @@ binding the core drift library with native databases.
 
 This table list all supported drift implementations and on which platforms they run on.
 
-| Implementation | Supported platforms | Notes |
-|----------------|---------------------|-------|
-| `SqfliteQueryExecutor` from `package:drift_sqflite` | Android, iOS | Uses platform channels, Flutter only, no isolate support, doesn't support `flutter test`. Formerly known as `moor_flutter` |
-| `NativeDatabase` from `package:drift/native.dart` | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate](../isolates.md) is recommended. Formerly known as `package:moor/ffi.dart`. |
-| `WasmDatabase` from `package:drift/wasm.dart` | Web | Works with or without Flutter. A bit of [additional setup](web.md) is required. |
-| `WebDatabase` from `package:drift/web.dart` | Web | Deprecated in favor of `WasmDatabase`. |
+| Implementation                                      | Supported platforms                 | Notes                                                                                                                                                                                                                                            |
+| --------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SqfliteQueryExecutor` from `package:drift_sqflite` | Android, iOS                        | Uses platform channels, Flutter only, no isolate support, doesn't support `flutter test`. Formerly known as `moor_flutter`                                                                                                                       |
+| `NativeDatabase` from `package:drift/native.dart`   | Android, iOS, Windows, Linux, macOS | No further setup is required for Flutter users. For support outside of Flutter, or in `flutter test`, see the [desktop](#desktop) section below. Usage in a [isolate](../isolates.md) is recommended. Formerly known as `package:moor/ffi.dart`. |
+| `WasmDatabase` from `package:drift/wasm.dart`       | Web                                 | Works with or without Flutter. A bit of [additional setup](web.md) is required.                                                                                                                                                                  |
+| `WebDatabase` from `package:drift/web.dart`         | Web                                 | Deprecated in favor of `WasmDatabase`.                                                                                                                                                                                                           |
 
 To support all platforms in a shared codebase, you only need to change how you open your database, all other usages can stay the same.
 [This repository](https://github.com/simolus3/drift/tree/develop/examples/app) gives an example on how to do that with conditional imports.

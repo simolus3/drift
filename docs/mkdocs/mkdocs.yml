@@ -4,8 +4,8 @@ site_author: Simon Binder
 site_url: https://drift.simonbinder.eu/
 repo_url: https://github.com/simolus3/drift
 
-# TODO: add edit_uri
-# edit_uri:
+# TODO: Change to develop
+edit_uri: edit/mkdocs-clean/docs/docs
 theme:
   name: material
   language: en
@@ -44,6 +44,7 @@ theme:
     - search.highlight
     - content.code.copy
     - content.code.annotate
+    - content.action.edit
 
 extra:
   social:

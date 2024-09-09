@@ -216,7 +216,7 @@ with the `separator` argument on `groupConcat`.
 
 When using a `NativeDatabase`, a basic set of trigonometric functions will be available.
 It also defines the `REGEXP` function, which allows you to use `a REGEXP b` in SQL queries.
-For more information, see the [list of functions](../Platforms/vm.md#moor-only-functions) here.
+For more information, see the [list of functions](../Platforms/vm.md#drift-only-functions) here.
 
 ## Subqueries
 

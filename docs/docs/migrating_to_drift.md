@@ -14,7 +14,7 @@ features, such as:
 
 - Type-safe access to your database, giving you resolved classes for queries instead of
   a dynamic `List<Map<String, Object?>>` that you have to parse yourself.
-- A complete [query builder](Dart API/index.md) capable of expressing
+- A complete [query builder](./Dart%20API/manager.md) capable of expressing
   even complex SQL statements in Dart.
 - Auto-updating streams for your queries.
 - Easier [transaction management](Dart API/transactions.md).
@@ -208,7 +208,7 @@ can also be written like this:
 Here, `watch()` is used instead of `get()` in the end to automatically turn the statement
 into an auto-updating stream.
 
-For more information about the Dart API, see [this overview](Dart API/index.md).
+For more information about the Dart API, see [this overview](./Dart%20API/manager.md).
 
 ## Next steps
 

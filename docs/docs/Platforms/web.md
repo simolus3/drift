@@ -86,7 +86,7 @@ or [compile it yourself](#compilation).
 This file needs to be put into the `web/` directory of your app.
 
 Drift on the web also requires you to include a portion of drift as a web worker. This worker will be used to
-host your database in a background thread, improving performance of your website. In some [storage implementations](#storages),
+host your database in a background thread, improving performance of your website. In some [storage implementations](#supported-storage-implementations),
 the worker is also responsible for sharing your database between different tabs in real-time.
 Again, you can [compile this worker yourself](#compilation) or [grab one from drift releases](https://github.com/simolus3/drift/releases).
 
@@ -125,7 +125,7 @@ Just like the official sqlite3 port to the web, __this requires your website to 
 
 For more details, see the [security requirements](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) explained by MDN, and the [documentation on web.dev](https://web.dev/coop-coep/).
 Unfortunately, there's no way (that I'm aware of) to add these headers onto `flutter run`'s web server.
-Drift will fall back to a (slightly slower) implementation in that case (see [storages](#storages)),
+Drift will fall back to a (slightly slower) implementation in that case (see [storages](#supported-storage-implementations)),
 but we recommend researching and enabling these headers in production if possible.
 
 Also, note that the `sqlite3.wasm` file needs to be served with a `Content-Type` of

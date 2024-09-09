@@ -117,7 +117,7 @@ ones on your `database.dart` file and your run `build_runner` there is a known
 problem about it using the imported class instead of the generated ones.
 
 To solve that, if you can, you can enable
-[modular code generation]({{ 'Generation options/modular.md' | pageUrl }}).
+[modular code generation](./Generation options/modular.md).
 It slightly changes how drift is used, but you probably will only have to update
 a few files to change parts to imports. The big difference is that it allows drift
 to emit a standalone library file instead of a part - that can have its own imports,

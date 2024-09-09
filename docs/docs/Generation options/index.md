@@ -81,8 +81,8 @@ At the moment, drift supports these options:
   can be enabled to speed up builds. This option has no effect with the default or the modular builder.
 - `fatal_warnings`: When enabled (defaults to `false`), warnings found by `drift_dev` in the build process (like syntax errors in SQL queries or
   unresolved references in your Dart tables) will cause the build to fail.
-- `preamble`: This option is useful when using drift [as a standalone part builder](#using-drift-classes-in-other-builders) or when running a
-  [modular build](#modular-code-generation). In these setups, the `preamble` option defined by the [source_gen package](https://pub.dev/packages/source_gen#preamble)
+- `preamble`: This option is useful when using drift as a standalone part builder or when running a
+  modular build. In these setups, the `preamble` option defined by the [source_gen package](https://pub.dev/packages/source_gen#preamble)
   would have no effect, which is why it has been added as an option for the drift builders.
 - `generate_manager`: When enabled (defaults to `true`), managers will be generated for each table in the database. These managers help perform simple actions without boilerplate.
 
@@ -181,7 +181,7 @@ We currently support the following extensions:
   polygons. Note that this is not the case for most sqlite3 builds,
   including the ones shipping with `sqlite3_flutter_libs`.
 - `moor_ffi`: Enables support for functions that are only available when using a `NativeDatabase`. This contains `pow`, `sqrt` and a variety
-  of trigonometric functions. Details on those functions are available [here](../Platforms/vm.md#moor-only-functions).
+  of trigonometric functions. Details on those functions are available [here](../Platforms/vm.md#drift-only-functions).
 - `math`: Assumes that sqlite3 was compiled with [math functions](https://www.sqlite.org/lang_mathfunc.html).
   This module is largely incompatible with the `moor_ffi` module.
 - `spellfix1`: Assumes that the [spellfix1](https://www.sqlite.org/spellfix1.html)

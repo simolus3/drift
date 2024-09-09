@@ -344,7 +344,7 @@ FROM users;
 ```
 
 More details on type converts in drift files are available
-[here](../type_converters.md#using-converters-in-moor).
+[here](../type_converters.md#using-converters-in-drift).
 
 When using type converters, we recommend the [`apply_converters_on_variables`](../Generation options/index.md)
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.

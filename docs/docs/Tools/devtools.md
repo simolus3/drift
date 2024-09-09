@@ -26,17 +26,17 @@ Drift contributes a DevTools extension that is available to all apps depending o
 The first time you're using the extension, you may have to enable it explicitly. For that,
 click on the extensions icon at the top of the DevTools window:
 
-![Screenshot of an DevTools window, with the extensions button in the window bar highlighted](setup_0.png)
+![Screenshot of an DevTools window, with the extensions button in the window bar highlighted](../images/tools/devtools/setup_0.png)
 
 In the dialog that opens, make sure that `package:drift` is enabled:
 
-![Dialog showing the drift extension, with a button marking it as enabled](setup_1.png)
+![Dialog showing the drift extension, with a button marking it as enabled](../images/tools/devtools/setup_1.png)
 
 ## Usage
 
 After enabling the extension, select the drift tab in DevTools:
 
-![Screenshot of the drift DevTools extension, listing opened databases and tables](setup_2.png)
+![Screenshot of the drift DevTools extension, listing opened databases and tables](../images/tools/devtools/setup_2.png)
 
 In the extension, the top pane lists all drift databases currently open and where their class
 has been defined.

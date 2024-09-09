@@ -8,7 +8,7 @@ description: How to define SQL views as Dart classes
 It is also possible to define [SQL views](https://www.sqlite.org/lang_createview.html)
 as Dart classes.
 To do so, write an abstract class extending `View`. This example declares a view reading
-the amount of todo-items added to a category in the schema from [the example](index.md):
+the amount of todo-items added to a category in the schema from the example:
 
 {{ load_snippet('view','lib/snippets/dart_api/views.dart.excerpt.json') }}
 

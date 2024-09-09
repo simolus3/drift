@@ -232,7 +232,7 @@ comes from multiple rows. Common questions include
 
 What these queries have in common is that data from multiple rows needs to be combined into a single
 row. In sql, this can be achieved with "aggregate functions", for which drift has
-[builtin support](expressions.md#aggregate).
+[builtin support](expressions.md#aggregate-functions-like-count-and-sum).
 
 _Additional info_: A good tutorial for group by in sql is available [here](https://www.sqlitetutorial.net/sqlite-group-by/).
 

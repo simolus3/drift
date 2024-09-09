@@ -5,7 +5,7 @@ description: Define your database and queries in SQL without giving up on type-s
 
 ---
 
-Drift provides a [Dart API](../Dart API/index.md) to define tables and
+Drift provides a [Dart API](../Dart%20API/tables.md) to define tables and
 to write SQL queries.
 Especially when you are already familiar with SQL, it might be easier to define your
 tables directly in SQL, with `CREATE TABLE` statements.
