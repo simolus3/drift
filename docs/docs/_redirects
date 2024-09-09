@@ -51,5 +51,4 @@
 /docs/migrations/ /Migrations/
 /docs/platforms/postgres/ /Platforms/postgres/
 /docs/advanced-features/daos/ /Dart%20API/daos/
-# API Docs redirects
-/api/* https://pub.dev/documentation/drift/latest/:splat 301
+/api/* https://pub.dev/documentation/drift/latest/index.html
