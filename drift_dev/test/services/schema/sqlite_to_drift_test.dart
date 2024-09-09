@@ -11,6 +11,10 @@ void main() {
       ..execute('CREATE VIEW my_view AS SELECT bar FROM foo')
       ..execute('CREATE TRIGGER my_trigger AFTER UPDATE ON foo BEGIN '
           'UPDATE foo SET bar = old.bar; '
+          'END;')
+      ..execute(
+          'CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN '
+          'UPDATE foo SET bar = old.bar; '
           'END;');
     addTearDown(database.dispose);
 
@@ -23,6 +27,8 @@ void main() {
         isA<DriftView>().having((e) => e.schemaName, 'schemaName', 'my_view'),
         isA<DriftTrigger>()
             .having((e) => e.schemaName, 'schemaName', 'my_trigger'),
+        isA<DriftTrigger>()
+            .having((e) => e.schemaName, 'schemaName', 'my_view_trigger'),
       ]),
     );
   });

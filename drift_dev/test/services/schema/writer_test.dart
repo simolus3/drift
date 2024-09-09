@@ -57,6 +57,10 @@ CREATE INDEX groups_name ON "groups"(name, upper(name));
 
 CREATE VIEW my_view WITH MyViewRow AS SELECT id FROM "groups";
 
+CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN
+  UPDATE "groups" SET id = old.id;
+END;
+
 simple_query: SELECT * FROM my_view; -- not part of the schema
       ''',
         'a|lib/main.dart': '''
@@ -415,6 +419,17 @@ const expected = r'''
                         "dsl_features": []
                     }
                 ]
+            }
+        },
+        {
+            "id": 7,
+            "references": [6, 0],
+            "type": "trigger",
+            "data": {
+                "on": 6,
+                "references_in_body": [6, 0],
+                "name": "my_view_trigger",
+                "sql": "CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN\n  UPDATE \"groups\" SET id = old.id;\nEND;"
             }
         }
     ]

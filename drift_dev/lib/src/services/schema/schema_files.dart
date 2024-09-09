@@ -4,9 +4,9 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn;
 
+import '../../analysis/options.dart';
 import '../../analysis/resolver/shared/data_class.dart';
 import '../../analysis/results/results.dart';
-import '../../analysis/options.dart';
 import '../../writer/utils/column_constraints.dart';
 
 class _ExportedSchemaVersion {
@@ -346,7 +346,7 @@ class SchemaReader {
   }
 
   DriftTrigger _readTrigger(Map<String, dynamic> content) {
-    final on = _existingEntity<DriftTable>(content['on']);
+    final on = _existingEntity<DriftElementWithResultSet>(content['on']);
     final name = content['name'] as String;
     final sql = content['sql'] as String;
 
