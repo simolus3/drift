@@ -1,3 +1,7 @@
+## 2.20.2
+
+- Fix upcoming `unreachable_switch_default` lint.
+
 ## 2.20.1
 
 - Migrate legacy `package:drift/web.dart` to the new JS interop SDK libraries.

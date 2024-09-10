@@ -1,3 +1,7 @@
+## 0.38.1
+
+- Fix upcoming `unreachable_switch_default` lint.
+
 ## 0.38.0
 
 - Resolve `json_extract` return types from context if possible.

@@ -1,3 +1,7 @@
+## 2.20.3
+
+- Fix internal serialization-related errors for triggers targeting views.
+
 ## 2.20.2
 
 - Strip leading numbers when generating modular accessor names for drift files,
