@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:devtools_app_shared/service.dart';
 import 'package:devtools_extensions/devtools_extensions.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/internal/versioned_schema.dart';
 // ignore: invalid_use_of_internal_member, implementation_imports
 import 'package:drift/src/runtime/devtools/shared.dart';
 // ignore: implementation_imports
@@ -130,4 +131,151 @@ class RemoteDatabase {
 
   static final _logger = Logger('RemoteDatabase');
   static const _protocol = DriftProtocol();
+}
+
+/// Pretends to be a [GeneratedDatabase] by mirroring the schema from the
+/// description obtained by a [RemoteDatabase] and forwarding queries.
+final class RemoteDatabaseAsDatabase extends GeneratedDatabase {
+  final RemoteDatabase database;
+  @override
+  final List<DatabaseSchemaEntity> allSchemaEntities = [];
+
+  RemoteDatabaseAsDatabase(this.database)
+      : super(RemoteQueryExecutor(database)) {
+    for (final entry in database.description.entities) {
+      final parsed = switch (entry.type) {
+        'table' => VersionedTable(
+            attachedDatabase: this,
+            columns: [
+              for (final column in entry.columns ?? const <ColumnDescription>[])
+                column.columnIn,
+            ],
+            entityName: entry.name,
+            isStrict: false,
+            tableConstraints: const [],
+            withoutRowId: false,
+          ),
+        'view' => VersionedView(
+            attachedDatabase: this,
+            columns: [
+              for (final column in entry.columns ?? const <ColumnDescription>[])
+                column.columnIn,
+            ],
+            entityName: entry.name,
+            createViewStmt: '',
+          ),
+        _ => null,
+      };
+
+      if (parsed != null) {
+        allSchemaEntities.add(parsed as DatabaseSchemaEntity);
+      }
+    }
+  }
+
+  @override
+  Iterable<TableInfo<Table, dynamic>> get allTables =>
+      allSchemaEntities.whereType();
+
+  @override
+  DriftDatabaseOptions get options => DriftDatabaseOptions(
+      storeDateTimeAsText: database.description.dateTimeAsText);
+
+  @override
+  int get schemaVersion => 1;
+}
+
+final class RemoteQueryExecutor extends QueryExecutor {
+  final RemoteDatabase remote;
+
+  RemoteQueryExecutor(this.remote);
+
+  @override
+  QueryExecutor beginExclusive() {
+    throw UnimplementedError();
+  }
+
+  @override
+  TransactionExecutor beginTransaction() {
+    throw UnimplementedError();
+  }
+
+  @override
+  SqlDialect get dialect => SqlDialect.sqlite;
+
+  @override
+  Future<bool> ensureOpen(QueryExecutorUser user) async {
+    return true;
+  }
+
+  @override
+  Future<void> runBatched(BatchedStatements statements) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> runCustom(String statement, [List<Object?>? args]) async {
+    return await remote.execute(statement, args ?? const []);
+  }
+
+  @override
+  Future<int> runDelete(String statement, List<Object?> args) async {
+    await runCustom(statement, args);
+    return 0;
+  }
+
+  @override
+  Future<int> runInsert(String statement, List<Object?> args) async {
+    await runCustom(statement, args);
+    return 0;
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> runSelect(
+      String statement, List<Object?> args) async {
+    return await remote.select(statement, args);
+  }
+
+  @override
+  Future<int> runUpdate(String statement, List<Object?> args) async {
+    await runCustom(statement, args);
+    return 0;
+  }
+}
+
+extension on ColumnDescription {
+  GeneratedColumn columnIn(String entityName) {
+    return GeneratedColumn(
+      name,
+      entityName,
+      isNullable,
+      type: type.type ?? _FakeCustomType(type.customTypeName!),
+    );
+  }
+}
+
+final class _FakeCustomType implements CustomSqlType {
+  final String sqlName;
+
+  _FakeCustomType(this.sqlName);
+
+  @override
+  String mapToSqlLiteral(Object dartValue) {
+    return dartValue.toString();
+  }
+
+  @override
+  Object mapToSqlParameter(Object dartValue) {
+    return dartValue;
+  }
+
+  @override
+  Object read(Object fromSql) {
+    return fromSql;
+  }
+
+  @override
+  String sqlTypeName(GenerationContext context) {
+    return sqlName;
+  }
 }

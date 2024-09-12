@@ -2,12 +2,13 @@ import 'package:db_viewer/db_viewer.dart';
 import 'package:drift/drift.dart';
 // ignore: invalid_use_of_internal_member, implementation_imports
 import 'package:drift/src/runtime/devtools/shared.dart';
+import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:rxdart/streams.dart';
 
 import '../remote_database.dart';
 
-class ViewerDatabase implements DbViewerDatabase {
+class ViewerDatabase implements DriftDbViewerDatabase {
   final RemoteDatabase database;
 
   final Map<String, FilterData> _cachedFilters = {};
