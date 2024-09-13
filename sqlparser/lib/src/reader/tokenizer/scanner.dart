@@ -25,7 +25,7 @@ class Scanner {
     return _file.span(_startOffset, _currentOffset);
   }
 
-  SourceLocation get _currentLocation {
+  FileLocation get _currentLocation {
     return _file.location(_currentOffset);
   }
 
@@ -50,10 +50,6 @@ class Scanner {
       previous?.next = current;
 
       previous = current;
-    }
-
-    if (errors.isNotEmpty) {
-      throw CumulatedTokenizerException(errors);
     }
 
     return tokens;
@@ -239,13 +235,11 @@ class Scanner {
     errors.add(TokenizerError('Unexpected character', _currentLocation));
   }
 
-  @pragma('vm:prefer-inline')
   int _nextChar() {
     _advance();
     return _charCodes[_currentOffset - 1];
   }
 
-  @pragma('vm:prefer-inline')
   void _advance() => _currentOffset++;
 
   int _peek() {

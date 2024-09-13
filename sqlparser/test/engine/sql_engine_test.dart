@@ -18,6 +18,15 @@ void main() {
     expect(result.errors, isNotEmpty);
   });
 
+  test('does not throw when encountering tokenizer errors', () {
+    final engine = SqlEngine();
+    final result = engine
+        .parse("SELECT * FROM foo WHERE bar = 'unterminated string literal");
+
+    expect(result.errors,
+        [isParsingError(message: contains('Unterminated string'))]);
+  });
+
   test('does not throw when analyzing invalid statements', () {
     final engine = SqlEngine();
     late AnalysisContext result;
