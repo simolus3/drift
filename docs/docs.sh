@@ -45,6 +45,11 @@ if [ $arg1 == "build" ]; then
 
     drift_dev
 
+    # If the environmental value IS_RELEASE is set to true, then DONT generate the robots.txt file
+    if [ "$IS_RELEASE" != "true" ]; then
+        echo "User-agent: *" > ./web/robots.txt
+        echo "Disallow: /" >> ./web/robots.txt
+    fi
 
 
     # Run the build_runner command to generate files in the `test` directory
