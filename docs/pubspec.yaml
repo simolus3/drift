@@ -41,6 +41,7 @@ dev_dependencies:
   args: ^2.5.0
   flutter_test:
     sdk: flutter
+  webdev: ^3.6.0
 
 dependency_overrides:
   drift_flutter:

@@ -8,7 +8,7 @@ arg2=$(echo $2 | tr '[:upper:]' '[:lower:]')
 # Build the MkDocs container which will be used to build/serve the MkDocs project
 build_container () {
     echo "Building the container..."
-    docker build -t mkdocs:latest ./mkdocs/
+    docker build -t drift_docs_builder:latest ./mkdocs/
     if [ $? -ne 0 ]; then
         echo "Failed to build the container"
         exit 1
@@ -31,7 +31,7 @@ drift_dev () {
 
 serve_mkdocs () {
     echo "Running MkDocs serve..."
-    docker run --rm -p 9000:9000 -v $(pwd):/docs --user $(id -u):$(id -g) mkdocs:latest serve -f /docs/mkdocs/mkdocs.yml -a 0.0.0.0:9000
+    docker run --rm -p 9000:9000 -v $(pwd):/docs --user $(id -u):$(id -g) drift_docs_builder:latest serve -f /docs/mkdocs/mkdocs.yml -a 0.0.0.0:9000
 }
 
 if [ $arg1 == "build" ]; then
@@ -42,20 +42,20 @@ if [ $arg1 == "build" ]; then
     rm -r ./deploy
     rm -r ./build
 
-    # Activate the webdev command
-    dart pub global activate webdev
 
     drift_dev
 
-    # The below command will compile the dart code in `/web` to js & run build_runner
-    webdev build -o web:build/web -- --delete-conflicting-outputs
+
+
+    # Run the build_runner command to generate files in the `test` directory
+    dart run build_runner build --delete-conflicting-outputs --release
     if [ $? -ne 0 ]; then
         echo "Failed to build the project"
         exit 1
     fi
 
-    # Run the build_runner command to generate files in the `test` directory
-    dart run build_runner build --delete-conflicting-outputs
+    # The below command will compile the dart code in `/web` to js & run build_runner
+    dart run webdev build -o web:build/web -- --delete-conflicting-outputs --release
     if [ $? -ne 0 ]; then
         echo "Failed to build the project"
         exit 1
@@ -78,7 +78,7 @@ if [ $arg1 == "build" ]; then
         exit 1
     fi
     # Run build_runner to generate files in the `test` directory
-    dart run build_runner build --delete-conflicting-outputs
+    dart run build_runner build --delete-conflicting-outputs --release
     if [ $? -ne 0 ]; then
         echo "Failed to build the example project"
         exit 1
@@ -102,7 +102,7 @@ if [ $arg1 == "build" ]; then
     build_container
 
     echo "Running MkDocs build..."
-    docker run --rm  -v $(pwd):/docs --user $(id -u):$(id -g) mkdocs:latest build -f /docs/mkdocs/mkdocs.yml -d /docs/deploy
+    docker run --rm  -v $(pwd):/docs --user $(id -u):$(id -g) drift_docs_builder:latest build -f /docs/mkdocs/mkdocs.yml -d /docs/deploy
     if [ $? -ne 0 ]; then
         echo "Failed to build the MkDocs project"
         exit 1
@@ -116,7 +116,7 @@ elif [ $arg1 == "serve" ]; then
 
     drift_dev
 
-    dart run build_runner build --delete-conflicting-outputs
+    dart run build_runner build --delete-conflicting-outputs 
     if [ $? -ne 0 ]; then
         echo "Failed to build the project"
         exit 1
