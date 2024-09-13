@@ -93,9 +93,6 @@ markdown_extensions:
         custom_icons:
           - overrides/.icons
 
-copyright: >
-  Copyright &copy; 2019 - 2024 Simon Binder –
-  <a href="#__consent">Change cookie settings</a>
 nav:
   - index.md
   - Documentation:
