@@ -468,6 +468,7 @@ class ColumnParser {
       isNullable: nullable,
       customConstraints: foundCustomConstraint,
       sourceForCustomConstraints: customConstraintSource,
+      setDefault: (arg) => foundDefaultExpression = arg,
     ));
     return PendingColumnInformation(
       DriftColumn(
@@ -537,6 +538,7 @@ class ColumnParser {
 
   Future<List<DriftColumnConstraint>> _driftConstraintsFromCustomConstraints({
     required bool isNullable,
+    required void Function(AnnotatedDartCode) setDefault,
     String? customConstraints,
     AstNode? sourceForCustomConstraints,
   }) async {
@@ -608,6 +610,8 @@ class ColumnParser {
             ));
           }
         }
+      } else if (constraint is sql.Default) {
+        setDefault(DriftColumn.defaultFromParser(constraint));
       }
     }
 

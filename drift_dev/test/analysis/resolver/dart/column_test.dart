@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
@@ -363,6 +363,30 @@ class TestTable extends Table {
 
       expect(column.nullable, isFalse);
       expect(column.isGenerated, isTrue);
+      expect(table.isColumnRequiredForInsert(column), isFalse);
+    });
+
+    test('reads default', () async {
+      final state = await TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class TestTable extends Table {
+  TextColumn get textColumn => text()
+      .customConstraint("NOT NULL DEFAULT 'foo'")();
+}
+''',
+      });
+
+      final file = await state.analyze('package:a/a.dart');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      final column = table.columns.single;
+
+      expect(column.nullable, isFalse);
+      expect(column.defaultArgument, isNotNull);
+      expect(column.customConstraints, isNotNull);
       expect(table.isColumnRequiredForInsert(column), isFalse);
     });
   });
