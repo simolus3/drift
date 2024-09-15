@@ -89,7 +89,7 @@ if [ $arg1 == "build" ]; then
         exit 1
     fi
 
-    flutter build web --base-href "/examples/app/" --no-web-resources-cdn
+    flutter build web --base-href "/examples/app/" --no-web-resources-cdn --pwa-strategy none
     if [ $? -ne 0 ]; then
         echo "Failed to build the example project"
         exit 1
