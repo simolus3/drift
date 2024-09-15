@@ -547,6 +547,9 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   @override
   void visitNamedType(NamedType node) {
     _addTopLevelReference(node.element, node.name2);
+    if (node.typeArguments case final typeArgs?) {
+      visitTypeArgumentList(typeArgs);
+    }
   }
 
   @override
