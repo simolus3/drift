@@ -69,7 +69,10 @@ import 'package:drift/drift.dart';
 class Users extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
-  TextColumn get settings => text().named('setting').map(const SettingsConverter())();
+  TextColumn get settings => text()
+    .check(settings.length() > 10)
+    .named('setting')
+    .map(const SettingsConverter())();
 
   @override
   List<Set<Column>> get uniqueKeys => [{name, settings}];
@@ -144,9 +147,9 @@ class Database {}
         ResolvedDatabaseAccessor(const {}, const [], reader.entities.toList());
     final input = DatabaseGenerationInput(database, resolved, const {}, null);
 
-    // Write the database. Not crashing is good enough for us here, we have
-    // separate tests for verification
     DatabaseWriter(input, writer.child()).write();
+    final generated = writer.writeGenerated();
+    expect(generated, contains('settings.length() > 10'));
   });
 }
 
@@ -291,7 +294,15 @@ const expected = r'''
                         "customConstraints": null,
                         "default_dart": null,
                         "default_client_dart": null,
-                        "dsl_features": [],
+                        "dsl_features": [
+                          {
+                            "check": {
+                              "dart_expression": {
+                                "elements": ["settings.length() > 10"]
+                              }
+                            }
+                          }
+                        ],
                         "type_converter": {
                             "dart_expr": "const SettingsConverter()",
                             "dart_type_name": "Settings"

@@ -1,3 +1,8 @@
+## 2.21.0-dev
+
+- Fix Dart-defined `check` constraints not being considered in exported
+  schemas.
+
 ## 2.20.3
 
 - Fix internal serialization-related errors for triggers targeting views.
