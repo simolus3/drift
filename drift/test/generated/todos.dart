@@ -86,24 +86,24 @@ const _uuid = Uuid();
 
 @UseRowClass(CustomRowClass, constructor: 'map', generateInsertable: true)
 class TableWithoutPK extends Table {
-  late final notReallyAnId = integer()();
-  late final someFloat = real()();
-  late final webSafeInt = int64().nullable()();
+  IntColumn get notReallyAnId => integer()();
+  RealColumn get someFloat => real()();
+  Int64Column get webSafeInt => int64().nullable()();
 
-  late final custom =
+  TextColumn get custom =>
       text().map(const CustomConverter()).clientDefault(_uuid.v4)();
 }
 
 class TableWithEveryColumnType extends Table with AutoIncrement {
-  late final aBool = boolean().nullable()();
-  late final aDateTime = dateTime().nullable()();
-  late final aText = text().nullable()();
-  late final anInt = integer().nullable()();
-  late final anInt64 = int64().nullable()();
-  late final aReal = real().nullable()();
-  late final aBlob = blob().nullable()();
-  late final anIntEnum = intEnum<TodoStatus>().nullable()();
-  late final aTextWithConverter = text()
+  BoolColumn get aBool => boolean().nullable()();
+  DateTimeColumn get aDateTime => dateTime().nullable()();
+  TextColumn get aText => text().nullable()();
+  IntColumn get anInt => integer().nullable()();
+  Int64Column get anInt64 => int64().nullable()();
+  RealColumn get aReal => real().nullable()();
+  BlobColumn get aBlob => blob().nullable()();
+  IntColumn get anIntEnum => intEnum<TodoStatus>().nullable()();
+  TextColumn get aTextWithConverter => text()
       .named('insert')
       .map(const CustomJsonConverter())
       .nullable()
@@ -111,28 +111,29 @@ class TableWithEveryColumnType extends Table with AutoIncrement {
 }
 
 class Department extends Table {
-  late final id = integer().autoIncrement()();
-  late final name = text().nullable()();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().nullable()();
 }
 
 class Product extends Table {
-  late final sku = text()();
-  late final name = text().nullable()();
-  late final department = integer().references(Department, #id).nullable()();
+  TextColumn get sku => text()();
+  TextColumn get name => text().nullable()();
+  IntColumn get department =>
+      integer().references(Department, #id).nullable()();
 }
 
 class Listing extends Table {
-  late final id = integer().autoIncrement()();
+  IntColumn get id => integer().autoIncrement()();
   @ReferenceName('listings')
-  late final product = text().references(Product, #sku).nullable()();
+  TextColumn get product => text().references(Product, #sku).nullable()();
   @ReferenceName('listings')
-  late final store = integer().references(Store, #id).nullable()();
-  late final price = real().nullable()();
+  IntColumn get store => integer().references(Store, #id).nullable()();
+  RealColumn get price => real().nullable()();
 }
 
 class Store extends Table {
-  late final id = integer().autoIncrement()();
-  late final name = text().nullable()();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().nullable()();
 }
 
 class CustomRowClass {
@@ -157,7 +158,7 @@ class CustomRowClass {
 
 class PureDefaults extends Table {
   // name after keyword to ensure it's escaped properly
-  late final txt =
+  TextColumn get txt =>
       text().named('insert').map(const CustomJsonConverter()).nullable()();
 
   @override
