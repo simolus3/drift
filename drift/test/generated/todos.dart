@@ -14,7 +14,7 @@ extension type RowId._(int id) {
 }
 
 mixin AutoIncrement on Table {
-  IntColumn get id => integer()
+  late final id = integer()
       .autoIncrement()
       .map(TypeConverter.extensionType<RowId, int>())();
 }
@@ -24,17 +24,17 @@ class TodosTable extends Table with AutoIncrement {
   @override
   String get tableName => 'todos';
 
-  TextColumn get title => text().withLength(min: 4, max: 16).nullable()();
-  TextColumn get content => text()();
+  late final title = text().withLength(min: 4, max: 16).nullable()();
+  late final content = text()();
   @JsonKey('target_date')
-  DateTimeColumn get targetDate => dateTime().nullable().unique()();
+  late final targetDate = dateTime().nullable().unique()();
   @ReferenceName("todos")
-  IntColumn get category => integer()
+  late final category = integer()
       .references(Categories, #id, initiallyDeferred: true)
       .map(TypeConverter.extensionType<RowId, int>())
       .nullable()();
 
-  TextColumn get status => textEnum<TodoStatus>().nullable()();
+  late final status = textEnum<TodoStatus>().nullable()();
 
   @override
   List<Set<Column>>? get uniqueKeys => [
@@ -46,11 +46,11 @@ class TodosTable extends Table with AutoIncrement {
 enum TodoStatus { open, workInProgress, done }
 
 class Users extends Table with AutoIncrement {
-  TextColumn get name => text().withLength(min: 6, max: 32).unique()();
-  BoolColumn get isAwesome => boolean().withDefault(const Constant(true))();
+  late final name = text().withLength(min: 6, max: 32).unique()();
+  late final isAwesome = boolean().withDefault(const Constant(true))();
 
-  BlobColumn get profilePicture => blob()();
-  DateTimeColumn get creationTime => dateTime()
+  late final profilePicture = blob()();
+  late final DateTimeColumn creationTime = dateTime()
       // ignore: recursive_getters
       .check(creationTime.isBiggerThan(Constant(DateTime.utc(1950))))
       .withDefault(currentDateAndTime)();
@@ -58,20 +58,19 @@ class Users extends Table with AutoIncrement {
 
 @DataClassName('Category')
 class Categories extends Table with AutoIncrement {
-  TextColumn get description =>
+  late final description =
       text().named('desc').customConstraint('NOT NULL UNIQUE')();
-  IntColumn get priority =>
+  late final priority =
       intEnum<CategoryPriority>().withDefault(const Constant(0))();
 
-  TextColumn get descriptionInUpperCase =>
-      text().generatedAs(description.upper())();
+  late final descriptionInUpperCase = text().generatedAs(description.upper())();
 }
 
 enum CategoryPriority { low, medium, high }
 
 class SharedTodos extends Table {
-  IntColumn get todo => integer()();
-  IntColumn get user => integer()();
+  late final todo = integer()();
+  late final user = integer()();
 
   @override
   Set<Column> get primaryKey => {todo, user};
@@ -87,24 +86,24 @@ const _uuid = Uuid();
 
 @UseRowClass(CustomRowClass, constructor: 'map', generateInsertable: true)
 class TableWithoutPK extends Table {
-  IntColumn get notReallyAnId => integer()();
-  RealColumn get someFloat => real()();
-  Int64Column get webSafeInt => int64().nullable()();
+  late final notReallyAnId = integer()();
+  late final someFloat = real()();
+  late final webSafeInt = int64().nullable()();
 
-  TextColumn get custom =>
+  late final custom =
       text().map(const CustomConverter()).clientDefault(_uuid.v4)();
 }
 
 class TableWithEveryColumnType extends Table with AutoIncrement {
-  BoolColumn get aBool => boolean().nullable()();
-  DateTimeColumn get aDateTime => dateTime().nullable()();
-  TextColumn get aText => text().nullable()();
-  IntColumn get anInt => integer().nullable()();
-  Int64Column get anInt64 => int64().nullable()();
-  RealColumn get aReal => real().nullable()();
-  BlobColumn get aBlob => blob().nullable()();
-  IntColumn get anIntEnum => intEnum<TodoStatus>().nullable()();
-  TextColumn get aTextWithConverter => text()
+  late final aBool = boolean().nullable()();
+  late final aDateTime = dateTime().nullable()();
+  late final aText = text().nullable()();
+  late final anInt = integer().nullable()();
+  late final anInt64 = int64().nullable()();
+  late final aReal = real().nullable()();
+  late final aBlob = blob().nullable()();
+  late final anIntEnum = intEnum<TodoStatus>().nullable()();
+  late final aTextWithConverter = text()
       .named('insert')
       .map(const CustomJsonConverter())
       .nullable()
@@ -112,29 +111,28 @@ class TableWithEveryColumnType extends Table with AutoIncrement {
 }
 
 class Department extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text().nullable()();
+  late final id = integer().autoIncrement()();
+  late final name = text().nullable()();
 }
 
 class Product extends Table {
-  TextColumn get sku => text()();
-  TextColumn get name => text().nullable()();
-  IntColumn get department =>
-      integer().references(Department, #id).nullable()();
+  late final sku = text()();
+  late final name = text().nullable()();
+  late final department = integer().references(Department, #id).nullable()();
 }
 
 class Listing extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  late final id = integer().autoIncrement()();
   @ReferenceName('listings')
-  TextColumn get product => text().references(Product, #sku).nullable()();
+  late final product = text().references(Product, #sku).nullable()();
   @ReferenceName('listings')
-  IntColumn get store => integer().references(Store, #id).nullable()();
-  RealColumn get price => real().nullable()();
+  late final store = integer().references(Store, #id).nullable()();
+  late final price = real().nullable()();
 }
 
 class Store extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text().nullable()();
+  late final id = integer().autoIncrement()();
+  late final name = text().nullable()();
 }
 
 class CustomRowClass {
@@ -159,7 +157,7 @@ class CustomRowClass {
 
 class PureDefaults extends Table {
   // name after keyword to ensure it's escaped properly
-  TextColumn get txt =>
+  late final txt =
       text().named('insert').map(const CustomJsonConverter()).nullable()();
 
   @override
