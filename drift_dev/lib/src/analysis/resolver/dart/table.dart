@@ -283,9 +283,9 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
               .loadElementDeclaration(e.declaration) as VariableDeclaration);
           reportError(DriftAnalysisError.inDartAst(
             declaration.declaredElement!,
-            declaration,
-            'It seems that you forgot to initialize the `${e.getter?.name}` column on the `${element.name}` table.\n'
-            'Add an extra pair of parentheses at the end of the column declaration like this: `$declaration()`.',
+            declaration.endToken,
+            '\nIt seems that you forgot to initialize the `${e.getter?.name}` column on the `${element.name}` table.\n'
+            'Solution: Add an extra pair of parentheses at the end of the column: `$declaration()`.',
           ));
         }
         return false;
