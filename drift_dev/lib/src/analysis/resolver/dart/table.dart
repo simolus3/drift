@@ -260,16 +260,46 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
   Future<Iterable<PendingColumnInformation>> _parseColumns(
       ClassElement element) async {
-    final columnNames = element.allSupertypes
+    // Returns true if the given field is a column defined as a getter
+    bool isGetterColumn(FieldElement e) {
+      return isColumn(e.type) && e.getter != null && !e.getter!.isSynthetic;
+    }
+
+    // Returns true if the given field is a column defined as a late final variable declaration
+    Future<bool> isLateFinalColumn(FieldElement e) async {
+      final isLateFinalField = e.isLate && e.isFinal && e.getter != null;
+      if (!isLateFinalField) return false;
+
+      if (isColumn(e.type)) {
+        return true;
+      } else {
+        if (isColumnBuilder(e.type)) {
+          // When defining a column with a declaration it's possible that the user
+          // forgot to add an extra pair of parentheses at the end.
+          // In that case, field would be a `ColumnBuilder` instead of a `Column`.
+          // We should warn the user about this.
+          // To print a detailed error message we willresolve the element to get the entire field declaration.
+          final declaration = (await resolver.driver.backend
+              .loadElementDeclaration(e.declaration) as VariableDeclaration);
+          reportError(DriftAnalysisError.inDartAst(
+            declaration.declaredElement!,
+            declaration.endToken,
+            '\nIt seems that you forgot to initialize the `${e.getter?.name}` column on the `${element.name}` table.\n'
+            'Solution: Add an extra pair of parentheses at the end of the column: `$declaration()`.',
+          ));
+        }
+        return false;
+      }
+    }
+
+    final Set<String> columnNames = {};
+    for (final element in element.allSupertypes
         .map((t) => t.element)
-        .followedBy([element])
-        .expand((e) => e.fields)
-        .where((field) =>
-            isColumn(field.type) &&
-            field.getter != null &&
-            !field.getter!.isSynthetic)
-        .map((field) => field.name)
-        .toSet();
+        .followedBy([element]).expand((e) => e.fields)) {
+      if (isGetterColumn(element) || await isLateFinalColumn(element)) {
+        columnNames.add(element.name);
+      }
+    }
 
     final fields = columnNames.map((name) {
       final getter = element.getGetter(name) ??
@@ -279,9 +309,23 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     });
     final results = <PendingColumnInformation>[];
     for (final field in fields) {
-      final node = await resolver.driver.backend
-          .loadElementDeclaration(field.getter!) as MethodDeclaration;
-      final column = await _parseColumn(node, field.getter!);
+      final ColumnDeclaration node;
+      final PendingColumnInformation? column;
+      if (field.getter!.isSynthetic) {
+        node = ColumnDeclaration(
+            await resolver.driver.backend
+                    .loadElementDeclaration(field.declaration)
+                as VariableDeclaration,
+            null);
+        column = await _parseColumn(node, field.declaration);
+      } else {
+        node = ColumnDeclaration(
+            null,
+            await resolver.driver.backend.loadElementDeclaration(field.getter!)
+                as MethodDeclaration);
+
+        column = await _parseColumn(node, field.getter!);
+      }
 
       if (column != null) {
         results.add(column);
@@ -292,7 +336,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   }
 
   Future<PendingColumnInformation?> _parseColumn(
-      MethodDeclaration declaration, Element element) async {
+      ColumnDeclaration declaration, Element element) async {
     return ColumnParser(this).parse(declaration, element);
   }
 
@@ -385,5 +429,58 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     }
 
     return foundConstraints;
+  }
+}
+
+/// Wraps the declaration of a column in a Dart table class as either a
+/// [VariableDeclaration] or a [MethodDeclaration].
+///
+/// This allows us to abstract over the different ways in which a column can be
+/// declared in Drift.
+///
+/// e.g. VariableDeclaration:
+/// ```dart
+/// late final count = integer()();
+/// ```
+///
+/// e.g. MethodDeclaration:
+/// ```dart
+/// IntColumn get count => integer()();
+/// ```
+///
+///
+class ColumnDeclaration {
+  final VariableDeclaration? variable;
+  final MethodDeclaration? method;
+
+  ColumnDeclaration(this.variable, this.method)
+      : assert(variable != null || method != null);
+
+  Expression? get expression {
+    if (method != null) {
+      final body = method!.body;
+      if (body is! ExpressionFunctionBody) {
+        return null;
+      }
+      return body.expression;
+    } else {
+      return variable?.initializer;
+    }
+  }
+
+  String get lexemeName {
+    if (method != null) {
+      return method!.name.lexeme;
+    } else {
+      return variable!.name.lexeme;
+    }
+  }
+
+  Comment? get documentationComment {
+    if (method != null) {
+      return method!.documentationComment;
+    } else {
+      return variable!.documentationComment;
+    }
   }
 }

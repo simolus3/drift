@@ -81,8 +81,8 @@ class ColumnParser {
   ColumnParser(this._resolver);
 
   Future<PendingColumnInformation?> parse(
-      MethodDeclaration getter, Element element) async {
-    final expr = returnExpressionOfMethod(getter);
+      ColumnDeclaration columnDeclaration, Element element) async {
+    final expr = columnDeclaration.expression;
 
     if (expr is! FunctionExpressionInvocation) {
       _resolver.reportError(
@@ -353,7 +353,7 @@ class ColumnParser {
 
     final sqlName = foundExplicitName ??
         _resolver.resolver.driver.options.caseFromDartToSql
-            .apply(getter.name.lexeme);
+            .apply(columnDeclaration.lexemeName);
     ColumnType columnType;
 
     final helper = await _resolver.resolver.driver.knownTypes;
@@ -461,8 +461,9 @@ class ColumnParser {
       );
     }
 
-    final docString =
-        getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
+    final docString = columnDeclaration.documentationComment?.tokens
+        .map((t) => t.toString())
+        .join('\n');
 
     foundConstraints.addAll(await _driftConstraintsFromCustomConstraints(
       isNullable: nullable,

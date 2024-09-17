@@ -14,7 +14,7 @@ extension type RowId._(int id) {
 }
 
 mixin AutoIncrement on Table {
-  IntColumn get id => integer()
+  late final id = integer()
       .autoIncrement()
       .map(TypeConverter.extensionType<RowId, int>())();
 }
@@ -24,17 +24,17 @@ class TodosTable extends Table with AutoIncrement {
   @override
   String get tableName => 'todos';
 
-  TextColumn get title => text().withLength(min: 4, max: 16).nullable()();
-  TextColumn get content => text()();
+  late final title = text().withLength(min: 4, max: 16).nullable()();
+  late final content = text()();
   @JsonKey('target_date')
-  DateTimeColumn get targetDate => dateTime().nullable().unique()();
+  late final targetDate = dateTime().nullable().unique()();
   @ReferenceName("todos")
-  IntColumn get category => integer()
+  late final category = integer()
       .references(Categories, #id, initiallyDeferred: true)
       .map(TypeConverter.extensionType<RowId, int>())
       .nullable()();
 
-  TextColumn get status => textEnum<TodoStatus>().nullable()();
+  late final status = textEnum<TodoStatus>().nullable()();
 
   @override
   List<Set<Column>>? get uniqueKeys => [
@@ -46,11 +46,11 @@ class TodosTable extends Table with AutoIncrement {
 enum TodoStatus { open, workInProgress, done }
 
 class Users extends Table with AutoIncrement {
-  TextColumn get name => text().withLength(min: 6, max: 32).unique()();
-  BoolColumn get isAwesome => boolean().withDefault(const Constant(true))();
+  late final name = text().withLength(min: 6, max: 32).unique()();
+  late final isAwesome = boolean().withDefault(const Constant(true))();
 
-  BlobColumn get profilePicture => blob()();
-  DateTimeColumn get creationTime => dateTime()
+  late final profilePicture = blob()();
+  late final DateTimeColumn creationTime = dateTime()
       // ignore: recursive_getters
       .check(creationTime.isBiggerThan(Constant(DateTime.utc(1950))))
       .withDefault(currentDateAndTime)();
@@ -58,20 +58,19 @@ class Users extends Table with AutoIncrement {
 
 @DataClassName('Category')
 class Categories extends Table with AutoIncrement {
-  TextColumn get description =>
+  late final description =
       text().named('desc').customConstraint('NOT NULL UNIQUE')();
-  IntColumn get priority =>
+  late final priority =
       intEnum<CategoryPriority>().withDefault(const Constant(0))();
 
-  TextColumn get descriptionInUpperCase =>
-      text().generatedAs(description.upper())();
+  late final descriptionInUpperCase = text().generatedAs(description.upper())();
 }
 
 enum CategoryPriority { low, medium, high }
 
 class SharedTodos extends Table {
-  IntColumn get todo => integer()();
-  IntColumn get user => integer()();
+  late final todo = integer()();
+  late final user = integer()();
 
   @override
   Set<Column> get primaryKey => {todo, user};

@@ -2,6 +2,17 @@
 
 - Fix Dart-defined `check` constraints not being considered in exported
   schemas.
+- Columns can now be defined with `late final` fields. Defining columns with getters `=>` is still supported too.
+  ```dart
+  class MyTable extends Table {
+    // Before:
+    IntColumn get id => integer().autoIncrement()();
+
+    // After:
+    late final id = integer().nullable()();
+  }
+  ```
+
 
 ## 2.20.3
 

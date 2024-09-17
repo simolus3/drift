@@ -390,4 +390,57 @@ class TestTable extends Table {
       expect(table.isColumnRequiredForInsert(column), isFalse);
     });
   });
+  test('columns by getter and declaration', () async {
+    final state = await TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class Students extends Table {
+  @JsonKey('group_id')
+  @ReferenceName('students')
+  IntColumn get myGroup => integer().references(Groups,#id)();
+}
+
+class Teachers extends Table {
+  @JsonKey('group_id')
+  @ReferenceName('teachers')
+  late final myGroup = integer().references(Groups,#id)();
+}
+
+class Groups extends Table {
+  late final id = integer().autoIncrement()();
+}
+
+@DriftDatabase(tables: [Groups, Students, Teachers])
+class Database {}
+''',
+    });
+
+    final file = await state.analyze('package:a/a.dart');
+    state.expectNoErrors();
+    final tables = file.analyzedElements.whereType<DriftTable>();
+
+    final studentTable =
+        tables.where((element) => element.schemaName == 'students').single;
+    final teacherTable =
+        tables.where((element) => element.schemaName == 'teachers').single;
+    final studentGroupColumn = studentTable.columns.single;
+    final teacherGroupColumn = teacherTable.columns.single;
+
+    // Ensure that the columns are the same
+    expect(studentGroupColumn.customConstraints,
+        equals(teacherGroupColumn.customConstraints));
+    expect(
+        studentGroupColumn.nameInDart, equals(teacherGroupColumn.nameInDart));
+    expect(studentGroupColumn.nameInSql, equals(teacherGroupColumn.nameInSql));
+    expect(studentGroupColumn.sqlType.builtin,
+        equals(teacherGroupColumn.sqlType.builtin));
+    expect(studentGroupColumn.nullable, equals(teacherGroupColumn.nullable));
+    expect(studentGroupColumn.overriddenJsonName,
+        equals(teacherGroupColumn.overriddenJsonName));
+
+    // Ensure that the correct reference name is set
+    expect(studentGroupColumn.referenceName, equals('students'));
+    expect(teacherGroupColumn.referenceName, equals('teachers'));
+  });
 }
