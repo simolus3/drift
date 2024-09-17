@@ -23,13 +23,29 @@ Run the following command to build the documentation:
 docs.sh build
 ```
 
-### 
-Run the following command to build the documentation:
+### Serving the Documentation
+
+You can also serve the documentation locally and view it in your browser.
+Changes to the documentation will be reflected in real-time.
+
+##### Limitations of Serving the Documentation
+
+- The flutter example project will not be built and served. If you would like to see the flutter example to be available in the documentation, you will need to run the `docs.sh build` 1st.
+  ```bash
+  docs.sh build
+  docs.sh serve
+  ```
+- The `web` folder will not be built and served. If you would like to see the `web` folder, you will need to run the `docs.sh build` command 1st.
+  ```bash
+  docs.sh build
+  docs.sh serve # or `docs.sh serve --with-build-runner`
+  ```
+
+Run the following command to serve the documentation:
 
 ```bash
 docs.sh serve
 ```
-
 If you would like changes to snippets to be available in real-time, you can run the following command:
 
 ```bash
