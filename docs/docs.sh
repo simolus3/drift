@@ -29,6 +29,26 @@ drift_dev () {
     fi
 }
 
+
+run_webdev(){
+    echo "Running webdev..."
+    # The below command will compile the dart code in `/web` to js & run build_runner
+    dart run webdev build -o web:build/web -- --delete-conflicting-outputs --release
+    if [ $? -ne 0 ]; then
+        echo "Failed to build the project"
+        exit 1
+    fi
+
+    # Remove some files that are not needed
+    rm -r ./build/web/.dart_tool
+    rm -r ./build/web/packages
+    rm ./build/web/.build.manifest
+    rm ./build/web/.packages
+
+    # Move the contents of `build` to `docs` without overwriting the `docs`
+    mv -f ./build/web/* ./docs
+}
+
 serve_mkdocs () {
     echo "Running MkDocs serve..."
     docker run --rm -p 9000:9000 -v $(pwd):/docs --user $(id -u):$(id -g) drift_docs_builder:latest serve -f /docs/mkdocs/mkdocs.yml -a 0.0.0.0:9000
@@ -59,21 +79,7 @@ if [ $arg1 == "build" ]; then
         exit 1
     fi
 
-    # The below command will compile the dart code in `/web` to js & run build_runner
-    dart run webdev build -o web:build/web -- --delete-conflicting-outputs --release
-    if [ $? -ne 0 ]; then
-        echo "Failed to build the project"
-        exit 1
-    fi
-
-    # Remove some files that are not needed
-    rm -r ./build/web/.dart_tool
-    rm -r ./build/web/packages
-    rm ./build/web/.build.manifest
-    rm ./build/web/.packages
-
-    # Move the contents of `build` to `docs` without overwriting the `docs`
-    mv -f ./build/web/* ./docs
+    run_webdev
 
     # Build the flutter web project
     cd ../examples/app
@@ -126,6 +132,8 @@ elif [ $arg1 == "serve" ]; then
         echo "Failed to build the project"
         exit 1
     fi
+
+    run_webdev
     
     build_container
 
