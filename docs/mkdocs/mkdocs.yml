@@ -98,22 +98,22 @@ nav:
   - Documentation:
       - Getting Started: setup.md
       - Dart API:
-          - Dart API/manager.md
-          - Dart API/tables.md
-          - Dart API/select.md
-          - Dart API/writes.md
-          - Dart API/transactions.md
-          - Dart API/expressions.md
-          - Dart API/schema_inspection.md
-          - Dart API/views.md
-          - Dart API/daos.md
+          - dart_api/manager.md
+          - dart_api/tables.md
+          - dart_api/select.md
+          - dart_api/writes.md
+          - dart_api/transactions.md
+          - dart_api/expressions.md
+          - dart_api/schema_inspection.md
+          - dart_api/views.md
+          - dart_api/daos.md
       - SQL API:
-          - Getting Started: SQL API/index.md
-          - SQL API/drift_files.md
-          - SQL API/types.md
-          - SQL API/extensions.md
-          - SQL API/custom_queries.md
-          # - SQL API/sql_ide.md
+          - Getting Started: sql_api/index.md
+          - sql_api/drift_files.md
+          - sql_api/types.md
+          - sql_api/extensions.md
+          - sql_api/custom_queries.md
+          # - sql_api/sql_ide.md
       - Migrations:
           - Getting Started: Migrations/index.md
           - Migrations/exports.md
@@ -123,9 +123,9 @@ nav:
       - type_converters.md
       - custom_row_classes.md
       - Generation options:
-          - Getting Started: Generation options/index.md
-          - Generation options/modular.md
-          - Generation options/in_other_builders.md
+          - Getting Started: generation_options/index.md
+          - generation_options/modular.md
+          - generation_options/in_other_builders.md
       - Platforms:
           - Getting Started: Platforms/index.md
           - Platforms/vm.md

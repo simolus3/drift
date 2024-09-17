@@ -123,5 +123,5 @@ findUsers($predicate = TRUE): SELECT * FROM users WHERE $predicate;
 
 If such a `users.drift` file is included from a database, we no longer generate
 a `findUsers` method for the database itself.
-Instead, a `users.drift.dart` file contains a [database accessor](../Dart API/daos.md) called `UsersDrift` which is implicitly added to the database.
+Instead, a `users.drift.dart` file contains a [database accessor](../dart_api/daos.md) called `UsersDrift` which is implicitly added to the database.
 To call `findUsers`, you'd now call `database.usersDrift.findUsers()`.

@@ -12,12 +12,12 @@ though, so it makes a pessimistic assumption of using an old sqlite3 version
 without any enabled extensions by default.
 When using a package like `sqlite3_flutter_libs`, you get the latest sqlite3
 version with the json1 and fts5 extensions enabled. You can inform the generator
-about this by using [build options](../Generation options/index.md).
+about this by using [build options](../generation_options/index.md).
 
 ## json1
 
 To enable the json1 extension in drift files and compiled queries, modify your
-[build options](../Generation options/index.md) to include
+[build options](../generation_options/index.md) to include
 `json1` in the `sqlite_module` section.
 
 The sqlite extension doesn't require any special tables and works on all text columns. In drift
@@ -56,7 +56,7 @@ You can learn more about the json1 extension on [sqlite.org](https://www.sqlite.
 
 The fts5 extension provides full-text search capabilities in sqlite tables.
 To enable the fts5 extension in drift files and compiled queries, modify the
-[build options](../Generation options/index.md) to include
+[build options](../generation_options/index.md) to include
 `fts5` in the `sqlite_module` section.
 
 Just like you'd expect when using sqlite, you can create a fts5 table in a drift file
@@ -86,7 +86,7 @@ for rendering polygons as [SVG](https://en.wikipedia.org/wiki/SVG),
 and other similar operations.
 
 To enable the `geopoly` extension in drift files and compiled queries, modify the
-[build options](../Generation options/index.md) to include
+[build options](../generation_options/index.md) to include
 `geopoly` in the `sqlite_module` section.
 
 An example of creating a virtual table using this extension:

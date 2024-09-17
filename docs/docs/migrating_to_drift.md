@@ -17,9 +17,9 @@ features, such as:
 - A complete [query builder](./Dart%20API/manager.md) capable of expressing
   even complex SQL statements in Dart.
 - Auto-updating streams for your queries.
-- Easier [transaction management](Dart API/transactions.md).
+- Easier [transaction management](dart_api/transactions.md).
 - [Assisted migrations](Migrations/step_by_step.md) and [reliable unit tests](Migrations/tests.md) for your migrations.
-- Compile-time [analysis and lints for your SQL](SQL API/drift_files.md).
+- Compile-time [analysis and lints for your SQL](sql_api/drift_files.md).
 - Efficient cross-platform implementations thanks to builtin [isolate](isolates.md) and [web worker](Platforms/web.md) support.
 - Multi-dialect support, allowing you to [re-use database code](Examples/server_sync.md) between
   your app and your backend.
@@ -124,7 +124,7 @@ static QueryExecutor _openDatabase() {
 The current snippets allow opening your existing database through drift APIs, but drift
 doesn't know anything about your tables yet.
 With `sqflite` or `sqlite3`, you have created your tables with `CREATE TABLE` statements.
-Drift has a [Dart-based DSL](Dart API/tables.md) able to define tables
+Drift has a [Dart-based DSL](dart_api/tables.md) able to define tables
 in Dart, but it can also interpret `CREATE TABLE` statements by parsing them at compile time.
 
 Since you probably still have the `CREATE TABLE` strings available in your code, using them
@@ -138,7 +138,7 @@ await db.execute(
 });
 ```
 
-All your `CREATE` statements can be imported into drift with a [drift file](SQL API/index.md).
+All your `CREATE` statements can be imported into drift with a [drift file](sql_api/index.md).
 To get started, add a `schema.drift` file next to your `database.dart` file with the following content:
 
 {{ load_snippet('test','lib/snippets/setup/migrate_to_drift/schema.drift.excerpt.json') }}
@@ -195,7 +195,7 @@ Especially for users already familiar with SQL, drift files are a very powerful
 feature to structure databases.
 You can of course mix definitions from drift files with tables and queries defined
 in Dart if that works better.
-For more information about drift files, see [their documentation page](SQL API/drift_files.md).
+For more information about drift files, see [their documentation page](sql_api/drift_files.md).
 
 ### Dart queries
 
@@ -208,7 +208,7 @@ can also be written like this:
 Here, `watch()` is used instead of `get()` in the end to automatically turn the statement
 into an auto-updating stream.
 
-For more information about the Dart API, see [this overview](./Dart%20API/manager.md).
+For more information about the dart_api, see [this overview](./Dart%20API/manager.md).
 
 ## Next steps
 

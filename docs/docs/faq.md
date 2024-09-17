@@ -117,7 +117,7 @@ ones on your `database.dart` file and your run `build_runner` there is a known
 problem about it using the imported class instead of the generated ones.
 
 To solve that, if you can, you can enable
-[modular code generation](./Generation options/modular.md).
+[modular code generation](./generation_options/modular.md).
 It slightly changes how drift is used, but you probably will only have to update
 a few files to change parts to imports. The big difference is that it allows drift
 to emit a standalone library file instead of a part - that can have its own imports,
@@ -156,7 +156,7 @@ result of your queries.
 ### floor
 Floor also has a lot of convenience features like auto-updating queries and schema migrations. Similar to drift, you
 define the structure of your database in Dart. Then, you have write queries in sql - the mapping code if generated
-by floor. Drift has a [similar feature](SQL API/custom_queries.md), but it can also verify that your queries are valid at compile time. Drift
+by floor. Drift has a [similar feature](sql_api/custom_queries.md), but it can also verify that your queries are valid at compile time. Drift
 additionally has an api that lets you write some queries in Dart instead of sql.
 
 A difference between these two is that Floor lets you write your own classes and generates mapping code around that.

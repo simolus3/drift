@@ -31,17 +31,17 @@ This section describes all the options available when declaring columns.
 Drift supports a variety of column types out of the box. You can store custom classes in columns by using
 [type converters](../type_converters.md).
 
-| Dart type   | Column       | Corresponding SQLite type                                                                        |
-| ----------- | ------------ | ------------------------------------------------------------------------------------------------ |
-| `int`       | `integer()`  | `INTEGER`                                                                                        |
-| `BigInt`    | `int64()`    | `INTEGER` (useful for large values on the web)                                                   |
-| `double`    | `real()`     | `REAL`                                                                                           |
-| `boolean`   | `boolean()`  | `INTEGER`, which a `CHECK` to only allow `0` or `1`                                              |
-| `String`    | `text()`     | `TEXT`                                                                                           |
-| `DateTime`  | `dateTime()` | `INTEGER` (default) or `TEXT` depending on [options](#datetime-options)                          |
-| `Uint8List` | `blob()`     | `BLOB`                                                                                           |
+| Dart type   | Column       | Corresponding SQLite type                                                                      |
+| ----------- | ------------ | ---------------------------------------------------------------------------------------------- |
+| `int`       | `integer()`  | `INTEGER`                                                                                      |
+| `BigInt`    | `int64()`    | `INTEGER` (useful for large values on the web)                                                 |
+| `double`    | `real()`     | `REAL`                                                                                         |
+| `boolean`   | `boolean()`  | `INTEGER`, which a `CHECK` to only allow `0` or `1`                                            |
+| `String`    | `text()`     | `TEXT`                                                                                         |
+| `DateTime`  | `dateTime()` | `INTEGER` (default) or `TEXT` depending on [options](#datetime-options)                        |
+| `Uint8List` | `blob()`     | `BLOB`                                                                                         |
 | `Enum`      | `intEnum()`  | `INTEGER` (more information available [here](../type_converters.md#implicit-enum-converters)). |
-| `Enum`      | `textEnum()` | `TEXT` (more information available [here]("../type_converters.md#implicit-enum-converters")).    |
+| `Enum`      | `textEnum()` | `TEXT` (more information available [here]("../type_converters.md#implicit-enum-converters")).  |
 
 Note that the mapping for `boolean`, `dateTime` and type converters only applies when storing records in
 the database.
@@ -136,7 +136,7 @@ Drift supports two approaches of storing `DateTime` values in SQL:
    This behavior works well with the date functions in sqlite3 while also
    preserving "UTC-ness" for stored values.
 
-The mode can be changed with the `store_date_time_values_as_text` [build option](../Generation options/index.md).
+The mode can be changed with the `store_date_time_values_as_text` [build option](../generation_options/index.md).
 
 Regardless of the option used, drift's builtin support for
 [date and time functions](expressions.md#date-and-time)

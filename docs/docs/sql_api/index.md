@@ -5,7 +5,7 @@ description: Define your database and queries in SQL without giving up on type-s
 
 ---
 
-Drift provides a [Dart API](../Dart%20API/tables.md) to define tables and
+Drift provides a [dart_api](../Dart%20API/tables.md) to define tables and
 to write SQL queries.
 Especially when you are already familiar with SQL, it might be easier to define your
 tables directly in SQL, with `CREATE TABLE` statements.
@@ -16,7 +16,7 @@ for each table and SQL statement.
 
 ## Setup
 
-The basic setup of adding the drift dependencies matches the setup for the Dart APIs. It
+The basic setup of adding the drift dependencies matches the setup for the dart_apis. It
 is described in the [setup page](../setup.md).
 
 What's different is how tables and queries are declared. For SQL to be recognized by drift,

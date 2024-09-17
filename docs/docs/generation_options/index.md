@@ -1,6 +1,6 @@
 ---
 
-title: Generation options
+title: generation_options
 description: Options for `drift_dev` and `build_runner` to change the generated code.
 
 ---
@@ -42,7 +42,7 @@ At the moment, drift supports these options:
   of inserted data and report detailed errors when the integrity is violated. If you're only using
   inserts with SQL, or don't need this functionality, enabling this flag can help to reduce the amount
   generated code.
-- `use_data_class_name_for_companions`: By default, the name for [companion classes](../Dart API/writes.md#updates-and-deletes)
+- `use_data_class_name_for_companions`: By default, the name for [companion classes](../dart_api/writes.md#updates-and-deletes)
   is based on the table name (e.g. a `@DataClassName('Users') class UsersTable extends Table` would generate
   a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
   this case).
@@ -67,11 +67,11 @@ At the moment, drift supports these options:
   to `null`.
 - `named_parameters`: Generates named parameters for named variables in SQL queries.
 - `named_parameters_always_required`: All named parameters (generated if `named_parameters` option is `true`) will be required in Dart.
-- `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders](../SQL API/drift_files.md#dart-components-in-sql) in SQL.
+- `scoped_dart_components` (defaults to `true`): Generates a function parameter for [Dart placeholders](../sql_api/drift_files.md#dart-components-in-sql) in SQL.
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
 - `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.
-  For more information on these modes, see [datetime options](../Dart API/tables.md#datetime-options).
+  For more information on these modes, see [datetime options](../dart_api/tables.md#datetime-options).
 - `case_from_dart_to_sql` (defaults to `snake_case`): Controls how the table and column names are re-cased from the Dart identifiers.
   The possible values are `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 - `write_to_columns_mixins`: Whether the `toColumns` method should be written as a mixin instead of being added directly to the data class.
@@ -81,7 +81,7 @@ At the moment, drift supports these options:
   can be enabled to speed up builds. This option has no effect with the default or the modular builder.
 - `fatal_warnings`: When enabled (defaults to `false`), warnings found by `drift_dev` in the build process (like syntax errors in SQL queries or
   unresolved references in your Dart tables) will cause the build to fail.
-- `preamble`: This option is useful when using drift as a standalone part builder or when running a
+- `preamble`: This option is useful when using drift as a standalone part "../Generation options"builder or when running a
   modular build. In these setups, the `preamble` option defined by the [source_gen package](https://pub.dev/packages/source_gen#preamble)
   would have no effect, which is why it has been added as an option for the drift builders.
 - `generate_manager`: When enabled (defaults to `true`), managers will be generated for each table in the database. These managers help perform simple actions without boilerplate.

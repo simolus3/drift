@@ -133,7 +133,7 @@ The `NativeDatabase` includes additional sql functions not available in standard
 
 Note that `NaN`, `-infinity` or `+infinity` are represented as `NULL` in sql.
 
-When enabling the `moor_ffi` module in your [build options](../Generation options/index.md#available-extensions),
+When enabling the `moor_ffi` module in your [build options](../generation_options/index.md#available-extensions),
 the generator will allow you to use those functions in drift files or compiled queries.
 
 To use those methods from Dart, you need to import `package:drift/extensions/native.dart`.

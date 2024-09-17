@@ -28,12 +28,12 @@ dev_dependencies:
 ```
 
 Defining a database with Postgres is no different than defining it for sqlite3 - the
-pages on [Dart](../setup.md) and [SQL](../SQL API/index.md)
+pages on [Dart](../setup.md) and [SQL](../sql_api/index.md)
 explain how to define tables picked up by drift.
 
 Different dialects require changes in generated code in some cases. Since most drift users are
 targeting sqlite3, drift generates code optimized for sqlite3 by default. To enable code generation
-for PostgreSQL as well, [create a `build.yaml`](../Generation options/index.md) next to your pubspec with this content:
+for PostgreSQL as well, [create a `build.yaml`](../generation_options/index.md) next to your pubspec with this content:
 
 ```yaml
 targets:
@@ -58,7 +58,7 @@ you can run the example to see drift talking to Postgres.
 
 ## API extensions
 
-The postgres library provides a few [custom types](../SQL API/types.md) enabling you to use
+The postgres library provides a few [custom types](../sql_api/types.md) enabling you to use
 postgres-specific types when writing queries in drift.
 For instance, the `PgTypes.uuid` type used in the example maps to a native UUID column type in Postgres. The
 `gen_random_uuid()` function in postgres is also exposed.

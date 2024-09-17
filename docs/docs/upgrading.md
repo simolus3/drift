@@ -59,7 +59,7 @@ project. For a full list of updates, see the [changelog](https://pub.dev/package
 The breaking changes in drift 2.0 are motivated by making drift easier to
 maintain and to unblock upcoming new features. This release also provides some
 new features, like nested transactions or support for `RETURNING` for updates
-and deletes in the Dart API.
+and deletes in the dart_api.
 We hope the upgrade is worthwhile. If you run into any issues, please do not
 hesistate to [start a new discussion](https://github.com/simolus3/drift/discussions)
 or to [open an issue](https://github.com/simolus3/drift/issues).
@@ -189,7 +189,7 @@ If you opt for a rename, also update your imports and `include:` parameters in d
 
 #### Build configuration
 
-When configuring moor builders for [options](Generation options/index.md), you have to update your `build.yaml` files to reflect the new builder keys:
+When configuring moor builders for [options](generation_options/index.md), you have to update your `build.yaml` files to reflect the new builder keys:
 
 | Moor builder key                            | Drift builder key              |
 | ------------------------------------------- | ------------------------------ |

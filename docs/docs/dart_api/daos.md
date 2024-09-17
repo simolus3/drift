@@ -10,7 +10,7 @@ tedious. You can avoid this by extracting some queries into classes that are
 available from your main database class. Consider the following code:
 
 ```dart
-part 'todos_dao.g.dart';
+part '../Dart API/todos_dao.g.dart';
 
 // the _TodosDaoMixin will be created by drift. It contains all the necessary
 // fields for the tables. The <MyDatabase> type annotation is the database class

@@ -8,7 +8,7 @@ description: Select rows or individual columns from tables in Dart
 
 
 
-This page describes how to write `SELECT` statements with drift's Dart API.
+This page describes how to write `SELECT` statements with drift's dart_api.
 To make examples easier to grasp, they're referencing two common tables forming
 the basis of a todo-list app:
 
@@ -52,7 +52,7 @@ You can apply filters to a query by calling `where()`. The where method takes a 
 should map the given table to an `Expression` of boolean. A common way to create such expression
 is by using `equals` on expressions. Integer columns can also be compared with `isBiggerThan`
 and `isSmallerThan`. You can compose expressions using `a & b, a | b` and `a.not()`. For more
-details on expressions, see [this guide](../Dart API/expressions.md).
+details on expressions, see [this guide](../dart_api/expressions.md).
 
 ### Limit
 You can limit the amount of results returned by calling `limit` on queries. The method accepts
@@ -64,7 +64,7 @@ the amount of rows to return and an optional offset.
 ### Ordering
 You can use the `orderBy` method on the select statement. It expects a list of functions that extract the individual
 ordering terms from the table. You can use any expression as an ordering term - for more details, see
-[this guide](../Dart API/expressions.md).
+[this guide](../dart_api/expressions.md).
 
 {{ load_snippet('order-by','lib/snippets/dart_api/select.dart.excerpt.json') }}
 

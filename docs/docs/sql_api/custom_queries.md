@@ -68,7 +68,7 @@ SQL. For more details, see the documentation on [drift files](drift_files.md).
 
 
 You can also use `UPDATE` or `DELETE` statements here. Of course, this feature is also available for
-[daos](../Dart API/daos.md),
+[daos](../dart_api/daos.md),
 and it perfectly integrates with auto-updating streams by analyzing what tables you're reading from or
 writing to.
 

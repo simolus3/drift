@@ -6,7 +6,7 @@ description: Deep-dive into what kind of SQL expressions can be written in Dart
 ---
 
 Expressions are pieces of SQL that return a value when the database interprets them.
-The Dart API from drift allows you to write most expressions in Dart and then convert
+The dart_api from drift allows you to write most expressions in Dart and then convert
 them to SQL. Expressions are used in all kinds of situations. For instance, `where`
 expects an expression that returns a boolean.
 
@@ -273,4 +273,4 @@ select(users)..where((u) => inactive);
 _Note_: It's easy to write invalid queries by using `CustomExpressions` too much. If you feel like
 you need to use them because a feature you use is not available in drift, consider creating an issue
 to let us know. If you just prefer SQL, you could also take a look at
-[compiled SQL](../SQL API/custom_queries.md) which is type-safe to use.
+[compiled SQL](../sql_api/custom_queries.md) which is type-safe to use.

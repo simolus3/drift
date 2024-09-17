@@ -16,7 +16,7 @@ Drift files are a new feature that lets you write all your database code in SQL.
 But unlike raw SQL strings you might pass to simple database clients, everything in a drift file is verified
 by drift's powerful SQL analyzer.
 This allows you to write SQL queries safer: Drift will find mistakes in them during builds, and it will generate type-safe
-Dart APIs for them so that you don't have to read back results manually.
+dart_apis for them so that you don't have to read back results manually.
 
 ## Getting started
 To use this feature, lets create two files: `database.dart` and `tables.drift`. The Dart file only contains the minimum code
@@ -75,7 +75,7 @@ named parameters. To do so, add a `REQUIRED` keyword:
 {{ load_snippet('q3','lib/snippets/drift_files/small_snippets.drift.excerpt.json') }}
 
 Note that this only has an effect when the `named_parameters`
-[build option](../Generation options/index.md) is
+[build option](../generation_options/index.md) is
 enabled. Further, non-nullable variables are required by default.
 
 ### Arrays
@@ -109,7 +109,7 @@ to determine the column type based on the declared type name.
 Additionally, columns that have the type name `BOOLEAN` or `DATETIME` will have
 `bool` or `DateTime` as their Dart counterpart.
 Booleans are stored as `INTEGER` (either `0` or `1`). Datetimes are stored as
-unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) [depending on a configurable build option](../Dart API/tables.md#datetime-options).
+unix timestamps (`INTEGER`) or ISO-8601 (`TEXT`) [depending on a configurable build option](../dart_api/tables.md#datetime-options).
 For integers that should be represented as a `BigInt` in Dart (i.e. to have better compatibility with large numbers when compiling to JS),
 define the column with the `INT64` type.
 
@@ -139,7 +139,7 @@ Instead of using an integer mapping enums by their index, you can also store the
 by their name. For this, use `ENUMNAME(...)` instead of `ENUM(...)`.
 
 For details on all supported types, and information on how to switch between the
-datetime modes, see [this section](../Dart API/tables.md#supported-column-types).
+datetime modes, see [this section](../dart_api/tables.md#supported-column-types).
 
 The additional drift-specific types (`BOOLEAN`, `DATETIME`, `ENUM` and `ENUMNAME`) are also supported in `CAST`
 expressions, which is helpful for views:
@@ -153,7 +153,7 @@ CREATE VIEW with_next_status AS
 
 ### Drift-specific features
 
-To help support drift's Dart API, `CREATE TABLE` statements in drift files can
+To help support drift's dart_api, `CREATE TABLE` statements in drift files can
 use special syntax for Dart-specific features.
 Of course, drift will strip this special syntax from the `CREATE TABLE`
 statement before it runs it.
@@ -269,7 +269,7 @@ While `LIST()` subqueries are a very powerful feature, they can be costly when t
 has lots of rows (as the inner query is executed for each outer row).
 
 ## Dart interop
-Drift files work perfectly together with drift's existing Dart API:
+Drift files work perfectly together with drift's existing dart_api:
 
 - you can write Dart queries for tables declared in a drift file:
 
@@ -301,7 +301,7 @@ can be used to construct dynamic filters at runtime:
 This lets you write a single SQL query and dynamically apply a predicate at runtime!
 This feature works for
 
-- [expressions](../Dart API/expressions.md), as you've seen in the example above
+- [expressions](../dart_api/expressions.md), as you've seen in the example above
 - single ordering terms: `SELECT * FROM todos ORDER BY $term, id ASC`
   will generate a method taking an `OrderingTerm`.
 - whole order-by clauses: `SELECT * FROM todos ORDER BY $order`
@@ -346,7 +346,7 @@ FROM users;
 More details on type converts in drift files are available
 [here](../type_converters.md#using-converters-in-drift).
 
-When using type converters, we recommend the [`apply_converters_on_variables`](../Generation options/index.md)
+When using type converters, we recommend the [`apply_converters_on_variables`](../generation_options/index.md)
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
