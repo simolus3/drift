@@ -26,18 +26,29 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
-      - run: melos bootstrap --scope drift_docs,drift
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.24
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+      - name: Bootstrap Dart packages
+        run: melos bootstrap --scope drift_docs,drift,app
         working-directory: .
       - name: Run build
         env:
           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
-        run: dart run tool/ci_build.dart
+        run: |
+          chmod +x ./docs.sh
+          ./docs.sh build
       - name: Analyze Dart and Drift sources
         run: |
           dart format -o none --set-exit-if-changed .
           dart analyze --fatal-infos --fatal-warnings
           dart run drift_dev analyze
-      - run: dart test
+      - name: Test Dart and Drift sources
+        run: dart test
       - name: Deploy to netlify (Branch)
         if: ${{ github.event_name == 'push' }}
         uses: nwtgck/actions-netlify@v3
@@ -342,7 +353,6 @@ jobs:
       - name: Test
         working-directory: extras/integration_tests/web_wasm
         run: dart test
-
 #  upload_coverage:
 #    runs-on: ubuntu-20.04
 #    needs: [moor, sqlparser]
