@@ -404,7 +404,7 @@ class Students extends Table {
 class Teachers extends Table {
   @JsonKey('group_id')
   @ReferenceName('teachers')
-  late final myGroup = integer().references(Groups,#id);
+  late final myGroup = integer().references(Groups,#id)();
 }
 
 class Groups extends Table {
@@ -433,7 +433,8 @@ class Database {}
     expect(
         studentGroupColumn.nameInDart, equals(teacherGroupColumn.nameInDart));
     expect(studentGroupColumn.nameInSql, equals(teacherGroupColumn.nameInSql));
-    expect(studentGroupColumn.sqlType, equals(teacherGroupColumn.sqlType));
+    expect(studentGroupColumn.sqlType.builtin,
+        equals(teacherGroupColumn.sqlType.builtin));
     expect(studentGroupColumn.nullable, equals(teacherGroupColumn.nullable));
     expect(studentGroupColumn.overriddenJsonName,
         equals(teacherGroupColumn.overriddenJsonName));
