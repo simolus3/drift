@@ -260,21 +260,46 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
   Future<Iterable<PendingColumnInformation>> _parseColumns(
       ClassElement element) async {
-    bool isGetter(FieldElement e) {
+    // Returns true if the given field is a column defined as a getter
+    bool isGetterColumn(FieldElement e) {
       return isColumn(e.type) && e.getter != null && !e.getter!.isSynthetic;
     }
 
-    bool isLateFinal(FieldElement e) {
-      return isColumn(e.type) && e.isLate && e.isFinal && e.getter != null;
+    // Returns true if the given field is a column defined as a late final variable declaration
+    Future<bool> isLateFinalColumn(FieldElement e) async {
+      final isLateFinalField = e.isLate && e.isFinal && e.getter != null;
+      if (!isLateFinalField) return false;
+
+      if (isColumn(e.type)) {
+        return true;
+      } else {
+        if (isColumnBuilder(e.type)) {
+          // When defining a column with a declaration it's possible that the user
+          // forgot to add an extra pair of parentheses at the end.
+          // In that case, field would be a `ColumnBuilder` instead of a `Column`.
+          // We should warn the user about this.
+          // To print a detailed error message we willresolve the element to get the entire field declaration.
+          final declaration = (await resolver.driver.backend
+              .loadElementDeclaration(e.declaration) as VariableDeclaration);
+          reportError(DriftAnalysisError.inDartAst(
+            declaration.declaredElement!,
+            declaration,
+            'It seems that you forgot to initialize the `${e.getter?.name}` column on the `${element.name}` table.\n'
+            'Add an extra pair of parentheses at the end of the column declaration like this: `$declaration()`.',
+          ));
+        }
+        return false;
+      }
     }
 
-    final columnNames = element.allSupertypes
+    final Set<String> columnNames = {};
+    for (final element in element.allSupertypes
         .map((t) => t.element)
-        .followedBy([element])
-        .expand((e) => e.fields)
-        .where((field) => isGetter(field) || isLateFinal(field))
-        .map((field) => field.name)
-        .toSet();
+        .followedBy([element]).expand((e) => e.fields)) {
+      if (isGetterColumn(element) || await isLateFinalColumn(element)) {
+        columnNames.add(element.name);
+      }
+    }
 
     final fields = columnNames.map((name) {
       final getter = element.getGetter(name) ??

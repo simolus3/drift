@@ -171,6 +171,15 @@ bool isColumn(DartType type) {
       !name.contains('Builder');
 }
 
+bool isColumnBuilder(DartType type) {
+  final name = type.nameIfInterfaceType;
+
+  return isFromDrift(type) &&
+      name != null &&
+      name.contains('Column') &&
+      name.contains('Builder');
+}
+
 bool isFromDrift(DartType type) {
   if (type is! InterfaceType) return false;
 
