@@ -41,8 +41,29 @@ class ComposerState<Database extends GeneratedDatabase,
     ].nonNulls.toSet();
   }
 
-  /// A helper method for creating objects that need that require
-  /// the correct alias for the column and the needed join builders.
+  /// A helper method for creating composables that need
+  /// the correct aliases for the column and the join builders.
+  /// Every filter and ordering compasable is created using this method.
+  ///
+  /// Explaination:
+  /// ```dart
+  /// db.managers.categories.filter((f) => f.todos((todoFilterComposer) => todoFilterComposer.title.equals("Math Homework")))
+  /// ```
+  /// In the above example, `todoFilterComposer.title` returns [ComposableFilter]
+  /// It is responsible for writing the SQL for the query.
+  /// However this [ComposableFilter] class needs to know that it should be writing the query using the aliased table name
+  /// which we used when we created the join, and not the actual table name.
+  /// This [composableBuilder] function utility helps us create it correctly
+  ///
+  /// This function removes also joins when the arent needed
+  /// For example:
+  /// ```dart
+  /// db.managers.todos.filter((f) => f.category.id(5))
+  /// ```
+  /// In the above example we are filtering the todos in category 5, however we don't
+  /// need a join to do that, we apply be applying the filter to `todos.category`, instead of
+  /// `categories.todo`.
+  /// This function will remove such joins and write the query correctly.
   T composableBuilder<T, C extends GeneratedColumn>(
       {required C column,
       required T Function(C column, Set<JoinBuilder> joinBuilders) builder}) {
@@ -69,6 +90,15 @@ class ComposerState<Database extends GeneratedDatabase,
   }
 
   /// A helper method for creating related composers.
+  ///
+  /// For example, a filter for a categories table.
+  /// There is a filter on it for filtering todos.
+  /// ```dart
+  /// db.managers.categories.filter((f) => f.todos((todoFilterComposer) => todoFilterComposer.title.equals("Math Homework")))
+  /// ```
+  /// When we filter the todos, we till be creating a todos filter composer.
+  /// This function is used to build that composer.
+  /// It will create he needed joins and ensure that the correct table alias name is used internaly
   T composerBuilder<T, CurrentColumn extends GeneratedColumn,
           RelatedTable extends Table, RelatedColumn extends GeneratedColumn>(
       {required Composer composer,
