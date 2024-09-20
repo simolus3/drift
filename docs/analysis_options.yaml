@@ -1,7 +1,14 @@
 include: package:lints/recommended.yaml
 
 analyzer:
+  plugins:
+    - custom_lint
   language:
     strict-casts: true
   exclude:
     - "**/*.g.dart"
+
+custom_lint:
+  debug: true
+  # Optional, will cause custom_lint to log its internal debug information
+  verbose: true

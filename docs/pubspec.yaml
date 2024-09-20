@@ -46,6 +46,7 @@ dev_dependencies:
     hosted: https://pub-simonbinder-eu.fsn1.your-objectstorage.com
     version: ^0.0.15
   sass_builder: ^2.2.1
+  custom_lint: ^0.6.7
 
 dependency_overrides:
   drift_flutter:
