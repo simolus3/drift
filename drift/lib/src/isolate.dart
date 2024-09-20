@@ -13,12 +13,25 @@ import '../remote.dart';
 @internal
 const disconnectMessage = '_disconnect';
 
+final class _RegularInstance {}
+
 @internal
-Future<StreamChannel> connectToServer(
+Future<(StreamChannel, bool)> connectToServer(
   SendPort serverConnectPort,
-  bool serialize,
+  bool? serialize,
   Duration? connectionTimeout,
 ) async {
+  if (serialize == null) {
+    // Try to send a complex object over to see if we need to enable
+    // serialization.
+    try {
+      serverConnectPort.send(_RegularInstance());
+      serialize = true;
+    } on ArgumentError {
+      serialize = false;
+    }
+  }
+
   // The handshake starts with us sending a send port to the remote isolate.
   // If the isolate accepts the connection, it sends us a send port back which
   // is then used for the rest of the communication.
@@ -58,7 +71,7 @@ Future<StreamChannel> connectToServer(
     }
   });
 
-  return completer.future;
+  return (await completer.future, serialize);
 }
 
 @internal

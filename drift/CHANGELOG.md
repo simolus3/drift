@@ -1,3 +1,8 @@
+## 2.21.0-dev
+
+- To infer whether serialization is required for inter-isolate communication,
+  drift now sends a test message instead serializing by default.
+
 ## 2.20.2
 
 - Fix upcoming `unreachable_switch_default` lint.
