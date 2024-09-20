@@ -1,3 +1,7 @@
+## 0.2.1-dev
+
+- Enable serialization between background isolates where necessary.
+
 ## 0.2.0
 
 - Add `DriftNativeOptions` with `shareAcrossIsolates` option that will give

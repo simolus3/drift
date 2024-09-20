@@ -56,7 +56,7 @@ QueryExecutor driftDatabase({
       while (true) {
         if (IsolateNameServer.lookupPortByName(portName(name))
             case final port?) {
-          final isolate = DriftIsolate.fromConnectPort(port, serialize: false);
+          final isolate = DriftIsolate.fromConnectPort(port);
           try {
             return await isolate.connect(connectTimeout: connectTimeout);
           } on TimeoutException {
@@ -85,8 +85,7 @@ QueryExecutor driftDatabase({
           // due to a race condition (in which case it exits).
           final first = await firstMessage;
           if (first case SendPort port) {
-            return await DriftIsolate.fromConnectPort(port, serialize: false)
-                .connect();
+            return await DriftIsolate.fromConnectPort(port).connect();
           }
         }
       }
