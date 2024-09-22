@@ -26,9 +26,9 @@ Future<(StreamChannel, bool)> connectToServer(
     // serialization.
     try {
       serverConnectPort.send(_RegularInstance());
-      serialize = true;
-    } on ArgumentError {
       serialize = false;
+    } on ArgumentError {
+      serialize = true;
     }
   }
 
