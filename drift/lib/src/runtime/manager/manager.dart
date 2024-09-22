@@ -12,6 +12,7 @@ part 'filter.dart';
 part 'join_builder.dart';
 part 'ordering.dart';
 part 'references.dart';
+part 'annotate.dart';
 
 /// Defines a class that holds the state for a [BaseTableManager]
 ///
@@ -40,6 +41,7 @@ class TableManagerState<
     $Dataclass,
     $FilterComposer extends FilterComposer<$Database, $Table>,
     $OrderingComposer extends OrderingComposer<$Database, $Table>,
+    $AnnotationComposer extends AnnotationComposer<$Database, $Table>,
     $CreateCompanionCallback extends Function,
     $UpdateCompanionCallback extends Function,
     $DataclassWithReferences,
@@ -81,6 +83,8 @@ class TableManagerState<
   /// which will be applied to the statement when its eventually created
   final $OrderingComposer Function() createOrderingComposer;
 
+  final $AnnotationComposer Function() createAnnotationComposer;
+
   /// This function is passed to the user to create a companion
   /// for inserting data into the table
   final $CreateCompanionCallback _createCompanionCallback;
@@ -93,6 +97,8 @@ class TableManagerState<
   /// This is used internally by [toActiveDataclass] and should not be used outside of this class.
   final List<$DataclassWithReferences> Function(List<TypedResult>)
       _withReferenceMapper;
+
+  final Set<Expression> addedColumns;
 
   /// This function is used to ensure that the correct dataclass type is returned by the manager.
   ///
@@ -152,6 +158,7 @@ class TableManagerState<
       required this.table,
       required this.createFilteringComposer,
       required this.createOrderingComposer,
+      required this.createAnnotationComposer,
       required $CreateCompanionCallback createCompanionCallback,
       required $UpdateCompanionCallback updateCompanionCallback,
       required List<$DataclassWithReferences> Function(List<TypedResult>)
@@ -163,6 +170,7 @@ class TableManagerState<
       this.distinct,
       this.limit,
       this.offset,
+      this.addedColumns = const {},
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
       : prefetchHooks = prefetchHooks ?? PrefetchHooks(db: db),
@@ -179,6 +187,7 @@ class TableManagerState<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $AnnotationComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -192,6 +201,7 @@ class TableManagerState<
     Set<JoinBuilder>? joinBuilders,
     List<$Dataclass>? prefetchedData,
     PrefetchHooks? prefetchHooks,
+    Set<Expression>? addedColumns,
   }) {
     /// When we import prefetchedData, it's already in its Row Class,
     /// we need to place it into a TypedResult for the manager to work with it
@@ -204,10 +214,12 @@ class TableManagerState<
       table: table,
       createFilteringComposer: createFilteringComposer,
       createOrderingComposer: createOrderingComposer,
+      createAnnotationComposer: createAnnotationComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
       prefetchHooksCallback: _prefetchHooksCallback,
+      addedColumns: addedColumns ?? this.addedColumns,
       prefetchedData: prefetchedDataAsTypedResult ?? this._prefetchedData,
       prefetchHooks: prefetchHooks ?? this.prefetchHooks,
       filter: filter ?? this.filter,
@@ -229,6 +241,7 @@ class TableManagerState<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $AnnotationComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -239,6 +252,7 @@ class TableManagerState<
       table: table,
       createFilteringComposer: createFilteringComposer,
       createOrderingComposer: createOrderingComposer,
+      createAnnotationComposer: createAnnotationComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -250,6 +264,7 @@ class TableManagerState<
       offset: offset,
       prefetchHooksCallback: _prefetchHooksCallback,
       prefetchedData: _prefetchedData,
+      addedColumns: addedColumns,
     );
   }
 
@@ -262,6 +277,7 @@ class TableManagerState<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
+          $AnnotationComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -287,22 +303,23 @@ class TableManagerState<
         .toSet()
       ..add(joinBuilder);
     return TableManagerState(
-      db: db,
-      table: table,
-      createFilteringComposer: createFilteringComposer,
-      createOrderingComposer: createOrderingComposer,
-      createCompanionCallback: _createCompanionCallback,
-      updateCompanionCallback: _updateCompanionCallback,
-      withReferenceMapper: _withReferenceMapper,
-      filter: filter,
-      joinBuilders: newJoinBuilders,
-      orderingBuilders: orderingBuilders,
-      distinct: distinct,
-      limit: limit,
-      offset: offset,
-      prefetchHooksCallback: _prefetchHooksCallback,
-      prefetchedData: _prefetchedData,
-    );
+        db: db,
+        table: table,
+        createFilteringComposer: createFilteringComposer,
+        createOrderingComposer: createOrderingComposer,
+        createAnnotationComposer: createAnnotationComposer,
+        createCompanionCallback: _createCompanionCallback,
+        updateCompanionCallback: _updateCompanionCallback,
+        withReferenceMapper: _withReferenceMapper,
+        filter: filter,
+        joinBuilders: newJoinBuilders,
+        orderingBuilders: orderingBuilders,
+        distinct: distinct,
+        limit: limit,
+        offset: offset,
+        prefetchHooksCallback: _prefetchHooksCallback,
+        prefetchedData: _prefetchedData,
+        addedColumns: addedColumns);
   }
 
   /// Helper for getting the table that's casted as a TableInfo
@@ -329,6 +346,10 @@ class TableManagerState<
           .select(_tableAsTableInfo, distinct: distinct ?? false)
           .join(joins) as JoinedSelectStatement<$Table, $Dataclass>;
     }
+
+    // Add any additional columns/expression that were added
+    joinedStatement.addColumns(addedColumns);
+
     // Apply the expression to the statement
     if (filter != null) {
       joinedStatement.where(filter!);
@@ -421,6 +442,7 @@ abstract class BaseTableManager<
         $Dataclass,
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $AnnotationComposer extends AnnotationComposer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -434,6 +456,7 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $AnnotationComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -478,6 +501,7 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
+          $AnnotationComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -498,6 +522,28 @@ abstract class BaseTableManager<
         .copyWith(prefetchHooks: prefetchHooks));
   }
 
+  ProcessedTableManager<
+          $Database,
+          $Table,
+          $Dataclass,
+          $FilterComposer,
+          $OrderingComposer,
+          $AnnotationComposer,
+          $CreateCompanionCallback,
+          $UpdateCompanionCallback,
+          $DataclassWithReferences,
+          $DataclassWithReferences,
+          $CreatePrefetchHooksCallback>
+      withAnnotations(Iterable<Annotation> annotations) {
+    final joinBuilders =
+        annotations.map((e) => e._joinBuilders).expand((e) => e).toSet();
+    final addedColumns = annotations.map((e) => e._expression).toSet();
+    return ProcessedTableManager($state.copyWith(
+            addedColumns: $state.addedColumns.union(addedColumns),
+            joinBuilders: $state.joinBuilders.union(joinBuilders)))
+        .withReferences();
+  }
+
   /// Add a limit to the statement
   ProcessedTableManager<
       $Database,
@@ -505,6 +551,7 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $AnnotationComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -520,6 +567,7 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
+          $AnnotationComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -545,6 +593,7 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $AnnotationComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -564,6 +613,7 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
+          $AnnotationComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -757,6 +807,7 @@ class ProcessedTableManager<
         $Dataclass,
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $AnnotationComposer extends AnnotationComposer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -768,6 +819,7 @@ class ProcessedTableManager<
         $Dataclass,
         $FilterComposer,
         $OrderingComposer,
+        $AnnotationComposer,
         $CreateCompanionCallback,
         $UpdateCompanionCallback,
         $DataclassWithReferences,
@@ -798,6 +850,7 @@ abstract class RootTableManager<
         $Dataclass,
         $FilterComposer extends FilterComposer<$Database, $Table>,
         $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $AnnotationComposer extends AnnotationComposer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -809,6 +862,7 @@ abstract class RootTableManager<
         $Dataclass,
         $FilterComposer,
         $OrderingComposer,
+        $AnnotationComposer,
         $CreateCompanionCallback,
         $UpdateCompanionCallback,
         $DataclassWithReferences,
@@ -933,5 +987,13 @@ abstract class RootTableManager<
   Future<void> bulkReplace(Iterable<Insertable<$Dataclass>> entities) {
     return $state.db
         .batch((b) => b.replaceAll($state._tableAsTableInfo, entities));
+  }
+
+  Annotation<T> annotation<T extends Object>(
+    Expression<T> Function($AnnotationComposer a) a,
+  ) {
+    final composer = $state.createAnnotationComposer();
+    final expression = a(composer);
+    return Annotation(expression, composer.joinBuilders);
   }
 }

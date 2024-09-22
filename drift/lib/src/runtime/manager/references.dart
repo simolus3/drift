@@ -274,16 +274,20 @@ base class BaseReferences<$Database extends GeneratedDatabase,
   /// Create a [BaseReferences] class
   // ignore: non_constant_identifier_names
   BaseReferences(this.$_db, this.$_table, this.$_typedResult);
+
+  T? readAnnotation<T extends Object>(Annotation<T> annotation) {
+    return $_typedResult.read(annotation._expression);
+  }
 }
 
 /// Type definition for a function that transforms the state of a manager
 typedef StateTransformer = T Function<
     T extends TableManagerState<dynamic, dynamic, dynamic, dynamic, dynamic,
-        dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state);
+        dynamic, dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state);
 
 T _defaultStateTransformer<
     T extends TableManagerState<dynamic, dynamic, dynamic, dynamic, dynamic,
-        dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state) {
+        dynamic, dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state) {
   return $state;
 }
 
@@ -482,6 +486,7 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
                 dynamic,
                 dynamic,
                 $ReferencedDataclass,
+                dynamic,
                 dynamic,
                 dynamic,
                 dynamic,

@@ -7,13 +7,10 @@ class ColumnOrderings<T extends Object> {
   /// It's used to expose ordering functions for a column
   ///
   /// {@macro manager_internal_use_only}
-  ColumnOrderings(this.column, {this.joinBuilders});
+  ColumnOrderings(this.column);
 
   /// Column that this [ColumnOrderings] wraps
   Expression<T> column;
-
-  /// If this column is part of a join, this will hold the join builder
-  final Set<JoinBuilder>? joinBuilders;
 
   /// Create a new [ComposableOrdering] for this column.
   /// This is used to create lower level orderings
@@ -57,7 +54,7 @@ class OrderingBuilder {
   @override
   int get hashCode => mode.hashCode ^ column.hashCode;
 
-  /// Build a join from this join builder
+  /// Build the ordering term using the expression and direction
   OrderingTerm buildTerm() {
     return OrderingTerm(mode: mode, expression: column);
   }
@@ -67,13 +64,12 @@ class OrderingBuilder {
 ///
 /// Multiple orderings can be composed together using the `&` operator.
 /// The orderings will be executed from left to right.
-/// See [_Composable] for more information
-/// on how joins are stored
+
 class ComposableOrdering {
   /// The orderings that are being composed
   final Set<OrderingBuilder> orderingBuilders;
 
-  /// Create a new [ComposableOrdering] for a column with joins
+  /// Create a new [ComposableOrdering] for a column
   ComposableOrdering._(this.orderingBuilders);
 
   /// Combine two orderings with THEN
