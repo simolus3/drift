@@ -1,4 +1,4 @@
-## 0.39.0-dev
+## 0.39.0
 
 - When using the `parse` methods on `SqlEngine`, tokenizer errors are now
   included in the result instead of throwing an exception.
