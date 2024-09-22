@@ -538,7 +538,7 @@ abstract class BaseTableManager<
           $DataclassWithReferences,
           $DataclassWithReferences,
           $CreatePrefetchHooksCallback>
-      withAnnotations(Iterable<Annotation> annotations) {
+      withAnnotations(Iterable<_BaseAnnotation<Object, $Table>> annotations) {
     final joinBuilders =
         annotations.map((e) => e._joinBuilders).expand((e) => e).toSet();
     final addedColumns = annotations.map((e) => e._expression).toSet();
@@ -993,11 +993,23 @@ abstract class RootTableManager<
         .batch((b) => b.replaceAll($state._tableAsTableInfo, entities));
   }
 
-  Annotation<T> annotation<T extends Object>(
+  Annotation<T, $Table> annotation<T extends Object>(
     Expression<T> Function($AnnotationComposer a) a,
   ) {
     final composer = $state.createAnnotationComposer();
     final expression = a(composer);
-    return Annotation(expression, composer.$joinBuilders);
+    return Annotation(expression, composer.$joinBuilders.toSet());
+  }
+
+  AnnotationWithConverter<DartType, SqlType, $Table>
+      annotationWithConverter<DartType, SqlType extends Object>(
+    GeneratedColumnWithTypeConverter<DartType, SqlType> Function(
+            $AnnotationComposer a)
+        a,
+  ) {
+    final composer = $state.createAnnotationComposer();
+    final expression = a(composer);
+    return AnnotationWithConverter(expression, composer.$joinBuilders.toSet(),
+        converter: (p0) => expression.converter.fromSql(p0));
   }
 }

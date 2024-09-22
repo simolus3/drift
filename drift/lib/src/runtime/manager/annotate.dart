@@ -1,33 +1,71 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'manager.dart';
 
-class Annotation<T extends Object> {
-  final List<JoinBuilder> _joinBuilders;
+sealed class _BaseAnnotation<SqlType extends Object, $Table extends Table> {
+  Expression<SqlType> get _expression;
+  final Set<JoinBuilder> _joinBuilders;
+  _BaseAnnotation(this._joinBuilders);
+}
 
-  final Expression<T> _expression;
+class Annotation<SqlType extends Object, $Table extends Table>
+    extends _BaseAnnotation<SqlType, $Table> {
+  @override
+  final Expression<SqlType> _expression;
 
-  ColumnFilters<T> get filter {
+  ColumnFilters<SqlType> get filter {
     return ColumnFilters(_expression);
   }
 
-  ColumnOrderings<T> get order {
-    return ColumnOrderings(_expression);
+  SqlType? read(BaseReferences refs) {
+    return refs.$_typedResult.read(_expression);
   }
 
-  const Annotation(this._expression, this._joinBuilders);
+  Annotation(this._expression, super._joinBuilders);
 
   @override
-  bool operator ==(covariant Annotation<T> other) {
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Annotation<SqlType, $Table> &&
+        other._expression == _expression &&
+        SetEquality<JoinBuilder>().equals(other._joinBuilders, _joinBuilders);
+  }
+
+  @override
+  int get hashCode => _expression.hashCode ^ _joinBuilders.hashCode;
+}
+
+class AnnotationWithConverter<DartType, SqlType extends Object,
+    $Table extends Table> extends _BaseAnnotation<SqlType, $Table> {
+  @override
+  final GeneratedColumnWithTypeConverter<DartType, SqlType> _expression;
+
+  ColumnWithTypeConverterFilters<DartType, DartType, SqlType> get filter {
+    return ColumnWithTypeConverterFilters(_expression);
+  }
+
+  final DartType Function(SqlType) converter;
+
+  AnnotationWithConverter(this._expression, super._joinBuilders,
+      {required this.converter});
+
+  @override
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other._expression == _expression;
+    return other is AnnotationWithConverter<DartType, SqlType, $Table> &&
+        other._expression == _expression &&
+        SetEquality<JoinBuilder>().equals(other._joinBuilders, _joinBuilders);
   }
 
   @override
-  int get hashCode => _expression.hashCode;
+  int get hashCode => _expression.hashCode ^ _joinBuilders.hashCode;
 
-  T? read(BaseReferences refs) {
-    return refs.$_typedResult.read(_expression);
+  DartType? read(BaseReferences refs) {
+    final dartType = refs.$_typedResult.read(_expression);
+    if (dartType == null) {
+      return null;
+    }
+    return converter(dartType);
   }
 }
 
