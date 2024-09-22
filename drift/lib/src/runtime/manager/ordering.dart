@@ -97,6 +97,6 @@ class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
       {required super.$db,
       required super.$table,
       super.joinBuilder,
-      super.addJoinBuilderToRootComposer,
-      super.removeJoinBuilderFromRootComposer});
+      super.$addJoinBuilderToRootComposer,
+      super.$removeJoinBuilderFromRootComposer});
 }

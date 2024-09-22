@@ -22,10 +22,10 @@ sealed class Composer<Database extends GeneratedDatabase,
 
   // If this composer is a root composer, this will contain all
   // the joinBuilders which any children may have created
-  final List<JoinBuilder> joinBuilders = [];
+  final List<JoinBuilder> $joinBuilders = [];
 
-  late final void Function(JoinBuilder) addJoinBuilderToRootComposer;
-  late final void Function(JoinBuilder) removeJoinBuilderFromRootComposer;
+  late final void Function(JoinBuilder) $addJoinBuilderToRootComposer;
+  late final void Function(JoinBuilder) $removeJoinBuilderFromRootComposer;
 
   /// A helper method for creating composables that need
   /// the correct aliases for the column and the join builders.
@@ -64,7 +64,7 @@ sealed class Composer<Database extends GeneratedDatabase,
     if (_joinBuilder?.referencedColumn == aliasedColumn &&
         _joinBuilder?.currentColumn is C) {
       columnForBuilder = _joinBuilder?.currentColumn as C;
-      removeJoinBuilderFromRootComposer(_joinBuilder!);
+      $removeJoinBuilderFromRootComposer(_joinBuilder!);
     } else {
       columnForBuilder = aliasedColumn;
     }
@@ -89,8 +89,8 @@ sealed class Composer<Database extends GeneratedDatabase,
       required RelatedTable referencedTable,
       required RelatedColumn Function(RelatedTable) getReferencedColumn,
       required T Function(JoinBuilder joinBuilder,
-              {void Function(JoinBuilder)? addJoinBuilderToRootComposer,
-              void Function(JoinBuilder)? removeJoinBuilderFromRootComposer})
+              {void Function(JoinBuilder)? $addJoinBuilderToRootComposer,
+              void Function(JoinBuilder)? $removeJoinBuilderFromRootComposer})
           builder}) {
     // Get the column of this table which will be used to build the join
     final aliasedColumn = getCurrentColumn(_aliasedTable);
@@ -108,10 +108,10 @@ sealed class Composer<Database extends GeneratedDatabase,
       referencedTable: aliasedReferencedTable,
       referencedColumn: aliasedReferencedColumn,
     );
-    addJoinBuilderToRootComposer(referencedJoinBuilder);
+    $addJoinBuilderToRootComposer(referencedJoinBuilder);
     return builder(referencedJoinBuilder,
-        addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
-        removeJoinBuilderFromRootComposer: removeJoinBuilderFromRootComposer);
+        $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+        $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer);
   }
 
   /// A helper method for getting a aliased copy of a column.
@@ -138,13 +138,13 @@ sealed class Composer<Database extends GeneratedDatabase,
     required this.$db,
     required this.$table,
     required JoinBuilder? joinBuilder,
-    void Function(JoinBuilder)? addJoinBuilderToRootComposer,
-    void Function(JoinBuilder)? removeJoinBuilderFromRootComposer,
+    void Function(JoinBuilder)? $addJoinBuilderToRootComposer,
+    void Function(JoinBuilder)? $removeJoinBuilderFromRootComposer,
   }) : _joinBuilder = joinBuilder {
-    this.addJoinBuilderToRootComposer = addJoinBuilderToRootComposer ??
-        ((JoinBuilder joinBuilder) => joinBuilders.add(joinBuilder));
-    this.removeJoinBuilderFromRootComposer =
-        removeJoinBuilderFromRootComposer ??
-            ((JoinBuilder joinBuilder) => joinBuilders.remove(joinBuilder));
+    this.$addJoinBuilderToRootComposer = $addJoinBuilderToRootComposer ??
+        ((JoinBuilder joinBuilder) => $joinBuilders.add(joinBuilder));
+    this.$removeJoinBuilderFromRootComposer =
+        $removeJoinBuilderFromRootComposer ??
+            ((JoinBuilder joinBuilder) => $joinBuilders.remove(joinBuilder));
   }
 }

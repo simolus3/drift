@@ -286,6 +286,6 @@ class FilterComposer<Database extends GeneratedDatabase,
       {required super.$db,
       required super.$table,
       super.joinBuilder,
-      super.addJoinBuilderToRootComposer,
-      super.removeJoinBuilderFromRootComposer});
+      super.$addJoinBuilderToRootComposer,
+      super.$removeJoinBuilderFromRootComposer});
 }

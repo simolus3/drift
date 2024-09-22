@@ -350,8 +350,12 @@ class TableManagerState<
     // Add any additional columns/expression that were added
     joinedStatement.addColumns(addedColumns);
 
-    // Apply the expression to the statement
-    if (filter != null) {
+    // If there are any added column, then group by primary key and apply filter to it
+    // other wise add the filter to the select directly
+    if (addedColumns.isNotEmpty) {
+      // ignore: invalid_use_of_visible_for_overriding_member
+      joinedStatement.groupBy(table.primaryKey!, having: filter);
+    } else if (filter != null) {
       joinedStatement.where(filter!);
     }
 
@@ -581,7 +585,7 @@ abstract class BaseTableManager<
         orderingBuilders:
             $state.orderingBuilders.union(orderings.orderingBuilders),
         joinBuilders:
-            $state.joinBuilders.union(composer.joinBuilders.toSet())));
+            $state.joinBuilders.union(composer.$joinBuilders.toSet())));
   }
 
   /// Add a filter to the statement
@@ -632,7 +636,7 @@ abstract class BaseTableManager<
     return ProcessedTableManager($state.copyWith(
         filter: combinedFilter,
         joinBuilders:
-            $state.joinBuilders.union(composer.joinBuilders.toSet())));
+            $state.joinBuilders.union(composer.$joinBuilders.toSet())));
   }
 
   /// Writes all non-null fields from the entity into the columns of all rows
@@ -994,6 +998,6 @@ abstract class RootTableManager<
   ) {
     final composer = $state.createAnnotationComposer();
     final expression = a(composer);
-    return Annotation(expression, composer.joinBuilders);
+    return Annotation(expression, composer.$joinBuilders);
   }
 }

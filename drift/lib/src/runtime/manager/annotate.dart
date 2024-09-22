@@ -2,6 +2,8 @@
 part of 'manager.dart';
 
 class Annotation<T extends Object> {
+  // final Set<Expression> _groupBy;
+
   final List<JoinBuilder> _joinBuilders;
 
   final Expression<T> _expression;
@@ -35,6 +37,6 @@ class AnnotationComposer<DB extends GeneratedDatabase, T extends Table>
       {required super.$db,
       required super.$table,
       super.joinBuilder,
-      super.addJoinBuilderToRootComposer,
-      super.removeJoinBuilderFromRootComposer});
+      super.$addJoinBuilderToRootComposer,
+      super.$removeJoinBuilderFromRootComposer});
 }
