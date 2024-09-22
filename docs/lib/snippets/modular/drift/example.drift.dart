@@ -287,8 +287,8 @@ class $TodosFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => i0.ColumnFilters(column));
@@ -307,16 +307,16 @@ class $TodosFilterComposer
             .resultSet<i1.Categories>('categories'),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
-                {addJoinBuilderToRootComposer,
-                removeJoinBuilderFromRootComposer}) =>
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
             i1.$CategoriesFilterComposer(
               $db: $db,
               $table: i2.ReadDatabaseContainer($db)
                   .resultSet<i1.Categories>('categories'),
-              addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
-              removeJoinBuilderFromRootComposer:
-                  removeJoinBuilderFromRootComposer,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
             ));
     return composer;
   }
@@ -328,8 +328,8 @@ class $TodosOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => i0.ColumnOrderings(column));
@@ -348,16 +348,57 @@ class $TodosOrderingComposer
             .resultSet<i1.Categories>('categories'),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
-                {addJoinBuilderToRootComposer,
-                removeJoinBuilderFromRootComposer}) =>
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
             i1.$CategoriesOrderingComposer(
               $db: $db,
               $table: i2.ReadDatabaseContainer($db)
                   .resultSet<i1.Categories>('categories'),
-              addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
-              removeJoinBuilderFromRootComposer:
-                  removeJoinBuilderFromRootComposer,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $TodosAnnotationComposer
+    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.Todos> {
+  $TodosAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  i1.$CategoriesAnnotationComposer get category {
+    final i1.$CategoriesAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.category,
+        referencedTable: i2.ReadDatabaseContainer($db)
+            .resultSet<i1.Categories>('categories'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$CategoriesAnnotationComposer(
+              $db: $db,
+              $table: i2.ReadDatabaseContainer($db)
+                  .resultSet<i1.Categories>('categories'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
             ));
     return composer;
   }
@@ -369,6 +410,7 @@ class $TodosTableManager extends i0.RootTableManager<
     i1.Todo,
     i1.$TodosFilterComposer,
     i1.$TodosOrderingComposer,
+    i1.$TodosAnnotationComposer,
     $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder,
     (i1.Todo, i0.BaseReferences<i0.GeneratedDatabase, i1.Todos, i1.Todo>),
@@ -382,6 +424,8 @@ class $TodosTableManager extends i0.RootTableManager<
               i1.$TodosFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$TodosOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              i1.$TodosAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> title = const i0.Value.absent(),
@@ -419,6 +463,7 @@ typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
     i1.Todo,
     i1.$TodosFilterComposer,
     i1.$TodosOrderingComposer,
+    i1.$TodosAnnotationComposer,
     $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder,
     (i1.Todo, i0.BaseReferences<i0.GeneratedDatabase, i1.Todos, i1.Todo>),
@@ -625,8 +670,8 @@ class $CategoriesFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => i0.ColumnFilters(column));
@@ -642,8 +687,8 @@ class $CategoriesOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => i0.ColumnOrderings(column));
@@ -653,12 +698,29 @@ class $CategoriesOrderingComposer
       builder: (column) => i0.ColumnOrderings(column));
 }
 
+class $CategoriesAnnotationComposer
+    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.Categories> {
+  $CategoriesAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+}
+
 class $CategoriesTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.Categories,
     i1.Category,
     i1.$CategoriesFilterComposer,
     i1.$CategoriesOrderingComposer,
+    i1.$CategoriesAnnotationComposer,
     $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder,
     (
@@ -675,6 +737,8 @@ class $CategoriesTableManager extends i0.RootTableManager<
               i1.$CategoriesFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$CategoriesOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              i1.$CategoriesAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> description = const i0.Value.absent(),
@@ -704,6 +768,7 @@ typedef $CategoriesProcessedTableManager = i0.ProcessedTableManager<
     i1.Category,
     i1.$CategoriesFilterComposer,
     i1.$CategoriesOrderingComposer,
+    i1.$CategoriesAnnotationComposer,
     $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder,
     (

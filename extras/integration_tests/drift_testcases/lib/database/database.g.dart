@@ -739,8 +739,8 @@ class $$UsersTableFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
@@ -767,8 +767,8 @@ class $$UsersTableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
@@ -787,12 +787,39 @@ class $$UsersTableOrderingComposer
       column: $table.preferences, builder: (column) => ColumnOrderings(column));
 }
 
+class $$UsersTableAnnotationComposer
+    extends AnnotationComposer<_$Database, $UsersTable> {
+  $$UsersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get birthDate =>
+      $composableBuilder(column: $table.birthDate, builder: (column) => column);
+
+  GeneratedColumn<Uint8List> get profilePicture => $composableBuilder(
+      column: $table.profilePicture, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<Preferences?, String> get preferences =>
+      $composableBuilder(
+          column: $table.preferences, builder: (column) => column);
+}
+
 class $$UsersTableTableManager extends RootTableManager<
     _$Database,
     $UsersTable,
     User,
     $$UsersTableFilterComposer,
     $$UsersTableOrderingComposer,
+    $$UsersTableAnnotationComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
     (User, BaseReferences<_$Database, $UsersTable, User>),
@@ -806,6 +833,8 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$UsersTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$UsersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -847,6 +876,7 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     User,
     $$UsersTableFilterComposer,
     $$UsersTableOrderingComposer,
+    $$UsersTableAnnotationComposer,
     $$UsersTableCreateCompanionBuilder,
     $$UsersTableUpdateCompanionBuilder,
     (User, BaseReferences<_$Database, $UsersTable, User>),
@@ -873,8 +903,8 @@ class $$FriendshipsTableFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get firstUser => $composableBuilder(
       column: $table.firstUser, builder: (column) => ColumnFilters(column));
@@ -893,8 +923,8 @@ class $$FriendshipsTableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get firstUser => $composableBuilder(
       column: $table.firstUser, builder: (column) => ColumnOrderings(column));
@@ -907,12 +937,32 @@ class $$FriendshipsTableOrderingComposer
       builder: (column) => ColumnOrderings(column));
 }
 
+class $$FriendshipsTableAnnotationComposer
+    extends AnnotationComposer<_$Database, $FriendshipsTable> {
+  $$FriendshipsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get firstUser =>
+      $composableBuilder(column: $table.firstUser, builder: (column) => column);
+
+  GeneratedColumn<int> get secondUser => $composableBuilder(
+      column: $table.secondUser, builder: (column) => column);
+
+  GeneratedColumn<bool> get reallyGoodFriends => $composableBuilder(
+      column: $table.reallyGoodFriends, builder: (column) => column);
+}
+
 class $$FriendshipsTableTableManager extends RootTableManager<
     _$Database,
     $FriendshipsTable,
     Friendship,
     $$FriendshipsTableFilterComposer,
     $$FriendshipsTableOrderingComposer,
+    $$FriendshipsTableAnnotationComposer,
     $$FriendshipsTableCreateCompanionBuilder,
     $$FriendshipsTableUpdateCompanionBuilder,
     (Friendship, BaseReferences<_$Database, $FriendshipsTable, Friendship>),
@@ -926,6 +976,8 @@ class $$FriendshipsTableTableManager extends RootTableManager<
               $$FriendshipsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$FriendshipsTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$FriendshipsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> firstUser = const Value.absent(),
             Value<int> secondUser = const Value.absent(),
@@ -963,6 +1015,7 @@ typedef $$FriendshipsTableProcessedTableManager = ProcessedTableManager<
     Friendship,
     $$FriendshipsTableFilterComposer,
     $$FriendshipsTableOrderingComposer,
+    $$FriendshipsTableAnnotationComposer,
     $$FriendshipsTableCreateCompanionBuilder,
     $$FriendshipsTableUpdateCompanionBuilder,
     (Friendship, BaseReferences<_$Database, $FriendshipsTable, Friendship>),

@@ -2036,8 +2036,8 @@ class $NoIdsFilterComposer extends FilterComposer<_$CustomTablesDb, NoIds> {
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<Uint8List> get payload => $composableBuilder(
       column: $table.payload, builder: (column) => ColumnFilters(column));
@@ -2048,11 +2048,24 @@ class $NoIdsOrderingComposer extends OrderingComposer<_$CustomTablesDb, NoIds> {
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<Uint8List> get payload => $composableBuilder(
       column: $table.payload, builder: (column) => ColumnOrderings(column));
+}
+
+class $NoIdsAnnotationComposer
+    extends AnnotationComposer<_$CustomTablesDb, NoIds> {
+  $NoIdsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<Uint8List> get payload =>
+      $composableBuilder(column: $table.payload, builder: (column) => column);
 }
 
 class $NoIdsTableManager extends RootTableManager<
@@ -2061,6 +2074,7 @@ class $NoIdsTableManager extends RootTableManager<
     NoIdRow,
     $NoIdsFilterComposer,
     $NoIdsOrderingComposer,
+    $NoIdsAnnotationComposer,
     $NoIdsCreateCompanionBuilder,
     $NoIdsUpdateCompanionBuilder,
     (NoIdRow, BaseReferences<_$CustomTablesDb, NoIds, NoIdRow>),
@@ -2074,6 +2088,8 @@ class $NoIdsTableManager extends RootTableManager<
               $NoIdsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $NoIdsOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $NoIdsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<Uint8List> payload = const Value.absent(),
           }) =>
@@ -2099,6 +2115,7 @@ typedef $NoIdsProcessedTableManager = ProcessedTableManager<
     NoIdRow,
     $NoIdsFilterComposer,
     $NoIdsOrderingComposer,
+    $NoIdsAnnotationComposer,
     $NoIdsCreateCompanionBuilder,
     $NoIdsUpdateCompanionBuilder,
     (NoIdRow, BaseReferences<_$CustomTablesDb, NoIds, NoIdRow>),
@@ -2121,8 +2138,8 @@ class $WithDefaultsFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get a => $composableBuilder(
       column: $table.a, builder: (column) => ColumnFilters(column));
@@ -2137,8 +2154,8 @@ class $WithDefaultsOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get a => $composableBuilder(
       column: $table.a, builder: (column) => ColumnOrderings(column));
@@ -2147,12 +2164,29 @@ class $WithDefaultsOrderingComposer
       column: $table.b, builder: (column) => ColumnOrderings(column));
 }
 
+class $WithDefaultsAnnotationComposer
+    extends AnnotationComposer<_$CustomTablesDb, WithDefaults> {
+  $WithDefaultsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get a =>
+      $composableBuilder(column: $table.a, builder: (column) => column);
+
+  GeneratedColumn<int> get b =>
+      $composableBuilder(column: $table.b, builder: (column) => column);
+}
+
 class $WithDefaultsTableManager extends RootTableManager<
     _$CustomTablesDb,
     WithDefaults,
     WithDefault,
     $WithDefaultsFilterComposer,
     $WithDefaultsOrderingComposer,
+    $WithDefaultsAnnotationComposer,
     $WithDefaultsCreateCompanionBuilder,
     $WithDefaultsUpdateCompanionBuilder,
     (WithDefault, BaseReferences<_$CustomTablesDb, WithDefaults, WithDefault>),
@@ -2166,6 +2200,8 @@ class $WithDefaultsTableManager extends RootTableManager<
               $WithDefaultsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $WithDefaultsOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $WithDefaultsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
             Value<int?> b = const Value.absent(),
@@ -2199,6 +2235,7 @@ typedef $WithDefaultsProcessedTableManager = ProcessedTableManager<
     WithDefault,
     $WithDefaultsFilterComposer,
     $WithDefaultsOrderingComposer,
+    $WithDefaultsAnnotationComposer,
     $WithDefaultsCreateCompanionBuilder,
     $WithDefaultsUpdateCompanionBuilder,
     (WithDefault, BaseReferences<_$CustomTablesDb, WithDefaults, WithDefault>),
@@ -2225,8 +2262,8 @@ class $WithConstraintsFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get a => $composableBuilder(
       column: $table.a, builder: (column) => ColumnFilters(column));
@@ -2244,8 +2281,8 @@ class $WithConstraintsOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get a => $composableBuilder(
       column: $table.a, builder: (column) => ColumnOrderings(column));
@@ -2257,12 +2294,32 @@ class $WithConstraintsOrderingComposer
       column: $table.c, builder: (column) => ColumnOrderings(column));
 }
 
+class $WithConstraintsAnnotationComposer
+    extends AnnotationComposer<_$CustomTablesDb, WithConstraints> {
+  $WithConstraintsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get a =>
+      $composableBuilder(column: $table.a, builder: (column) => column);
+
+  GeneratedColumn<int> get b =>
+      $composableBuilder(column: $table.b, builder: (column) => column);
+
+  GeneratedColumn<double> get c =>
+      $composableBuilder(column: $table.c, builder: (column) => column);
+}
+
 class $WithConstraintsTableManager extends RootTableManager<
     _$CustomTablesDb,
     WithConstraints,
     WithConstraint,
     $WithConstraintsFilterComposer,
     $WithConstraintsOrderingComposer,
+    $WithConstraintsAnnotationComposer,
     $WithConstraintsCreateCompanionBuilder,
     $WithConstraintsUpdateCompanionBuilder,
     (
@@ -2279,6 +2336,8 @@ class $WithConstraintsTableManager extends RootTableManager<
               $WithConstraintsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $WithConstraintsOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $WithConstraintsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
             Value<int> b = const Value.absent(),
@@ -2316,6 +2375,7 @@ typedef $WithConstraintsProcessedTableManager = ProcessedTableManager<
     WithConstraint,
     $WithConstraintsFilterComposer,
     $WithConstraintsOrderingComposer,
+    $WithConstraintsAnnotationComposer,
     $WithConstraintsCreateCompanionBuilder,
     $WithConstraintsUpdateCompanionBuilder,
     (
@@ -2345,8 +2405,8 @@ class $ConfigTableFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get configKey => $composableBuilder(
       column: $table.configKey, builder: (column) => ColumnFilters(column));
@@ -2371,8 +2431,8 @@ class $ConfigTableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get configKey => $composableBuilder(
       column: $table.configKey, builder: (column) => ColumnOrderings(column));
@@ -2388,12 +2448,36 @@ class $ConfigTableOrderingComposer
       builder: (column) => ColumnOrderings(column));
 }
 
+class $ConfigTableAnnotationComposer
+    extends AnnotationComposer<_$CustomTablesDb, ConfigTable> {
+  $ConfigTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get configKey =>
+      $composableBuilder(column: $table.configKey, builder: (column) => column);
+
+  GeneratedColumn<DriftAny> get configValue => $composableBuilder(
+      column: $table.configValue, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncType?, int> get syncState =>
+      $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncType?, int> get syncStateImplicit =>
+      $composableBuilder(
+          column: $table.syncStateImplicit, builder: (column) => column);
+}
+
 class $ConfigTableTableManager extends RootTableManager<
     _$CustomTablesDb,
     ConfigTable,
     Config,
     $ConfigTableFilterComposer,
     $ConfigTableOrderingComposer,
+    $ConfigTableAnnotationComposer,
     $ConfigTableCreateCompanionBuilder,
     $ConfigTableUpdateCompanionBuilder,
     (Config, BaseReferences<_$CustomTablesDb, ConfigTable, Config>),
@@ -2407,6 +2491,8 @@ class $ConfigTableTableManager extends RootTableManager<
               $ConfigTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $ConfigTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $ConfigTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> configKey = const Value.absent(),
             Value<DriftAny?> configValue = const Value.absent(),
@@ -2448,6 +2534,7 @@ typedef $ConfigTableProcessedTableManager = ProcessedTableManager<
     Config,
     $ConfigTableFilterComposer,
     $ConfigTableOrderingComposer,
+    $ConfigTableAnnotationComposer,
     $ConfigTableCreateCompanionBuilder,
     $ConfigTableUpdateCompanionBuilder,
     (Config, BaseReferences<_$CustomTablesDb, ConfigTable, Config>),
@@ -2471,8 +2558,8 @@ class $MytableFilterComposer extends FilterComposer<_$CustomTablesDb, Mytable> {
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get someid => $composableBuilder(
       column: $table.someid, builder: (column) => ColumnFilters(column));
@@ -2493,8 +2580,8 @@ class $MytableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get someid => $composableBuilder(
       column: $table.someid, builder: (column) => ColumnOrderings(column));
@@ -2509,12 +2596,35 @@ class $MytableOrderingComposer
       column: $table.somedate, builder: (column) => ColumnOrderings(column));
 }
 
+class $MytableAnnotationComposer
+    extends AnnotationComposer<_$CustomTablesDb, Mytable> {
+  $MytableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get someid =>
+      $composableBuilder(column: $table.someid, builder: (column) => column);
+
+  GeneratedColumn<String> get sometext =>
+      $composableBuilder(column: $table.sometext, builder: (column) => column);
+
+  GeneratedColumn<bool> get isInserting => $composableBuilder(
+      column: $table.isInserting, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get somedate =>
+      $composableBuilder(column: $table.somedate, builder: (column) => column);
+}
+
 class $MytableTableManager extends RootTableManager<
     _$CustomTablesDb,
     Mytable,
     MytableData,
     $MytableFilterComposer,
     $MytableOrderingComposer,
+    $MytableAnnotationComposer,
     $MytableCreateCompanionBuilder,
     $MytableUpdateCompanionBuilder,
     (MytableData, BaseReferences<_$CustomTablesDb, Mytable, MytableData>),
@@ -2528,6 +2638,8 @@ class $MytableTableManager extends RootTableManager<
               $MytableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $MytableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $MytableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> someid = const Value.absent(),
             Value<String?> sometext = const Value.absent(),
@@ -2565,6 +2677,7 @@ typedef $MytableProcessedTableManager = ProcessedTableManager<
     MytableData,
     $MytableFilterComposer,
     $MytableOrderingComposer,
+    $MytableAnnotationComposer,
     $MytableCreateCompanionBuilder,
     $MytableUpdateCompanionBuilder,
     (MytableData, BaseReferences<_$CustomTablesDb, Mytable, MytableData>),
@@ -2588,8 +2701,8 @@ class $EmailFilterComposer extends FilterComposer<_$CustomTablesDb, Email> {
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<String> get sender => $composableBuilder(
       column: $table.sender, builder: (column) => ColumnFilters(column));
@@ -2606,8 +2719,8 @@ class $EmailOrderingComposer extends OrderingComposer<_$CustomTablesDb, Email> {
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<String> get sender => $composableBuilder(
       column: $table.sender, builder: (column) => ColumnOrderings(column));
@@ -2619,12 +2732,32 @@ class $EmailOrderingComposer extends OrderingComposer<_$CustomTablesDb, Email> {
       column: $table.body, builder: (column) => ColumnOrderings(column));
 }
 
+class $EmailAnnotationComposer
+    extends AnnotationComposer<_$CustomTablesDb, Email> {
+  $EmailAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get sender =>
+      $composableBuilder(column: $table.sender, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+}
+
 class $EmailTableManager extends RootTableManager<
     _$CustomTablesDb,
     Email,
     EMail,
     $EmailFilterComposer,
     $EmailOrderingComposer,
+    $EmailAnnotationComposer,
     $EmailCreateCompanionBuilder,
     $EmailUpdateCompanionBuilder,
     (EMail, BaseReferences<_$CustomTablesDb, Email, EMail>),
@@ -2638,6 +2771,8 @@ class $EmailTableManager extends RootTableManager<
               $EmailFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $EmailOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $EmailAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> sender = const Value.absent(),
             Value<String> title = const Value.absent(),
@@ -2675,6 +2810,7 @@ typedef $EmailProcessedTableManager = ProcessedTableManager<
     EMail,
     $EmailFilterComposer,
     $EmailOrderingComposer,
+    $EmailAnnotationComposer,
     $EmailCreateCompanionBuilder,
     $EmailUpdateCompanionBuilder,
     (EMail, BaseReferences<_$CustomTablesDb, Email, EMail>),
@@ -2697,8 +2833,8 @@ class $WeirdTableFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get sqlClass => $composableBuilder(
       column: $table.sqlClass, builder: (column) => ColumnFilters(column));
@@ -2713,8 +2849,8 @@ class $WeirdTableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get sqlClass => $composableBuilder(
       column: $table.sqlClass, builder: (column) => ColumnOrderings(column));
@@ -2723,12 +2859,29 @@ class $WeirdTableOrderingComposer
       column: $table.textColumn, builder: (column) => ColumnOrderings(column));
 }
 
+class $WeirdTableAnnotationComposer
+    extends AnnotationComposer<_$CustomTablesDb, WeirdTable> {
+  $WeirdTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get sqlClass =>
+      $composableBuilder(column: $table.sqlClass, builder: (column) => column);
+
+  GeneratedColumn<String> get textColumn => $composableBuilder(
+      column: $table.textColumn, builder: (column) => column);
+}
+
 class $WeirdTableTableManager extends RootTableManager<
     _$CustomTablesDb,
     WeirdTable,
     WeirdData,
     $WeirdTableFilterComposer,
     $WeirdTableOrderingComposer,
+    $WeirdTableAnnotationComposer,
     $WeirdTableCreateCompanionBuilder,
     $WeirdTableUpdateCompanionBuilder,
     (WeirdData, BaseReferences<_$CustomTablesDb, WeirdTable, WeirdData>),
@@ -2742,6 +2895,8 @@ class $WeirdTableTableManager extends RootTableManager<
               $WeirdTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $WeirdTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $WeirdTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> sqlClass = const Value.absent(),
             Value<String> textColumn = const Value.absent(),
@@ -2775,6 +2930,7 @@ typedef $WeirdTableProcessedTableManager = ProcessedTableManager<
     WeirdData,
     $WeirdTableFilterComposer,
     $WeirdTableOrderingComposer,
+    $WeirdTableAnnotationComposer,
     $WeirdTableCreateCompanionBuilder,
     $WeirdTableUpdateCompanionBuilder,
     (WeirdData, BaseReferences<_$CustomTablesDb, WeirdTable, WeirdData>),

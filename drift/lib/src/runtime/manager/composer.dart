@@ -103,11 +103,10 @@ sealed class Composer<Database extends GeneratedDatabase,
     final aliasedReferencedColumn =
         getReferencedColumn(aliasedReferencedTable as RelatedTable);
     final referencedJoinBuilder = JoinBuilder(
-      currentTable: _aliasedTable,
-      currentColumn: aliasedColumn,
-      referencedTable: aliasedReferencedTable,
-      referencedColumn: aliasedReferencedColumn,
-    );
+        currentTable: _aliasedTable,
+        currentColumn: aliasedColumn,
+        referencedTable: aliasedReferencedTable,
+        referencedColumn: aliasedReferencedColumn);
     $addJoinBuilderToRootComposer(referencedJoinBuilder);
     return builder(referencedJoinBuilder,
         $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,

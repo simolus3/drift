@@ -274,10 +274,6 @@ base class BaseReferences<$Database extends GeneratedDatabase,
   /// Create a [BaseReferences] class
   // ignore: non_constant_identifier_names
   BaseReferences(this.$_db, this.$_table, this.$_typedResult);
-
-  T? readAnnotation<T extends Object>(Annotation<T> annotation) {
-    return $_typedResult.read(annotation._expression);
-  }
 }
 
 /// Type definition for a function that transforms the state of a manager

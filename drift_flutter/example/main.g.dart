@@ -215,8 +215,8 @@ class $$ExampleTableTableFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
@@ -231,8 +231,8 @@ class $$ExampleTableTableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
@@ -241,12 +241,29 @@ class $$ExampleTableTableOrderingComposer
       column: $table.description, builder: (column) => ColumnOrderings(column));
 }
 
+class $$ExampleTableTableAnnotationComposer
+    extends AnnotationComposer<_$ExampleDatabase, $ExampleTableTable> {
+  $$ExampleTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+}
+
 class $$ExampleTableTableTableManager extends RootTableManager<
     _$ExampleDatabase,
     $ExampleTableTable,
     ExampleTableData,
     $$ExampleTableTableFilterComposer,
     $$ExampleTableTableOrderingComposer,
+    $$ExampleTableTableAnnotationComposer,
     $$ExampleTableTableCreateCompanionBuilder,
     $$ExampleTableTableUpdateCompanionBuilder,
     (
@@ -264,6 +281,8 @@ class $$ExampleTableTableTableManager extends RootTableManager<
               $$ExampleTableTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$ExampleTableTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$ExampleTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -293,6 +312,7 @@ typedef $$ExampleTableTableProcessedTableManager = ProcessedTableManager<
     ExampleTableData,
     $$ExampleTableTableFilterComposer,
     $$ExampleTableTableOrderingComposer,
+    $$ExampleTableTableAnnotationComposer,
     $$ExampleTableTableCreateCompanionBuilder,
     $$ExampleTableTableUpdateCompanionBuilder,
     (

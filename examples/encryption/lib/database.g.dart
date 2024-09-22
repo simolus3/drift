@@ -206,8 +206,8 @@ class $$NotesTableFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
@@ -222,8 +222,8 @@ class $$NotesTableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
@@ -232,12 +232,29 @@ class $$NotesTableOrderingComposer
       column: $table.content, builder: (column) => ColumnOrderings(column));
 }
 
+class $$NotesTableAnnotationComposer
+    extends AnnotationComposer<_$MyEncryptedDatabase, $NotesTable> {
+  $$NotesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+}
+
 class $$NotesTableTableManager extends RootTableManager<
     _$MyEncryptedDatabase,
     $NotesTable,
     Note,
     $$NotesTableFilterComposer,
     $$NotesTableOrderingComposer,
+    $$NotesTableAnnotationComposer,
     $$NotesTableCreateCompanionBuilder,
     $$NotesTableUpdateCompanionBuilder,
     (Note, BaseReferences<_$MyEncryptedDatabase, $NotesTable, Note>),
@@ -251,6 +268,8 @@ class $$NotesTableTableManager extends RootTableManager<
               $$NotesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$NotesTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$NotesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),
@@ -280,6 +299,7 @@ typedef $$NotesTableProcessedTableManager = ProcessedTableManager<
     Note,
     $$NotesTableFilterComposer,
     $$NotesTableOrderingComposer,
+    $$NotesTableAnnotationComposer,
     $$NotesTableCreateCompanionBuilder,
     $$NotesTableUpdateCompanionBuilder,
     (Note, BaseReferences<_$MyEncryptedDatabase, $NotesTable, Note>),

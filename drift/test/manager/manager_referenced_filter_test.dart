@@ -66,7 +66,7 @@ void main() {
           return f.department.id(departments[0].id);
         }).count(),
         3);
-    expect(composer?.joinBuilders.length, 0);
+    expect(composer?.$joinBuilders.length, 0);
 
     // Filter on a unrelated column on a related table - Requires a join
     expect(
@@ -75,7 +75,7 @@ void main() {
           return f.department.name("Electronics");
         }).count(),
         3);
-    expect(composer?.joinBuilders.length, 1);
+    expect(composer?.$joinBuilders.length, 1);
 
     // Filter on a unrelated column on a related table & on
     // a related table's reference id - Requires a join
@@ -86,7 +86,7 @@ void main() {
               f.department.id(departments[1].id);
         }).count(),
         5);
-    expect(composer?.joinBuilders.length, 1);
+    expect(composer?.$joinBuilders.length, 1);
 
     // Ordering on current table & Filtering on related table
     expect(
@@ -147,14 +147,14 @@ void main() {
           return f.listings((f) => f.store.name("Target"));
         }).count(),
         6);
-    expect(composer?.joinBuilders.length, 2);
+    expect(composer?.$joinBuilders.length, 2);
     expect(
         await db.managers.product.filter((f) {
           composer = f;
           return f.listings((f) => f.store.name("Target")) | f.name("TV");
         }).count(),
         7);
-    expect(composer?.joinBuilders.length, 2);
+    expect(composer?.$joinBuilders.length, 2);
 
     // Filter on a related column and then a related column
     expect(
@@ -288,7 +288,7 @@ void main() {
             .get(distinct: true)
             .then((value) => value.length),
         3);
-    expect(composer?.joinBuilders.length, 0);
+    expect(composer?.$joinBuilders.length, 0);
 
     // Filter on a unrelated column on a related table - Requires a join
     expect(
@@ -301,7 +301,7 @@ void main() {
             .get(distinct: true)
             .then((value) => value.length),
         3);
-    expect(composer?.joinBuilders.length, 1);
+    expect(composer?.$joinBuilders.length, 1);
 
     // Filter on a unrelated column on a related table & on
     // a related table's reference id - Requires a join
@@ -316,7 +316,7 @@ void main() {
             .get(distinct: true)
             .then((value) => value.length),
         5);
-    expect(composer?.joinBuilders.length, 1);
+    expect(composer?.$joinBuilders.length, 1);
 
     // Ordering on current table & Filtering on related table
     expect(
@@ -389,7 +389,7 @@ void main() {
             .get(distinct: true)
             .then((value) => value.length),
         6);
-    expect(composer?.joinBuilders.length, 2);
+    expect(composer?.$joinBuilders.length, 2);
     expect(
         await db.managers.product
             .filter((f) {
@@ -400,7 +400,7 @@ void main() {
             .get(distinct: true)
             .then((value) => value.length),
         7);
-    expect(composer?.joinBuilders.length, 2);
+    expect(composer?.$joinBuilders.length, 2);
 
     // Filter on a related column and then a related column
     expect(

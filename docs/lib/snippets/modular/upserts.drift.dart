@@ -211,8 +211,8 @@ class $$WordsTableFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnFilters<String> get word => $composableBuilder(
       column: $table.word, builder: (column) => i0.ColumnFilters(column));
@@ -227,8 +227,8 @@ class $$WordsTableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnOrderings<String> get word => $composableBuilder(
       column: $table.word, builder: (column) => i0.ColumnOrderings(column));
@@ -237,12 +237,29 @@ class $$WordsTableOrderingComposer
       column: $table.usages, builder: (column) => i0.ColumnOrderings(column));
 }
 
+class $$WordsTableAnnotationComposer
+    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.$WordsTable> {
+  $$WordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
+
+  i0.GeneratedColumn<int> get usages =>
+      $composableBuilder(column: $table.usages, builder: (column) => column);
+}
+
 class $$WordsTableTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.$WordsTable,
     i1.Word,
     i1.$$WordsTableFilterComposer,
     i1.$$WordsTableOrderingComposer,
+    i1.$$WordsTableAnnotationComposer,
     $$WordsTableCreateCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder,
     (i1.Word, i0.BaseReferences<i0.GeneratedDatabase, i1.$WordsTable, i1.Word>),
@@ -256,6 +273,8 @@ class $$WordsTableTableManager extends i0.RootTableManager<
               i1.$$WordsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$$WordsTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              i1.$$WordsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
             i0.Value<int> usages = const i0.Value.absent(),
@@ -289,6 +308,7 @@ typedef $$WordsTableProcessedTableManager = i0.ProcessedTableManager<
     i1.Word,
     i1.$$WordsTableFilterComposer,
     i1.$$WordsTableOrderingComposer,
+    i1.$$WordsTableAnnotationComposer,
     $$WordsTableCreateCompanionBuilder,
     $$WordsTableUpdateCompanionBuilder,
     (i1.Word, i0.BaseReferences<i0.GeneratedDatabase, i1.$WordsTable, i1.Word>),
@@ -583,8 +603,8 @@ class $$MatchResultsTableFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => i0.ColumnFilters(column));
@@ -605,8 +625,8 @@ class $$MatchResultsTableOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => i0.ColumnOrderings(column));
@@ -621,12 +641,35 @@ class $$MatchResultsTableOrderingComposer
       column: $table.teamAWon, builder: (column) => i0.ColumnOrderings(column));
 }
 
+class $$MatchResultsTableAnnotationComposer
+    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
+  $$MatchResultsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get teamA =>
+      $composableBuilder(column: $table.teamA, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get teamB =>
+      $composableBuilder(column: $table.teamB, builder: (column) => column);
+
+  i0.GeneratedColumn<bool> get teamAWon =>
+      $composableBuilder(column: $table.teamAWon, builder: (column) => column);
+}
+
 class $$MatchResultsTableTableManager extends i0.RootTableManager<
     i0.GeneratedDatabase,
     i1.$MatchResultsTable,
     i1.MatchResult,
     i1.$$MatchResultsTableFilterComposer,
     i1.$$MatchResultsTableOrderingComposer,
+    i1.$$MatchResultsTableAnnotationComposer,
     $$MatchResultsTableCreateCompanionBuilder,
     $$MatchResultsTableUpdateCompanionBuilder,
     (
@@ -645,6 +688,8 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
               i1.$$MatchResultsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$$MatchResultsTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              i1.$$MatchResultsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> teamA = const i0.Value.absent(),
@@ -682,6 +727,7 @@ typedef $$MatchResultsTableProcessedTableManager = i0.ProcessedTableManager<
     i1.MatchResult,
     i1.$$MatchResultsTableFilterComposer,
     i1.$$MatchResultsTableOrderingComposer,
+    i1.$$MatchResultsTableAnnotationComposer,
     $$MatchResultsTableCreateCompanionBuilder,
     $$MatchResultsTableUpdateCompanionBuilder,
     (

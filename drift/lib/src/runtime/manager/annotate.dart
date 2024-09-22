@@ -2,8 +2,6 @@
 part of 'manager.dart';
 
 class Annotation<T extends Object> {
-  // final Set<Expression> _groupBy;
-
   final List<JoinBuilder> _joinBuilders;
 
   final Expression<T> _expression;
@@ -27,6 +25,10 @@ class Annotation<T extends Object> {
 
   @override
   int get hashCode => _expression.hashCode;
+
+  T? read(BaseReferences refs) {
+    return refs.$_typedResult.read(_expression);
+  }
 }
 
 /// The class that orchestrates the composition of orderings

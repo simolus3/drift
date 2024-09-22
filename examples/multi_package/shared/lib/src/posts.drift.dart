@@ -222,8 +222,8 @@ class $PostsFilterComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnFilters<String> get content => $composableBuilder(
       column: $table.content, builder: (column) => i0.ColumnFilters(column));
@@ -236,16 +236,16 @@ class $PostsFilterComposer
             i3.ReadDatabaseContainer($db).resultSet<i2.$UsersTable>('users'),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
-                {addJoinBuilderToRootComposer,
-                removeJoinBuilderFromRootComposer}) =>
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
             i2.$$UsersTableFilterComposer(
               $db: $db,
               $table: i3.ReadDatabaseContainer($db)
                   .resultSet<i2.$UsersTable>('users'),
-              addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
-              removeJoinBuilderFromRootComposer:
-                  removeJoinBuilderFromRootComposer,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
             ));
     return composer;
   }
@@ -257,8 +257,8 @@ class $PostsOrderingComposer
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnOrderings<String> get content => $composableBuilder(
       column: $table.content, builder: (column) => i0.ColumnOrderings(column));
@@ -271,16 +271,51 @@ class $PostsOrderingComposer
             i3.ReadDatabaseContainer($db).resultSet<i2.$UsersTable>('users'),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
-                {addJoinBuilderToRootComposer,
-                removeJoinBuilderFromRootComposer}) =>
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
             i2.$$UsersTableOrderingComposer(
               $db: $db,
               $table: i3.ReadDatabaseContainer($db)
                   .resultSet<i2.$UsersTable>('users'),
-              addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
-              removeJoinBuilderFromRootComposer:
-                  removeJoinBuilderFromRootComposer,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $PostsAnnotationComposer
+    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.Posts> {
+  $PostsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  i2.$$UsersTableAnnotationComposer get author {
+    final i2.$$UsersTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.author,
+        referencedTable:
+            i3.ReadDatabaseContainer($db).resultSet<i2.$UsersTable>('users'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i2.$$UsersTableAnnotationComposer(
+              $db: $db,
+              $table: i3.ReadDatabaseContainer($db)
+                  .resultSet<i2.$UsersTable>('users'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
             ));
     return composer;
   }
@@ -292,6 +327,7 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.Post,
     i1.$PostsFilterComposer,
     i1.$PostsOrderingComposer,
+    i1.$PostsAnnotationComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
     (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
@@ -305,6 +341,8 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$PostsOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              i1.$PostsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> author = const i0.Value.absent(),
             i0.Value<String?> content = const i0.Value.absent(),
@@ -338,6 +376,7 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     i1.Post,
     i1.$PostsFilterComposer,
     i1.$PostsOrderingComposer,
+    i1.$PostsAnnotationComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
     (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),

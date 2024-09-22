@@ -228,8 +228,8 @@ class $EntriesFilterComposer extends FilterComposer<_$MyDatabase, Entries> {
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
@@ -243,8 +243,8 @@ class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
     required super.$db,
     required super.$table,
     super.joinBuilder,
-    super.addJoinBuilderToRootComposer,
-    super.removeJoinBuilderFromRootComposer,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
@@ -253,12 +253,29 @@ class $EntriesOrderingComposer extends OrderingComposer<_$MyDatabase, Entries> {
       column: $table.value, builder: (column) => ColumnOrderings(column));
 }
 
+class $EntriesAnnotationComposer
+    extends AnnotationComposer<_$MyDatabase, Entries> {
+  $EntriesAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
 class $EntriesTableManager extends RootTableManager<
     _$MyDatabase,
     Entries,
     Entry,
     $EntriesFilterComposer,
     $EntriesOrderingComposer,
+    $EntriesAnnotationComposer,
     $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder,
     (Entry, BaseReferences<_$MyDatabase, Entries, Entry>),
@@ -272,6 +289,8 @@ class $EntriesTableManager extends RootTableManager<
               $EntriesFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $EntriesOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $EntriesAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> value = const Value.absent(),
@@ -301,6 +320,7 @@ typedef $EntriesProcessedTableManager = ProcessedTableManager<
     Entry,
     $EntriesFilterComposer,
     $EntriesOrderingComposer,
+    $EntriesAnnotationComposer,
     $EntriesCreateCompanionBuilder,
     $EntriesUpdateCompanionBuilder,
     (Entry, BaseReferences<_$MyDatabase, Entries, Entry>),
