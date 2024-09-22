@@ -1,6 +1,7 @@
 // ignore_for_file: unused_local_variable
 
 import 'package:drift/drift.dart';
+import 'package:drift/src/utils/async.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
@@ -8,10 +9,35 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
+  late List<StoreData> stores;
+  late List<DepartmentData> departments;
+  late List<ProductData> products;
+  late List<ListingData> listings;
 
-  setUp(() {
+  setUp(() async {
     db = TodoDb(testInMemoryDatabase());
+    stores = await _storeData.mapAsyncAndAwait((p0) => db.managers.store
+        .createReturning((o) => o(name: Value(p0.name), id: Value(p0.id))));
+
+    departments = await _departmentData.mapAsyncAndAwait(
+      (p0) => db.managers.department
+          .createReturning((o) => o(name: Value(p0.name), id: Value(p0.id))),
+    );
+
+    products = await _productData.mapAsyncAndAwait(
+      (p0) => db.managers.product.createReturning(
+          (o) => o(name: p0.name, department: p0.department, sku: p0.id)),
+    );
+
+    listings = await _listingsData.mapAsyncAndAwait(
+      (p0) => db.managers.listing.createReturning((o) => o(
+          product: Value(p0.product),
+          store: Value(p0.store),
+          price: Value(p0.price))),
+    );
   });
+
+  tearDown(() => db.close());
 
   tearDown(() => db.close());
 
@@ -225,343 +251,114 @@ void main() {
         BigInt.from(5));
   });
 
-  test('manager - query number', () async {
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        aReal: Value(5.0),
-        aDateTime: Value(DateTime.now().add(Duration(days: 1)))));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        aDateTime: Value(DateTime.now().add(Duration(days: 2)))));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        aReal: Value(3.0),
-        aDateTime: Value(DateTime.now().add(Duration(days: 3)))));
+  test('manager - many to one annotation', () async {
+    final productNameAnnotation =
+        db.managers.listing.annotation((a) => a.product.name);
+    final departmentNameAnnotation =
+        db.managers.listing.annotation((a) => a.product.department.name);
+    final storeNameAnnotation =
+        db.managers.listing.annotation((a) => a.store.name);
 
-    // More than
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.isBiggerThan(3.0))
-            .count(),
-        1);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.isBiggerOrEqualTo(3.0))
-            .count(),
-        2);
+    final (_, refs) = await db.managers.listing
+        .withAnnotations([
+          productNameAnnotation,
+          departmentNameAnnotation,
+          storeNameAnnotation
+        ])
+        .limit(1)
+        .getSingle();
+    expect(productNameAnnotation.read(refs), "TV");
+    expect(departmentNameAnnotation.read(refs), "Electronics");
+    expect(storeNameAnnotation.read(refs), "Walmart");
+  });
+  test('manager - one to many aggregation annotation', () async {
+    final productCountAnnotation =
+        db.managers.store.annotation((a) => a.listings((a) => a.id.count()));
 
-    // Less than
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.isSmallerThan(5.0))
-            .count(),
-        1);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.isSmallerOrEqualTo(5.0))
-            .count(),
-        2);
-
-    // Between
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.isBetween(3.0, 5.0))
-            .count(),
-        2);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aReal.not.isBetween(3.0, 5.0))
-            .count(),
-        0);
+    final (_, refs) = await db.managers.store
+        .withAnnotations([productCountAnnotation])
+        .limit(1)
+        .getSingle();
+    expect(productCountAnnotation.read(refs), 8);
   });
 
-  test('manager - query string', () async {
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-          aText: Value("Get that math homework done"),
-          anIntEnum: Value(TodoStatus.open),
-        ));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-          aText: Value("That homework Done"),
-        ));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-          aText: Value("that MATH homework"),
-          anIntEnum: Value(TodoStatus.open),
-        ));
+  test('manager - aggregation on annotation', () async {
+    final productCountAnnotation = db.managers.store
+        .annotation((a) => a.listings((a) => a.product.name).groupConcat());
 
-    // StartsWith
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aText.startsWith("that"))
-            .count(),
-        2);
-
-    // EndsWith
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aText.endsWith("done"))
-            .count(),
-        2);
-
-    // Contains
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aText.contains("math"))
-            .count(),
-        2);
-
-    // Make the database case sensitive
-    await db.customStatement('PRAGMA case_sensitive_like = ON');
-
-    // StartsWith
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aText.startsWith("that", caseInsensitive: false))
-            .count(),
-        1);
-
-    // EndsWith
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aText.endsWith("done", caseInsensitive: false))
-            .count(),
-        1);
-
-    // Contains
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aText.contains("math", caseInsensitive: false))
-            .count(),
-        1);
+    final (_, refs) = await db.managers.store
+        .withAnnotations([productCountAnnotation])
+        .limit(1)
+        .getSingle();
+    expect(productCountAnnotation.read(refs),
+        'TV,Cell Phone,Charger,Cereal,Meat,Shirt,Pants,Socks,Cap');
   });
+  test('manager - annotation of aggregation', () async {
+    final productCountAnnotation = db.managers.listing
+        .annotation((a) => a.product.listings((a) => a.id).groupConcat());
 
-  test('manager - query int64', () async {
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        anInt64: Value(BigInt.from(5.0)),
-        aDateTime: Value(DateTime.now().add(Duration(days: 1)))));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        aDateTime: Value(DateTime.now().add(Duration(days: 2)))));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        anInt64: Value(BigInt.from(3.0)),
-        aDateTime: Value(DateTime.now().add(Duration(days: 3)))));
-
-    // More than
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anInt64.isBiggerThan(BigInt.from(3.0)))
-            .count(),
-        1);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anInt64.isBiggerOrEqualTo(BigInt.from(3.0)))
-            .count(),
-        2);
-
-    // Less than
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anInt64.isSmallerThan(BigInt.from(5.0)))
-            .count(),
-        1);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anInt64.isSmallerOrEqualTo(BigInt.from(5.0)))
-            .count(),
-        2);
-
-    // Between
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter(
-                (f) => f.anInt64.isBetween(BigInt.from(3.0), BigInt.from(5.0)))
-            .count(),
-        2);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) =>
-                f.anInt64.not.isBetween(BigInt.from(3.0), BigInt.from(5.0)))
-            .count(),
-        0);
-  });
-
-  test('manager - query bool', () async {
-    await db.managers.users.create((o) => o(
-        name: "John Doe",
-        profilePicture: Uint8List(0),
-        isAwesome: Value(true),
-        creationTime: Value(DateTime.now().add(Duration(days: 1)))));
-    await db.managers.users.create((o) => o(
-        name: "Jane Doe1",
-        profilePicture: Uint8List(0),
-        isAwesome: Value(false),
-        creationTime: Value(DateTime.now().add(Duration(days: 2)))));
-    await db.managers.users.create((o) => o(
-        name: "Jane Doe2",
-        profilePicture: Uint8List(0),
-        isAwesome: Value(true),
-        creationTime: Value(DateTime.now().add(Duration(days: 2)))));
-
-    // False
-    expect(await db.managers.users.filter((f) => f.isAwesome.isFalse()).count(),
-        1);
-    // True
-    expect(
-        await db.managers.users.filter((f) => f.isAwesome.isTrue()).count(), 2);
-  });
-
-  test('manager - query datetime', () async {
-    final day1 = DateTime.now().add(Duration(days: 1));
-    final day2 = DateTime.now().add(Duration(days: 2));
-    final day3 = DateTime.now().add(Duration(days: 3));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        aReal: Value(5.0),
-        aDateTime: Value(day1)));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        aDateTime: Value(day2)));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open),
-        aReal: Value(3.0),
-        aDateTime: Value(day3)));
-
-    // More than
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aDateTime.isAfter(day2))
-            .count(),
-        1);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aDateTime.isAfterOrOn(day2))
-            .count(),
-        2);
-
-    // Less than
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aDateTime.isBefore(day2))
-            .count(),
-        1);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aDateTime.isBeforeOrOn(day2))
-            .count(),
-        2);
-
-    // Between
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aDateTime.isBetween(day1, day2))
-            .count(),
-        2);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aDateTime.not.isBetween(day1, day2))
-            .count(),
-        1);
-  });
-
-  test('manager - query custom column', () async {
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open)));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.open)));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.workInProgress)));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("Get that math homework done"),
-        anIntEnum: Value(TodoStatus.done)));
-    await db.managers.tableWithEveryColumnType
-        .create((o) => o(aText: Value("Get that math homework done")));
-
-    // Equals
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anIntEnum.equals(TodoStatus.open))
-            .count(),
-        2);
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anIntEnum(TodoStatus.open))
-            .count(),
-        2);
-
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anIntEnum.not(TodoStatus.open))
-            .count(),
-        2);
-
-    // Not Equals
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anIntEnum.not.equals(TodoStatus.open))
-            .count(),
-        2);
-
-    // In
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) =>
-                f.anIntEnum.isIn([TodoStatus.open, TodoStatus.workInProgress]))
-            .count(),
-        3);
-
-    // Not In
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.anIntEnum.not
-                .isIn([TodoStatus.open, TodoStatus.workInProgress]))
-            .count(),
-        1);
-  });
-
-  test('manager - multiple filters', () async {
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("person"),
-        anIntEnum: Value(TodoStatus.open),
-        aReal: Value(5.0),
-        aDateTime: Value(DateTime.now().add(Duration(days: 1)))));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("person"),
-        anIntEnum: Value(TodoStatus.open),
-        aDateTime: Value(DateTime.now().add(Duration(days: 2)))));
-    await db.managers.tableWithEveryColumnType.create((o) => o(
-        aText: Value("drink"),
-        anIntEnum: Value(TodoStatus.open),
-        aReal: Value(3.0),
-        aDateTime: Value(DateTime.now().add(Duration(days: 3)))));
-
-    // By default, all filters are AND
-    expect(
-        await db.managers.tableWithEveryColumnType
-            .filter((f) => f.aText("person"))
-            .filter((f) => f.aReal(5.0))
-            .count(),
-        1);
-  });
-
-  test('can use shorthand filter for nulls', () async {
-    final row = await db.todosTable.insertReturning(
-        TodosTableCompanion.insert(content: 'my test content'));
-
-    final query =
-        await db.managers.todosTable.filter((f) => f.targetDate(null)).get();
-    expect(query, [row]);
+    final (_, refs) = await db.managers.listing
+        .withAnnotations([productCountAnnotation])
+        .limit(1)
+        .getSingle();
+    expect(productCountAnnotation.read(refs), '1,16');
   });
 }
+
+const _storeData = [
+  (name: "Walmart", id: 1),
+  (name: "Target", id: 2),
+  (name: "Costco", id: 3),
+];
+
+const _departmentData = [
+  (name: "Electronics", id: 1),
+  (name: "Grocery", id: 2),
+  (name: "Clothing", id: 3),
+];
+
+final _productData = [
+  (name: Value("TV"), department: Value(_departmentData[0].id), id: "1"),
+  (
+    name: Value("Cell Phone"),
+    department: Value(_departmentData[0].id),
+    id: "2"
+  ),
+  (name: Value("Charger"), department: Value(_departmentData[0].id), id: "3"),
+  (name: Value("Cereal"), department: Value(_departmentData[1].id), id: "4"),
+  (name: Value("Meat"), department: Value(_departmentData[1].id), id: "5"),
+  (name: Value("Shirt"), department: Value(_departmentData[2].id), id: "6"),
+  (name: Value("Pants"), department: Value(_departmentData[2].id), id: "7"),
+  (name: Value("Socks"), department: Value(_departmentData[2].id), id: "8"),
+  (name: Value("Cap"), department: Value(_departmentData[2].id), id: "9"),
+];
+final _listingsData = [
+  // Walmart - Electronics
+  (product: "1", store: 1, price: 100.0),
+  (product: "2", store: 1, price: 200.0),
+  (product: "3", store: 1, price: 10.0),
+  // Walmart - Grocery
+  (product: "4", store: 1, price: 5.0),
+  (product: "5", store: 1, price: 15.0),
+  // Walmart - Clothing
+  (product: "6", store: 1, price: 20.0),
+  (product: "7", store: 1, price: 30.0),
+  (product: "8", store: 1, price: 5.0),
+  (product: "9", store: 1, price: 10.0),
+  // Target - Electronics
+  (product: "2", store: 2, price: 150.0),
+  (product: "3", store: 2, price: 15.0),
+  // Target - Grocery
+  (product: "4", store: 2, price: 10.0),
+  (product: "5", store: 2, price: 20.0),
+  // Target - Clothing
+  (product: "8", store: 2, price: 5.0),
+  (product: "9", store: 2, price: 10.0),
+  // Costco - Electronics
+  (product: "1", store: 3, price: 50.0),
+  (product: "2", store: 3, price: 100.0),
+  (product: "3", store: 3, price: 2.50),
+  // Costco - Grocery
+  (product: "4", store: 3, price: 20.0),
+  (product: "5", store: 3, price: 900.0),
+];
