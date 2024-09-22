@@ -1,4 +1,4 @@
-package com.example.app
+package eu.simonbinder.drift.example
 
 import io.flutter.embedding.android.FlutterActivity
 
