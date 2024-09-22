@@ -19,7 +19,7 @@ class ColumnOrderings<T extends Object> {
   /// This is used to create lower level orderings
   /// that can be composed together
   ComposableOrdering $composableOrdering(Set<OrderingBuilder> orderings) {
-    return ComposableOrdering._(orderings, joinBuilders ?? {});
+    return ComposableOrdering._(orderings);
   }
 
   /// Sort this column in ascending order
@@ -69,19 +69,16 @@ class OrderingBuilder {
 /// The orderings will be executed from left to right.
 /// See [_Composable] for more information
 /// on how joins are stored
-class ComposableOrdering extends _Composable {
+class ComposableOrdering {
   /// The orderings that are being composed
   final Set<OrderingBuilder> orderingBuilders;
-  @override
-  final Set<JoinBuilder> joinBuilders;
 
   /// Create a new [ComposableOrdering] for a column with joins
-  ComposableOrdering._(this.orderingBuilders, this.joinBuilders);
+  ComposableOrdering._(this.orderingBuilders);
 
   /// Combine two orderings with THEN
   ComposableOrdering operator &(ComposableOrdering other) {
-    return ComposableOrdering._(orderingBuilders.union(other.orderingBuilders),
-        joinBuilders.union(other.joinBuilders));
+    return ComposableOrdering._(orderingBuilders.union(other.orderingBuilders));
   }
 
   /// Build a drift [OrderingTerm] from this ordering
@@ -100,5 +97,10 @@ class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
   /// ```
   /// In the above example, `f` is a [OrderingComposer] object, and `f.name` returns a [ColumnOrderings] object.
   @internal
-  OrderingComposer(super.$state);
+  OrderingComposer(
+      {required super.$db,
+      required super.$table,
+      super.joinBuilder,
+      super.addJoinBuilderToRootComposer,
+      super.removeJoinBuilderFromRootComposer});
 }

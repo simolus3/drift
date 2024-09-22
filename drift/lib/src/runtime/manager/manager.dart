@@ -9,7 +9,7 @@ import 'package:meta/meta.dart';
 
 part 'composer.dart';
 part 'filter.dart';
-part 'composable.dart';
+part 'join_builder.dart';
 part 'ordering.dart';
 part 'references.dart';
 
@@ -74,12 +74,12 @@ class TableManagerState<
   /// The [FilterComposer] for this [TableManagerState]
   /// This class will be used to create filtering [Expression]s
   /// which will be applied to the statement when its eventually created
-  final $FilterComposer filteringComposer;
+  final $FilterComposer Function() createFilteringComposer;
 
   /// The [OrderingComposer] for this [TableManagerState]
   /// This class will be used to create [OrderingTerm]s
   /// which will be applied to the statement when its eventually created
-  final $OrderingComposer orderingComposer;
+  final $OrderingComposer Function() createOrderingComposer;
 
   /// This function is passed to the user to create a companion
   /// for inserting data into the table
@@ -150,8 +150,8 @@ class TableManagerState<
   TableManagerState(
       {required this.db,
       required this.table,
-      required this.filteringComposer,
-      required this.orderingComposer,
+      required this.createFilteringComposer,
+      required this.createOrderingComposer,
       required $CreateCompanionCallback createCompanionCallback,
       required $UpdateCompanionCallback updateCompanionCallback,
       required List<$DataclassWithReferences> Function(List<TypedResult>)
@@ -202,8 +202,8 @@ class TableManagerState<
     return TableManagerState(
       db: db,
       table: table,
-      filteringComposer: filteringComposer,
-      orderingComposer: orderingComposer,
+      createFilteringComposer: createFilteringComposer,
+      createOrderingComposer: createOrderingComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -237,8 +237,8 @@ class TableManagerState<
     return TableManagerState(
       db: db,
       table: table,
-      filteringComposer: filteringComposer,
-      orderingComposer: orderingComposer,
+      createFilteringComposer: createFilteringComposer,
+      createOrderingComposer: createOrderingComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -289,8 +289,8 @@ class TableManagerState<
     return TableManagerState(
       db: db,
       table: table,
-      filteringComposer: filteringComposer,
-      orderingComposer: orderingComposer,
+      createFilteringComposer: createFilteringComposer,
+      createOrderingComposer: createOrderingComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -526,11 +526,14 @@ abstract class BaseTableManager<
           $ActiveDataclass,
           $CreatePrefetchHooksCallback>
       orderBy(ComposableOrdering Function($OrderingComposer o) o) {
-    final orderings = o($state.orderingComposer);
+    final composer = $state.createOrderingComposer();
+
+    final orderings = o(composer);
     return ProcessedTableManager($state.copyWith(
         orderingBuilders:
             $state.orderingBuilders.union(orderings.orderingBuilders),
-        joinBuilders: $state.joinBuilders.union(orderings.joinBuilders)));
+        joinBuilders:
+            $state.joinBuilders.union(composer.joinBuilders.toSet())));
   }
 
   /// Add a filter to the statement
@@ -547,7 +550,7 @@ abstract class BaseTableManager<
       $DataclassWithReferences,
       $ActiveDataclass,
       $CreatePrefetchHooksCallback> filter(
-    ComposableFilter Function($FilterComposer f) f,
+    Expression<bool> Function($FilterComposer f) f,
   ) {
     return _filter(f, _BooleanOperator.and);
   }
@@ -566,20 +569,20 @@ abstract class BaseTableManager<
           $DataclassWithReferences,
           $ActiveDataclass,
           $CreatePrefetchHooksCallback>
-      _filter(ComposableFilter Function($FilterComposer f) f,
+      _filter(Expression<bool> Function($FilterComposer f) f,
           _BooleanOperator combineWith) {
-    final filter = f($state.filteringComposer);
-    final combinedFilter = switch (($state.filter, filter.expression)) {
-      (null, null) => null,
+    final composer = $state.createFilteringComposer();
+    final filter = f(composer);
+    final combinedFilter = switch (($state.filter, filter)) {
       (null, var filter) => filter,
-      (var filter, null) => filter,
       (var filter1, var filter2) => combineWith == _BooleanOperator.and
-          ? (filter1!) & (filter2!)
-          : (filter1!) | (filter2!)
+          ? (filter1!) & (filter2)
+          : (filter1!) | (filter2)
     };
     return ProcessedTableManager($state.copyWith(
         filter: combinedFilter,
-        joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
+        joinBuilders:
+            $state.joinBuilders.union(composer.joinBuilders.toSet())));
   }
 
   /// Writes all non-null fields from the entity into the columns of all rows

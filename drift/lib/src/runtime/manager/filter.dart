@@ -2,8 +2,7 @@ part of 'manager.dart';
 
 /// Base class for all column filters
 abstract class _BaseColumnFilters<T extends Object> {
-  const _BaseColumnFilters(this.column,
-      {this.inverted = false, this.joinBuilders = const {}});
+  const _BaseColumnFilters(this.column, {this.inverted = false});
 
   /// Column that this [ColumnFilters] wraps
   final Expression<T> column;
@@ -11,32 +10,14 @@ abstract class _BaseColumnFilters<T extends Object> {
   /// If true, all filters will be inverted
   final bool inverted;
 
-  /// If this column is part of a join, this will hold the join builder
-  /// that is used to create the join
-  ///
-  /// ```dart
-  /// todos.filter((f) => f.category.name.equals('important'))
-  /// ```
-  /// In the above example, the [FilterComposer]  returned from `f.category`
-  /// will have a join builder on it that is used to create the join between
-  /// the `categories` and `todos` table. This join builder is passed to the
-  /// `f.category.name` filter to ensure that the filter is applied to the correct
-  /// table.
-  ///
-  /// There are instances where the join builder is eventually discarded, such as when
-  /// the filter is applied to the foreign key column itself (e.g  a filter on `f.category.id` will
-  /// not use the join, it will apply the filter to `f.categoryId` instead).
-  final Set<JoinBuilder> joinBuilders;
-
-  /// This helper method is used internally to create a new [ComposableFilter]s
+  /// This helper method is used internally to create a new [Expression<bool>]s
   /// that respects the inverted state of the current filter
-  ComposableFilter $composableFilter(Expression<bool>? expression) {
-    return ComposableFilter._(
-        inverted ? expression?.not() : expression, joinBuilders);
+  Expression<bool> $composableFilter(Expression<bool> expression) {
+    return inverted ? expression.not() : expression;
   }
 
   /// Create a filter that checks if the column is null.
-  ComposableFilter isNull() => $composableFilter(column.isNull());
+  Expression<bool> isNull() => $composableFilter(column.isNull());
 
   /// Returns a copy of these column filters where all the filters are inverted
   /// ```dart
@@ -64,21 +45,20 @@ class ColumnFilters<T extends Object> extends _BaseColumnFilters<T> {
   /// contains methods for creating filters on the `name` column.
   /// ```
   /// {@macro manager_internal_use_only}
-  ColumnFilters(super.column, {super.inverted = false, super.joinBuilders});
+  ColumnFilters(super.column, {super.inverted = false});
 
   @override
-  ColumnFilters<T> get not =>
-      ColumnFilters(column, inverted: !inverted, joinBuilders: joinBuilders);
+  ColumnFilters<T> get not => ColumnFilters(column, inverted: !inverted);
 
   /// Create a filter that checks if the column equals a value.
-  ComposableFilter equals(T? value) =>
+  Expression<bool> equals(T? value) =>
       $composableFilter(column.equalsNullable(value));
 
   /// Shortcut for [equals]
-  ComposableFilter call(T? value) => equals(value);
+  Expression<bool> call(T? value) => equals(value);
 
   /// Create a filter that checks if the column is in a list of values.
-  ComposableFilter isIn(Iterable<T> values) =>
+  Expression<bool> isIn(Iterable<T> values) =>
       $composableFilter(column.isIn(values));
 }
 
@@ -91,13 +71,11 @@ class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
   /// See [ColumnFilters] for more information on how to use this class
   ///
   /// {@macro manager_internal_use_only}
-  ColumnWithTypeConverterFilters(super.column,
-      {super.inverted = false, super.joinBuilders});
+  ColumnWithTypeConverterFilters(super.column, {super.inverted = false});
 
   @override
   ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable, T>
-      get not => ColumnWithTypeConverterFilters(column,
-          inverted: !inverted, joinBuilders: joinBuilders);
+      get not => ColumnWithTypeConverterFilters(column, inverted: !inverted);
 
   GeneratedColumnWithTypeConverter<CustomType, T> get _typedColumn =>
       column as GeneratedColumnWithTypeConverter<CustomType, T>;
@@ -117,15 +95,15 @@ class ColumnWithTypeConverterFilters<CustomType, CustomTypeNonNullable,
   }
 
   /// Create a filter that checks if the column equals a value.
-  ComposableFilter equals(CustomTypeNonNullable value) {
+  Expression<bool> equals(CustomTypeNonNullable value) {
     return $composableFilter(column.equals(_customTypeToSql(value)));
   }
 
   /// Shortcut for [equals]
-  ComposableFilter call(CustomTypeNonNullable value) => equals(value);
+  Expression<bool> call(CustomTypeNonNullable value) => equals(value);
 
   /// Create a filter that checks if the column is in a list of values.
-  ComposableFilter isIn(Iterable<CustomTypeNonNullable> values) =>
+  Expression<bool> isIn(Iterable<CustomTypeNonNullable> values) =>
       $composableFilter(column.isIn(values.map(_customTypeToSql).toList()));
 }
 
@@ -171,7 +149,7 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
   ///
   /// See https://www.sqlitetutorial.net/sqlite-like/ for more information on how
   /// to the like expression works.
-  ComposableFilter contains(T value, {bool caseInsensitive = true}) {
+  Expression<bool> contains(T value, {bool caseInsensitive = true}) {
     return $composableFilter(
         _buildExpression(_StringFilterTypes.contains, value, caseInsensitive));
   }
@@ -183,7 +161,7 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
   ///
   /// See https://www.sqlitetutorial.net/sqlite-like/ for more information on how
   /// to the like expression works.
-  ComposableFilter startsWith(T value, {bool caseInsensitive = true}) {
+  Expression<bool> startsWith(T value, {bool caseInsensitive = true}) {
     return $composableFilter(_buildExpression(
         _StringFilterTypes.startsWith, value, caseInsensitive));
   }
@@ -195,7 +173,7 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
   ///
   /// See https://www.sqlitetutorial.net/sqlite-like/ for more information on how
   /// to the like expression works.
-  ComposableFilter endsWith(T value, {bool caseInsensitive = true}) {
+  Expression<bool> endsWith(T value, {bool caseInsensitive = true}) {
     return $composableFilter(
         _buildExpression(_StringFilterTypes.endsWith, value, caseInsensitive));
   }
@@ -204,84 +182,84 @@ extension StringFilters<T extends String> on ColumnFilters<String> {
 /// Built in filters for bool columns
 extension BoolFilters on ColumnFilters<bool> {
   /// Create a filter to check if the column is bigger than a value
-  ComposableFilter isTrue() => $composableFilter(column.equals(true));
+  Expression<bool> isTrue() => $composableFilter(column.equals(true));
 
   /// Create a filter to check if the column is small than a value
-  ComposableFilter isFalse() => $composableFilter(column.equals(false));
+  Expression<bool> isFalse() => $composableFilter(column.equals(false));
 }
 
 /// Built in filters for int/double columns
 extension NumFilters<T extends num> on ColumnFilters<T> {
   /// Create a filter to check if the column is bigger than a value
-  ComposableFilter isBiggerThan(T value) =>
+  Expression<bool> isBiggerThan(T value) =>
       $composableFilter(column.isBiggerThanValue(value));
 
   /// Create a filter to check if the column is small than a value
-  ComposableFilter isSmallerThan(T value) =>
+  Expression<bool> isSmallerThan(T value) =>
       $composableFilter(column.isSmallerThanValue(value));
 
   /// Create a filter to check if the column is bigger or equal to a value
-  ComposableFilter isBiggerOrEqualTo(T value) =>
+  Expression<bool> isBiggerOrEqualTo(T value) =>
       $composableFilter(column.isBiggerOrEqualValue(value));
 
   /// Create a filter to check if the column is small or equal to a value
-  ComposableFilter isSmallerOrEqualTo(T value) =>
+  Expression<bool> isSmallerOrEqualTo(T value) =>
       $composableFilter(column.isSmallerOrEqualValue(value));
 
   /// Create a filter to check if the column is between two values
   /// This is done inclusively, so the column can be equal to the lower or higher value
   /// E.G isBetween(1, 3) will return true for 1, 2, and 3
-  ComposableFilter isBetween(T lower, T higher) =>
+  Expression<bool> isBetween(T lower, T higher) =>
       $composableFilter(column.isBetweenValues(lower, higher));
 }
 
 /// Built in filters for BigInt columns
 extension BigIntFilters<T extends BigInt> on ColumnFilters<T> {
   /// Create a filter to check if the column is bigger than a value
-  ComposableFilter isBiggerThan(T value) =>
+  Expression<bool> isBiggerThan(T value) =>
       $composableFilter(column.isBiggerThanValue(value));
 
   /// Create a filter to check if the column is small than a value
-  ComposableFilter isSmallerThan(T value) =>
+  Expression<bool> isSmallerThan(T value) =>
       $composableFilter(column.isSmallerThanValue(value));
 
   /// Create a filter to check if the column is bigger or equal to a value
-  ComposableFilter isBiggerOrEqualTo(T value) =>
+  Expression<bool> isBiggerOrEqualTo(T value) =>
       $composableFilter(column.isBiggerOrEqualValue(value));
 
   /// Create a filter to check if the column is small or equal to a value
-  ComposableFilter isSmallerOrEqualTo(T value) =>
+  Expression<bool> isSmallerOrEqualTo(T value) =>
       $composableFilter(column.isSmallerOrEqualValue(value));
 
   /// Create a filter to check if the column is between two values
   /// This is done inclusively, so the column can be equal to the lower or higher value
   /// E.G isBetween(1, 3) will return true for 1, 2, and 3
-  ComposableFilter isBetween(T lower, T higher) =>
+  Expression<bool> isBetween(T lower, T higher) =>
       $composableFilter(column.isBetweenValues(lower, higher));
 }
 
 /// Built in filters for DateTime columns
 extension DateFilters<T extends DateTime> on ColumnFilters<T> {
   /// Create a filter to check if the column is after a [DateTime]
-  ComposableFilter isAfter(T value) =>
+  Expression<bool> isAfter(T value) =>
       $composableFilter(column.isBiggerThanValue(value));
 
   /// Create a filter to check if the column is before a [DateTime]
-  ComposableFilter isBefore(T value) =>
+  Expression<bool> isBefore(T value) =>
       $composableFilter(column.isSmallerThanValue(value));
 
   /// Create a filter to check if the column is on or after a [DateTime]
-  ComposableFilter isAfterOrOn(T value) =>
+  Expression<bool> isAfterOrOn(T value) =>
       $composableFilter(column.isBiggerOrEqualValue(value));
 
   /// Create a filter to check if the column is before or on a [DateTime]
-  ComposableFilter isBeforeOrOn(T value) =>
+  Expression<bool> isBeforeOrOn(T value) =>
       $composableFilter(column.isSmallerOrEqualValue(value));
 
   /// Create a filter to check if the column is between 2 [DateTime]s
   /// This is done inclusively, so the column can be equal to the lower or higher value
   /// E.G isBetween(1, 3) will return true for 1, 2, and 3
-  ComposableFilter isBetween(T lower, T higher) =>
+  Expression<bool> isBetween(T lower, T higher) =>
       $composableFilter(column.isBetweenValues(lower, higher));
 }
 
@@ -294,49 +272,6 @@ enum _BooleanOperator {
   or;
 }
 
-/// This class is used to compose filters together
-///
-/// This class contains all the information that will
-/// be used to create a where expression for the [TableManagerState]
-///
-/// See [_Composable] for more information on how joins are stored
-class ComposableFilter extends _Composable {
-  @override
-  final Set<JoinBuilder> joinBuilders;
-
-  /// The expression that will be applied to the query
-  Expression<bool>? expression;
-
-  /// Create a new [ComposableFilter] for a column with joins
-  ComposableFilter._(this.expression, this.joinBuilders);
-
-  /// Combine two filters with an AND
-  ComposableFilter operator &(ComposableFilter other) =>
-      _combineFilter(_BooleanOperator.and, other);
-
-  /// Combine two filters with an OR
-  ComposableFilter operator |(ComposableFilter other) =>
-      _combineFilter(_BooleanOperator.or, other);
-
-  /// A helper function to combine two filters
-  ComposableFilter _combineFilter(
-      _BooleanOperator opperator, ComposableFilter otherFilter) {
-    final combinedExpression = switch ((expression, otherFilter.expression)) {
-      (null, null) => null,
-      (null, var expression) => expression,
-      (var expression, null) => expression,
-      (_, _) => switch (opperator) {
-          _BooleanOperator.and => expression! & otherFilter.expression!,
-          _BooleanOperator.or => expression! | otherFilter.expression!,
-        },
-    };
-    return ComposableFilter._(
-      combinedExpression,
-      joinBuilders.union(otherFilter.joinBuilders),
-    );
-  }
-}
-
 /// The class that orchestrates the composition of filtering
 class FilterComposer<Database extends GeneratedDatabase,
     CurrentTable extends Table> extends Composer<Database, CurrentTable> {
@@ -347,5 +282,10 @@ class FilterComposer<Database extends GeneratedDatabase,
   /// ```
   /// In the above example, `f` is a [FilterComposer] object, and `f.name` returns a [ColumnFilters] object.
   @internal
-  FilterComposer(super.$state);
+  FilterComposer(
+      {required super.$db,
+      required super.$table,
+      super.joinBuilder,
+      super.addJoinBuilderToRootComposer,
+      super.removeJoinBuilderFromRootComposer});
 }

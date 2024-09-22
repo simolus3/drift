@@ -130,30 +130,34 @@ typedef $UsersUpdateCompanionBuilder = i2.UsersCompanion Function({
 
 class $UsersFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.Users> {
-  $UsersFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  $UsersFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.addJoinBuilderToRootComposer,
+    super.removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+  i0.ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => i0.ColumnFilters(column));
 }
 
 class $UsersOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.Users> {
-  $UsersOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  $UsersOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.addJoinBuilderToRootComposer,
+    super.removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+  i0.ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
 }
 
 class $UsersTableManager extends i0.RootTableManager<
@@ -171,10 +175,10 @@ class $UsersTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              i2.$UsersFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i2.$UsersOrderingComposer(i0.ComposerState(db, table)),
+          createFilteringComposer: () =>
+              i2.$UsersFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i2.$UsersOrderingComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
@@ -421,76 +425,108 @@ typedef $FriendsUpdateCompanionBuilder = i2.FriendsCompanion Function({
 
 class $FriendsFilterComposer
     extends i0.FilterComposer<i0.GeneratedDatabase, i2.Friends> {
-  $FriendsFilterComposer(super.$state);
+  $FriendsFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.addJoinBuilderToRootComposer,
+    super.removeJoinBuilderFromRootComposer,
+  });
   i2.$UsersFilterComposer get userA {
-    final i2.$UsersFilterComposer composer = $state.composerBuilder(
+    final i2.$UsersFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.userA,
         referencedTable:
-            i3.ReadDatabaseContainer($state.db).resultSet<i2.Users>('users'),
+            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i2.$UsersFilterComposer(
-            i0.ComposerState(
-                $state.db,
-                i3.ReadDatabaseContainer($state.db)
-                    .resultSet<i2.Users>('users'),
-                joinBuilder,
-                parentComposers)));
+        builder: (joinBuilder,
+                {addJoinBuilderToRootComposer,
+                removeJoinBuilderFromRootComposer}) =>
+            i2.$UsersFilterComposer(
+              $db: $db,
+              $table:
+                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
+              addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              removeJoinBuilderFromRootComposer:
+                  removeJoinBuilderFromRootComposer,
+            ));
     return composer;
   }
 
   i2.$UsersFilterComposer get userB {
-    final i2.$UsersFilterComposer composer = $state.composerBuilder(
+    final i2.$UsersFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.userB,
         referencedTable:
-            i3.ReadDatabaseContainer($state.db).resultSet<i2.Users>('users'),
+            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i2.$UsersFilterComposer(
-            i0.ComposerState(
-                $state.db,
-                i3.ReadDatabaseContainer($state.db)
-                    .resultSet<i2.Users>('users'),
-                joinBuilder,
-                parentComposers)));
+        builder: (joinBuilder,
+                {addJoinBuilderToRootComposer,
+                removeJoinBuilderFromRootComposer}) =>
+            i2.$UsersFilterComposer(
+              $db: $db,
+              $table:
+                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
+              addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              removeJoinBuilderFromRootComposer:
+                  removeJoinBuilderFromRootComposer,
+            ));
     return composer;
   }
 }
 
 class $FriendsOrderingComposer
     extends i0.OrderingComposer<i0.GeneratedDatabase, i2.Friends> {
-  $FriendsOrderingComposer(super.$state);
+  $FriendsOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.addJoinBuilderToRootComposer,
+    super.removeJoinBuilderFromRootComposer,
+  });
   i2.$UsersOrderingComposer get userA {
-    final i2.$UsersOrderingComposer composer = $state.composerBuilder(
+    final i2.$UsersOrderingComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.userA,
         referencedTable:
-            i3.ReadDatabaseContainer($state.db).resultSet<i2.Users>('users'),
+            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i2.$UsersOrderingComposer(
-            i0.ComposerState(
-                $state.db,
-                i3.ReadDatabaseContainer($state.db)
-                    .resultSet<i2.Users>('users'),
-                joinBuilder,
-                parentComposers)));
+        builder: (joinBuilder,
+                {addJoinBuilderToRootComposer,
+                removeJoinBuilderFromRootComposer}) =>
+            i2.$UsersOrderingComposer(
+              $db: $db,
+              $table:
+                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
+              addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              removeJoinBuilderFromRootComposer:
+                  removeJoinBuilderFromRootComposer,
+            ));
     return composer;
   }
 
   i2.$UsersOrderingComposer get userB {
-    final i2.$UsersOrderingComposer composer = $state.composerBuilder(
+    final i2.$UsersOrderingComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.userB,
         referencedTable:
-            i3.ReadDatabaseContainer($state.db).resultSet<i2.Users>('users'),
+            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) => i2.$UsersOrderingComposer(
-            i0.ComposerState(
-                $state.db,
-                i3.ReadDatabaseContainer($state.db)
-                    .resultSet<i2.Users>('users'),
-                joinBuilder,
-                parentComposers)));
+        builder: (joinBuilder,
+                {addJoinBuilderToRootComposer,
+                removeJoinBuilderFromRootComposer}) =>
+            i2.$UsersOrderingComposer(
+              $db: $db,
+              $table:
+                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
+              addJoinBuilderToRootComposer: addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              removeJoinBuilderFromRootComposer:
+                  removeJoinBuilderFromRootComposer,
+            ));
     return composer;
   }
 }
@@ -510,10 +546,10 @@ class $FriendsTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              i2.$FriendsFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i2.$FriendsOrderingComposer(i0.ComposerState(db, table)),
+          createFilteringComposer: () =>
+              i2.$FriendsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i2.$FriendsOrderingComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> userA = const i0.Value.absent(),
             i0.Value<int> userB = const i0.Value.absent(),
