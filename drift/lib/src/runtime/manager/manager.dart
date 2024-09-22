@@ -747,6 +747,8 @@ abstract class BaseTableManager<
 ///
 // As of now this is identical to [BaseTableManager] but it's kept separate for
 // future extensibility.
+///
+/// {@macro manager_internal_use_only}
 @immutable
 class ProcessedTableManager<
         $Database extends GeneratedDatabase,
@@ -771,7 +773,8 @@ class ProcessedTableManager<
         $ActiveDataclass,
         $CreatePrefetchHooksCallback> {
   /// Create a new [ProcessedTableManager] instance
-  @internal
+  ///
+  /// {@macro manager_internal_use_only}
   ProcessedTableManager(super.$state);
 
   /// Prefetched data, if references with prefetching enabled were added to this manager
