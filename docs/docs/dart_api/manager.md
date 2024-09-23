@@ -118,6 +118,23 @@ Any rows that meet the specified condition will be deleted.
 
 {{ load_snippet('manager_delete','lib/snippets/dart_api/manager.dart.excerpt.json') }}
 
+
+## Annotations
+
+It's quite common that you want to perform some complex calculations you data. Drift provides an easy way to write SQL expressions which can be read and/or used in filters and orderings.
+See the [expression](expressions.md) documentation for more information on how to write expressions.
+
+{{ load_snippet('manager_annotations','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+You can write expressions which reference other columns in the same table or even other tables.
+The joins will be created automatically by the manager.
+
+{{ load_snippet('referenced_annotations','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+You can also use [aggregate](./expressions.md#aggregate-functions-like-count-and-sum) functions too.
+
+{{ load_snippet('aggregated_annotations','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
 <!-- 
 This documentation should added once the internal manager APIs are more stable
 

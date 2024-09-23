@@ -279,11 +279,11 @@ extension ManagerExamples on AppDatabase {
 // or by creating a new filter from scratch
 extension After2000Filter on ColumnFilters<DateTime> {
   // Create a new filter by combining existing filters
-  ComposableFilter after2000orBefore1900() =>
+  Expression<bool> after2000orBefore1900() =>
       isAfter(DateTime(2000)) | isBefore(DateTime(1900));
 
   // Create a new filter from scratch using the `column` property
-  ComposableFilter filterOnUnixEpoch(int value) =>
+  Expression<bool> filterOnUnixEpoch(int value) =>
       $composableFilter(column.unixepoch.equals(value));
 }
 
@@ -311,7 +311,7 @@ Future<void> orderingWithExtension(AppDatabase db) async {
 // #docregion manager_custom_filter
 // Extend the generated table filter composer to add a custom filter
 extension NoContentOrBefore2000FilterX on $$TodoItemsTableFilterComposer {
-  ComposableFilter noContentOrBefore2000() =>
+  Expression<bool> noContentOrBefore2000() =>
       (content.isNull() | createdAt.isBefore(DateTime(2000)));
 }
 
@@ -332,3 +332,65 @@ Future<void> customOrdering(AppDatabase db) async {
   db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
 }
 // #enddocregion manager_custom_ordering
+
+void _managerAnnotations(AppDatabase db) async {
+// #docregion manager_annotations
+// First create an annotation with an expression you want to use
+  final titleLengthAnnotation =
+      db.managers.todoItems.annotation((o) => o.title.length);
+
+  /// Create a copy of the manager with the annotations you want to use
+  final manager =
+      db.managers.todoItems.withAnnotations([titleLengthAnnotation]);
+
+// Then use the annotation in a filter
+// This will filter all items whose title has exactly 10 characters
+  manager.filter((f) => titleLengthAnnotation.filter(10));
+
+// You can also use the annotation in an ordering
+// This will order all items by the length of their title in ascending order
+  manager.orderBy((o) => titleLengthAnnotation.order.asc());
+
+  /// You can read the result of the annotation too
+  for (final (item, refs) in await manager.get()) {
+    final titleLength = titleLengthAnnotation.read(refs);
+    print('Item ${item.id} has a title length of $titleLength');
+  }
+// #enddocregion manager_annotations
+}
+
+void _managerReferencedAnnotations(AppDatabase db) async {
+// #docregion referenced_annotations
+// This annotation will get the name of the user of this todo
+  final todoUserName =
+      db.managers.todoItems.annotation((o) => o.category.user.name);
+
+  /// Create a copy of the manager with the annotations you want to use
+  final manager = db.managers.todoItems.withAnnotations([todoUserName]);
+
+  /// You can read the result of the annotation too
+  for (final (item, refs) in await manager.get()) {
+    final userName = todoUserName.read(refs);
+    print('Item ${item.id} has a user with the name $userName');
+  }
+// #enddocregion referenced_annotations
+}
+
+void _managerAggregatedAnnotations(AppDatabase db) async {
+// #docregion aggregated_annotations
+// You can aggregate over multiple rows in a related table
+// to perform calculations on them
+  final todoCountAnnotation = db.managers.todoCategory
+      .annotation((o) => o.todoItemsRefs((o) => o.id).count());
+
+  /// Create a copy of the manager with the annotations you want to use
+  final manager =
+      db.managers.todoCategory.withAnnotations([todoCountAnnotation]);
+
+  /// Read the result of the annotation
+  for (final (category, refs) in await manager.get()) {
+    final todoCount = todoCountAnnotation.read(refs);
+    print('Category ${category.id} has $todoCount todos');
+  }
+// #enddocregion aggregated_annotations
+}

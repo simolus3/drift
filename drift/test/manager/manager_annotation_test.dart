@@ -251,6 +251,116 @@ void main() {
         BigInt.from(5));
   });
 
+  test('manager - generic order annotation', () async {
+    final in3Days = DateTime.now().add(Duration(days: 3));
+    await db.managers.tableWithEveryColumnType.create((o) => o(
+        aBlob: Value(Uint8List(0)),
+        id: Value(RowId(1)),
+        aBool: Value(true),
+        anInt: Value(5),
+        anInt64: Value(BigInt.from(5)),
+        aText: Value("Get that math homework done"),
+        anIntEnum: Value(TodoStatus.open),
+        aReal: Value(3.0),
+        aDateTime: Value(in3Days)));
+    await db.managers.tableWithEveryColumnType.create((o) => o(
+        aBlob: Value(Uint8List(50)),
+        aBool: Value(false),
+        id: Value(RowId(2)),
+        anInt: Value(1),
+        anInt64: Value(BigInt.from(10)),
+        aText: Value("Do Nothing"),
+        anIntEnum: Value(TodoStatus.done),
+        aReal: Value(2),
+        aDateTime: Value(DateTime.now().add(Duration(days: 2)))));
+
+    final aTextAnnotation =
+        db.managers.tableWithEveryColumnType.annotation((a) => a.aText);
+    final aRealAnnotation =
+        db.managers.tableWithEveryColumnType.annotation((a) => a.aReal);
+    final anIntEnumAnnotation =
+        db.managers.tableWithEveryColumnType.annotation((a) => a.anIntEnum);
+    final anIntEnumWithConverterAnnotation = db
+        .managers.tableWithEveryColumnType
+        .annotationWithConverter((a) => a.anIntEnum);
+    final aDateTimeAnnotation =
+        db.managers.tableWithEveryColumnType.annotation((a) => a.aDateTime);
+    final aBlobAnnotation =
+        db.managers.tableWithEveryColumnType.annotation((a) => a.aBlob);
+    final aBoolAnnotation =
+        db.managers.tableWithEveryColumnType.annotation((a) => a.aBool);
+    final anIntAnnotation =
+        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt);
+    final anInt64Annotation =
+        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt64);
+
+    // If any of these filters dont work, there will be more than one row returned, which will cause an exception
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([aTextAnnotation])
+            .orderBy((f) => aTextAnnotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [2, 1]);
+
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([aRealAnnotation])
+            .orderBy((f) => aRealAnnotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [2, 1]);
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([anIntEnumAnnotation])
+            .orderBy((f) => anIntEnumAnnotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [1, 2]);
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([anIntEnumWithConverterAnnotation])
+            .orderBy((f) => anIntEnumWithConverterAnnotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [1, 2]);
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([aDateTimeAnnotation])
+            .orderBy((f) => aDateTimeAnnotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [2, 1]);
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([aBlobAnnotation])
+            .orderBy((f) => aBlobAnnotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [1, 2]);
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([aBoolAnnotation])
+            .orderBy((f) => aBoolAnnotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [2, 1]);
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([anIntAnnotation])
+            .orderBy((f) => anIntAnnotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [2, 1]);
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .withAnnotations([anInt64Annotation])
+            .orderBy((f) => anInt64Annotation.order.asc())
+            .get()
+            .then((value) => value.map((e) => e.$1.id).toList()),
+        [1, 2]);
+  });
+
   test('manager - many to one annotation', () async {
     final productNameAnnotation =
         db.managers.listing.annotation((a) => a.product.name);

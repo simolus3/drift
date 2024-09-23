@@ -8,6 +8,11 @@ sealed class BaseAnnotation<SqlType extends Object, $Table extends Table> {
   /// The join builders that are needed to read the expression
   final Set<JoinBuilder> _joinBuilders;
   BaseAnnotation(this._joinBuilders);
+
+  /// Create an order by clause for this annotation
+  ColumnOrderings get order {
+    return ColumnOrderings(_expression);
+  }
 }
 
 /// A class that contains the information needed to create an annotation
