@@ -1,25 +1,32 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'manager.dart';
 
-sealed class _BaseAnnotation<SqlType extends Object, $Table extends Table> {
+/// A class that contains the information needed to create an annotation
+sealed class BaseAnnotation<SqlType extends Object, $Table extends Table> {
+  /// The expression/column which will be added to the query
   Expression<SqlType> get _expression;
+
+  /// The join builders that are needed to read the expression
   final Set<JoinBuilder> _joinBuilders;
-  _BaseAnnotation(this._joinBuilders);
+  BaseAnnotation(this._joinBuilders);
 }
 
+/// A class that contains the information needed to create an annotation
 class Annotation<SqlType extends Object, $Table extends Table>
-    extends _BaseAnnotation<SqlType, $Table> {
+    extends BaseAnnotation<SqlType, $Table> {
   @override
   final Expression<SqlType> _expression;
 
+  /// Create a filter for this annotation
   ColumnFilters<SqlType> get filter {
     return ColumnFilters(_expression);
   }
 
+  /// Read the result of the annotation from the [BaseReferences] object
   SqlType? read(BaseReferences refs) {
     return refs.$_typedResult.read(_expression);
   }
 
+  /// Create a new annotation
   Annotation(this._expression, super._joinBuilders);
 
   @override
@@ -34,19 +41,23 @@ class Annotation<SqlType extends Object, $Table extends Table>
   int get hashCode => _expression.hashCode ^ _joinBuilders.hashCode;
 }
 
+/// A class that contains the information needed to create an annotation for a column with a converter
 class AnnotationWithConverter<DartType, SqlType extends Object,
-    $Table extends Table> extends _BaseAnnotation<SqlType, $Table> {
+    $Table extends Table> extends BaseAnnotation<SqlType, $Table> {
   @override
   final GeneratedColumnWithTypeConverter<DartType, SqlType> _expression;
 
+  /// Create a filter for this annotation
   ColumnWithTypeConverterFilters<DartType, DartType, SqlType> get filter {
     return ColumnWithTypeConverterFilters(_expression);
   }
 
-  final DartType Function(SqlType) converter;
+  /// Converter function to convert from [SqlType] to [DartType]
+  final DartType Function(SqlType) $converter;
 
+  /// Create a new annotation with a converter
   AnnotationWithConverter(this._expression, super._joinBuilders,
-      {required this.converter});
+      {required this.$converter});
 
   @override
   bool operator ==(Object other) {
@@ -60,12 +71,13 @@ class AnnotationWithConverter<DartType, SqlType extends Object,
   @override
   int get hashCode => _expression.hashCode ^ _joinBuilders.hashCode;
 
+  /// Read the result of the annotation from the [BaseReferences] object
   DartType? read(BaseReferences refs) {
     final dartType = refs.$_typedResult.read(_expression);
     if (dartType == null) {
       return null;
     }
-    return converter(dartType);
+    return $converter(dartType);
   }
 }
 
@@ -73,6 +85,8 @@ class AnnotationWithConverter<DartType, SqlType extends Object,
 class AnnotationComposer<DB extends GeneratedDatabase, T extends Table>
     extends Composer<DB, T> {
   @internal
+
+  /// Create a new annotation composer which will be used to create annotations
   AnnotationComposer(
       {required super.$db,
       required super.$table,

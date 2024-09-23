@@ -17,7 +17,7 @@ part 'annotate.dart';
 /// Defines a class that holds the state for a [BaseTableManager]
 ///
 /// It holds the state for manager of [$Table] table in [$Database] database.
-/// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings for the manager.
+/// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings and [$AnnotationComposer] Annotations for the manager.
 ///
 /// There are 3 Dataclass generics:
 ///   - [$Dataclass] is the dataclass that is used to interact with the table
@@ -83,6 +83,8 @@ class TableManagerState<
   /// which will be applied to the statement when its eventually created
   final $OrderingComposer Function() createOrderingComposer;
 
+  /// The callback that will be used to create the composer which
+  /// will be used to create annotations for the query
   final $AnnotationComposer Function() createAnnotationComposer;
 
   /// This function is passed to the user to create a companion
@@ -98,6 +100,7 @@ class TableManagerState<
   final List<$DataclassWithReferences> Function(List<TypedResult>)
       _withReferenceMapper;
 
+  /// Additional columns/expression that will be added to the query with annotations
   final Set<Expression> addedColumns;
 
   /// This function is used to ensure that the correct dataclass type is returned by the manager.
@@ -526,6 +529,10 @@ abstract class BaseTableManager<
         .copyWith(prefetchHooks: prefetchHooks));
   }
 
+  /// Add annotations to the statement which will be used to add additional columns to the query
+  /// These columns will be returned in the result set and can be used in filters/orderings
+  ///
+  /// {@macro annotation_example}
   ProcessedTableManager<
           $Database,
           $Table,
@@ -538,7 +545,7 @@ abstract class BaseTableManager<
           $DataclassWithReferences,
           $DataclassWithReferences,
           $CreatePrefetchHooksCallback>
-      withAnnotations(Iterable<_BaseAnnotation<Object, $Table>> annotations) {
+      withAnnotations(Iterable<BaseAnnotation<Object, $Table>> annotations) {
     final joinBuilders =
         annotations.map((e) => e._joinBuilders).expand((e) => e).toSet();
     final addedColumns = annotations.map((e) => e._expression).toSet();
@@ -993,6 +1000,25 @@ abstract class RootTableManager<
         .batch((b) => b.replaceAll($state._tableAsTableInfo, entities));
   }
 
+  /// Create an annotation which can be used to add additional columns to a query
+  ///
+  /// {@template annotation_example}
+  /// e.g.
+  /// ```dart
+  /// /// Filter users who are in an admin group
+  /// final inAdminGroup = db.managers.users.annotation((a) => a.group.isAdmin);
+  /// final users = db.managers.users.withAnnotations([inAdminGroup]).filter(inAdminGroup.filter(true)).get();
+  ///
+  /// /// Aggregate the number of users in each group
+  /// final userCount = db.managers.group.annotation((a) => a.users((a) => a.id.count()));
+  /// final groups = db.managers.group.withAnnotations([userCount]).get();
+  /// for (final (group, refs) in groups) {
+  ///   final count = userCount.read(refs);
+  /// }
+  /// ```
+  /// {@endtemplate}
+  ///
+  /// See also: [AnnotationWithConverter] for annotations on columns with type converters
   Annotation<T, $Table> annotation<T extends Object>(
     Expression<T> Function($AnnotationComposer a) a,
   ) {
@@ -1001,6 +1027,10 @@ abstract class RootTableManager<
     return Annotation(expression, composer.$joinBuilders.toSet());
   }
 
+  /// Create an annotation which can be used to add additional columns to a query
+  ///
+  /// This function works the same as [annotation], but it allows for the use of type converters
+  /// See [annotation] for more information
   AnnotationWithConverter<DartType, SqlType, $Table>
       annotationWithConverter<DartType, SqlType extends Object>(
     GeneratedColumnWithTypeConverter<DartType, SqlType> Function(
@@ -1010,6 +1040,6 @@ abstract class RootTableManager<
     final composer = $state.createAnnotationComposer();
     final expression = a(composer);
     return AnnotationWithConverter(expression, composer.$joinBuilders.toSet(),
-        converter: (p0) => expression.converter.fromSql(p0));
+        $converter: (p0) => expression.converter.fromSql(p0));
   }
 }
