@@ -99,7 +99,7 @@ jobs:
   #          retention-days: 1
 
   drift_web_ddc:
-    needs: [drift]
+    needs: [setup, drift]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -140,7 +140,7 @@ jobs:
   #     - run: dart test -p ${{ matrix.browser }} --compiler dart2js --total-shards 4 --shard-index ${{ matrix.shard }}
 
   drift_web_dart2wasm:
-    needs: [drift]
+    needs: [setup, drift]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -329,7 +329,7 @@ jobs:
         run: dart run drift_dev schema dump lib/database.dart drift_migrations/
   web_integration_tests:
     name: "Web integration tests"
-    needs: [drift]
+    needs: [setup, drift]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
