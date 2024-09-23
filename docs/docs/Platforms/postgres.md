@@ -51,10 +51,23 @@ targets:
 
 Then, perhaps this example database is helpful as a starting point:
 
-{{ load_snippet('(full)','lib/snippets/platforms/postgres.dart.excerpt.json') }}
+{{ load_snippet('setup','lib/snippets/platforms/postgres.dart.excerpt.json') }}
 
 After starting a database server, for example by running `docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres`,
 you can run the example to see drift talking to Postgres.
+
+## Custom connections and connection pools
+
+The unnamed `PgDatabase` constructor mirrors the options found on the `Endpoint` class in
+`package:postgres`, as it uses that class to establish a connection to PostgreSQL.
+In some cases, for instance because you already have an existing Postgres connection or because
+you need something different from the existing `Endpoint`, you can use `PgDatabase.opened`
+with your existing `Session` from `package:postgres`.
+
+This technique is also useful for pooling connections to Postgres, as the `Pool` implementation
+from `package:postgres` implements the `Session` interface:
+
+{{ load_snippet('pool','lib/snippets/platforms/postgres.dart.excerpt.json') }}
 
 ## API extensions
 
