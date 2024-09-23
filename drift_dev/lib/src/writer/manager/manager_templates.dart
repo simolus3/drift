@@ -410,11 +410,11 @@ class _ManagerCodeTemplates {
       {required _Relation relation, required TextEmitter leaf}) {
     if (relation.isReverse) {
       return """
-        ${leaf.drift("AggregateBuilder")}<T> ${relation.fieldName}<T extends Object>(
+        ${leaf.drift("Expression")}<T> ${relation.fieldName}<T extends Object>(
           ${leaf.drift("Expression")}<T> Function( ${annotationComposerNameWithPrefix(relation.referencedTable, leaf)} a) f
         ) {
           ${_referencedComposer(leaf: leaf, relation: relation, composerName: annotationComposerNameWithPrefix(relation.referencedTable, leaf))}
-          return ${leaf.drift("AggregateBuilder")}(f(composer));
+          return f(composer);
         }
 """;
     } else {

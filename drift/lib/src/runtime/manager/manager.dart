@@ -13,7 +13,6 @@ part 'join_builder.dart';
 part 'ordering.dart';
 part 'references.dart';
 part 'annotate.dart';
-part 'aggregates.dart';
 
 /// Defines a class that holds the state for a [BaseTableManager]
 ///
