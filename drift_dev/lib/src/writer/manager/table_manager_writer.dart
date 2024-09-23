@@ -97,8 +97,7 @@ class _TableManagerWriter {
     // To move the filter, the types of the columns must be the same
     relations = relations.where((relation) {
       String typeForColumn(DriftColumn column) {
-        return column.typeConverter?.dartType.getDisplayString(
-                withNullability: false) ?? // ignore: deprecated_member_use
+        return column.typeConverter?.dartType.getDisplayString() ??
             leaf.dartCode(leaf.innerColumnType(column.sqlType));
       }
 

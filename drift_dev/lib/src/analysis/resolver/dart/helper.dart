@@ -182,7 +182,7 @@ bool isFromDrift(DartType type) {
 
 extension IsFromDrift on Element {
   bool get isFromDefaultTable {
-    final parent = enclosingElement;
+    final parent = enclosingElement3;
 
     return parent is ClassElement &&
         parent.name == 'Table' &&
@@ -201,18 +201,11 @@ extension TypeUtils on DartType {
     return $this is InterfaceType ? $this.element.name : null;
   }
 
-// ignore: deprecated_member_use
-  String get userVisibleName => getDisplayString(withNullability: true);
+  String get userVisibleName => getDisplayString();
 
   /// How this type should look like in generated code.
   String codeString() {
-    if (nullabilitySuffix == NullabilitySuffix.star) {
-      // We can't actually use the legacy star in code, so don't show it.
-      // ignore: deprecated_member_use
-      return getDisplayString(withNullability: true);
-    }
-// ignore: deprecated_member_use
-    return getDisplayString(withNullability: true);
+    return getDisplayString();
   }
 }
 

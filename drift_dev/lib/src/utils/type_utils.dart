@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 
 bool isFromDrift(DartType type) {
@@ -31,18 +30,10 @@ extension TypeUtils on DartType {
     return $this is InterfaceType ? $this.element.name : null;
   }
 
-  // ignore: deprecated_member_use
-  String get userVisibleName => getDisplayString(withNullability: true);
+  String get userVisibleName => getDisplayString();
 
   /// How this type should look like in generated code.
   String codeString() {
-    if (nullabilitySuffix == NullabilitySuffix.star) {
-      // We can't actually use the legacy star in code, so don't show it.
-      // ignore: deprecated_member_use
-      return getDisplayString(withNullability: true);
-    }
-
-    // ignore: deprecated_member_use
-    return getDisplayString(withNullability: true);
+    return getDisplayString();
   }
 }

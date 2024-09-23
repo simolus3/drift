@@ -50,8 +50,7 @@ class DartAccessorResolver
           DriftAnalysisError.forDartElement(
             element,
             'Could not read table from '
-            // ignore: deprecated_member_use
-            '`${dartType?.getDisplayString(withNullability: true)}`, it needs '
+            '`${dartType?.getDisplayString()}`, it needs '
             'to reference a table class.',
           ),
         );
@@ -74,8 +73,7 @@ class DartAccessorResolver
           DriftAnalysisError.forDartElement(
             element,
             'Could not read view from '
-            // ignore: deprecated_member_use
-            '`${dartType?.getDisplayString(withNullability: true)}`, it needs '
+            '`${dartType?.getDisplayString()}`, it needs '
             'to reference a view class.',
           ),
         );
@@ -133,8 +131,7 @@ class DartAccessorResolver
             DriftAnalysisError.forDartElement(
               element,
               'Could not read referenced DAO from '
-              // ignore: deprecated_member_use
-              '`${type.getDisplayString(withNullability: true)}`, it needs '
+              '`${type.getDisplayString()}`, it needs '
               'to reference an accessor class.',
             ),
           );
@@ -187,9 +184,9 @@ class DartAccessorResolver
   }
 
   Future<int?> _readSchemaVersion() async {
-    final element =
-        // ignore: deprecated_member_use
-        discovered.dartElement.thisType.getGetter('schemaVersion')?.variable;
+    final element = discovered.dartElement.thisType.element.augmented
+        .getGetter('schemaVersion')
+        ?.variable2;
     if (element == null) return null;
 
     try {
