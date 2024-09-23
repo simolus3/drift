@@ -10,6 +10,8 @@ runs:
   using: "composite"
   steps:
     - uses: dart-lang/setup-dart@v1
+      with:
+        sdk: "${{ inputs.dart_version }}"
 
     # Setup sqlite3
     - name: Download sqlite3

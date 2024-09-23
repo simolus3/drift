@@ -26,6 +26,8 @@ jobs:
       - name: Download Dart
         if: steps.cache_build.outputs.cache-hit != 'true'
         uses: dart-lang/setup-dart@v1
+        with:
+          sdk: dev
       - name: Compile sqlite3
         if: steps.cache_build.outputs.cache-hit != 'true'
         run: |
@@ -47,22 +49,19 @@ jobs:
     name: Get and cache Dart dependencies
     runs-on: ubuntu-latest
     outputs:
-      dart_version: ${{ steps.dart_version.outputs.version }}
+      dart_version: ${{ steps.dart.outputs.dart-version }}
     steps:
       - uses: actions/checkout@v4
+        id: dart
       - uses: dart-lang/setup-dart@v1
-      - name: Get Dart version
-        id: dart_version
-        run: |
-          version=`cat $DART_HOME/version`
-          echo "Running on Dart $version"
-          echo "version=$version" >> $GITHUB_STATE
+        with:
+          sdk: dev
       - uses: actions/cache@v4
         with:
           path: "${{ env.PUB_CACHE }}"
-          key: dart-dependencies-${{ steps.dart_version.outputs.version }}-${{ hashFiles('**/pubspec.yaml') }}
+          key: dart-dependencies-${{ steps.dart.outputs.dart-version }}-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
-            dart-dependencies-${{ steps.dart_version.outputs.version }}-
+            dart-dependencies-${{ steps.dart.outputs.dart-version }}-
             dart-dependencies-
       - name: Setup melos
         run: dart pub global activate melos && dart pub get

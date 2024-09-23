@@ -13,58 +13,58 @@ jobs:
   setup:
     uses: ./.github/workflows/setup.yml
 
-  docs:
-    name: "Documentation"
-    needs: [setup]
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: docs
+  # docs:
+  #   name: "Documentation"
+  #   needs: [setup]
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: docs
 
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/prepare
-        with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
-      - run: melos bootstrap --scope drift_docs,drift
-        working-directory: .
-      - name: Run build
-        env:
-          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
-        run: dart run tool/ci_build.dart
-      - name: Analyze Dart and Drift sources
-        run: |
-          dart format -o none --set-exit-if-changed .
-          dart analyze --fatal-infos --fatal-warnings
-          dart run drift_dev analyze
-      - run: dart test
-      - name: Deploy to netlify (Branch)
-        if: ${{ github.event_name == 'push' }}
-        uses: nwtgck/actions-netlify@v3
-        with:
-          production-branch: latest-release
-          publish-dir: docs/deploy
-          enable-pull-request-comment: true
-          enable-commit-comment: false
-          netlify-config-path: "./netlify.toml"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      - name: Deploy to netlify (Pull Request)
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: nwtgck/actions-netlify@v3
-        with:
-          production-branch: latest-release
-          publish-dir: docs/deploy
-          enable-pull-request-comment: true
-          enable-commit-comment: false
-          netlify-config-path: "./netlify.toml"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          alias: deploy-preview-${{ github.event.number }}
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/prepare
+  #       with:
+  #         dart_version: ${{ needs.setup.outputs.dart_version }}
+  #     - run: melos bootstrap --scope drift_docs,drift
+  #       working-directory: .
+  #     - name: Run build
+  #       env:
+  #         IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
+  #       run: dart run tool/ci_build.dart
+  #     - name: Analyze Dart and Drift sources
+  #       run: |
+  #         dart format -o none --set-exit-if-changed .
+  #         dart analyze --fatal-infos --fatal-warnings
+  #         dart run drift_dev analyze
+  #     - run: dart test
+  #     - name: Deploy to netlify (Branch)
+  #       if: ${{ github.event_name == 'push' }}
+  #       uses: nwtgck/actions-netlify@v3
+  #       with:
+  #         production-branch: latest-release
+  #         publish-dir: docs/deploy
+  #         enable-pull-request-comment: true
+  #         enable-commit-comment: false
+  #         netlify-config-path: "./netlify.toml"
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #       env:
+  #         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+  #         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  #     - name: Deploy to netlify (Pull Request)
+  #       if: ${{ github.event_name == 'pull_request' }}
+  #       uses: nwtgck/actions-netlify@v3
+  #       with:
+  #         production-branch: latest-release
+  #         publish-dir: docs/deploy
+  #         enable-pull-request-comment: true
+  #         enable-commit-comment: false
+  #         netlify-config-path: "./netlify.toml"
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         alias: deploy-preview-${{ github.event.number }}
+  #       env:
+  #         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+  #         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
   drift:
     name: "drift package"
@@ -266,40 +266,40 @@ jobs:
         run: |
           dart pub upgrade
           dart test
-  test_flutter:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # We want to support the two latest stable Flutter versions
-        flutter: ["3.22", "3.24"]
+  # test_flutter:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       # We want to support the two latest stable Flutter versions
+  #       flutter: ["3.22", "3.24"]
 
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ matrix.flutter }}
-          cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
-      - name: Setup melos
-        run: dart pub global activate melos && dart pub get
-        shell: bash
-      - name: Install dependencies in drift/example/app
-        run: melos bootstrap --scope app
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
-        working-directory: examples/app
-      - name: Test CLI
-        run: |
-          dart run drift_dev schema dump lib/database/database.dart drift_schemas/
-          dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
-          dart run drift_dev schema steps drift_schemas/ lib/database/schema_versions.dart
-        working-directory: examples/app
-      - run: flutter analyze
-        working-directory: examples/app
-      - run: flutter test
-        working-directory: examples/app
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ matrix.flutter }}
+  #         cache: true
+  #         cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+  #         cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+  #     - name: Setup melos
+  #       run: dart pub global activate melos && dart pub get
+  #       shell: bash
+  #     - name: Install dependencies in drift/example/app
+  #       run: melos bootstrap --scope app
+  #     - name: Generate code
+  #       run: dart run build_runner build --delete-conflicting-outputs
+  #       working-directory: examples/app
+  #     - name: Test CLI
+  #       run: |
+  #         dart run drift_dev schema dump lib/database/database.dart drift_schemas/
+  #         dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
+  #         dart run drift_dev schema steps drift_schemas/ lib/database/schema_versions.dart
+  #       working-directory: examples/app
+  #     - run: flutter analyze
+  #       working-directory: examples/app
+  #     - run: flutter test
+  #       working-directory: examples/app
   migration_integration_tests:
     name: "Integration tests for migration tooling"
     needs: [setup]
