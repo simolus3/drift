@@ -5,8 +5,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 export 'database_stub.dart'
-    if (dart.library.ffi) 'database_vm.dart'
-    if (dart.library.js) 'database_web.dart';
+    if (dart.library.io) 'database_vm.dart'
+    if (dart.library.js_interop) 'database_web.dart';
 export 'matchers.dart';
 export 'mocks.dart';
 
