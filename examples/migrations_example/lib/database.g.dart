@@ -1111,7 +1111,7 @@ class $$UsersTableAnnotationComposer
     return composer;
   }
 
-  Expression<T> groupsRefs<T extends Object>(
+  AggregateBuilder<T> groupsRefs<T extends Object>(
       Expression<T> Function($GroupsAnnotationComposer a) f) {
     final $GroupsAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -1129,7 +1129,7 @@ class $$UsersTableAnnotationComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
-    return f(composer);
+    return AggregateBuilder(f(composer));
   }
 }
 

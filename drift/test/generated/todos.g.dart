@@ -3579,7 +3579,7 @@ class $$CategoriesTableAnnotationComposer
   GeneratedColumn<String> get descriptionInUpperCase => $composableBuilder(
       column: $table.descriptionInUpperCase, builder: (column) => column);
 
-  Expression<T> todos<T extends Object>(
+  AggregateBuilder<T> todos<T extends Object>(
       Expression<T> Function($$TodosTableTableAnnotationComposer a) f) {
     final $$TodosTableTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -3597,7 +3597,7 @@ class $$CategoriesTableAnnotationComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
-    return f(composer);
+    return AggregateBuilder(f(composer));
   }
 }
 
@@ -4993,7 +4993,7 @@ class $$DepartmentTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  Expression<T> productRefs<T extends Object>(
+  AggregateBuilder<T> productRefs<T extends Object>(
       Expression<T> Function($$ProductTableAnnotationComposer a) f) {
     final $$ProductTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -5011,7 +5011,7 @@ class $$DepartmentTableAnnotationComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
-    return f(composer);
+    return AggregateBuilder(f(composer));
   }
 }
 
@@ -5271,7 +5271,7 @@ class $$ProductTableAnnotationComposer
     return composer;
   }
 
-  Expression<T> listings<T extends Object>(
+  AggregateBuilder<T> listings<T extends Object>(
       Expression<T> Function($$ListingTableAnnotationComposer a) f) {
     final $$ListingTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -5289,7 +5289,7 @@ class $$ProductTableAnnotationComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
-    return f(composer);
+    return AggregateBuilder(f(composer));
   }
 }
 
@@ -5500,7 +5500,7 @@ class $$StoreTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  Expression<T> listings<T extends Object>(
+  AggregateBuilder<T> listings<T extends Object>(
       Expression<T> Function($$ListingTableAnnotationComposer a) f) {
     final $$ListingTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -5518,7 +5518,7 @@ class $$StoreTableAnnotationComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
-    return f(composer);
+    return AggregateBuilder(f(composer));
   }
 }
 

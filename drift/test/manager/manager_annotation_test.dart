@@ -273,13 +273,13 @@ void main() {
   });
   test('manager - one to many aggregation annotation', () async {
     final productCountAnnotation =
-        db.managers.store.annotation((a) => a.listings((a) => a.id.count()));
+        db.managers.store.annotation((a) => a.listings((a) => a.id).count());
 
     final (_, refs) = await db.managers.store
         .withAnnotations([productCountAnnotation])
         .limit(1)
         .getSingle();
-    expect(productCountAnnotation.read(refs), 8);
+    expect(productCountAnnotation.read(refs), 9);
   });
 
   test('manager - aggregation on annotation', () async {

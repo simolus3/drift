@@ -854,7 +854,7 @@ class $$CategoriesTableAnnotationComposer
   GeneratedColumnWithTypeConverter<Color, int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
 
-  Expression<T> todoEntriesRefs<T extends Object>(
+  AggregateBuilder<T> todoEntriesRefs<T extends Object>(
       Expression<T> Function($$TodoEntriesTableAnnotationComposer a) f) {
     final $$TodoEntriesTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -872,7 +872,7 @@ class $$CategoriesTableAnnotationComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
-    return f(composer);
+    return AggregateBuilder(f(composer));
   }
 }
 
