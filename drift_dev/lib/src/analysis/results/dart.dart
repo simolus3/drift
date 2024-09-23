@@ -526,7 +526,7 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
     }
 
     final element = node.methodName.staticElement;
-    final enclosing = element?.enclosingElement;
+    final enclosing = element?.enclosingElement3;
     if (enclosing is! ExtensionElement || enclosing.name == null) {
       return super.visitMethodInvocation(node);
     }
