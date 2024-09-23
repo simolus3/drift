@@ -52,8 +52,8 @@ jobs:
       dart_version: ${{ steps.dart.outputs.dart-version }}
     steps:
       - uses: actions/checkout@v4
-        id: dart
       - uses: dart-lang/setup-dart@v1
+        id: dart
         with:
           sdk: dev
       - uses: actions/cache@v4
