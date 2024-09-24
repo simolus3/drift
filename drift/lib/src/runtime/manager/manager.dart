@@ -1001,10 +1001,21 @@ abstract class RootTableManager<
         .batch((b) => b.replaceAll($state._tableAsTableInfo, entities));
   }
 
-  /// Create an annotation which can be used to add additional columns to a query
+  /// Create an annotation for adding additional columns to the query
   ///
-  /// {@template annotation_example}
-  /// e.g.
+  /// The `annotation` and `annotationWithConverter` methods allow you to create annotations that add additional columns to a query. These columns are computed directly by the database. This approach has significant performance benefits compared to querying all the data and performing the calculations yourself in your Dart code.
+  ///
+  /// ### Why Database Calculations are Faster
+  ///
+  /// 1. **Optimized for Performance**: Databases are optimized for data retrieval and manipulation. They use efficient algorithms and indexing to quickly compute results.
+  /// 2. **Reduced Data Transfer**: When calculations are performed in the database, only the final results are transferred over the network. This reduces the amount of data that needs to be sent to your application.
+  /// 3. **Parallel Processing**: Modern databases can perform operations in parallel, taking advantage of multiple CPU cores and other hardware optimizations.
+  /// 4. **Less Memory Usage**: Performing calculations in the database reduces the memory footprint of your application, as it doesn't need to load large datasets into memory for processing.
+  ///
+  /// ### Example
+
+  /// Consider the following example where we use the `annotation` method to filter users who are in an admin group and to aggregate the number of users in each group:
+
   /// ```dart
   /// /// Filter users who are in an admin group
   /// final inAdminGroup = db.managers.users.annotation((a) => a.group.isAdmin);
@@ -1017,8 +1028,12 @@ abstract class RootTableManager<
   ///   final count = userCount.read(refs);
   /// }
   /// ```
-  /// {@endtemplate}
   ///
+  /// In this example:
+  /// - The `inAdminGroup` annotation filters users directly in the database, ensuring that only users in the admin group are retrieved.
+  /// - The `userCount` annotation aggregates the number of users in each group within the database, providing the count directly without needing to load all user data into your application.
+  ///
+  /// By leveraging these database calculations, you can achieve faster query performance and more efficient resource usage in your application.
   /// See also: [AnnotationWithConverter] for annotations on columns with type converters
   Annotation<T, $Table> annotation<T extends Object>(
     Expression<T> Function($AnnotationComposer a) a,
@@ -1028,10 +1043,9 @@ abstract class RootTableManager<
     return Annotation(expression, composer.$joinBuilders.toSet());
   }
 
-  /// Create an annotation which can be used to add additional columns to a query
+  /// Create an [annotation] with type converter support
   ///
-  /// This function works the same as [annotation], but it allows for the use of type converters
-  /// See [annotation] for more information
+  /// See the documentation for [annotation] for more information
   AnnotationWithConverter<DartType, SqlType, $Table>
       annotationWithConverter<DartType, SqlType extends Object>(
     GeneratedColumnWithTypeConverter<DartType, SqlType> Function(
