@@ -28,7 +28,12 @@ class Annotation<SqlType extends Object, $Table extends Table>
 
   /// Read the result of the annotation from the [BaseReferences] object
   SqlType? read(BaseReferences refs) {
-    return refs.$_typedResult.read(_expression);
+    try {
+      return refs.$_typedResult.read(_expression);
+    } on ArgumentError {
+      throw ArgumentError('This annotation has not been added to the query. '
+          'Use the .withAnnotations(...) method to add it to the query. ');
+    }
   }
 
   /// Create a new annotation
