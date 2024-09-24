@@ -204,40 +204,37 @@ typedef $$TestTableTableUpdateCompanionBuilder = TestTableCompanion Function({
 });
 
 class $$TestTableTableFilterComposer extends $$TestTableTableComposer {
-  $$TestTableTableFilterComposer($$TestTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TestTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get id => ColumnFilters(_id);
   ColumnFilters<String> get content => ColumnFilters(_content);
 }
 
 class $$TestTableTableOrderingComposer extends $$TestTableTableComposer {
-  $$TestTableTableOrderingComposer($$TestTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TestTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get content => ColumnOrderings(_content);
 }
 
 class $$TestTableTableAnnotationComposer extends $$TestTableTableComposer {
-  $$TestTableTableAnnotationComposer($$TestTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TestTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get id => _id;
   GeneratedColumn<String> get content => _content;
 }
@@ -256,6 +253,36 @@ class $$TestTableTableComposer
 
   GeneratedColumn<String> get _content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
+
+  $$TestTableTableOrderingComposer _orderComposer() {
+    return $$TestTableTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$TestTableTableFilterComposer _filterComposer() {
+    return $$TestTableTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$TestTableTableAnnotationComposer _annotationComposer() {
+    return $$TestTableTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$TestTableTableTableManager extends RootTableManager<
@@ -277,12 +304,12 @@ class $$TestTableTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$TestTableTableFilterComposer(
-              $$TestTableTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$TestTableTableOrderingComposer(
-              $$TestTableTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$TestTableTableAnnotationComposer(
-              $$TestTableTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$TestTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TestTableTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$TestTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),

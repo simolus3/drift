@@ -224,40 +224,37 @@ typedef $EntriesUpdateCompanionBuilder = EntriesCompanion Function({
 });
 
 class $EntriesFilterComposer extends $EntriesComposer {
-  $EntriesFilterComposer($EntriesComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $EntriesFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get id => ColumnFilters(_id);
   ColumnFilters<String> get value => ColumnFilters(_value);
 }
 
 class $EntriesOrderingComposer extends $EntriesComposer {
-  $EntriesOrderingComposer($EntriesComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $EntriesOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get value => ColumnOrderings(_value);
 }
 
 class $EntriesAnnotationComposer extends $EntriesComposer {
-  $EntriesAnnotationComposer($EntriesComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $EntriesAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get id => _id;
   GeneratedColumn<String> get value => _value;
 }
@@ -275,6 +272,36 @@ class $EntriesComposer extends Composer<_$MyDatabase, Entries> {
 
   GeneratedColumn<String> get _value =>
       $composableBuilder(column: $table.value, builder: (column) => column);
+
+  $EntriesOrderingComposer _orderComposer() {
+    return $EntriesOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $EntriesFilterComposer _filterComposer() {
+    return $EntriesFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $EntriesAnnotationComposer _annotationComposer() {
+    return $EntriesAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $EntriesTableManager extends RootTableManager<
@@ -294,11 +321,11 @@ class $EntriesTableManager extends RootTableManager<
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $EntriesFilterComposer($EntriesComposer($db: db, $table: table)),
-          createOrderingComposer: () => $EntriesOrderingComposer(
-              $EntriesComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $EntriesAnnotationComposer(
-              $EntriesComposer($db: db, $table: table)),
+              $EntriesFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $EntriesOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $EntriesAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> value = const Value.absent(),

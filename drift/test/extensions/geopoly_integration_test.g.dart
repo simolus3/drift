@@ -246,40 +246,37 @@ typedef $GeopolyTestUpdateCompanionBuilder = GeopolyTestCompanion Function({
 });
 
 class $GeopolyTestFilterComposer extends $GeopolyTestComposer {
-  $GeopolyTestFilterComposer($GeopolyTestComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $GeopolyTestFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<GeopolyPolygon> get shape => ColumnFilters(_shape);
   ColumnFilters<DriftAny> get a => ColumnFilters(_a);
 }
 
 class $GeopolyTestOrderingComposer extends $GeopolyTestComposer {
-  $GeopolyTestOrderingComposer($GeopolyTestComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $GeopolyTestOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<GeopolyPolygon> get shape => ColumnOrderings(_shape);
   ColumnOrderings<DriftAny> get a => ColumnOrderings(_a);
 }
 
 class $GeopolyTestAnnotationComposer extends $GeopolyTestComposer {
-  $GeopolyTestAnnotationComposer($GeopolyTestComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $GeopolyTestAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<GeopolyPolygon> get shape => _shape;
   GeneratedColumn<DriftAny> get a => _a;
 }
@@ -298,6 +295,36 @@ class $GeopolyTestComposer
 
   GeneratedColumn<DriftAny> get _a =>
       $composableBuilder(column: $table.a, builder: (column) => column);
+
+  $GeopolyTestOrderingComposer _orderComposer() {
+    return $GeopolyTestOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $GeopolyTestFilterComposer _filterComposer() {
+    return $GeopolyTestFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $GeopolyTestAnnotationComposer _annotationComposer() {
+    return $GeopolyTestAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $GeopolyTestTableManager extends RootTableManager<
@@ -319,12 +346,12 @@ class $GeopolyTestTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $GeopolyTestFilterComposer(
-              $GeopolyTestComposer($db: db, $table: table)),
-          createOrderingComposer: () => $GeopolyTestOrderingComposer(
-              $GeopolyTestComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $GeopolyTestAnnotationComposer(
-              $GeopolyTestComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $GeopolyTestFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $GeopolyTestOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $GeopolyTestAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),
             Value<DriftAny?> a = const Value.absent(),

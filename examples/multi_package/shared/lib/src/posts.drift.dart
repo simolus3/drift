@@ -217,45 +217,39 @@ typedef $PostsUpdateCompanionBuilder = i1.PostsCompanion Function({
 });
 
 class $PostsFilterComposer extends i1.$PostsComposer {
-  $PostsFilterComposer(i1.$PostsComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $PostsFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.ColumnFilters<String> get content => i0.ColumnFilters(_content);
-  i2.$$UsersTableFilterComposer get author =>
-      i2.$$UsersTableFilterComposer(_author);
+  i2.$$UsersTableFilterComposer get author => _author._filterComposer();
 }
 
 class $PostsOrderingComposer extends i1.$PostsComposer {
-  $PostsOrderingComposer(i1.$PostsComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $PostsOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.ColumnOrderings<String> get content => i0.ColumnOrderings(_content);
-  i2.$$UsersTableOrderingComposer get author =>
-      i2.$$UsersTableOrderingComposer(_author);
+  i2.$$UsersTableOrderingComposer get author => _author._orderComposer();
 }
 
 class $PostsAnnotationComposer extends i1.$PostsComposer {
-  $PostsAnnotationComposer(i1.$PostsComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $PostsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.GeneratedColumn<String> get content => _content;
-  i2.$$UsersTableAnnotationComposer get author =>
-      i2.$$UsersTableAnnotationComposer(_author);
+  i2.$$UsersTableAnnotationComposer get author => _author._annotationComposer();
 }
 
 class $PostsComposer extends i0.Composer<i0.GeneratedDatabase, i1.Posts> {
@@ -290,6 +284,36 @@ class $PostsComposer extends i0.Composer<i0.GeneratedDatabase, i1.Posts> {
             ));
     return composer;
   }
+
+  i1.$PostsOrderingComposer _orderComposer() {
+    return i1.$PostsOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  i1.$PostsFilterComposer _filterComposer() {
+    return i1.$PostsFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  i1.$PostsAnnotationComposer _annotationComposer() {
+    return i1.$PostsAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $PostsTableManager extends i0.RootTableManager<
@@ -308,12 +332,12 @@ class $PostsTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => i1
-              .$PostsFilterComposer(i1.$PostsComposer($db: db, $table: table)),
-          createOrderingComposer: () => i1.$PostsOrderingComposer(
-              i1.$PostsComposer($db: db, $table: table)),
-          createAnnotationComposer: () => i1.$PostsAnnotationComposer(
-              i1.$PostsComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              i1.$PostsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i1.$PostsOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              i1.$PostsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> author = const i0.Value.absent(),
             i0.Value<String?> content = const i0.Value.absent(),

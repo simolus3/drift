@@ -255,48 +255,42 @@ typedef $$ActiveSessionsTableUpdateCompanionBuilder = i3.ActiveSessionsCompanion
 
 class $$ActiveSessionsTableFilterComposer
     extends i3.$$ActiveSessionsTableComposer {
-  $$ActiveSessionsTableFilterComposer(i3.$$ActiveSessionsTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ActiveSessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.ColumnFilters<String> get bearerToken => i0.ColumnFilters(_bearerToken);
-  i1.$$UsersTableFilterComposer get user =>
-      i1.$$UsersTableFilterComposer(_user);
+  i1.$$UsersTableFilterComposer get user => _user._filterComposer();
 }
 
 class $$ActiveSessionsTableOrderingComposer
     extends i3.$$ActiveSessionsTableComposer {
-  $$ActiveSessionsTableOrderingComposer(i3.$$ActiveSessionsTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ActiveSessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.ColumnOrderings<String> get bearerToken =>
       i0.ColumnOrderings(_bearerToken);
-  i1.$$UsersTableOrderingComposer get user =>
-      i1.$$UsersTableOrderingComposer(_user);
+  i1.$$UsersTableOrderingComposer get user => _user._orderComposer();
 }
 
 class $$ActiveSessionsTableAnnotationComposer
     extends i3.$$ActiveSessionsTableComposer {
-  $$ActiveSessionsTableAnnotationComposer(i3.$$ActiveSessionsTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ActiveSessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.GeneratedColumn<String> get bearerToken => _bearerToken;
-  i1.$$UsersTableAnnotationComposer get user =>
-      i1.$$UsersTableAnnotationComposer(_user);
+  i1.$$UsersTableAnnotationComposer get user => _user._annotationComposer();
 }
 
 class $$ActiveSessionsTableComposer
@@ -332,6 +326,36 @@ class $$ActiveSessionsTableComposer
             ));
     return composer;
   }
+
+  i3.$$ActiveSessionsTableOrderingComposer _orderComposer() {
+    return i3.$$ActiveSessionsTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  i3.$$ActiveSessionsTableFilterComposer _filterComposer() {
+    return i3.$$ActiveSessionsTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  i3.$$ActiveSessionsTableAnnotationComposer _annotationComposer() {
+    return i3.$$ActiveSessionsTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
@@ -355,14 +379,12 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => i3.$$ActiveSessionsTableFilterComposer(
-              i3.$$ActiveSessionsTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              i3.$$ActiveSessionsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              i3.$$ActiveSessionsTableOrderingComposer(
-                  i3.$$ActiveSessionsTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () =>
-              i3.$$ActiveSessionsTableAnnotationComposer(
-                  i3.$$ActiveSessionsTableComposer($db: db, $table: table)),
+              i3.$$ActiveSessionsTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () => i3
+              .$$ActiveSessionsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> user = const i0.Value.absent(),
             i0.Value<String> bearerToken = const i0.Value.absent(),

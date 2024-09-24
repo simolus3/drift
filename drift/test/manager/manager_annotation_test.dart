@@ -390,11 +390,32 @@ void main() {
         .limit(1)
         .getSingle();
     expect(productCountAnnotation.read(refs), 9);
+
+    // Test with a filter
+    final productCountMoreThanTenDollarsAnnotation = db.managers.store
+        .annotation((a) => a.listings(
+            (a) => a.id.count(filter: a.price.isBiggerThanValue(10.0))));
+
+    final (_, refs2) = await db.managers.store
+        .withAnnotations([productCountMoreThanTenDollarsAnnotation])
+        .limit(1)
+        .getSingle();
+    expect(productCountMoreThanTenDollarsAnnotation.read(refs2), 5);
+
+    final productCountInElectronicsAnnotation = db.managers.store.annotation(
+        (a) => a.listings((a) => a.id
+            .count(filter: a.product.department.name.equals("Electronics"))));
+
+    final (_, refs3) = await db.managers.store
+        .withAnnotations([productCountInElectronicsAnnotation])
+        .limit(1)
+        .getSingle();
+    expect(productCountInElectronicsAnnotation.read(refs3), 3);
   });
 
   test('manager - aggregation on annotation', () async {
     final productCountAnnotation = db.managers.store
-        .annotation((a) => a.listings((a) => a.product.name).groupConcat());
+        .annotation((a) => a.listings((a) => a.product.name.groupConcat()));
 
     final (_, refs) = await db.managers.store
         .withAnnotations([productCountAnnotation])

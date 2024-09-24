@@ -3488,14 +3488,13 @@ final class $$CategoriesTableReferences
 }
 
 class $$CategoriesTableFilterComposer extends $$CategoriesTableComposer {
-  $$CategoriesTableFilterComposer($$CategoriesTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$CategoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
       ColumnWithTypeConverterFilters(_id);
 
@@ -3507,19 +3506,18 @@ class $$CategoriesTableFilterComposer extends $$CategoriesTableComposer {
       ColumnFilters(_descriptionInUpperCase);
   Expression<bool> todos(
       Expression<bool> Function($$TodosTableTableFilterComposer f) f) {
-    return f($$TodosTableTableFilterComposer(_todos));
+    return f(_todos._filterComposer());
   }
 }
 
 class $$CategoriesTableOrderingComposer extends $$CategoriesTableComposer {
-  $$CategoriesTableOrderingComposer($$CategoriesTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$CategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get description => ColumnOrderings(_description);
   ColumnOrderings<int> get priority => ColumnOrderings(_priority);
@@ -3528,14 +3526,13 @@ class $$CategoriesTableOrderingComposer extends $$CategoriesTableComposer {
 }
 
 class $$CategoriesTableAnnotationComposer extends $$CategoriesTableComposer {
-  $$CategoriesTableAnnotationComposer($$CategoriesTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$CategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumnWithTypeConverter<RowId, int> get id => _id;
 
   GeneratedColumn<String> get description => _description;
@@ -3545,7 +3542,7 @@ class $$CategoriesTableAnnotationComposer extends $$CategoriesTableComposer {
   GeneratedColumn<String> get descriptionInUpperCase => _descriptionInUpperCase;
   Expression<T> todos<T extends Object>(
       Expression<T> Function($$TodosTableTableAnnotationComposer a) f) {
-    return f($$TodosTableTableAnnotationComposer(_todos));
+    return f(_todos._annotationComposer());
   }
 }
 
@@ -3588,6 +3585,36 @@ class $$CategoriesTableComposer extends Composer<_$TodoDb, $CategoriesTable> {
             ));
     return composer;
   }
+
+  $$CategoriesTableOrderingComposer _orderComposer() {
+    return $$CategoriesTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$CategoriesTableFilterComposer _filterComposer() {
+    return $$CategoriesTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$CategoriesTableAnnotationComposer _annotationComposer() {
+    return $$CategoriesTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$CategoriesTableTableManager extends RootTableManager<
@@ -3606,12 +3633,12 @@ class $$CategoriesTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$CategoriesTableFilterComposer(
-              $$CategoriesTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$CategoriesTableOrderingComposer(
-              $$CategoriesTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$CategoriesTableAnnotationComposer(
-              $$CategoriesTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$CategoriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CategoriesTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$CategoriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String> description = const Value.absent(),
@@ -3712,14 +3739,13 @@ final class $$TodosTableTableReferences
 }
 
 class $$TodosTableTableFilterComposer extends $$TodosTableTableComposer {
-  $$TodosTableTableFilterComposer($$TodosTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TodosTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
       ColumnWithTypeConverterFilters(_id);
 
@@ -3729,37 +3755,33 @@ class $$TodosTableTableFilterComposer extends $$TodosTableTableComposer {
   ColumnWithTypeConverterFilters<TodoStatus?, TodoStatus, String> get status =>
       ColumnWithTypeConverterFilters(_status);
 
-  $$CategoriesTableFilterComposer get category =>
-      $$CategoriesTableFilterComposer(_category);
+  $$CategoriesTableFilterComposer get category => _category._filterComposer();
 }
 
 class $$TodosTableTableOrderingComposer extends $$TodosTableTableComposer {
-  $$TodosTableTableOrderingComposer($$TodosTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TodosTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get title => ColumnOrderings(_title);
   ColumnOrderings<String> get content => ColumnOrderings(_content);
   ColumnOrderings<DateTime> get targetDate => ColumnOrderings(_targetDate);
   ColumnOrderings<String> get status => ColumnOrderings(_status);
-  $$CategoriesTableOrderingComposer get category =>
-      $$CategoriesTableOrderingComposer(_category);
+  $$CategoriesTableOrderingComposer get category => _category._orderComposer();
 }
 
 class $$TodosTableTableAnnotationComposer extends $$TodosTableTableComposer {
-  $$TodosTableTableAnnotationComposer($$TodosTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TodosTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumnWithTypeConverter<RowId, int> get id => _id;
 
   GeneratedColumn<String> get title => _title;
@@ -3768,7 +3790,7 @@ class $$TodosTableTableAnnotationComposer extends $$TodosTableTableComposer {
   GeneratedColumnWithTypeConverter<TodoStatus?, String> get status => _status;
 
   $$CategoriesTableAnnotationComposer get category =>
-      $$CategoriesTableAnnotationComposer(_category);
+      _category._annotationComposer();
 }
 
 class $$TodosTableTableComposer extends Composer<_$TodoDb, $TodosTableTable> {
@@ -3813,6 +3835,36 @@ class $$TodosTableTableComposer extends Composer<_$TodoDb, $TodosTableTable> {
             ));
     return composer;
   }
+
+  $$TodosTableTableOrderingComposer _orderComposer() {
+    return $$TodosTableTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$TodosTableTableFilterComposer _filterComposer() {
+    return $$TodosTableTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$TodosTableTableAnnotationComposer _annotationComposer() {
+    return $$TodosTableTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$TodosTableTableTableManager extends RootTableManager<
@@ -3831,12 +3883,12 @@ class $$TodosTableTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$TodosTableTableFilterComposer(
-              $$TodosTableTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$TodosTableTableOrderingComposer(
-              $$TodosTableTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$TodosTableTableAnnotationComposer(
-              $$TodosTableTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$TodosTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodosTableTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$TodosTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String?> title = const Value.absent(),
@@ -3941,14 +3993,13 @@ typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
 });
 
 class $$UsersTableFilterComposer extends $$UsersTableComposer {
-  $$UsersTableFilterComposer($$UsersTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$UsersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
       ColumnWithTypeConverterFilters(_id);
 
@@ -3959,14 +4010,13 @@ class $$UsersTableFilterComposer extends $$UsersTableComposer {
 }
 
 class $$UsersTableOrderingComposer extends $$UsersTableComposer {
-  $$UsersTableOrderingComposer($$UsersTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$UsersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get name => ColumnOrderings(_name);
   ColumnOrderings<bool> get isAwesome => ColumnOrderings(_isAwesome);
@@ -3976,14 +4026,13 @@ class $$UsersTableOrderingComposer extends $$UsersTableComposer {
 }
 
 class $$UsersTableAnnotationComposer extends $$UsersTableComposer {
-  $$UsersTableAnnotationComposer($$UsersTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$UsersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumnWithTypeConverter<RowId, int> get id => _id;
 
   GeneratedColumn<String> get name => _name;
@@ -4014,6 +4063,36 @@ class $$UsersTableComposer extends Composer<_$TodoDb, $UsersTable> {
 
   GeneratedColumn<DateTime> get _creationTime => $composableBuilder(
       column: $table.creationTime, builder: (column) => column);
+
+  $$UsersTableOrderingComposer _orderComposer() {
+    return $$UsersTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$UsersTableFilterComposer _filterComposer() {
+    return $$UsersTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$UsersTableAnnotationComposer _annotationComposer() {
+    return $$UsersTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$UsersTableTableManager extends RootTableManager<
@@ -4032,12 +4111,12 @@ class $$UsersTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$UsersTableFilterComposer(
-              $$UsersTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$UsersTableOrderingComposer(
-              $$UsersTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$UsersTableAnnotationComposer(
-              $$UsersTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$UsersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UsersTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$UsersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<String> name = const Value.absent(),
@@ -4099,40 +4178,37 @@ typedef $$SharedTodosTableUpdateCompanionBuilder = SharedTodosCompanion
 });
 
 class $$SharedTodosTableFilterComposer extends $$SharedTodosTableComposer {
-  $$SharedTodosTableFilterComposer($$SharedTodosTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$SharedTodosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get todo => ColumnFilters(_todo);
   ColumnFilters<int> get user => ColumnFilters(_user);
 }
 
 class $$SharedTodosTableOrderingComposer extends $$SharedTodosTableComposer {
-  $$SharedTodosTableOrderingComposer($$SharedTodosTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$SharedTodosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get todo => ColumnOrderings(_todo);
   ColumnOrderings<int> get user => ColumnOrderings(_user);
 }
 
 class $$SharedTodosTableAnnotationComposer extends $$SharedTodosTableComposer {
-  $$SharedTodosTableAnnotationComposer($$SharedTodosTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$SharedTodosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get todo => _todo;
   GeneratedColumn<int> get user => _user;
 }
@@ -4150,6 +4226,36 @@ class $$SharedTodosTableComposer extends Composer<_$TodoDb, $SharedTodosTable> {
 
   GeneratedColumn<int> get _user =>
       $composableBuilder(column: $table.user, builder: (column) => column);
+
+  $$SharedTodosTableOrderingComposer _orderComposer() {
+    return $$SharedTodosTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$SharedTodosTableFilterComposer _filterComposer() {
+    return $$SharedTodosTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$SharedTodosTableAnnotationComposer _annotationComposer() {
+    return $$SharedTodosTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$SharedTodosTableTableManager extends RootTableManager<
@@ -4168,12 +4274,12 @@ class $$SharedTodosTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$SharedTodosTableFilterComposer(
-              $$SharedTodosTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$SharedTodosTableOrderingComposer(
-              $$SharedTodosTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$SharedTodosTableAnnotationComposer(
-              $$SharedTodosTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$SharedTodosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SharedTodosTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$SharedTodosTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> todo = const Value.absent(),
             Value<int> user = const Value.absent(),
@@ -4232,14 +4338,13 @@ typedef $$TableWithoutPKTableUpdateCompanionBuilder = TableWithoutPKCompanion
 
 class $$TableWithoutPKTableFilterComposer
     extends $$TableWithoutPKTableComposer {
-  $$TableWithoutPKTableFilterComposer($$TableWithoutPKTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TableWithoutPKTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get notReallyAnId => ColumnFilters(_notReallyAnId);
   ColumnFilters<double> get someFloat => ColumnFilters(_someFloat);
   ColumnFilters<BigInt> get webSafeInt => ColumnFilters(_webSafeInt);
@@ -4249,14 +4354,13 @@ class $$TableWithoutPKTableFilterComposer
 
 class $$TableWithoutPKTableOrderingComposer
     extends $$TableWithoutPKTableComposer {
-  $$TableWithoutPKTableOrderingComposer($$TableWithoutPKTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TableWithoutPKTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get notReallyAnId => ColumnOrderings(_notReallyAnId);
   ColumnOrderings<double> get someFloat => ColumnOrderings(_someFloat);
   ColumnOrderings<BigInt> get webSafeInt => ColumnOrderings(_webSafeInt);
@@ -4265,14 +4369,13 @@ class $$TableWithoutPKTableOrderingComposer
 
 class $$TableWithoutPKTableAnnotationComposer
     extends $$TableWithoutPKTableComposer {
-  $$TableWithoutPKTableAnnotationComposer($$TableWithoutPKTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TableWithoutPKTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get notReallyAnId => _notReallyAnId;
   GeneratedColumn<double> get someFloat => _someFloat;
   GeneratedColumn<BigInt> get webSafeInt => _webSafeInt;
@@ -4300,6 +4403,36 @@ class $$TableWithoutPKTableComposer
 
   GeneratedColumnWithTypeConverter<MyCustomObject, String> get _custom =>
       $composableBuilder(column: $table.custom, builder: (column) => column);
+
+  $$TableWithoutPKTableOrderingComposer _orderComposer() {
+    return $$TableWithoutPKTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$TableWithoutPKTableFilterComposer _filterComposer() {
+    return $$TableWithoutPKTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$TableWithoutPKTableAnnotationComposer _annotationComposer() {
+    return $$TableWithoutPKTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$TableWithoutPKTableTableManager extends RootTableManager<
@@ -4321,13 +4454,12 @@ class $$TableWithoutPKTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$TableWithoutPKTableFilterComposer(
-              $$TableWithoutPKTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$TableWithoutPKTableOrderingComposer(
-              $$TableWithoutPKTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$TableWithoutPKTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TableWithoutPKTableOrderingComposer($db: db, $table: table),
           createAnnotationComposer: () =>
-              $$TableWithoutPKTableAnnotationComposer(
-                  $$TableWithoutPKTableComposer($db: db, $table: table)),
+              $$TableWithoutPKTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> notReallyAnId = const Value.absent(),
             Value<double> someFloat = const Value.absent(),
@@ -4390,40 +4522,37 @@ typedef $$PureDefaultsTableUpdateCompanionBuilder = PureDefaultsCompanion
 });
 
 class $$PureDefaultsTableFilterComposer extends $$PureDefaultsTableComposer {
-  $$PureDefaultsTableFilterComposer($$PureDefaultsTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$PureDefaultsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnWithTypeConverterFilters<MyCustomObject?, MyCustomObject, String>
       get txt => ColumnWithTypeConverterFilters(_txt);
 }
 
 class $$PureDefaultsTableOrderingComposer extends $$PureDefaultsTableComposer {
-  $$PureDefaultsTableOrderingComposer($$PureDefaultsTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$PureDefaultsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<String> get txt => ColumnOrderings(_txt);
 }
 
 class $$PureDefaultsTableAnnotationComposer
     extends $$PureDefaultsTableComposer {
-  $$PureDefaultsTableAnnotationComposer($$PureDefaultsTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$PureDefaultsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumnWithTypeConverter<MyCustomObject?, String> get txt => _txt;
 }
 
@@ -4438,6 +4567,36 @@ class $$PureDefaultsTableComposer
   });
   GeneratedColumnWithTypeConverter<MyCustomObject?, String> get _txt =>
       $composableBuilder(column: $table.txt, builder: (column) => column);
+
+  $$PureDefaultsTableOrderingComposer _orderComposer() {
+    return $$PureDefaultsTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$PureDefaultsTableFilterComposer _filterComposer() {
+    return $$PureDefaultsTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$PureDefaultsTableAnnotationComposer _annotationComposer() {
+    return $$PureDefaultsTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$PureDefaultsTableTableManager extends RootTableManager<
@@ -4456,12 +4615,12 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$PureDefaultsTableFilterComposer(
-              $$PureDefaultsTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$PureDefaultsTableOrderingComposer(
-              $$PureDefaultsTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$PureDefaultsTableAnnotationComposer(
-              $$PureDefaultsTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$PureDefaultsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PureDefaultsTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$PureDefaultsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<MyCustomObject?> txt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -4510,40 +4669,37 @@ typedef $$WithCustomTypeTableUpdateCompanionBuilder = WithCustomTypeCompanion
 
 class $$WithCustomTypeTableFilterComposer
     extends $$WithCustomTypeTableComposer {
-  $$WithCustomTypeTableFilterComposer($$WithCustomTypeTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$WithCustomTypeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<UuidValue> get id => ColumnFilters(_id);
 }
 
 class $$WithCustomTypeTableOrderingComposer
     extends $$WithCustomTypeTableComposer {
-  $$WithCustomTypeTableOrderingComposer($$WithCustomTypeTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$WithCustomTypeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<UuidValue> get id => ColumnOrderings(_id);
 }
 
 class $$WithCustomTypeTableAnnotationComposer
     extends $$WithCustomTypeTableComposer {
-  $$WithCustomTypeTableAnnotationComposer($$WithCustomTypeTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$WithCustomTypeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<UuidValue> get id => _id;
 }
 
@@ -4558,6 +4714,36 @@ class $$WithCustomTypeTableComposer
   });
   GeneratedColumn<UuidValue> get _id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  $$WithCustomTypeTableOrderingComposer _orderComposer() {
+    return $$WithCustomTypeTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$WithCustomTypeTableFilterComposer _filterComposer() {
+    return $$WithCustomTypeTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$WithCustomTypeTableAnnotationComposer _annotationComposer() {
+    return $$WithCustomTypeTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$WithCustomTypeTableTableManager extends RootTableManager<
@@ -4579,13 +4765,12 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$WithCustomTypeTableFilterComposer(
-              $$WithCustomTypeTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$WithCustomTypeTableOrderingComposer(
-              $$WithCustomTypeTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$WithCustomTypeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WithCustomTypeTableOrderingComposer($db: db, $table: table),
           createAnnotationComposer: () =>
-              $$WithCustomTypeTableAnnotationComposer(
-                  $$WithCustomTypeTableComposer($db: db, $table: table)),
+              $$WithCustomTypeTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -4653,15 +4838,13 @@ typedef $$TableWithEveryColumnTypeTableUpdateCompanionBuilder
 
 class $$TableWithEveryColumnTypeTableFilterComposer
     extends $$TableWithEveryColumnTypeTableComposer {
-  $$TableWithEveryColumnTypeTableFilterComposer(
-      $$TableWithEveryColumnTypeTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TableWithEveryColumnTypeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnWithTypeConverterFilters<RowId, RowId, int> get id =>
       ColumnWithTypeConverterFilters(_id);
 
@@ -4682,15 +4865,13 @@ class $$TableWithEveryColumnTypeTableFilterComposer
 
 class $$TableWithEveryColumnTypeTableOrderingComposer
     extends $$TableWithEveryColumnTypeTableComposer {
-  $$TableWithEveryColumnTypeTableOrderingComposer(
-      $$TableWithEveryColumnTypeTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TableWithEveryColumnTypeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<bool> get aBool => ColumnOrderings(_aBool);
   ColumnOrderings<DateTime> get aDateTime => ColumnOrderings(_aDateTime);
@@ -4706,15 +4887,13 @@ class $$TableWithEveryColumnTypeTableOrderingComposer
 
 class $$TableWithEveryColumnTypeTableAnnotationComposer
     extends $$TableWithEveryColumnTypeTableComposer {
-  $$TableWithEveryColumnTypeTableAnnotationComposer(
-      $$TableWithEveryColumnTypeTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$TableWithEveryColumnTypeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumnWithTypeConverter<RowId, int> get id => _id;
 
   GeneratedColumn<bool> get aBool => _aBool;
@@ -4770,6 +4949,36 @@ class $$TableWithEveryColumnTypeTableComposer
   GeneratedColumnWithTypeConverter<MyCustomObject?, String>
       get _aTextWithConverter => $composableBuilder(
           column: $table.aTextWithConverter, builder: (column) => column);
+
+  $$TableWithEveryColumnTypeTableOrderingComposer _orderComposer() {
+    return $$TableWithEveryColumnTypeTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$TableWithEveryColumnTypeTableFilterComposer _filterComposer() {
+    return $$TableWithEveryColumnTypeTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$TableWithEveryColumnTypeTableAnnotationComposer _annotationComposer() {
+    return $$TableWithEveryColumnTypeTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
@@ -4795,16 +5004,13 @@ class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
           table: table,
           createFilteringComposer: () =>
               $$TableWithEveryColumnTypeTableFilterComposer(
-                  $$TableWithEveryColumnTypeTableComposer(
-                      $db: db, $table: table)),
+                  $db: db, $table: table),
           createOrderingComposer: () =>
               $$TableWithEveryColumnTypeTableOrderingComposer(
-                  $$TableWithEveryColumnTypeTableComposer(
-                      $db: db, $table: table)),
+                  $db: db, $table: table),
           createAnnotationComposer: () =>
               $$TableWithEveryColumnTypeTableAnnotationComposer(
-                  $$TableWithEveryColumnTypeTableComposer(
-                      $db: db, $table: table)),
+                  $db: db, $table: table),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
             Value<bool?> aBool = const Value.absent(),
@@ -4907,49 +5113,46 @@ final class $$DepartmentTableReferences
 }
 
 class $$DepartmentTableFilterComposer extends $$DepartmentTableComposer {
-  $$DepartmentTableFilterComposer($$DepartmentTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$DepartmentTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get id => ColumnFilters(_id);
   ColumnFilters<String> get name => ColumnFilters(_name);
   Expression<bool> productRefs(
       Expression<bool> Function($$ProductTableFilterComposer f) f) {
-    return f($$ProductTableFilterComposer(_productRefs));
+    return f(_productRefs._filterComposer());
   }
 }
 
 class $$DepartmentTableOrderingComposer extends $$DepartmentTableComposer {
-  $$DepartmentTableOrderingComposer($$DepartmentTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$DepartmentTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get name => ColumnOrderings(_name);
 }
 
 class $$DepartmentTableAnnotationComposer extends $$DepartmentTableComposer {
-  $$DepartmentTableAnnotationComposer($$DepartmentTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$DepartmentTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get id => _id;
   GeneratedColumn<String> get name => _name;
   Expression<T> productRefs<T extends Object>(
       Expression<T> Function($$ProductTableAnnotationComposer a) f) {
-    return f($$ProductTableAnnotationComposer(_productRefs));
+    return f(_productRefs._annotationComposer());
   }
 }
 
@@ -4986,6 +5189,36 @@ class $$DepartmentTableComposer extends Composer<_$TodoDb, $DepartmentTable> {
             ));
     return composer;
   }
+
+  $$DepartmentTableOrderingComposer _orderComposer() {
+    return $$DepartmentTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$DepartmentTableFilterComposer _filterComposer() {
+    return $$DepartmentTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$DepartmentTableAnnotationComposer _annotationComposer() {
+    return $$DepartmentTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$DepartmentTableTableManager extends RootTableManager<
@@ -5004,12 +5237,12 @@ class $$DepartmentTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$DepartmentTableFilterComposer(
-              $$DepartmentTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$DepartmentTableOrderingComposer(
-              $$DepartmentTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$DepartmentTableAnnotationComposer(
-              $$DepartmentTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$DepartmentTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DepartmentTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$DepartmentTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -5117,55 +5350,52 @@ final class $$ProductTableReferences
 }
 
 class $$ProductTableFilterComposer extends $$ProductTableComposer {
-  $$ProductTableFilterComposer($$ProductTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ProductTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<String> get sku => ColumnFilters(_sku);
   ColumnFilters<String> get name => ColumnFilters(_name);
   $$DepartmentTableFilterComposer get department =>
-      $$DepartmentTableFilterComposer(_department);
+      _department._filterComposer();
   Expression<bool> listings(
       Expression<bool> Function($$ListingTableFilterComposer f) f) {
-    return f($$ListingTableFilterComposer(_listings));
+    return f(_listings._filterComposer());
   }
 }
 
 class $$ProductTableOrderingComposer extends $$ProductTableComposer {
-  $$ProductTableOrderingComposer($$ProductTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ProductTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<String> get sku => ColumnOrderings(_sku);
   ColumnOrderings<String> get name => ColumnOrderings(_name);
   $$DepartmentTableOrderingComposer get department =>
-      $$DepartmentTableOrderingComposer(_department);
+      _department._orderComposer();
 }
 
 class $$ProductTableAnnotationComposer extends $$ProductTableComposer {
-  $$ProductTableAnnotationComposer($$ProductTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ProductTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<String> get sku => _sku;
   GeneratedColumn<String> get name => _name;
   $$DepartmentTableAnnotationComposer get department =>
-      $$DepartmentTableAnnotationComposer(_department);
+      _department._annotationComposer();
   Expression<T> listings<T extends Object>(
       Expression<T> Function($$ListingTableAnnotationComposer a) f) {
-    return f($$ListingTableAnnotationComposer(_listings));
+    return f(_listings._annotationComposer());
   }
 }
 
@@ -5222,6 +5452,36 @@ class $$ProductTableComposer extends Composer<_$TodoDb, $ProductTable> {
             ));
     return composer;
   }
+
+  $$ProductTableOrderingComposer _orderComposer() {
+    return $$ProductTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$ProductTableFilterComposer _filterComposer() {
+    return $$ProductTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$ProductTableAnnotationComposer _annotationComposer() {
+    return $$ProductTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$ProductTableTableManager extends RootTableManager<
@@ -5240,12 +5500,12 @@ class $$ProductTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$ProductTableFilterComposer(
-              $$ProductTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$ProductTableOrderingComposer(
-              $$ProductTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$ProductTableAnnotationComposer(
-              $$ProductTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$ProductTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProductTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$ProductTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> sku = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -5365,49 +5625,46 @@ final class $$StoreTableReferences
 }
 
 class $$StoreTableFilterComposer extends $$StoreTableComposer {
-  $$StoreTableFilterComposer($$StoreTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$StoreTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get id => ColumnFilters(_id);
   ColumnFilters<String> get name => ColumnFilters(_name);
   Expression<bool> listings(
       Expression<bool> Function($$ListingTableFilterComposer f) f) {
-    return f($$ListingTableFilterComposer(_listings));
+    return f(_listings._filterComposer());
   }
 }
 
 class $$StoreTableOrderingComposer extends $$StoreTableComposer {
-  $$StoreTableOrderingComposer($$StoreTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$StoreTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get name => ColumnOrderings(_name);
 }
 
 class $$StoreTableAnnotationComposer extends $$StoreTableComposer {
-  $$StoreTableAnnotationComposer($$StoreTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$StoreTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get id => _id;
   GeneratedColumn<String> get name => _name;
   Expression<T> listings<T extends Object>(
       Expression<T> Function($$ListingTableAnnotationComposer a) f) {
-    return f($$ListingTableAnnotationComposer(_listings));
+    return f(_listings._annotationComposer());
   }
 }
 
@@ -5444,6 +5701,36 @@ class $$StoreTableComposer extends Composer<_$TodoDb, $StoreTable> {
             ));
     return composer;
   }
+
+  $$StoreTableOrderingComposer _orderComposer() {
+    return $$StoreTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$StoreTableFilterComposer _filterComposer() {
+    return $$StoreTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$StoreTableAnnotationComposer _annotationComposer() {
+    return $$StoreTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$StoreTableTableManager extends RootTableManager<
@@ -5462,12 +5749,12 @@ class $$StoreTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$StoreTableFilterComposer(
-              $$StoreTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$StoreTableOrderingComposer(
-              $$StoreTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$StoreTableAnnotationComposer(
-              $$StoreTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$StoreTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StoreTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$StoreTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -5570,53 +5857,46 @@ final class $$ListingTableReferences
 }
 
 class $$ListingTableFilterComposer extends $$ListingTableComposer {
-  $$ListingTableFilterComposer($$ListingTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ListingTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get id => ColumnFilters(_id);
   ColumnFilters<double> get price => ColumnFilters(_price);
-  $$ProductTableFilterComposer get product =>
-      $$ProductTableFilterComposer(_product);
-  $$StoreTableFilterComposer get store => $$StoreTableFilterComposer(_store);
+  $$ProductTableFilterComposer get product => _product._filterComposer();
+  $$StoreTableFilterComposer get store => _store._filterComposer();
 }
 
 class $$ListingTableOrderingComposer extends $$ListingTableComposer {
-  $$ListingTableOrderingComposer($$ListingTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ListingTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<double> get price => ColumnOrderings(_price);
-  $$ProductTableOrderingComposer get product =>
-      $$ProductTableOrderingComposer(_product);
-  $$StoreTableOrderingComposer get store =>
-      $$StoreTableOrderingComposer(_store);
+  $$ProductTableOrderingComposer get product => _product._orderComposer();
+  $$StoreTableOrderingComposer get store => _store._orderComposer();
 }
 
 class $$ListingTableAnnotationComposer extends $$ListingTableComposer {
-  $$ListingTableAnnotationComposer($$ListingTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$ListingTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get id => _id;
   GeneratedColumn<double> get price => _price;
   $$ProductTableAnnotationComposer get product =>
-      $$ProductTableAnnotationComposer(_product);
-  $$StoreTableAnnotationComposer get store =>
-      $$StoreTableAnnotationComposer(_store);
+      _product._annotationComposer();
+  $$StoreTableAnnotationComposer get store => _store._annotationComposer();
 }
 
 class $$ListingTableComposer extends Composer<_$TodoDb, $ListingTable> {
@@ -5672,6 +5952,36 @@ class $$ListingTableComposer extends Composer<_$TodoDb, $ListingTable> {
             ));
     return composer;
   }
+
+  $$ListingTableOrderingComposer _orderComposer() {
+    return $$ListingTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$ListingTableFilterComposer _filterComposer() {
+    return $$ListingTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$ListingTableAnnotationComposer _annotationComposer() {
+    return $$ListingTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$ListingTableTableManager extends RootTableManager<
@@ -5690,12 +6000,12 @@ class $$ListingTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$ListingTableFilterComposer(
-              $$ListingTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$ListingTableOrderingComposer(
-              $$ListingTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$ListingTableAnnotationComposer(
-              $$ListingTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$ListingTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ListingTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$ListingTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> product = const Value.absent(),

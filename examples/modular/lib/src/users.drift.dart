@@ -343,14 +343,13 @@ typedef $UsersUpdateCompanionBuilder = i1.UsersCompanion Function({
 });
 
 class $UsersFilterComposer extends i1.$UsersComposer {
-  $UsersFilterComposer(i1.$UsersComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $UsersFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.ColumnFilters<int> get id => i0.ColumnFilters(_id);
   i0.ColumnFilters<String> get name => i0.ColumnFilters(_name);
   i0.ColumnFilters<String> get biography => i0.ColumnFilters(_biography);
@@ -362,14 +361,13 @@ class $UsersFilterComposer extends i1.$UsersComposer {
 }
 
 class $UsersOrderingComposer extends i1.$UsersComposer {
-  $UsersOrderingComposer(i1.$UsersComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $UsersOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.ColumnOrderings<int> get id => i0.ColumnOrderings(_id);
   i0.ColumnOrderings<String> get name => i0.ColumnOrderings(_name);
   i0.ColumnOrderings<String> get biography => i0.ColumnOrderings(_biography);
@@ -380,14 +378,13 @@ class $UsersOrderingComposer extends i1.$UsersComposer {
 }
 
 class $UsersAnnotationComposer extends i1.$UsersComposer {
-  $UsersAnnotationComposer(i1.$UsersComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $UsersAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   i0.GeneratedColumn<int> get id => _id;
   i0.GeneratedColumn<String> get name => _name;
   i0.GeneratedColumn<String> get biography => _biography;
@@ -420,6 +417,36 @@ class $UsersComposer extends i0.Composer<i0.GeneratedDatabase, i1.Users> {
 
   i0.GeneratedColumn<i3.Uint8List> get _profilePicture => $composableBuilder(
       column: $table.profilePicture, builder: (column) => column);
+
+  i1.$UsersOrderingComposer _orderComposer() {
+    return i1.$UsersOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  i1.$UsersFilterComposer _filterComposer() {
+    return i1.$UsersFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  i1.$UsersAnnotationComposer _annotationComposer() {
+    return i1.$UsersAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $UsersTableManager extends i0.RootTableManager<
@@ -438,12 +465,12 @@ class $UsersTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => i1
-              .$UsersFilterComposer(i1.$UsersComposer($db: db, $table: table)),
-          createOrderingComposer: () => i1.$UsersOrderingComposer(
-              i1.$UsersComposer($db: db, $table: table)),
-          createAnnotationComposer: () => i1.$UsersAnnotationComposer(
-              i1.$UsersComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              i1.$UsersFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i1.$UsersOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              i1.$UsersAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
@@ -707,46 +734,39 @@ typedef $FollowsUpdateCompanionBuilder = i1.FollowsCompanion Function({
 });
 
 class $FollowsFilterComposer extends i1.$FollowsComposer {
-  $FollowsFilterComposer(i1.$FollowsComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
-  i1.$UsersFilterComposer get followed => i1.$UsersFilterComposer(_followed);
-  i1.$UsersFilterComposer get follower => i1.$UsersFilterComposer(_follower);
+  $FollowsFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i1.$UsersFilterComposer get followed => _followed._filterComposer();
+  i1.$UsersFilterComposer get follower => _follower._filterComposer();
 }
 
 class $FollowsOrderingComposer extends i1.$FollowsComposer {
-  $FollowsOrderingComposer(i1.$FollowsComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
-  i1.$UsersOrderingComposer get followed =>
-      i1.$UsersOrderingComposer(_followed);
-  i1.$UsersOrderingComposer get follower =>
-      i1.$UsersOrderingComposer(_follower);
+  $FollowsOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i1.$UsersOrderingComposer get followed => _followed._orderComposer();
+  i1.$UsersOrderingComposer get follower => _follower._orderComposer();
 }
 
 class $FollowsAnnotationComposer extends i1.$FollowsComposer {
-  $FollowsAnnotationComposer(i1.$FollowsComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
-  i1.$UsersAnnotationComposer get followed =>
-      i1.$UsersAnnotationComposer(_followed);
-  i1.$UsersAnnotationComposer get follower =>
-      i1.$UsersAnnotationComposer(_follower);
+  $FollowsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i1.$UsersAnnotationComposer get followed => _followed._annotationComposer();
+  i1.$UsersAnnotationComposer get follower => _follower._annotationComposer();
 }
 
 class $FollowsComposer extends i0.Composer<i0.GeneratedDatabase, i1.Follows> {
@@ -800,6 +820,36 @@ class $FollowsComposer extends i0.Composer<i0.GeneratedDatabase, i1.Follows> {
             ));
     return composer;
   }
+
+  i1.$FollowsOrderingComposer _orderComposer() {
+    return i1.$FollowsOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  i1.$FollowsFilterComposer _filterComposer() {
+    return i1.$FollowsFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  i1.$FollowsAnnotationComposer _annotationComposer() {
+    return i1.$FollowsAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $FollowsTableManager extends i0.RootTableManager<
@@ -818,12 +868,12 @@ class $FollowsTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => i1.$FollowsFilterComposer(
-              i1.$FollowsComposer($db: db, $table: table)),
-          createOrderingComposer: () => i1.$FollowsOrderingComposer(
-              i1.$FollowsComposer($db: db, $table: table)),
-          createAnnotationComposer: () => i1.$FollowsAnnotationComposer(
-              i1.$FollowsComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              i1.$FollowsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i1.$FollowsOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              i1.$FollowsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> followed = const i0.Value.absent(),
             i0.Value<int> follower = const i0.Value.absent(),

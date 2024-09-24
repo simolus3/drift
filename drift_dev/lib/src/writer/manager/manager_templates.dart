@@ -247,9 +247,9 @@ class _ManagerCodeTemplates {
       ${leaf.drift("TableManagerState")}(
         db: db,
         table: table,
-        createFilteringComposer: () => ${filterComposerNameWithPrefix(table, leaf)}(${baseComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table)),
-        createOrderingComposer: () => ${orderingComposerNameWithPrefix(table, leaf)}(${baseComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table)),
-        createAnnotationComposer: () => ${annotationComposerNameWithPrefix(table, leaf)}(${baseComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table)),
+        createFilteringComposer: () => ${filterComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table),
+        createOrderingComposer: () => ${orderingComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table),
+        createAnnotationComposer: () => ${annotationComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table),
         updateCompanionCallback: $updateCompanionBuilder,
         createCompanionCallback: $createCompanionBuilder,
         withReferenceMapper: (p0) => p0
@@ -344,6 +344,37 @@ class _ManagerCodeTemplates {
     super.\$removeJoinBuilderFromRootComposer,
   });
           ${composerFields.join('\n')}
+
+
+                      ${orderingComposerNameWithPrefix(table, leaf)} _orderComposer() {
+    return ${orderingComposerNameWithPrefix(table, leaf)}(
+      \$db: \$db,
+      \$table: \$table,
+      joinBuilder: \$joinBuilder,
+      \$addJoinBuilderToRootComposer: \$addJoinBuilderToRootComposer,
+      \$removeJoinBuilderFromRootComposer: \$removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  ${filterComposerNameWithPrefix(table, leaf)} _filterComposer() {
+    return ${filterComposerNameWithPrefix(table, leaf)}(
+      \$db: \$db,
+      \$table: \$table,
+      joinBuilder: \$joinBuilder,
+      \$addJoinBuilderToRootComposer: \$addJoinBuilderToRootComposer,
+      \$removeJoinBuilderFromRootComposer: \$removeJoinBuilderFromRootComposer,
+    );
+  }
+
+ ${annotationComposerNameWithPrefix(table, leaf)} _annotationComposer() {
+    return ${annotationComposerNameWithPrefix(table, leaf)}(
+      \$db: \$db,
+      \$table: \$table,
+      joinBuilder: \$joinBuilder,
+      \$addJoinBuilderToRootComposer: \$addJoinBuilderToRootComposer,
+      \$removeJoinBuilderFromRootComposer: \$removeJoinBuilderFromRootComposer,
+    );
+  }
         }
       """;
   }
@@ -409,16 +440,13 @@ class _ManagerCodeTemplates {
     required List<String> columnFilters,
   }) {
     return """class ${filterComposerName(table)} extends ${baseComposerNameWithPrefix(table, leaf)} {
-
-    ${filterComposerName(table)}(${baseComposerNameWithPrefix(table, leaf)} c)
-      : super(
-            \$db: c.\$db,
-            \$table: c.\$table,
-            joinBuilder: c.\$joinBuilder,
-            \$addJoinBuilderToRootComposer:
-                c.\$addJoinBuilderToRootComposer,
-            \$removeJoinBuilderFromRootComposer:
-                c.\$removeJoinBuilderFromRootComposer);
+        ${filterComposerName(table)}({
+    required super.\$db,
+    required super.\$table,
+    super.joinBuilder,
+    super.\$addJoinBuilderToRootComposer,
+    super.\$removeJoinBuilderFromRootComposer,
+  });
           ${columnFilters.join('\n')}
         }
       """;
@@ -432,15 +460,13 @@ class _ManagerCodeTemplates {
     required List<String> columnAnnotations,
   }) {
     return """class ${annotationComposerName(table)} extends ${baseComposerNameWithPrefix(table, leaf)} {
-        ${annotationComposerName(table)}(${baseComposerNameWithPrefix(table, leaf)} c)
-      : super(
-            \$db: c.\$db,
-            \$table: c.\$table,
-            joinBuilder: c.\$joinBuilder,
-            \$addJoinBuilderToRootComposer:
-                c.\$addJoinBuilderToRootComposer,
-            \$removeJoinBuilderFromRootComposer:
-                c.\$removeJoinBuilderFromRootComposer);
+        ${annotationComposerName(table)}({
+    required super.\$db,
+    required super.\$table,
+    super.joinBuilder,
+    super.\$addJoinBuilderToRootComposer,
+    super.\$removeJoinBuilderFromRootComposer,
+  });
           ${columnAnnotations.join('\n')}
         }
       """;
@@ -454,15 +480,13 @@ class _ManagerCodeTemplates {
     required List<String> columnOrderings,
   }) {
     return """class ${orderingComposerName(table)} extends ${baseComposerNameWithPrefix(table, leaf)} {
-        ${orderingComposerName(table)}(${baseComposerNameWithPrefix(table, leaf)} c)
-      : super(
-            \$db: c.\$db,
-            \$table: c.\$table,
-            joinBuilder: c.\$joinBuilder,
-            \$addJoinBuilderToRootComposer:
-                c.\$addJoinBuilderToRootComposer,
-            \$removeJoinBuilderFromRootComposer:
-                c.\$removeJoinBuilderFromRootComposer);
+        ${orderingComposerName(table)}({
+    required super.\$db,
+    required super.\$table,
+    super.joinBuilder,
+    super.\$addJoinBuilderToRootComposer,
+    super.\$removeJoinBuilderFromRootComposer,
+  });
           ${columnOrderings.join('\n')}
 
 
@@ -499,11 +523,11 @@ class _ManagerCodeTemplates {
         ${leaf.drift("Expression")}<T> ${relation.fieldName}<T extends Object>(
           ${leaf.drift("Expression")}<T> Function( ${annotationComposerNameWithPrefix(relation.referencedTable, leaf)} a) f
         ) {
-          return f(${annotationComposerNameWithPrefix(relation.referencedTable, leaf)}(_${relation.fieldName}));
+          return f(_${relation.fieldName}._annotationComposer());
         }
 """;
     } else {
-      return """${annotationComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => ${annotationComposerNameWithPrefix(relation.referencedTable, leaf)}(_${relation.fieldName});""";
+      return """${annotationComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => _${relation.fieldName}._annotationComposer();""";
     }
   }
 
@@ -537,12 +561,12 @@ class _ManagerCodeTemplates {
         ${leaf.drift("Expression")}<bool> ${relation.fieldName}(
           ${leaf.drift("Expression")}<bool> Function( ${filterComposerNameWithPrefix(relation.referencedTable, leaf)} f) f
         ) {
-          return f(${filterComposerNameWithPrefix(relation.referencedTable, leaf)}(_${relation.fieldName}));
+          return f(_${relation.fieldName}._filterComposer());
         }
 """;
     } else {
       return """
-        ${filterComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => ${filterComposerNameWithPrefix(relation.referencedTable, leaf)}(_${relation.fieldName});""";
+        ${filterComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => _${relation.fieldName}._filterComposer();""";
     }
   }
 
@@ -561,7 +585,7 @@ class _ManagerCodeTemplates {
     assert(relation.isReverse == false,
         "Don't generate orderings for reverse relations");
     return """
-        ${orderingComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => ${orderingComposerNameWithPrefix(relation.referencedTable, leaf)}(_${relation.fieldName});""";
+        ${orderingComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => _${relation.fieldName}._orderComposer();""";
   }
 
   /// Returns the name of the processed table manager class for a table

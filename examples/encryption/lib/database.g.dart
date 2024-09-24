@@ -201,40 +201,37 @@ typedef $$NotesTableUpdateCompanionBuilder = NotesCompanion Function({
 });
 
 class $$NotesTableFilterComposer extends $$NotesTableComposer {
-  $$NotesTableFilterComposer($$NotesTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$NotesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get id => ColumnFilters(_id);
   ColumnFilters<String> get content => ColumnFilters(_content);
 }
 
 class $$NotesTableOrderingComposer extends $$NotesTableComposer {
-  $$NotesTableOrderingComposer($$NotesTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$NotesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get content => ColumnOrderings(_content);
 }
 
 class $$NotesTableAnnotationComposer extends $$NotesTableComposer {
-  $$NotesTableAnnotationComposer($$NotesTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$NotesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get id => _id;
   GeneratedColumn<String> get content => _content;
 }
@@ -253,6 +250,36 @@ class $$NotesTableComposer
 
   GeneratedColumn<String> get _content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
+
+  $$NotesTableOrderingComposer _orderComposer() {
+    return $$NotesTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$NotesTableFilterComposer _filterComposer() {
+    return $$NotesTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$NotesTableAnnotationComposer _annotationComposer() {
+    return $$NotesTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$NotesTableTableManager extends RootTableManager<
@@ -271,12 +298,12 @@ class $$NotesTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$NotesTableFilterComposer(
-              $$NotesTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$NotesTableOrderingComposer(
-              $$NotesTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$NotesTableAnnotationComposer(
-              $$NotesTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$NotesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NotesTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$NotesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> content = const Value.absent(),

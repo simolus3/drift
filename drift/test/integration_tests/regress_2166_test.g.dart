@@ -210,40 +210,37 @@ typedef $$_SomeTableTableUpdateCompanionBuilder = _SomeTableCompanion Function({
 });
 
 class $$_SomeTableTableFilterComposer extends $$_SomeTableTableComposer {
-  $$_SomeTableTableFilterComposer($$_SomeTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$_SomeTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnFilters<int> get id => ColumnFilters(_id);
   ColumnFilters<String> get name => ColumnFilters(_name);
 }
 
 class $$_SomeTableTableOrderingComposer extends $$_SomeTableTableComposer {
-  $$_SomeTableTableOrderingComposer($$_SomeTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$_SomeTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   ColumnOrderings<int> get id => ColumnOrderings(_id);
   ColumnOrderings<String> get name => ColumnOrderings(_name);
 }
 
 class $$_SomeTableTableAnnotationComposer extends $$_SomeTableTableComposer {
-  $$_SomeTableTableAnnotationComposer($$_SomeTableTableComposer c)
-      : super(
-            $db: c.$db,
-            $table: c.$table,
-            joinBuilder: c.$joinBuilder,
-            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer:
-                c.$removeJoinBuilderFromRootComposer);
+  $$_SomeTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
   GeneratedColumn<int> get id => _id;
   GeneratedColumn<String> get name => _name;
 }
@@ -261,6 +258,36 @@ class $$_SomeTableTableComposer extends Composer<_$_SomeDb, $_SomeTableTable> {
 
   GeneratedColumn<String> get _name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  $$_SomeTableTableOrderingComposer _orderComposer() {
+    return $$_SomeTableTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$_SomeTableTableFilterComposer _filterComposer() {
+    return $$_SomeTableTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$_SomeTableTableAnnotationComposer _annotationComposer() {
+    return $$_SomeTableTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$_SomeTableTableTableManager extends RootTableManager<
@@ -282,12 +309,12 @@ class $$_SomeTableTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () => $$_SomeTableTableFilterComposer(
-              $$_SomeTableTableComposer($db: db, $table: table)),
-          createOrderingComposer: () => $$_SomeTableTableOrderingComposer(
-              $$_SomeTableTableComposer($db: db, $table: table)),
-          createAnnotationComposer: () => $$_SomeTableTableAnnotationComposer(
-              $$_SomeTableTableComposer($db: db, $table: table)),
+          createFilteringComposer: () =>
+              $$_SomeTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$_SomeTableTableOrderingComposer($db: db, $table: table),
+          createAnnotationComposer: () =>
+              $$_SomeTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
