@@ -77,7 +77,7 @@ class AnnotationWithConverter<DartType, SqlType extends Object,
   int get hashCode => _expression.hashCode ^ _joinBuilders.hashCode;
 
   /// Read the result of the annotation from the [BaseReferences] object
-  DartType? read(BaseReferences refs) {
+  DartType? read(BaseReferences<dynamic, $Table, dynamic> refs) {
     final dartType = refs.$_typedResult.read(_expression);
     if (dartType == null) {
       return null;
