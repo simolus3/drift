@@ -205,51 +205,58 @@ typedef $$WordsTableUpdateCompanionBuilder = i1.WordsCompanion Function({
   i0.Value<int> rowid,
 });
 
-class $$WordsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<String> get word => $composableBuilder(
-      column: $table.word, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<int> get usages => $composableBuilder(
-      column: $table.usages, builder: (column) => i0.ColumnFilters(column));
+class $$WordsTableFilterComposer extends i1.$$WordsTableComposer {
+  $$WordsTableFilterComposer(i1.$$WordsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnFilters<String> get word => i0.ColumnFilters(_word);
+  i0.ColumnFilters<int> get usages => i0.ColumnFilters(_usages);
 }
 
-class $$WordsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<String> get word => $composableBuilder(
-      column: $table.word, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<int> get usages => $composableBuilder(
-      column: $table.usages, builder: (column) => i0.ColumnOrderings(column));
+class $$WordsTableOrderingComposer extends i1.$$WordsTableComposer {
+  $$WordsTableOrderingComposer(i1.$$WordsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnOrderings<String> get word => i0.ColumnOrderings(_word);
+  i0.ColumnOrderings<int> get usages => i0.ColumnOrderings(_usages);
 }
 
-class $$WordsTableAnnotationComposer
-    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.$WordsTable> {
-  $$WordsTableAnnotationComposer({
+class $$WordsTableAnnotationComposer extends i1.$$WordsTableComposer {
+  $$WordsTableAnnotationComposer(i1.$$WordsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.GeneratedColumn<String> get word => _word;
+  i0.GeneratedColumn<int> get usages => _usages;
+}
+
+class $$WordsTableComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$WordsTable> {
+  $$WordsTableComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<String> get word =>
+  i0.GeneratedColumn<String> get _word =>
       $composableBuilder(column: $table.word, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get usages =>
+  i0.GeneratedColumn<int> get _usages =>
       $composableBuilder(column: $table.usages, builder: (column) => column);
 }
 
@@ -269,12 +276,12 @@ class $$WordsTableTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              i1.$$WordsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$$WordsTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
-              i1.$$WordsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => i1.$$WordsTableFilterComposer(
+              i1.$$WordsTableComposer($db: db, $table: table)),
+          createOrderingComposer: () => i1.$$WordsTableOrderingComposer(
+              i1.$$WordsTableComposer($db: db, $table: table)),
+          createAnnotationComposer: () => i1.$$WordsTableAnnotationComposer(
+              i1.$$WordsTableComposer($db: db, $table: table)),
           updateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
             i0.Value<int> usages = const i0.Value.absent(),
@@ -597,69 +604,72 @@ typedef $$MatchResultsTableUpdateCompanionBuilder = i1.MatchResultsCompanion
   i0.Value<bool> teamAWon,
 });
 
-class $$MatchResultsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get teamA => $composableBuilder(
-      column: $table.teamA, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get teamB => $composableBuilder(
-      column: $table.teamB, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<bool> get teamAWon => $composableBuilder(
-      column: $table.teamAWon, builder: (column) => i0.ColumnFilters(column));
+class $$MatchResultsTableFilterComposer extends i1.$$MatchResultsTableComposer {
+  $$MatchResultsTableFilterComposer(i1.$$MatchResultsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnFilters<int> get id => i0.ColumnFilters(_id);
+  i0.ColumnFilters<String> get teamA => i0.ColumnFilters(_teamA);
+  i0.ColumnFilters<String> get teamB => i0.ColumnFilters(_teamB);
+  i0.ColumnFilters<bool> get teamAWon => i0.ColumnFilters(_teamAWon);
 }
 
 class $$MatchResultsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get teamA => $composableBuilder(
-      column: $table.teamA, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get teamB => $composableBuilder(
-      column: $table.teamB, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<bool> get teamAWon => $composableBuilder(
-      column: $table.teamAWon, builder: (column) => i0.ColumnOrderings(column));
+    extends i1.$$MatchResultsTableComposer {
+  $$MatchResultsTableOrderingComposer(i1.$$MatchResultsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings(_id);
+  i0.ColumnOrderings<String> get teamA => i0.ColumnOrderings(_teamA);
+  i0.ColumnOrderings<String> get teamB => i0.ColumnOrderings(_teamB);
+  i0.ColumnOrderings<bool> get teamAWon => i0.ColumnOrderings(_teamAWon);
 }
 
 class $$MatchResultsTableAnnotationComposer
-    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
-  $$MatchResultsTableAnnotationComposer({
+    extends i1.$$MatchResultsTableComposer {
+  $$MatchResultsTableAnnotationComposer(i1.$$MatchResultsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.GeneratedColumn<int> get id => _id;
+  i0.GeneratedColumn<String> get teamA => _teamA;
+  i0.GeneratedColumn<String> get teamB => _teamB;
+  i0.GeneratedColumn<bool> get teamAWon => _teamAWon;
+}
+
+class $$MatchResultsTableComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$MatchResultsTable> {
+  $$MatchResultsTableComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<int> get id =>
+  i0.GeneratedColumn<int> get _id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get teamA =>
+  i0.GeneratedColumn<String> get _teamA =>
       $composableBuilder(column: $table.teamA, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get teamB =>
+  i0.GeneratedColumn<String> get _teamB =>
       $composableBuilder(column: $table.teamB, builder: (column) => column);
 
-  i0.GeneratedColumn<bool> get teamAWon =>
+  i0.GeneratedColumn<bool> get _teamAWon =>
       $composableBuilder(column: $table.teamAWon, builder: (column) => column);
 }
 
@@ -684,12 +694,13 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              i1.$$MatchResultsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$$MatchResultsTableOrderingComposer($db: db, $table: table),
+          createFilteringComposer: () => i1.$$MatchResultsTableFilterComposer(
+              i1.$$MatchResultsTableComposer($db: db, $table: table)),
+          createOrderingComposer: () => i1.$$MatchResultsTableOrderingComposer(
+              i1.$$MatchResultsTableComposer($db: db, $table: table)),
           createAnnotationComposer: () =>
-              i1.$$MatchResultsTableAnnotationComposer($db: db, $table: table),
+              i1.$$MatchResultsTableAnnotationComposer(
+                  i1.$$MatchResultsTableComposer($db: db, $table: table)),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> teamA = const i0.Value.absent(),

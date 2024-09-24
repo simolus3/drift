@@ -231,54 +231,65 @@ typedef $$ShoppingCartsTableUpdateCompanionBuilder = i2.ShoppingCartsCompanion
 });
 
 class $$ShoppingCartsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnWithTypeConverterFilters<i3.ShoppingCartEntries,
-          i3.ShoppingCartEntries, String>
-      get entries => $composableBuilder(
-          column: $table.entries,
-          builder: (column) => i0.ColumnWithTypeConverterFilters(column));
+    extends i2.$$ShoppingCartsTableComposer {
+  $$ShoppingCartsTableFilterComposer(i2.$$ShoppingCartsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnFilters<int> get id => i0.ColumnFilters(_id);
+  i0.ColumnWithTypeConverterFilters<
+      i3.ShoppingCartEntries,
+      i3.ShoppingCartEntries,
+      String> get entries => i0.ColumnWithTypeConverterFilters(_entries);
 }
 
 class $$ShoppingCartsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get entries => $composableBuilder(
-      column: $table.entries, builder: (column) => i0.ColumnOrderings(column));
+    extends i2.$$ShoppingCartsTableComposer {
+  $$ShoppingCartsTableOrderingComposer(i2.$$ShoppingCartsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings(_id);
+  i0.ColumnOrderings<String> get entries => i0.ColumnOrderings(_entries);
 }
 
-class $$ShoppingCartsTableAnnotationComposer extends i0
-    .AnnotationComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableAnnotationComposer({
+class $$ShoppingCartsTableAnnotationComposer
+    extends i2.$$ShoppingCartsTableComposer {
+  $$ShoppingCartsTableAnnotationComposer(i2.$$ShoppingCartsTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.GeneratedColumn<int> get id => _id;
+  i0.GeneratedColumnWithTypeConverter<i3.ShoppingCartEntries, String>
+      get entries => _entries;
+}
+
+class $$ShoppingCartsTableComposer
+    extends i0.Composer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
+  $$ShoppingCartsTableComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<int> get id =>
+  i0.GeneratedColumn<int> get _id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   i0.GeneratedColumnWithTypeConverter<i3.ShoppingCartEntries, String>
-      get entries => $composableBuilder(
+      get _entries => $composableBuilder(
           column: $table.entries, builder: (column) => column);
 }
 
@@ -303,12 +314,13 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              i2.$$ShoppingCartsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i2.$$ShoppingCartsTableOrderingComposer($db: db, $table: table),
+          createFilteringComposer: () => i2.$$ShoppingCartsTableFilterComposer(
+              i2.$$ShoppingCartsTableComposer($db: db, $table: table)),
+          createOrderingComposer: () => i2.$$ShoppingCartsTableOrderingComposer(
+              i2.$$ShoppingCartsTableComposer($db: db, $table: table)),
           createAnnotationComposer: () =>
-              i2.$$ShoppingCartsTableAnnotationComposer($db: db, $table: table),
+              i2.$$ShoppingCartsTableAnnotationComposer(
+                  i2.$$ShoppingCartsTableComposer($db: db, $table: table)),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),

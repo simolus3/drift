@@ -156,4 +156,15 @@ class Composer<Database extends GeneratedDatabase, CurrentTable extends Table> {
         $removeJoinBuilderFromRootComposer ??
             ((JoinBuilder joinBuilder) => $joinBuilders.remove(joinBuilder));
   }
+
+  /// A helper method for creating a new composer from an existing composer
+  Composer.fromComposer(Composer<Database, CurrentTable> composer)
+      : this(
+          $db: composer.$db,
+          $table: composer.$table,
+          joinBuilder: composer.$joinBuilder,
+          $addJoinBuilderToRootComposer: composer.$addJoinBuilderToRootComposer,
+          $removeJoinBuilderFromRootComposer:
+              composer.$removeJoinBuilderFromRootComposer,
+        );
 }

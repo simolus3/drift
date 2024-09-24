@@ -224,51 +224,58 @@ typedef $SearchInPostsUpdateCompanionBuilder = i1.SearchInPostsCompanion
   i0.Value<int> rowid,
 });
 
-class $SearchInPostsFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<String> get author => $composableBuilder(
-      column: $table.author, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => i0.ColumnFilters(column));
+class $SearchInPostsFilterComposer extends i1.$SearchInPostsComposer {
+  $SearchInPostsFilterComposer(i1.$SearchInPostsComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnFilters<String> get author => i0.ColumnFilters(_author);
+  i0.ColumnFilters<String> get content => i0.ColumnFilters(_content);
 }
 
-class $SearchInPostsOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<String> get author => $composableBuilder(
-      column: $table.author, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => i0.ColumnOrderings(column));
+class $SearchInPostsOrderingComposer extends i1.$SearchInPostsComposer {
+  $SearchInPostsOrderingComposer(i1.$SearchInPostsComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnOrderings<String> get author => i0.ColumnOrderings(_author);
+  i0.ColumnOrderings<String> get content => i0.ColumnOrderings(_content);
 }
 
-class $SearchInPostsAnnotationComposer
-    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsAnnotationComposer({
+class $SearchInPostsAnnotationComposer extends i1.$SearchInPostsComposer {
+  $SearchInPostsAnnotationComposer(i1.$SearchInPostsComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.GeneratedColumn<String> get author => _author;
+  i0.GeneratedColumn<String> get content => _content;
+}
+
+class $SearchInPostsComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
+  $SearchInPostsComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<String> get author =>
+  i0.GeneratedColumn<String> get _author =>
       $composableBuilder(column: $table.author, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get content =>
+  i0.GeneratedColumn<String> get _content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
 }
 
@@ -291,12 +298,12 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              i1.$SearchInPostsFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$SearchInPostsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
-              i1.$SearchInPostsAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => i1.$SearchInPostsFilterComposer(
+              i1.$SearchInPostsComposer($db: db, $table: table)),
+          createOrderingComposer: () => i1.$SearchInPostsOrderingComposer(
+              i1.$SearchInPostsComposer($db: db, $table: table)),
+          createAnnotationComposer: () => i1.$SearchInPostsAnnotationComposer(
+              i1.$SearchInPostsComposer($db: db, $table: table)),
           updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),
             i0.Value<String> content = const i0.Value.absent(),

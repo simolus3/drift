@@ -211,51 +211,58 @@ typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
   Value<int> rowid,
 });
 
-class $$UsersTableFilterComposer
-    extends FilterComposer<_$DriftPostgresDatabase, $UsersTable> {
-  $$UsersTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<UuidValue> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
+class $$UsersTableFilterComposer extends $$UsersTableComposer {
+  $$UsersTableFilterComposer($$UsersTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  ColumnFilters<UuidValue> get id => ColumnFilters(_id);
+  ColumnFilters<String> get name => ColumnFilters(_name);
 }
 
-class $$UsersTableOrderingComposer
-    extends OrderingComposer<_$DriftPostgresDatabase, $UsersTable> {
-  $$UsersTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<UuidValue> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
+class $$UsersTableOrderingComposer extends $$UsersTableComposer {
+  $$UsersTableOrderingComposer($$UsersTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  ColumnOrderings<UuidValue> get id => ColumnOrderings(_id);
+  ColumnOrderings<String> get name => ColumnOrderings(_name);
 }
 
-class $$UsersTableAnnotationComposer
-    extends AnnotationComposer<_$DriftPostgresDatabase, $UsersTable> {
-  $$UsersTableAnnotationComposer({
+class $$UsersTableAnnotationComposer extends $$UsersTableComposer {
+  $$UsersTableAnnotationComposer($$UsersTableComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  GeneratedColumn<UuidValue> get id => _id;
+  GeneratedColumn<String> get name => _name;
+}
+
+class $$UsersTableComposer
+    extends Composer<_$DriftPostgresDatabase, $UsersTable> {
+  $$UsersTableComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<UuidValue> get id =>
+  GeneratedColumn<UuidValue> get _id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
+  GeneratedColumn<String> get _name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 }
 
@@ -275,12 +282,12 @@ class $$UsersTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$UsersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$UsersTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
-              $$UsersTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => $$UsersTableFilterComposer(
+              $$UsersTableComposer($db: db, $table: table)),
+          createOrderingComposer: () => $$UsersTableOrderingComposer(
+              $$UsersTableComposer($db: db, $table: table)),
+          createAnnotationComposer: () => $$UsersTableAnnotationComposer(
+              $$UsersTableComposer($db: db, $table: table)),
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
             Value<String> name = const Value.absent(),

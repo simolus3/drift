@@ -59,7 +59,7 @@ void main() {
 
   test('manager - filter related with regualar id', () async {
     // Filter on related table's reference id - Does not require a join
-    FilterComposer? composer;
+    Composer? composer;
     expect(
         await db.managers.product.filter((f) {
           composer = f;
@@ -277,7 +277,7 @@ void main() {
 
   test('manager - filter related with regualar id with references', () async {
     // Filter on related table's reference id - Does not require a join
-    FilterComposer? composer;
+    Composer? composer;
     expect(
         await db.managers.product
             .filter((f) {

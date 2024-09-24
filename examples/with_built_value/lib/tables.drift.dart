@@ -190,51 +190,57 @@ typedef $UsersUpdateCompanionBuilder = i1.UsersCompanion Function({
   i0.Value<String> name,
 });
 
-class $UsersFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.Users> {
-  $UsersFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnFilters(column));
+class $UsersFilterComposer extends i1.$UsersComposer {
+  $UsersFilterComposer(i1.$UsersComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnFilters<int> get id => i0.ColumnFilters(_id);
+  i0.ColumnFilters<String> get name => i0.ColumnFilters(_name);
 }
 
-class $UsersOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.Users> {
-  $UsersOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
+class $UsersOrderingComposer extends i1.$UsersComposer {
+  $UsersOrderingComposer(i1.$UsersComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.ColumnOrderings<int> get id => i0.ColumnOrderings(_id);
+  i0.ColumnOrderings<String> get name => i0.ColumnOrderings(_name);
 }
 
-class $UsersAnnotationComposer
-    extends i0.AnnotationComposer<i0.GeneratedDatabase, i1.Users> {
-  $UsersAnnotationComposer({
+class $UsersAnnotationComposer extends i1.$UsersComposer {
+  $UsersAnnotationComposer(i1.$UsersComposer c)
+      : super(
+            $db: c.$db,
+            $table: c.$table,
+            joinBuilder: c.$joinBuilder,
+            $addJoinBuilderToRootComposer: c.$addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer:
+                c.$removeJoinBuilderFromRootComposer);
+  i0.GeneratedColumn<int> get id => _id;
+  i0.GeneratedColumn<String> get name => _name;
+}
+
+class $UsersComposer extends i0.Composer<i0.GeneratedDatabase, i1.Users> {
+  $UsersComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<int> get id =>
+  i0.GeneratedColumn<int> get _id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get name =>
+  i0.GeneratedColumn<String> get _name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 }
 
@@ -254,12 +260,12 @@ class $UsersTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              i1.$UsersFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$UsersOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
-              i1.$UsersAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => i1
+              .$UsersFilterComposer(i1.$UsersComposer($db: db, $table: table)),
+          createOrderingComposer: () => i1.$UsersOrderingComposer(
+              i1.$UsersComposer($db: db, $table: table)),
+          createAnnotationComposer: () => i1.$UsersAnnotationComposer(
+              i1.$UsersComposer($db: db, $table: table)),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
