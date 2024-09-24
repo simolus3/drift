@@ -224,7 +224,8 @@ typedef $SearchInPostsUpdateCompanionBuilder = i1.SearchInPostsCompanion
   i0.Value<int> rowid,
 });
 
-class $SearchInPostsFilterComposer extends i1.$SearchInPostsComposer {
+class $SearchInPostsFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsFilterComposer({
     required super.$db,
     required super.$table,
@@ -232,11 +233,15 @@ class $SearchInPostsFilterComposer extends i1.$SearchInPostsComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnFilters<String> get author => i0.ColumnFilters(_author);
-  i0.ColumnFilters<String> get content => i0.ColumnFilters(_content);
+  i0.ColumnFilters<String> get author => $composableBuilder(
+      column: $table.author, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => i0.ColumnFilters(column));
 }
 
-class $SearchInPostsOrderingComposer extends i1.$SearchInPostsComposer {
+class $SearchInPostsOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsOrderingComposer({
     required super.$db,
     required super.$table,
@@ -244,11 +249,15 @@ class $SearchInPostsOrderingComposer extends i1.$SearchInPostsComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<String> get author => i0.ColumnOrderings(_author);
-  i0.ColumnOrderings<String> get content => i0.ColumnOrderings(_content);
+  i0.ColumnOrderings<String> get author => $composableBuilder(
+      column: $table.author, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => i0.ColumnOrderings(column));
 }
 
-class $SearchInPostsAnnotationComposer extends i1.$SearchInPostsComposer {
+class $SearchInPostsAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
   $SearchInPostsAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -256,54 +265,11 @@ class $SearchInPostsAnnotationComposer extends i1.$SearchInPostsComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<String> get author => _author;
-  i0.GeneratedColumn<String> get content => _content;
-}
-
-class $SearchInPostsComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<String> get _author =>
+  i0.GeneratedColumn<String> get author =>
       $composableBuilder(column: $table.author, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get _content =>
+  i0.GeneratedColumn<String> get content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
-
-  i1.$SearchInPostsOrderingComposer _orderComposer() {
-    return i1.$SearchInPostsOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  i1.$SearchInPostsFilterComposer _filterComposer() {
-    return i1.$SearchInPostsFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  i1.$SearchInPostsAnnotationComposer _annotationComposer() {
-    return i1.$SearchInPostsAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $SearchInPostsTableManager extends i0.RootTableManager<

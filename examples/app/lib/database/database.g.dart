@@ -775,7 +775,8 @@ final class $$CategoriesTableReferences
   }
 }
 
-class $$CategoriesTableFilterComposer extends $$CategoriesTableComposer {
+class $$CategoriesTableFilterComposer
+    extends Composer<_$AppDatabase, $CategoriesTable> {
   $$CategoriesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -783,68 +784,20 @@ class $$CategoriesTableFilterComposer extends $$CategoriesTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => ColumnFilters(_id);
-  ColumnFilters<String> get name => ColumnFilters(_name);
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
   ColumnWithTypeConverterFilters<Color, Color, int> get color =>
-      ColumnWithTypeConverterFilters(_color);
+      $composableBuilder(
+          column: $table.color,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
 
   Expression<bool> todoEntriesRefs(
       Expression<bool> Function($$TodoEntriesTableFilterComposer f) f) {
-    return f(_todoEntriesRefs._filterComposer());
-  }
-}
-
-class $$CategoriesTableOrderingComposer extends $$CategoriesTableComposer {
-  $$CategoriesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => ColumnOrderings(_id);
-  ColumnOrderings<String> get name => ColumnOrderings(_name);
-  ColumnOrderings<int> get color => ColumnOrderings(_color);
-}
-
-class $$CategoriesTableAnnotationComposer extends $$CategoriesTableComposer {
-  $$CategoriesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id => _id;
-  GeneratedColumn<String> get name => _name;
-  GeneratedColumnWithTypeConverter<Color, int> get color => _color;
-
-  Expression<T> todoEntriesRefs<T extends Object>(
-      Expression<T> Function($$TodoEntriesTableAnnotationComposer a) f) {
-    return f(_todoEntriesRefs._annotationComposer());
-  }
-}
-
-class $$CategoriesTableComposer
-    extends Composer<_$AppDatabase, $CategoriesTable> {
-  $$CategoriesTableComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get _id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get _name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<Color, int> get _color =>
-      $composableBuilder(column: $table.color, builder: (column) => column);
-
-  $$TodoEntriesTableComposer get _todoEntriesRefs {
-    final $$TodoEntriesTableComposer composer = $composerBuilder(
+    final $$TodoEntriesTableFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.id,
         referencedTable: $db.todoEntries,
@@ -852,7 +805,7 @@ class $$CategoriesTableComposer
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
-            $$TodoEntriesTableComposer(
+            $$TodoEntriesTableFilterComposer(
               $db: $db,
               $table: $db.todoEntries,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
@@ -860,37 +813,66 @@ class $$CategoriesTableComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
-    return composer;
+    return f(composer);
   }
+}
 
-  $$CategoriesTableOrderingComposer _orderComposer() {
-    return $$CategoriesTableOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
+class $$CategoriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CategoriesTable> {
+  $$CategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  $$CategoriesTableFilterComposer _filterComposer() {
-    return $$CategoriesTableFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
 
-  $$CategoriesTableAnnotationComposer _annotationComposer() {
-    return $$CategoriesTableAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
+  ColumnOrderings<int> get color => $composableBuilder(
+      column: $table.color, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CategoriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CategoriesTable> {
+  $$CategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<Color, int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  Expression<T> todoEntriesRefs<T extends Object>(
+      Expression<T> Function($$TodoEntriesTableAnnotationComposer a) f) {
+    final $$TodoEntriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.todoEntries,
+        getReferencedColumn: (t) => t.category,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TodoEntriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.todoEntries,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
   }
 }
 
@@ -1014,7 +996,8 @@ final class $$TodoEntriesTableReferences
   }
 }
 
-class $$TodoEntriesTableFilterComposer extends $$TodoEntriesTableComposer {
+class $$TodoEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $TodoEntriesTable> {
   $$TodoEntriesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1022,61 +1005,17 @@ class $$TodoEntriesTableFilterComposer extends $$TodoEntriesTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => ColumnFilters(_id);
-  ColumnFilters<String> get description => ColumnFilters(_description);
-  ColumnFilters<DateTime> get dueDate => ColumnFilters(_dueDate);
-  $$CategoriesTableFilterComposer get category => _category._filterComposer();
-}
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
 
-class $$TodoEntriesTableOrderingComposer extends $$TodoEntriesTableComposer {
-  $$TodoEntriesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => ColumnOrderings(_id);
-  ColumnOrderings<String> get description => ColumnOrderings(_description);
-  ColumnOrderings<DateTime> get dueDate => ColumnOrderings(_dueDate);
-  $$CategoriesTableOrderingComposer get category => _category._orderComposer();
-}
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
 
-class $$TodoEntriesTableAnnotationComposer extends $$TodoEntriesTableComposer {
-  $$TodoEntriesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id => _id;
-  GeneratedColumn<String> get description => _description;
-  GeneratedColumn<DateTime> get dueDate => _dueDate;
-  $$CategoriesTableAnnotationComposer get category =>
-      _category._annotationComposer();
-}
+  ColumnFilters<DateTime> get dueDate => $composableBuilder(
+      column: $table.dueDate, builder: (column) => ColumnFilters(column));
 
-class $$TodoEntriesTableComposer
-    extends Composer<_$AppDatabase, $TodoEntriesTable> {
-  $$TodoEntriesTableComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get _id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get _description => $composableBuilder(
-      column: $table.description, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get _dueDate =>
-      $composableBuilder(column: $table.dueDate, builder: (column) => column);
-
-  $$CategoriesTableComposer get _category {
-    final $$CategoriesTableComposer composer = $composerBuilder(
+  $$CategoriesTableFilterComposer get category {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.category,
         referencedTable: $db.categories,
@@ -1084,7 +1023,7 @@ class $$TodoEntriesTableComposer
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
-            $$CategoriesTableComposer(
+            $$CategoriesTableFilterComposer(
               $db: $db,
               $table: $db.categories,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
@@ -1094,35 +1033,83 @@ class $$TodoEntriesTableComposer
             ));
     return composer;
   }
+}
 
-  $$TodoEntriesTableOrderingComposer _orderComposer() {
-    return $$TodoEntriesTableOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
+class $$TodoEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodoEntriesTable> {
+  $$TodoEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dueDate => $composableBuilder(
+      column: $table.dueDate, builder: (column) => ColumnOrderings(column));
+
+  $$CategoriesTableOrderingComposer get category {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.category,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableOrderingComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
   }
+}
 
-  $$TodoEntriesTableFilterComposer _filterComposer() {
-    return $$TodoEntriesTableFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
+class $$TodoEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodoEntriesTable> {
+  $$TodoEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
 
-  $$TodoEntriesTableAnnotationComposer _annotationComposer() {
-    return $$TodoEntriesTableAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  $$CategoriesTableAnnotationComposer get category {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.category,
+        referencedTable: $db.categories,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CategoriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.categories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
   }
 }
 
@@ -1237,7 +1224,7 @@ typedef $TextEntriesUpdateCompanionBuilder = TextEntriesCompanion Function({
   Value<int> rowid,
 });
 
-class $TextEntriesFilterComposer extends $TextEntriesComposer {
+class $TextEntriesFilterComposer extends Composer<_$AppDatabase, TextEntries> {
   $TextEntriesFilterComposer({
     required super.$db,
     required super.$table,
@@ -1245,10 +1232,12 @@ class $TextEntriesFilterComposer extends $TextEntriesComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get description => ColumnFilters(_description);
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
 }
 
-class $TextEntriesOrderingComposer extends $TextEntriesComposer {
+class $TextEntriesOrderingComposer
+    extends Composer<_$AppDatabase, TextEntries> {
   $TextEntriesOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1256,10 +1245,12 @@ class $TextEntriesOrderingComposer extends $TextEntriesComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get description => ColumnOrderings(_description);
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
 }
 
-class $TextEntriesAnnotationComposer extends $TextEntriesComposer {
+class $TextEntriesAnnotationComposer
+    extends Composer<_$AppDatabase, TextEntries> {
   $TextEntriesAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1267,49 +1258,8 @@ class $TextEntriesAnnotationComposer extends $TextEntriesComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get description => _description;
-}
-
-class $TextEntriesComposer extends Composer<_$AppDatabase, TextEntries> {
-  $TextEntriesComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get _description => $composableBuilder(
+  GeneratedColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
-
-  $TextEntriesOrderingComposer _orderComposer() {
-    return $TextEntriesOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $TextEntriesFilterComposer _filterComposer() {
-    return $TextEntriesFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $TextEntriesAnnotationComposer _annotationComposer() {
-    return $TextEntriesAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $TextEntriesTableManager extends RootTableManager<

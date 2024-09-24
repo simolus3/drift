@@ -223,7 +223,7 @@ typedef $EntriesUpdateCompanionBuilder = EntriesCompanion Function({
   Value<String> value,
 });
 
-class $EntriesFilterComposer extends $EntriesComposer {
+class $EntriesFilterComposer extends Composer<_$MyDatabase, Entries> {
   $EntriesFilterComposer({
     required super.$db,
     required super.$table,
@@ -231,11 +231,14 @@ class $EntriesFilterComposer extends $EntriesComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => ColumnFilters(_id);
-  ColumnFilters<String> get value => ColumnFilters(_value);
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnFilters(column));
 }
 
-class $EntriesOrderingComposer extends $EntriesComposer {
+class $EntriesOrderingComposer extends Composer<_$MyDatabase, Entries> {
   $EntriesOrderingComposer({
     required super.$db,
     required super.$table,
@@ -243,11 +246,14 @@ class $EntriesOrderingComposer extends $EntriesComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => ColumnOrderings(_id);
-  ColumnOrderings<String> get value => ColumnOrderings(_value);
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnOrderings(column));
 }
 
-class $EntriesAnnotationComposer extends $EntriesComposer {
+class $EntriesAnnotationComposer extends Composer<_$MyDatabase, Entries> {
   $EntriesAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -255,53 +261,11 @@ class $EntriesAnnotationComposer extends $EntriesComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id => _id;
-  GeneratedColumn<String> get value => _value;
-}
-
-class $EntriesComposer extends Composer<_$MyDatabase, Entries> {
-  $EntriesComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get _id =>
+  GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get _value =>
+  GeneratedColumn<String> get value =>
       $composableBuilder(column: $table.value, builder: (column) => column);
-
-  $EntriesOrderingComposer _orderComposer() {
-    return $EntriesOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $EntriesFilterComposer _filterComposer() {
-    return $EntriesFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $EntriesAnnotationComposer _annotationComposer() {
-    return $EntriesAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $EntriesTableManager extends RootTableManager<

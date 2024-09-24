@@ -245,7 +245,8 @@ typedef $GeopolyTestUpdateCompanionBuilder = GeopolyTestCompanion Function({
   Value<int> rowid,
 });
 
-class $GeopolyTestFilterComposer extends $GeopolyTestComposer {
+class $GeopolyTestFilterComposer
+    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
   $GeopolyTestFilterComposer({
     required super.$db,
     required super.$table,
@@ -253,11 +254,15 @@ class $GeopolyTestFilterComposer extends $GeopolyTestComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<GeopolyPolygon> get shape => ColumnFilters(_shape);
-  ColumnFilters<DriftAny> get a => ColumnFilters(_a);
+  ColumnFilters<GeopolyPolygon> get shape => $composableBuilder(
+      column: $table.shape, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DriftAny> get a => $composableBuilder(
+      column: $table.a, builder: (column) => ColumnFilters(column));
 }
 
-class $GeopolyTestOrderingComposer extends $GeopolyTestComposer {
+class $GeopolyTestOrderingComposer
+    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
   $GeopolyTestOrderingComposer({
     required super.$db,
     required super.$table,
@@ -265,11 +270,15 @@ class $GeopolyTestOrderingComposer extends $GeopolyTestComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<GeopolyPolygon> get shape => ColumnOrderings(_shape);
-  ColumnOrderings<DriftAny> get a => ColumnOrderings(_a);
+  ColumnOrderings<GeopolyPolygon> get shape => $composableBuilder(
+      column: $table.shape, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DriftAny> get a => $composableBuilder(
+      column: $table.a, builder: (column) => ColumnOrderings(column));
 }
 
-class $GeopolyTestAnnotationComposer extends $GeopolyTestComposer {
+class $GeopolyTestAnnotationComposer
+    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
   $GeopolyTestAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -277,54 +286,11 @@ class $GeopolyTestAnnotationComposer extends $GeopolyTestComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<GeopolyPolygon> get shape => _shape;
-  GeneratedColumn<DriftAny> get a => _a;
-}
-
-class $GeopolyTestComposer
-    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<GeopolyPolygon> get _shape =>
+  GeneratedColumn<GeopolyPolygon> get shape =>
       $composableBuilder(column: $table.shape, builder: (column) => column);
 
-  GeneratedColumn<DriftAny> get _a =>
+  GeneratedColumn<DriftAny> get a =>
       $composableBuilder(column: $table.a, builder: (column) => column);
-
-  $GeopolyTestOrderingComposer _orderComposer() {
-    return $GeopolyTestOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $GeopolyTestFilterComposer _filterComposer() {
-    return $GeopolyTestFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $GeopolyTestAnnotationComposer _annotationComposer() {
-    return $GeopolyTestAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $GeopolyTestTableManager extends RootTableManager<

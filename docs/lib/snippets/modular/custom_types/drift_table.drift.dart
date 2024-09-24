@@ -244,7 +244,8 @@ typedef $PeriodicRemindersUpdateCompanionBuilder = i1.PeriodicRemindersCompanion
   i0.Value<String> reminder,
 });
 
-class $PeriodicRemindersFilterComposer extends i1.$PeriodicRemindersComposer {
+class $PeriodicRemindersFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.PeriodicReminders> {
   $PeriodicRemindersFilterComposer({
     required super.$db,
     required super.$table,
@@ -252,12 +253,18 @@ class $PeriodicRemindersFilterComposer extends i1.$PeriodicRemindersComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnFilters<int> get id => i0.ColumnFilters(_id);
-  i0.ColumnFilters<Duration> get frequency => i0.ColumnFilters(_frequency);
-  i0.ColumnFilters<String> get reminder => i0.ColumnFilters(_reminder);
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<Duration> get frequency => $composableBuilder(
+      column: $table.frequency, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get reminder => $composableBuilder(
+      column: $table.reminder, builder: (column) => i0.ColumnFilters(column));
 }
 
-class $PeriodicRemindersOrderingComposer extends i1.$PeriodicRemindersComposer {
+class $PeriodicRemindersOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.PeriodicReminders> {
   $PeriodicRemindersOrderingComposer({
     required super.$db,
     required super.$table,
@@ -265,13 +272,19 @@ class $PeriodicRemindersOrderingComposer extends i1.$PeriodicRemindersComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings(_id);
-  i0.ColumnOrderings<Duration> get frequency => i0.ColumnOrderings(_frequency);
-  i0.ColumnOrderings<String> get reminder => i0.ColumnOrderings(_reminder);
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<Duration> get frequency => $composableBuilder(
+      column: $table.frequency,
+      builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get reminder => $composableBuilder(
+      column: $table.reminder, builder: (column) => i0.ColumnOrderings(column));
 }
 
 class $PeriodicRemindersAnnotationComposer
-    extends i1.$PeriodicRemindersComposer {
+    extends i0.Composer<i0.GeneratedDatabase, i1.PeriodicReminders> {
   $PeriodicRemindersAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -279,58 +292,14 @@ class $PeriodicRemindersAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<int> get id => _id;
-  i0.GeneratedColumn<Duration> get frequency => _frequency;
-  i0.GeneratedColumn<String> get reminder => _reminder;
-}
-
-class $PeriodicRemindersComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.PeriodicReminders> {
-  $PeriodicRemindersComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<int> get _id =>
+  i0.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  i0.GeneratedColumn<Duration> get _frequency =>
+  i0.GeneratedColumn<Duration> get frequency =>
       $composableBuilder(column: $table.frequency, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get _reminder =>
+  i0.GeneratedColumn<String> get reminder =>
       $composableBuilder(column: $table.reminder, builder: (column) => column);
-
-  i1.$PeriodicRemindersOrderingComposer _orderComposer() {
-    return i1.$PeriodicRemindersOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  i1.$PeriodicRemindersFilterComposer _filterComposer() {
-    return i1.$PeriodicRemindersFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  i1.$PeriodicRemindersAnnotationComposer _annotationComposer() {
-    return i1.$PeriodicRemindersAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $PeriodicRemindersTableManager extends i0.RootTableManager<

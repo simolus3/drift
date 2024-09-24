@@ -241,7 +241,8 @@ typedef $$BuyableItemsTableUpdateCompanionBuilder = i1.BuyableItemsCompanion
   i0.Value<int> price,
 });
 
-class $$BuyableItemsTableFilterComposer extends i1.$$BuyableItemsTableComposer {
+class $$BuyableItemsTableFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -249,13 +250,19 @@ class $$BuyableItemsTableFilterComposer extends i1.$$BuyableItemsTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnFilters<int> get id => i0.ColumnFilters(_id);
-  i0.ColumnFilters<String> get description => i0.ColumnFilters(_description);
-  i0.ColumnFilters<int> get price => i0.ColumnFilters(_price);
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description,
+      builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<int> get price => $composableBuilder(
+      column: $table.price, builder: (column) => i0.ColumnFilters(column));
 }
 
 class $$BuyableItemsTableOrderingComposer
-    extends i1.$$BuyableItemsTableComposer {
+    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -263,14 +270,19 @@ class $$BuyableItemsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings(_id);
-  i0.ColumnOrderings<String> get description =>
-      i0.ColumnOrderings(_description);
-  i0.ColumnOrderings<int> get price => i0.ColumnOrderings(_price);
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description,
+      builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<int> get price => $composableBuilder(
+      column: $table.price, builder: (column) => i0.ColumnOrderings(column));
 }
 
 class $$BuyableItemsTableAnnotationComposer
-    extends i1.$$BuyableItemsTableComposer {
+    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
   $$BuyableItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -278,58 +290,14 @@ class $$BuyableItemsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<int> get id => _id;
-  i0.GeneratedColumn<String> get description => _description;
-  i0.GeneratedColumn<int> get price => _price;
-}
-
-class $$BuyableItemsTableComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
-  $$BuyableItemsTableComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<int> get _id =>
+  i0.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get _description => $composableBuilder(
+  i0.GeneratedColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get _price =>
+  i0.GeneratedColumn<int> get price =>
       $composableBuilder(column: $table.price, builder: (column) => column);
-
-  i1.$$BuyableItemsTableOrderingComposer _orderComposer() {
-    return i1.$$BuyableItemsTableOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  i1.$$BuyableItemsTableFilterComposer _filterComposer() {
-    return i1.$$BuyableItemsTableFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  i1.$$BuyableItemsTableAnnotationComposer _annotationComposer() {
-    return i1.$$BuyableItemsTableAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $$BuyableItemsTableTableManager extends i0.RootTableManager<

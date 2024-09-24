@@ -200,7 +200,8 @@ typedef $$NotesTableUpdateCompanionBuilder = NotesCompanion Function({
   Value<String> content,
 });
 
-class $$NotesTableFilterComposer extends $$NotesTableComposer {
+class $$NotesTableFilterComposer
+    extends Composer<_$MyEncryptedDatabase, $NotesTable> {
   $$NotesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -208,11 +209,15 @@ class $$NotesTableFilterComposer extends $$NotesTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => ColumnFilters(_id);
-  ColumnFilters<String> get content => ColumnFilters(_content);
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => ColumnFilters(column));
 }
 
-class $$NotesTableOrderingComposer extends $$NotesTableComposer {
+class $$NotesTableOrderingComposer
+    extends Composer<_$MyEncryptedDatabase, $NotesTable> {
   $$NotesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -220,11 +225,15 @@ class $$NotesTableOrderingComposer extends $$NotesTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => ColumnOrderings(_id);
-  ColumnOrderings<String> get content => ColumnOrderings(_content);
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => ColumnOrderings(column));
 }
 
-class $$NotesTableAnnotationComposer extends $$NotesTableComposer {
+class $$NotesTableAnnotationComposer
+    extends Composer<_$MyEncryptedDatabase, $NotesTable> {
   $$NotesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -232,54 +241,11 @@ class $$NotesTableAnnotationComposer extends $$NotesTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id => _id;
-  GeneratedColumn<String> get content => _content;
-}
-
-class $$NotesTableComposer
-    extends Composer<_$MyEncryptedDatabase, $NotesTable> {
-  $$NotesTableComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get _id =>
+  GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get _content =>
+  GeneratedColumn<String> get content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
-
-  $$NotesTableOrderingComposer _orderComposer() {
-    return $$NotesTableOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $$NotesTableFilterComposer _filterComposer() {
-    return $$NotesTableFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $$NotesTableAnnotationComposer _annotationComposer() {
-    return $$NotesTableAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $$NotesTableTableManager extends RootTableManager<

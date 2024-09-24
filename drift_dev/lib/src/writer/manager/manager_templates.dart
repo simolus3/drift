@@ -73,21 +73,6 @@ class _ManagerCodeTemplates {
   }
 
   /// Name of this tables filter composer class
-  String baseComposerName(
-    DriftTable table,
-  ) {
-    return '\$${table.entityInfoName}Composer';
-  }
-
-  /// Name of this tables filter composer class
-  String baseComposerNameWithPrefix(
-    DriftTable table,
-    TextEmitter leaf,
-  ) {
-    return leaf.dartCode(leaf.generatedElement(table, baseComposerName(table)));
-  }
-
-  /// Name of this tables filter composer class
   String filterComposerName(
     DriftTable table,
   ) {
@@ -327,119 +312,15 @@ class _ManagerCodeTemplates {
   }
 
   /// Returns the code for a tables filter composer
-  String baseComposerClass({
-    required DriftTable table,
-    required TextEmitter leaf,
-    required String dbClassName,
-    required List<String> composerFields,
-  }) {
-    return """class ${baseComposerName(table)} extends ${leaf.drift("Composer")}<
-        ${databaseType(leaf, dbClassName)},
-        ${tableClassWithPrefix(table, leaf)}> {
-        ${baseComposerName(table)}({
-    required super.\$db,
-    required super.\$table,
-    super.joinBuilder,
-    super.\$addJoinBuilderToRootComposer,
-    super.\$removeJoinBuilderFromRootComposer,
-  });
-          ${composerFields.join('\n')}
-
-
-                      ${orderingComposerNameWithPrefix(table, leaf)} _orderComposer() {
-    return ${orderingComposerNameWithPrefix(table, leaf)}(
-      \$db: \$db,
-      \$table: \$table,
-      joinBuilder: \$joinBuilder,
-      \$addJoinBuilderToRootComposer: \$addJoinBuilderToRootComposer,
-      \$removeJoinBuilderFromRootComposer: \$removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  ${filterComposerNameWithPrefix(table, leaf)} _filterComposer() {
-    return ${filterComposerNameWithPrefix(table, leaf)}(
-      \$db: \$db,
-      \$table: \$table,
-      joinBuilder: \$joinBuilder,
-      \$addJoinBuilderToRootComposer: \$addJoinBuilderToRootComposer,
-      \$removeJoinBuilderFromRootComposer: \$removeJoinBuilderFromRootComposer,
-    );
-  }
-
- ${annotationComposerNameWithPrefix(table, leaf)} _annotationComposer() {
-    return ${annotationComposerNameWithPrefix(table, leaf)}(
-      \$db: \$db,
-      \$table: \$table,
-      joinBuilder: \$joinBuilder,
-      \$addJoinBuilderToRootComposer: \$addJoinBuilderToRootComposer,
-      \$removeJoinBuilderFromRootComposer: \$removeJoinBuilderFromRootComposer,
-    );
-  }
-        }
-      """;
-  }
-
-  /// Code for a  composer field for a standard column (no relations or type convertions)
-  String standardColumnComposerField(
-      {required TextEmitter leaf,
-      required DriftColumn column,
-      required String type}) {
-    final filterName = column.nameInDart;
-    final columnGetter = column.nameInDart;
-
-    return """${leaf.drift("GeneratedColumn")}<$type> get _$filterName => \$composableBuilder(
-      column: \$table.$columnGetter,
-      builder: (column) => column);
-      """;
-  }
-
-  /// Code for a composer field for a column that has a type converter
-  String columnWithTypeConverterComposerField(
-      {required TextEmitter leaf,
-      required DriftColumn column,
-      required String type}) {
-    final filterName = column.nameInDart;
-    final columnGetter = column.nameInDart;
-    final converterType = leaf.dartCode(leaf.writer.dartType(column));
-    return """
-          ${leaf.drift("GeneratedColumnWithTypeConverter")}<$converterType,$type> get _$filterName => \$composableBuilder(
-      column: \$table.$columnGetter,
-      builder: (column) => column);
-      """;
-  }
-
-  /// Code for a composer field which works over a reference
-  String relationColumnComposerField(
-      {required _Relation relation, required TextEmitter leaf}) {
-    final name = baseComposerNameWithPrefix(relation.referencedTable, leaf);
-    return """
-        ${baseComposerNameWithPrefix(relation.referencedTable, leaf)} get _${relation.fieldName} {
-          final $name composer = \$composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.${relation.currentColumn.nameInDart},
-      referencedTable: ${_referenceTableFromComposer(relation.referencedTable, leaf)},
-      getReferencedColumn: (t) => t.${relation.referencedColumn.nameInDart},
-      builder: (joinBuilder,{\$addJoinBuilderToRootComposer,\$removeJoinBuilderFromRootComposer }) => 
-      $name(
-              \$db: \$db,
-              \$table: ${_referenceTableFromComposer(relation.referencedTable, leaf)},
-              \$addJoinBuilderToRootComposer: \$addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              \$removeJoinBuilderFromRootComposer:
-                  \$removeJoinBuilderFromRootComposer,
-        ));
-          return composer;
-        }""";
-  }
-
-  /// Returns the code for a tables filter composer
   String filterComposer({
     required DriftTable table,
     required TextEmitter leaf,
     required String dbClassName,
     required List<String> columnFilters,
   }) {
-    return """class ${filterComposerName(table)} extends ${baseComposerNameWithPrefix(table, leaf)} {
+    return """class ${filterComposerName(table)} extends ${leaf.drift("Composer")}<
+        ${databaseType(leaf, dbClassName)},
+        ${tableClassWithPrefix(table, leaf)}> {
         ${filterComposerName(table)}({
     required super.\$db,
     required super.\$table,
@@ -459,7 +340,9 @@ class _ManagerCodeTemplates {
     required String dbClassName,
     required List<String> columnAnnotations,
   }) {
-    return """class ${annotationComposerName(table)} extends ${baseComposerNameWithPrefix(table, leaf)} {
+    return """class ${annotationComposerName(table)} extends ${leaf.drift("Composer")}<
+        ${databaseType(leaf, dbClassName)},
+        ${tableClassWithPrefix(table, leaf)}> {
         ${annotationComposerName(table)}({
     required super.\$db,
     required super.\$table,
@@ -473,13 +356,14 @@ class _ManagerCodeTemplates {
   }
 
   /// Returns the code for a tables ordering composer
-  String orderingComposer({
-    required DriftTable table,
-    required TextEmitter leaf,
-    required String dbClassName,
-    required List<String> columnOrderings,
-  }) {
-    return """class ${orderingComposerName(table)} extends ${baseComposerNameWithPrefix(table, leaf)} {
+  String orderingComposer(
+      {required DriftTable table,
+      required TextEmitter leaf,
+      required String dbClassName,
+      required List<String> columnOrderings}) {
+    return """class ${orderingComposerName(table)} extends ${leaf.drift("Composer")}<
+        ${databaseType(leaf, dbClassName)},
+        ${tableClassWithPrefix(table, leaf)}> {
         ${orderingComposerName(table)}({
     required super.\$db,
     required super.\$table,
@@ -488,9 +372,6 @@ class _ManagerCodeTemplates {
     super.\$removeJoinBuilderFromRootComposer,
   });
           ${columnOrderings.join('\n')}
-
-
-
         }
       """;
   }
@@ -501,7 +382,12 @@ class _ManagerCodeTemplates {
       required DriftColumn column,
       required String type}) {
     final filterName = column.nameInDart;
-    return """${leaf.drift("GeneratedColumn")}<$type> get $filterName => _$filterName;""";
+    final columnGetter = column.nameInDart;
+
+    return """${leaf.drift("GeneratedColumn")}<$type> get $filterName => \$composableBuilder(
+      column: \$table.$columnGetter,
+      builder: (column) => column);
+      """;
   }
 
   /// Code for a annotations for a column that has a type converter
@@ -510,8 +396,12 @@ class _ManagerCodeTemplates {
       required DriftColumn column,
       required String type}) {
     final filterName = column.nameInDart;
+    final columnGetter = column.nameInDart;
     final converterType = leaf.dartCode(leaf.writer.dartType(column));
-    return """${leaf.drift("GeneratedColumnWithTypeConverter")}<$converterType,$type> get $filterName => _$filterName;
+    return """
+          ${leaf.drift("GeneratedColumnWithTypeConverter")}<$converterType,$type> get $filterName => \$composableBuilder(
+      column: \$table.$columnGetter,
+      builder: (column) => column);
       """;
   }
 
@@ -523,11 +413,16 @@ class _ManagerCodeTemplates {
         ${leaf.drift("Expression")}<T> ${relation.fieldName}<T extends Object>(
           ${leaf.drift("Expression")}<T> Function( ${annotationComposerNameWithPrefix(relation.referencedTable, leaf)} a) f
         ) {
-          return f(_${relation.fieldName}._annotationComposer());
+          ${_referencedComposer(leaf: leaf, relation: relation, composerName: annotationComposerNameWithPrefix(relation.referencedTable, leaf))}
+          return f(composer);
         }
 """;
     } else {
-      return """${annotationComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => _${relation.fieldName}._annotationComposer();""";
+      return """
+        ${annotationComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} {
+          ${_referencedComposer(leaf: leaf, relation: relation, composerName: annotationComposerNameWithPrefix(relation.referencedTable, leaf))}
+          return composer;
+        }""";
     }
   }
 
@@ -537,7 +432,13 @@ class _ManagerCodeTemplates {
       required DriftColumn column,
       required String type}) {
     final filterName = column.nameInDart;
-    return """${leaf.drift("ColumnFilters")}<$type> get $filterName => ${leaf.drift("ColumnFilters")}(_$filterName);""";
+    final columnGetter = column.nameInDart;
+
+    return """${leaf.drift("ColumnFilters")}<$type> get $filterName => \$composableBuilder(
+      column: \$table.$columnGetter,
+      builder: (column) => 
+      ${leaf.drift("ColumnFilters")}(column));
+      """;
   }
 
   /// Code for a filter for a column that has a type converter
@@ -546,10 +447,14 @@ class _ManagerCodeTemplates {
       required DriftColumn column,
       required String type}) {
     final filterName = column.nameInDart;
+    final columnGetter = column.nameInDart;
     final converterType = leaf.dartCode(leaf.writer.dartType(column));
     final nonNullableConverterType = converterType.replaceFirst("?", "");
     return """
-          ${leaf.drift("ColumnWithTypeConverterFilters")}<$converterType,$nonNullableConverterType,$type> get $filterName => ${leaf.drift("ColumnWithTypeConverterFilters")}(_$filterName);
+          ${leaf.drift("ColumnWithTypeConverterFilters")}<$converterType,$nonNullableConverterType,$type> get $filterName => \$composableBuilder(
+      column: \$table.$columnGetter,
+      builder: (column) => 
+      ${leaf.drift("ColumnWithTypeConverterFilters")}(column));
       """;
   }
 
@@ -561,12 +466,16 @@ class _ManagerCodeTemplates {
         ${leaf.drift("Expression")}<bool> ${relation.fieldName}(
           ${leaf.drift("Expression")}<bool> Function( ${filterComposerNameWithPrefix(relation.referencedTable, leaf)} f) f
         ) {
-          return f(_${relation.fieldName}._filterComposer());
+          ${_referencedComposer(leaf: leaf, relation: relation, composerName: filterComposerNameWithPrefix(relation.referencedTable, leaf))}
+          return f(composer);
         }
 """;
     } else {
       return """
-        ${filterComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => _${relation.fieldName}._filterComposer();""";
+        ${filterComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} {
+          ${_referencedComposer(leaf: leaf, relation: relation, composerName: filterComposerNameWithPrefix(relation.referencedTable, leaf))}
+          return composer;
+        }""";
     }
   }
 
@@ -576,7 +485,13 @@ class _ManagerCodeTemplates {
       required DriftColumn column,
       required String type}) {
     final filterName = column.nameInDart;
-    return """${leaf.drift("ColumnOrderings")}<$type> get $filterName => ${leaf.drift("ColumnOrderings")}(_$filterName);""";
+    final columnGetter = column.nameInDart;
+
+    return """${leaf.drift("ColumnOrderings")}<$type> get $filterName => \$composableBuilder(
+      column: \$table.$columnGetter,
+      builder: (column) => 
+      ${leaf.drift("ColumnOrderings")}(column));
+      """;
   }
 
   /// Code for a ordering which works over a reference
@@ -585,7 +500,32 @@ class _ManagerCodeTemplates {
     assert(relation.isReverse == false,
         "Don't generate orderings for reverse relations");
     return """
-        ${orderingComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} => _${relation.fieldName}._orderComposer();""";
+        ${orderingComposerNameWithPrefix(relation.referencedTable, leaf)} get ${relation.fieldName} {
+          ${_referencedComposer(leaf: leaf, relation: relation, composerName: orderingComposerNameWithPrefix(relation.referencedTable, leaf))}
+          return composer;
+        }""";
+  }
+
+  /// Code for creating a referenced composer, used by forward and reverse filters
+  String _referencedComposer(
+      {required _Relation relation,
+      required TextEmitter leaf,
+      required String composerName}) {
+    return """
+      final $composerName composer = \$composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.${relation.currentColumn.nameInDart},
+      referencedTable: ${_referenceTableFromComposer(relation.referencedTable, leaf)},
+      getReferencedColumn: (t) => t.${relation.referencedColumn.nameInDart},
+      builder: (joinBuilder,{\$addJoinBuilderToRootComposer,\$removeJoinBuilderFromRootComposer }) => 
+      $composerName(
+              \$db: \$db,
+              \$table: ${_referenceTableFromComposer(relation.referencedTable, leaf)},
+              \$addJoinBuilderToRootComposer: \$addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              \$removeJoinBuilderFromRootComposer:
+                  \$removeJoinBuilderFromRootComposer,
+        ));""";
   }
 
   /// Returns the name of the processed table manager class for a table

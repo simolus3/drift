@@ -116,7 +116,6 @@ class _TableManagerWriter {
       return true;
     }).toList();
 
-    final composerFields = <String>[];
     final columnFilters = <String>[];
     final columnOrderings = <String>[];
     final columnAnnotations = <String>[];
@@ -131,16 +130,11 @@ class _TableManagerWriter {
       // The type that this column is (int, string, etc)
       final type = leaf.dartCode(leaf.innerColumnType(column.sqlType));
       if (column.typeConverter != null) {
-        composerFields.add(_templates.columnWithTypeConverterComposerField(
-            column: column, leaf: leaf, type: type));
-
         columnFilters.add(_templates.columnWithTypeConverterFilters(
             column: column, leaf: leaf, type: type));
         columnAnnotations.add(_templates.columnWithTypeConverterAnnotations(
             column: column, leaf: leaf, type: type));
       } else {
-        composerFields.add(_templates.standardColumnComposerField(
-            column: column, leaf: leaf, type: type));
         columnFilters.add(_templates.standardColumnFilters(
             column: column, leaf: leaf, type: type));
         columnAnnotations.add(_templates.standardColumnAnnotation(
@@ -151,8 +145,6 @@ class _TableManagerWriter {
     }
 
     for (var relation in relations) {
-      composerFields.add(_templates.relationColumnComposerField(
-          leaf: leaf, relation: relation));
       columnFilters
           .add(_templates.relatedFilter(leaf: leaf, relation: relation));
       // Don't generate reverse ordering, only regular ones
@@ -188,11 +180,6 @@ class _TableManagerWriter {
         leaf: leaf,
         dbClassName: dbClassName,
         columnAnnotations: columnAnnotations));
-    leaf.write(_templates.baseComposerClass(
-        table: table,
-        leaf: leaf,
-        dbClassName: dbClassName,
-        composerFields: composerFields));
 
     // Write the root and processed table managers
     leaf.write(_templates.rootTableManager(

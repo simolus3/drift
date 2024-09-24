@@ -189,7 +189,8 @@ typedef $$UsersTableUpdateCompanionBuilder = i1.UsersCompanion Function({
   i0.Value<String> name,
 });
 
-class $$UsersTableFilterComposer extends i1.$$UsersTableComposer {
+class $$UsersTableFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
   $$UsersTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -197,11 +198,15 @@ class $$UsersTableFilterComposer extends i1.$$UsersTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnFilters<int> get id => i0.ColumnFilters(_id);
-  i0.ColumnFilters<String> get name => i0.ColumnFilters(_name);
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => i0.ColumnFilters(column));
 }
 
-class $$UsersTableOrderingComposer extends i1.$$UsersTableComposer {
+class $$UsersTableOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
   $$UsersTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -209,11 +214,15 @@ class $$UsersTableOrderingComposer extends i1.$$UsersTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<int> get id => i0.ColumnOrderings(_id);
-  i0.ColumnOrderings<String> get name => i0.ColumnOrderings(_name);
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
 }
 
-class $$UsersTableAnnotationComposer extends i1.$$UsersTableComposer {
+class $$UsersTableAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
   $$UsersTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -221,54 +230,11 @@ class $$UsersTableAnnotationComposer extends i1.$$UsersTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<int> get id => _id;
-  i0.GeneratedColumn<String> get name => _name;
-}
-
-class $$UsersTableComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
-  $$UsersTableComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<int> get _id =>
+  i0.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get _name =>
+  i0.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
-
-  i1.$$UsersTableOrderingComposer _orderComposer() {
-    return i1.$$UsersTableOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  i1.$$UsersTableFilterComposer _filterComposer() {
-    return i1.$$UsersTableFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  i1.$$UsersTableAnnotationComposer _annotationComposer() {
-    return i1.$$UsersTableAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $$UsersTableTableManager extends i0.RootTableManager<

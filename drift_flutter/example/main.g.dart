@@ -209,7 +209,8 @@ typedef $$ExampleTableTableUpdateCompanionBuilder = ExampleTableCompanion
   Value<String> description,
 });
 
-class $$ExampleTableTableFilterComposer extends $$ExampleTableTableComposer {
+class $$ExampleTableTableFilterComposer
+    extends Composer<_$ExampleDatabase, $ExampleTableTable> {
   $$ExampleTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -217,11 +218,15 @@ class $$ExampleTableTableFilterComposer extends $$ExampleTableTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => ColumnFilters(_id);
-  ColumnFilters<String> get description => ColumnFilters(_description);
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
 }
 
-class $$ExampleTableTableOrderingComposer extends $$ExampleTableTableComposer {
+class $$ExampleTableTableOrderingComposer
+    extends Composer<_$ExampleDatabase, $ExampleTableTable> {
   $$ExampleTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -229,12 +234,15 @@ class $$ExampleTableTableOrderingComposer extends $$ExampleTableTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => ColumnOrderings(_id);
-  ColumnOrderings<String> get description => ColumnOrderings(_description);
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
 }
 
 class $$ExampleTableTableAnnotationComposer
-    extends $$ExampleTableTableComposer {
+    extends Composer<_$ExampleDatabase, $ExampleTableTable> {
   $$ExampleTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -242,54 +250,11 @@ class $$ExampleTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id => _id;
-  GeneratedColumn<String> get description => _description;
-}
-
-class $$ExampleTableTableComposer
-    extends Composer<_$ExampleDatabase, $ExampleTableTable> {
-  $$ExampleTableTableComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get _id =>
+  GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get _description => $composableBuilder(
+  GeneratedColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
-
-  $$ExampleTableTableOrderingComposer _orderComposer() {
-    return $$ExampleTableTableOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $$ExampleTableTableFilterComposer _filterComposer() {
-    return $$ExampleTableTableFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $$ExampleTableTableAnnotationComposer _annotationComposer() {
-    return $$ExampleTableTableAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $$ExampleTableTableTableManager extends RootTableManager<

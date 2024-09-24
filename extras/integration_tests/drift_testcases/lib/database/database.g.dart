@@ -733,7 +733,7 @@ typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
   Value<Preferences?> preferences,
 });
 
-class $$UsersTableFilterComposer extends $$UsersTableComposer {
+class $$UsersTableFilterComposer extends Composer<_$Database, $UsersTable> {
   $$UsersTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -741,15 +741,26 @@ class $$UsersTableFilterComposer extends $$UsersTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => ColumnFilters(_id);
-  ColumnFilters<String> get name => ColumnFilters(_name);
-  ColumnFilters<DateTime> get birthDate => ColumnFilters(_birthDate);
-  ColumnFilters<Uint8List> get profilePicture => ColumnFilters(_profilePicture);
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get birthDate => $composableBuilder(
+      column: $table.birthDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<Uint8List> get profilePicture => $composableBuilder(
+      column: $table.profilePicture,
+      builder: (column) => ColumnFilters(column));
+
   ColumnWithTypeConverterFilters<Preferences?, Preferences, String>
-      get preferences => ColumnWithTypeConverterFilters(_preferences);
+      get preferences => $composableBuilder(
+          column: $table.preferences,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
 }
 
-class $$UsersTableOrderingComposer extends $$UsersTableComposer {
+class $$UsersTableOrderingComposer extends Composer<_$Database, $UsersTable> {
   $$UsersTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -757,15 +768,24 @@ class $$UsersTableOrderingComposer extends $$UsersTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => ColumnOrderings(_id);
-  ColumnOrderings<String> get name => ColumnOrderings(_name);
-  ColumnOrderings<DateTime> get birthDate => ColumnOrderings(_birthDate);
-  ColumnOrderings<Uint8List> get profilePicture =>
-      ColumnOrderings(_profilePicture);
-  ColumnOrderings<String> get preferences => ColumnOrderings(_preferences);
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get birthDate => $composableBuilder(
+      column: $table.birthDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<Uint8List> get profilePicture => $composableBuilder(
+      column: $table.profilePicture,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get preferences => $composableBuilder(
+      column: $table.preferences, builder: (column) => ColumnOrderings(column));
 }
 
-class $$UsersTableAnnotationComposer extends $$UsersTableComposer {
+class $$UsersTableAnnotationComposer extends Composer<_$Database, $UsersTable> {
   $$UsersTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -773,67 +793,21 @@ class $$UsersTableAnnotationComposer extends $$UsersTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id => _id;
-  GeneratedColumn<String> get name => _name;
-  GeneratedColumn<DateTime> get birthDate => _birthDate;
-  GeneratedColumn<Uint8List> get profilePicture => _profilePicture;
-  GeneratedColumnWithTypeConverter<Preferences?, String> get preferences =>
-      _preferences;
-}
-
-class $$UsersTableComposer extends Composer<_$Database, $UsersTable> {
-  $$UsersTableComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get _id =>
+  GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get _name =>
+  GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get _birthDate =>
+  GeneratedColumn<DateTime> get birthDate =>
       $composableBuilder(column: $table.birthDate, builder: (column) => column);
 
-  GeneratedColumn<Uint8List> get _profilePicture => $composableBuilder(
+  GeneratedColumn<Uint8List> get profilePicture => $composableBuilder(
       column: $table.profilePicture, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<Preferences?, String> get _preferences =>
+  GeneratedColumnWithTypeConverter<Preferences?, String> get preferences =>
       $composableBuilder(
           column: $table.preferences, builder: (column) => column);
-
-  $$UsersTableOrderingComposer _orderComposer() {
-    return $$UsersTableOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $$UsersTableFilterComposer _filterComposer() {
-    return $$UsersTableFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $$UsersTableAnnotationComposer _annotationComposer() {
-    return $$UsersTableAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $$UsersTableTableManager extends RootTableManager<
@@ -920,7 +894,8 @@ typedef $$FriendshipsTableUpdateCompanionBuilder = FriendshipsCompanion
   Value<int> rowid,
 });
 
-class $$FriendshipsTableFilterComposer extends $$FriendshipsTableComposer {
+class $$FriendshipsTableFilterComposer
+    extends Composer<_$Database, $FriendshipsTable> {
   $$FriendshipsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -928,13 +903,19 @@ class $$FriendshipsTableFilterComposer extends $$FriendshipsTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get firstUser => ColumnFilters(_firstUser);
-  ColumnFilters<int> get secondUser => ColumnFilters(_secondUser);
-  ColumnFilters<bool> get reallyGoodFriends =>
-      ColumnFilters(_reallyGoodFriends);
+  ColumnFilters<int> get firstUser => $composableBuilder(
+      column: $table.firstUser, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get secondUser => $composableBuilder(
+      column: $table.secondUser, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get reallyGoodFriends => $composableBuilder(
+      column: $table.reallyGoodFriends,
+      builder: (column) => ColumnFilters(column));
 }
 
-class $$FriendshipsTableOrderingComposer extends $$FriendshipsTableComposer {
+class $$FriendshipsTableOrderingComposer
+    extends Composer<_$Database, $FriendshipsTable> {
   $$FriendshipsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -942,13 +923,19 @@ class $$FriendshipsTableOrderingComposer extends $$FriendshipsTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get firstUser => ColumnOrderings(_firstUser);
-  ColumnOrderings<int> get secondUser => ColumnOrderings(_secondUser);
-  ColumnOrderings<bool> get reallyGoodFriends =>
-      ColumnOrderings(_reallyGoodFriends);
+  ColumnOrderings<int> get firstUser => $composableBuilder(
+      column: $table.firstUser, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get secondUser => $composableBuilder(
+      column: $table.secondUser, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get reallyGoodFriends => $composableBuilder(
+      column: $table.reallyGoodFriends,
+      builder: (column) => ColumnOrderings(column));
 }
 
-class $$FriendshipsTableAnnotationComposer extends $$FriendshipsTableComposer {
+class $$FriendshipsTableAnnotationComposer
+    extends Composer<_$Database, $FriendshipsTable> {
   $$FriendshipsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -956,58 +943,14 @@ class $$FriendshipsTableAnnotationComposer extends $$FriendshipsTableComposer {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get firstUser => _firstUser;
-  GeneratedColumn<int> get secondUser => _secondUser;
-  GeneratedColumn<bool> get reallyGoodFriends => _reallyGoodFriends;
-}
-
-class $$FriendshipsTableComposer
-    extends Composer<_$Database, $FriendshipsTable> {
-  $$FriendshipsTableComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get _firstUser =>
+  GeneratedColumn<int> get firstUser =>
       $composableBuilder(column: $table.firstUser, builder: (column) => column);
 
-  GeneratedColumn<int> get _secondUser => $composableBuilder(
+  GeneratedColumn<int> get secondUser => $composableBuilder(
       column: $table.secondUser, builder: (column) => column);
 
-  GeneratedColumn<bool> get _reallyGoodFriends => $composableBuilder(
+  GeneratedColumn<bool> get reallyGoodFriends => $composableBuilder(
       column: $table.reallyGoodFriends, builder: (column) => column);
-
-  $$FriendshipsTableOrderingComposer _orderComposer() {
-    return $$FriendshipsTableOrderingComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $$FriendshipsTableFilterComposer _filterComposer() {
-    return $$FriendshipsTableFilterComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
-
-  $$FriendshipsTableAnnotationComposer _annotationComposer() {
-    return $$FriendshipsTableAnnotationComposer(
-      $db: $db,
-      $table: $table,
-      joinBuilder: $joinBuilder,
-      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
-    );
-  }
 }
 
 class $$FriendshipsTableTableManager extends RootTableManager<
