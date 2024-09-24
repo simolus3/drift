@@ -121,8 +121,11 @@ Any rows that meet the specified condition will be deleted.
 
 ## Annotations
 
-It's quite common that you want to perform some complex calculations you data. Drift provides an easy way to write SQL expressions which can be read and/or used in filters and orderings.
-See the [expression](expressions.md) documentation for more information on how to write expressions.
+Manager queries are great when you need to select entire rows from a database table along with their related data. However, there are situations where you might want to perform more complex operations directly within the database for better efficiency. 
+
+Drift offers strong support for writing SQL expressions. These expressions can be used to filter data, sort results, and perform various calculations directly within your SQL queries. This means you can leverage the full power of SQL to handle complex logic right in the database, making your queries more efficient and your code cleaner.
+
+If you want to learn more about how to write these SQL expressions, please refer to the [expression](expressions.md) documentation.
 
 {{ load_snippet('manager_annotations','lib/snippets/dart_api/manager.dart.excerpt.json') }}
 

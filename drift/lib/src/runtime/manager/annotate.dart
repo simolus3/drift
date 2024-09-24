@@ -1,6 +1,25 @@
 part of 'manager.dart';
 
-/// A class that contains the information needed to create an annotation
+/// The base class for all annotations
+///
+/// An `annotation` is an regular drift [expression](https://drift.simonbinder.eu/docs/getting-started/expressions/) with
+/// the additional ability to create the necessary joins automatically.
+///
+/// Typically, when using drift expression you would have to manually create the joins for the tables that you want to use.
+/// However, with annotations, drift will automatically create the necessary joins for you.
+///
+/// Annotations can be used in filters, orderings and in the select statement.
+/// Annotations should not be constructed directly. Instead, use the `.annotation` method on a table manager to create an annotation.
+///
+/// Example:
+/// {@macro annotation_example}
+///
+/// See also:
+/// - [Annotation] for a simple annotation
+/// - [AnnotationWithConverter] for annotations which have a converter
+/// - [RootTableManager.annotation] for creating annotations
+/// - [RootTableManager.annotationWithConverter] for creating annotations with a converter
+/// - [Annotation Documentation](https://drift.simonbinder.eu/docs/manager/#annotations)
 sealed class BaseAnnotation<SqlType extends Object, $Table extends Table> {
   /// The expression/column which will be added to the query
   Expression<SqlType> get _expression;
@@ -15,7 +34,11 @@ sealed class BaseAnnotation<SqlType extends Object, $Table extends Table> {
   }
 }
 
-/// A class that contains the information needed to create an annotation
+/// An annotation for a table.
+///
+/// This class implements [BaseAnnotation] and is used to create a annotations which do not have a converter.
+///
+/// See [BaseAnnotation] for more information on annotations and how to use them.
 class Annotation<SqlType extends Object, $Table extends Table>
     extends BaseAnnotation<SqlType, $Table> {
   @override
@@ -27,6 +50,9 @@ class Annotation<SqlType extends Object, $Table extends Table>
   }
 
   /// Read the result of the annotation from the [BaseReferences] object
+  ///
+  /// Example:
+  /// {@macro annotation_example}
   SqlType? read(BaseReferences<dynamic, $Table, dynamic> refs) {
     try {
       return refs.$_typedResult.read(_expression);
@@ -51,7 +77,9 @@ class Annotation<SqlType extends Object, $Table extends Table>
   int get hashCode => _expression.hashCode ^ _joinBuilders.hashCode;
 }
 
-/// A class that contains the information needed to create an annotation for a column with a converter
+/// An annotation for a table which has a converter
+///
+/// See [BaseAnnotation] for more information on annotations and how to use them.
 class AnnotationWithConverter<DartType, SqlType extends Object,
     $Table extends Table> extends BaseAnnotation<SqlType, $Table> {
   @override
@@ -77,7 +105,10 @@ class AnnotationWithConverter<DartType, SqlType extends Object,
   @override
   int get hashCode => _expression.hashCode ^ _joinBuilders.hashCode;
 
-  /// Read the result of the annotation from the [BaseReferences] object
+  /// Read the result of the annotation from the a [BaseReferences] object
+  ///
+  /// Example:
+  /// {@macro annotation_example}
   DartType? read(BaseReferences<dynamic, $Table, dynamic> refs) {
     final dartType = refs.$_typedResult.read(_expression);
     if (dartType == null) {
