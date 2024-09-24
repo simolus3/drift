@@ -1,4 +1,4 @@
-// ignore_for_file: invalid_use_of_internal_member, unused_local_variable
+// ignore_for_file: invalid_use_of_internal_member, unused_local_variable, unused_element
 
 import 'package:drift/drift.dart';
 
