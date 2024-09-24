@@ -104,7 +104,7 @@ adding a package to open database on the respective platform.
           drift_dev:
             options:
               sql:
-                dialect:
+                dialects:
                   - postgres
                   # Uncomment if you need to support both
     #              - sqlite
