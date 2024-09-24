@@ -82,21 +82,3 @@ class ComposableOrdering {
       .map((e) => OrderingTerm(mode: e.mode, expression: e.column))
       .toList();
 }
-
-/// The class that orchestrates the composition of orderings
-class OrderingComposer<DB extends GeneratedDatabase, T extends Table>
-    extends Composer<DB, T> {
-  /// A ordering composer will be generated for each table.
-  /// Each field on the table will return a [ColumnOrderings] object
-  /// ```dart
-  /// todos.orderBy((f) => f.name.asc());
-  /// ```
-  /// In the above example, `f` is a [OrderingComposer] object, and `f.name` returns a [ColumnOrderings] object.
-  @internal
-  OrderingComposer(
-      {required super.$db,
-      required super.$table,
-      super.joinBuilder,
-      super.$addJoinBuilderToRootComposer,
-      super.$removeJoinBuilderFromRootComposer});
-}

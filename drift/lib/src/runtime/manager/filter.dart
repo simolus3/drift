@@ -271,21 +271,3 @@ enum _BooleanOperator {
   /// Combine the existing filters to the new filter with an OR
   or;
 }
-
-/// The class that orchestrates the composition of filtering
-class FilterComposer<Database extends GeneratedDatabase,
-    CurrentTable extends Table> extends Composer<Database, CurrentTable> {
-  /// A filter composer will be generated for each table.
-  /// Each field on the table will return a [ColumnFilters] object
-  /// ```dart
-  /// todos.filter((f) => f.name.equals('Bob'));
-  /// ```
-  /// In the above example, `f` is a [FilterComposer] object, and `f.name` returns a [ColumnFilters] object.
-  @internal
-  FilterComposer(
-      {required super.$db,
-      required super.$table,
-      super.joinBuilder,
-      super.$addJoinBuilderToRootComposer,
-      super.$removeJoinBuilderFromRootComposer});
-}

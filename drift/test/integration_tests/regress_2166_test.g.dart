@@ -209,8 +209,7 @@ typedef $$_SomeTableTableUpdateCompanionBuilder = _SomeTableCompanion Function({
   Value<String?> name,
 });
 
-class $$_SomeTableTableFilterComposer
-    extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
+class $$_SomeTableTableFilterComposer extends $$_SomeTableTableComposer {
   $$_SomeTableTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -218,15 +217,11 @@ class $$_SomeTableTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
+  ColumnFilters<int> get id => ColumnFilters(_id);
+  ColumnFilters<String> get name => ColumnFilters(_name);
 }
 
-class $$_SomeTableTableOrderingComposer
-    extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
+class $$_SomeTableTableOrderingComposer extends $$_SomeTableTableComposer {
   $$_SomeTableTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -234,15 +229,11 @@ class $$_SomeTableTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<int> get id => ColumnOrderings(_id);
+  ColumnOrderings<String> get name => ColumnOrderings(_name);
 }
 
-class $$_SomeTableTableAnnotationComposer
-    extends AnnotationComposer<_$_SomeDb, $_SomeTableTable> {
+class $$_SomeTableTableAnnotationComposer extends $$_SomeTableTableComposer {
   $$_SomeTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -250,11 +241,53 @@ class $$_SomeTableTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  GeneratedColumn<int> get id => _id;
+  GeneratedColumn<String> get name => _name;
+}
+
+class $$_SomeTableTableComposer extends Composer<_$_SomeDb, $_SomeTableTable> {
+  $$_SomeTableTableComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get _id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
+  GeneratedColumn<String> get _name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  $$_SomeTableTableOrderingComposer _orderComposer() {
+    return $$_SomeTableTableOrderingComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$_SomeTableTableFilterComposer _filterComposer() {
+    return $$_SomeTableTableFilterComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
+
+  $$_SomeTableTableAnnotationComposer _annotationComposer() {
+    return $$_SomeTableTableAnnotationComposer(
+      $db: $db,
+      $table: $table,
+      joinBuilder: $joinBuilder,
+      $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+      $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
+    );
+  }
 }
 
 class $$_SomeTableTableTableManager extends RootTableManager<

@@ -1,8 +1,8 @@
 part of 'manager.dart';
 
 /// A base class for writing annotations/filters/orderings which have the correct aliases & joins applied
-sealed class Composer<Database extends GeneratedDatabase,
-    CurrentTable extends Table> {
+@immutable
+class Composer<Database extends GeneratedDatabase, CurrentTable extends Table> {
   /// The database instance used by the composer.
   final Database $db;
 
@@ -12,12 +12,12 @@ sealed class Composer<Database extends GeneratedDatabase,
 
   /// The [JoinBuilder] used by the composer.
   /// If this composer wasn't created by a join, this will be null.
-  final JoinBuilder? _joinBuilder;
+  final JoinBuilder? $joinBuilder;
 
   /// The table being managed by the composer.
   /// If the composer was created by a join, this will be the aliased table.
   CurrentTable get _aliasedTable {
-    return _joinBuilder?.referencedTable as CurrentTable? ?? $table;
+    return $joinBuilder?.referencedTable as CurrentTable? ?? $table;
   }
 
   /// If this composer is a root composer, this will contain all
@@ -77,10 +77,10 @@ sealed class Composer<Database extends GeneratedDatabase,
     // If the column that the action is being performed on
     // is part of the actual join, then this join is not needed.
     // The action will then be performed on the original column.
-    if (_joinBuilder?.referencedColumn == aliasedColumn &&
-        _joinBuilder?.currentColumn is C) {
-      columnForBuilder = _joinBuilder?.currentColumn as C;
-      $removeJoinBuilderFromRootComposer(_joinBuilder!);
+    if ($joinBuilder?.referencedColumn == aliasedColumn &&
+        $joinBuilder?.currentColumn is C) {
+      columnForBuilder = $joinBuilder?.currentColumn as C;
+      $removeJoinBuilderFromRootComposer($joinBuilder!);
     } else {
       columnForBuilder = aliasedColumn;
     }
@@ -149,7 +149,7 @@ sealed class Composer<Database extends GeneratedDatabase,
     required JoinBuilder? joinBuilder,
     void Function(JoinBuilder)? $addJoinBuilderToRootComposer,
     void Function(JoinBuilder)? $removeJoinBuilderFromRootComposer,
-  }) : _joinBuilder = joinBuilder {
+  }) : $joinBuilder = joinBuilder {
     this.$addJoinBuilderToRootComposer = $addJoinBuilderToRootComposer ??
         ((JoinBuilder joinBuilder) => $joinBuilders.add(joinBuilder));
     this.$removeJoinBuilderFromRootComposer =

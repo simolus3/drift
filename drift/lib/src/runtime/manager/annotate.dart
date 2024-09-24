@@ -85,17 +85,3 @@ class AnnotationWithConverter<DartType, SqlType extends Object,
     return $converter(dartType);
   }
 }
-
-/// The class that orchestrates the composition of orderings
-class AnnotationComposer<DB extends GeneratedDatabase, T extends Table>
-    extends Composer<DB, T> {
-  @internal
-
-  /// Create a new annotation composer which will be used to create annotations
-  AnnotationComposer(
-      {required super.$db,
-      required super.$table,
-      super.joinBuilder,
-      super.$addJoinBuilderToRootComposer,
-      super.$removeJoinBuilderFromRootComposer});
-}
