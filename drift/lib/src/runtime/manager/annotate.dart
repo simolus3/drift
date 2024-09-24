@@ -27,7 +27,7 @@ class Annotation<SqlType extends Object, $Table extends Table>
   }
 
   /// Read the result of the annotation from the [BaseReferences] object
-  SqlType? read(BaseReferences refs) {
+  SqlType? read(BaseReferences<dynamic, $Table, dynamic> refs) {
     try {
       return refs.$_typedResult.read(_expression);
     } on ArgumentError {
@@ -62,12 +62,8 @@ class AnnotationWithConverter<DartType, SqlType extends Object,
     return ColumnWithTypeConverterFilters(_expression);
   }
 
-  /// Converter function to convert from [SqlType] to [DartType]
-  final DartType Function(SqlType) $converter;
-
   /// Create a new annotation with a converter
-  AnnotationWithConverter(this._expression, super._joinBuilders,
-      {required this.$converter});
+  AnnotationWithConverter(this._expression, super._joinBuilders);
 
   @override
   bool operator ==(Object other) {
@@ -87,6 +83,6 @@ class AnnotationWithConverter<DartType, SqlType extends Object,
     if (dartType == null) {
       return null;
     }
-    return $converter(dartType);
+    return _expression.converter.fromSql(dartType);
   }
 }

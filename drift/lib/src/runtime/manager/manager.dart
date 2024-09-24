@@ -306,23 +306,24 @@ class TableManagerState<
         .toSet()
       ..add(joinBuilder);
     return TableManagerState(
-        db: db,
-        table: table,
-        createFilteringComposer: createFilteringComposer,
-        createOrderingComposer: createOrderingComposer,
-        createAnnotationComposer: createAnnotationComposer,
-        createCompanionCallback: _createCompanionCallback,
-        updateCompanionCallback: _updateCompanionCallback,
-        withReferenceMapper: _withReferenceMapper,
-        filter: filter,
-        joinBuilders: newJoinBuilders,
-        orderingBuilders: orderingBuilders,
-        distinct: distinct,
-        limit: limit,
-        offset: offset,
-        prefetchHooksCallback: _prefetchHooksCallback,
-        prefetchedData: _prefetchedData,
-        addedColumns: addedColumns);
+      db: db,
+      table: table,
+      createFilteringComposer: createFilteringComposer,
+      createOrderingComposer: createOrderingComposer,
+      createAnnotationComposer: createAnnotationComposer,
+      createCompanionCallback: _createCompanionCallback,
+      updateCompanionCallback: _updateCompanionCallback,
+      withReferenceMapper: _withReferenceMapper,
+      filter: filter,
+      joinBuilders: newJoinBuilders,
+      orderingBuilders: orderingBuilders,
+      distinct: distinct,
+      limit: limit,
+      offset: offset,
+      prefetchHooksCallback: _prefetchHooksCallback,
+      prefetchedData: _prefetchedData,
+      addedColumns: addedColumns,
+    );
   }
 
   /// Helper for getting the table that's casted as a TableInfo
@@ -1039,7 +1040,6 @@ abstract class RootTableManager<
   ) {
     final composer = $state.createAnnotationComposer();
     final expression = a(composer);
-    return AnnotationWithConverter(expression, composer.$joinBuilders.toSet(),
-        $converter: (p0) => expression.converter.fromSql(p0));
+    return AnnotationWithConverter(expression, composer.$joinBuilders.toSet());
   }
 }

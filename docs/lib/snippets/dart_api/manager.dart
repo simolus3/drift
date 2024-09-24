@@ -334,8 +334,8 @@ Future<void> customOrdering(AppDatabase db) async {
 // #enddocregion manager_custom_ordering
 
 void _managerAnnotations(AppDatabase db) async {
-// #docregion manager_annotations
-// First create an annotation with an expression you want to use
+  // #docregion manager_annotations
+  // First create an annotation with an expression you want to use
   final titleLengthAnnotation =
       db.managers.todoItems.annotation((o) => o.title.length);
 
@@ -343,12 +343,12 @@ void _managerAnnotations(AppDatabase db) async {
   final manager =
       db.managers.todoItems.withAnnotations([titleLengthAnnotation]);
 
-// Then use the annotation in a filter
-// This will filter all items whose title has exactly 10 characters
+  // Then use the annotation in a filter
+  // This will filter all items whose title has exactly 10 characters
   manager.filter((f) => titleLengthAnnotation.filter(10));
 
-// You can also use the annotation in an ordering
-// This will order all items by the length of their title in ascending order
+  // You can also use the annotation in an ordering
+  // This will order all items by the length of their title in ascending order
   manager.orderBy((o) => titleLengthAnnotation.order.asc());
 
   /// You can read the result of the annotation too
@@ -360,8 +360,8 @@ void _managerAnnotations(AppDatabase db) async {
 }
 
 void _managerReferencedAnnotations(AppDatabase db) async {
-// #docregion referenced_annotations
-// This annotation will get the name of the user of this todo
+  // #docregion referenced_annotations
+  // This annotation will get the name of the user of this todo
   final todoUserName =
       db.managers.todoItems.annotation((o) => o.category.user.name);
 
@@ -373,13 +373,13 @@ void _managerReferencedAnnotations(AppDatabase db) async {
     final userName = todoUserName.read(refs);
     print('Item ${item.id} has a user with the name $userName');
   }
-// #enddocregion referenced_annotations
+  // #enddocregion referenced_annotations
 }
 
 void _managerAggregatedAnnotations(AppDatabase db) async {
-// #docregion aggregated_annotations
-// You can aggregate over multiple rows in a related table
-// to perform calculations on them
+  // #docregion aggregated_annotations
+  // You can aggregate over multiple rows in a related table
+  // to perform calculations on them
   final todoCountAnnotation = db.managers.todoCategory
       .annotation((o) => o.todoItemsRefs((o) => o.id).count());
 
@@ -392,5 +392,5 @@ void _managerAggregatedAnnotations(AppDatabase db) async {
     final todoCount = todoCountAnnotation.read(refs);
     print('Category ${category.id} has $todoCount todos');
   }
-// #enddocregion aggregated_annotations
+  // #enddocregion aggregated_annotations
 }
