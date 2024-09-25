@@ -288,7 +288,7 @@ class $EntriesTableManager extends RootTableManager<
               $EntriesFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $EntriesOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $EntriesAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),

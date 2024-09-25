@@ -327,7 +327,7 @@ class $PeriodicRemindersTableManager extends i0.RootTableManager<
               i1.$PeriodicRemindersFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$PeriodicRemindersOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$PeriodicRemindersAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),

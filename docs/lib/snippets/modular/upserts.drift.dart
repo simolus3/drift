@@ -273,7 +273,7 @@ class $$WordsTableTableManager extends i0.RootTableManager<
               i1.$$WordsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$$WordsTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$$WordsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<String> word = const i0.Value.absent(),
@@ -688,7 +688,7 @@ class $$MatchResultsTableTableManager extends i0.RootTableManager<
               i1.$$MatchResultsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$$MatchResultsTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$$MatchResultsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),

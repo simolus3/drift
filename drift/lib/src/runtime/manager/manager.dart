@@ -12,12 +12,12 @@ part 'filter.dart';
 part 'join_builder.dart';
 part 'ordering.dart';
 part 'references.dart';
-part 'annotate.dart';
+part 'computed_fields.dart';
 
 /// Defines a class that holds the state for a [BaseTableManager]
 ///
 /// It holds the state for manager of [$Table] table in [$Database] database.
-/// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings and [$AnnotationComposer] Annotations for the manager.
+/// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings and [$ComputedFieldComposer] ComputedFields for the manager.
 ///
 /// There are 3 Dataclass generics:
 ///   - [$Dataclass] is the dataclass that is used to interact with the table
@@ -41,7 +41,7 @@ class TableManagerState<
     $Dataclass,
     $FilterComposer extends Composer<$Database, $Table>,
     $OrderingComposer extends Composer<$Database, $Table>,
-    $AnnotationComposer extends Composer<$Database, $Table>,
+    $ComputedFieldComposer extends Composer<$Database, $Table>,
     $CreateCompanionCallback extends Function,
     $UpdateCompanionCallback extends Function,
     $DataclassWithReferences,
@@ -84,8 +84,8 @@ class TableManagerState<
   final $OrderingComposer Function() createOrderingComposer;
 
   /// The callback that will be used to create the composer which
-  /// will be used to create annotations for the query
-  final $AnnotationComposer Function() createAnnotationComposer;
+  /// will be used to create computed fields for the query
+  final $ComputedFieldComposer Function() createComputedFieldComposer;
 
   /// This function is passed to the user to create a companion
   /// for inserting data into the table
@@ -100,7 +100,7 @@ class TableManagerState<
   final List<$DataclassWithReferences> Function(List<TypedResult>)
       _withReferenceMapper;
 
-  /// Additional columns/expression that will be added to the query with annotations
+  /// Additional columns/expression that will be added to the query with computed fields
   final Set<Expression> addedColumns;
 
   /// This function is used to ensure that the correct dataclass type is returned by the manager.
@@ -161,7 +161,7 @@ class TableManagerState<
       required this.table,
       required this.createFilteringComposer,
       required this.createOrderingComposer,
-      required this.createAnnotationComposer,
+      required this.createComputedFieldComposer,
       required $CreateCompanionCallback createCompanionCallback,
       required $UpdateCompanionCallback updateCompanionCallback,
       required List<$DataclassWithReferences> Function(List<TypedResult>)
@@ -190,7 +190,7 @@ class TableManagerState<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
-      $AnnotationComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -217,7 +217,7 @@ class TableManagerState<
       table: table,
       createFilteringComposer: createFilteringComposer,
       createOrderingComposer: createOrderingComposer,
-      createAnnotationComposer: createAnnotationComposer,
+      createComputedFieldComposer: createComputedFieldComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -244,7 +244,7 @@ class TableManagerState<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
-      $AnnotationComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -255,7 +255,7 @@ class TableManagerState<
       table: table,
       createFilteringComposer: createFilteringComposer,
       createOrderingComposer: createOrderingComposer,
-      createAnnotationComposer: createAnnotationComposer,
+      createComputedFieldComposer: createComputedFieldComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -280,7 +280,7 @@ class TableManagerState<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
-          $AnnotationComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -310,7 +310,7 @@ class TableManagerState<
       table: table,
       createFilteringComposer: createFilteringComposer,
       createOrderingComposer: createOrderingComposer,
-      createAnnotationComposer: createAnnotationComposer,
+      createComputedFieldComposer: createComputedFieldComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -450,7 +450,7 @@ abstract class BaseTableManager<
         $Dataclass,
         $FilterComposer extends Composer<$Database, $Table>,
         $OrderingComposer extends Composer<$Database, $Table>,
-        $AnnotationComposer extends Composer<$Database, $Table>,
+        $ComputedFieldComposer extends Composer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -464,7 +464,7 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
-      $AnnotationComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -509,7 +509,7 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
-          $AnnotationComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -530,26 +530,26 @@ abstract class BaseTableManager<
         .copyWith(prefetchHooks: prefetchHooks));
   }
 
-  /// Add annotations to the statement which will be used to add additional columns to the query
+  /// Add computed fields to the statement which will be used to add additional columns to the query
   /// These columns will be returned in the result set and can be used in filters/orderings
   ///
-  /// {@macro annotation_example}
+  /// {@macro computed_field_example}
   ProcessedTableManager<
           $Database,
           $Table,
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
-          $AnnotationComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
           $DataclassWithReferences,
           $CreatePrefetchHooksCallback>
-      withAnnotations(Iterable<BaseAnnotation<Object, $Table>> annotations) {
+      withFields(Iterable<BaseComputedField<Object, $Table>> computedFields) {
     final joinBuilders =
-        annotations.map((e) => e._joinBuilders).expand((e) => e).toSet();
-    final addedColumns = annotations.map((e) => e._expression).toSet();
+        computedFields.map((e) => e._joinBuilders).expand((e) => e).toSet();
+    final addedColumns = computedFields.map((e) => e._expression).toSet();
     return ProcessedTableManager($state.copyWith(
             addedColumns: $state.addedColumns.union(addedColumns),
             joinBuilders: $state.joinBuilders.union(joinBuilders)))
@@ -563,7 +563,7 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
-      $AnnotationComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -579,7 +579,7 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
-          $AnnotationComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -605,7 +605,7 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
-      $AnnotationComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -625,7 +625,7 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
-          $AnnotationComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -819,7 +819,7 @@ class ProcessedTableManager<
         $Dataclass,
         $FilterComposer extends Composer<$Database, $Table>,
         $OrderingComposer extends Composer<$Database, $Table>,
-        $AnnotationComposer extends Composer<$Database, $Table>,
+        $ComputedFieldComposer extends Composer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -831,7 +831,7 @@ class ProcessedTableManager<
         $Dataclass,
         $FilterComposer,
         $OrderingComposer,
-        $AnnotationComposer,
+        $ComputedFieldComposer,
         $CreateCompanionCallback,
         $UpdateCompanionCallback,
         $DataclassWithReferences,
@@ -862,7 +862,7 @@ abstract class RootTableManager<
         $Dataclass,
         $FilterComposer extends Composer<$Database, $Table>,
         $OrderingComposer extends Composer<$Database, $Table>,
-        $AnnotationComposer extends Composer<$Database, $Table>,
+        $ComputedFieldComposer extends Composer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -874,7 +874,7 @@ abstract class RootTableManager<
         $Dataclass,
         $FilterComposer,
         $OrderingComposer,
-        $AnnotationComposer,
+        $ComputedFieldComposer,
         $CreateCompanionCallback,
         $UpdateCompanionCallback,
         $DataclassWithReferences,
@@ -1001,53 +1001,54 @@ abstract class RootTableManager<
         .batch((b) => b.replaceAll($state._tableAsTableInfo, entities));
   }
 
-  /// Create an annotation for adding additional columns to the query
+  /// Create an computed field for adding additional columns to the query
   ///
-  /// The `annotation` and `annotationWithConverter` methods allow you to create annotations that add additional columns to a query. These columns are computed directly by the database. This approach has significant performance benefits compared to querying all the data and performing the calculations yourself in your Dart code.
+  /// The `computed field` and `computed fieldWithConverter` methods allow you to create computed fields that add additional columns to a query. These columns are computed directly by the database. This approach has significant performance benefits compared to querying all the data and performing the calculations yourself in your Dart code.
   ///
   /// ### Example
   ///
-  /// Consider the following example where we use the `annotation` method to filter users who are in an admin group and to aggregate the number of users in each group:
-  /// {@template annotation_example}
+  /// Consider the following example where we use the `computed field` method to filter users who are in an admin group and to aggregate the number of users in each group:
+  /// {@template computed_field_example}
   /// ```dart
   /// /// Filter users who are in an admin group
-  /// final inAdminGroup = db.managers.users.annotation((a) => a.group.isAdmin);
-  /// final users = db.managers.users.withAnnotations([inAdminGroup]).filter(inAdminGroup.filter(true)).get();
+  /// final inAdminGroup = db.managers.users.computed field((a) => a.group.isAdmin);
+  /// final users = db.managers.users.withComputedFields([inAdminGroup]).filter(inAdminGroup.filter(true)).get();
   ///
   /// /// Aggregate the number of users in each group
-  /// final userCount = db.managers.group.annotation((a) => a.users((a) => a.id.count()));
-  /// final groups = db.managers.group.withAnnotations([userCount]).get();
+  /// final userCount = db.managers.group.computed field((a) => a.users((a) => a.id.count()));
+  /// final groups = db.managers.group.withComputedFields([userCount]).get();
   /// for (final (group, refs) in groups) {
   ///   final count = userCount.read(refs);
   /// }
   /// ```
   /// In this example:
-  /// - The `inAdminGroup` annotation filters users directly in the database, ensuring that only users in the admin group are retrieved.
-  /// - The `userCount` annotation aggregates the number of users in each group within the database, providing the count directly without needing to load all user data into your application.
+  /// - The `inAdminGroup` computed field filters users directly in the database, ensuring that only users in the admin group are retrieved.
+  /// - The `userCount` computed field aggregates the number of users in each group within the database, providing the count directly without needing to load all user data into your application.
   /// {@endtemplate}
   ///
   /// By leveraging these database calculations, you can achieve faster query performance and more efficient resource usage in your application.
   ///
-  /// See also: [annotationWithConverter] for annotations on columns with type converters
-  Annotation<T, $Table> annotation<T extends Object>(
-    Expression<T> Function($AnnotationComposer a) a,
+  /// See also: [computed fieldWithConverter] for computed fields on columns with type converters
+  ComputedField<T, $Table> computedField<T extends Object>(
+    Expression<T> Function($ComputedFieldComposer a) a,
   ) {
-    final composer = $state.createAnnotationComposer();
+    final composer = $state.createComputedFieldComposer();
     final expression = a(composer);
-    return Annotation(expression, composer.$joinBuilders.toSet());
+    return ComputedField(expression, composer.$joinBuilders.toSet());
   }
 
-  /// Create an [annotation] with type converter support
+  /// Create an [computed field] with type converter support
   ///
-  /// See the documentation for [annotation] for more information
-  AnnotationWithConverter<DartType, SqlType, $Table>
-      annotationWithConverter<DartType, SqlType extends Object>(
+  /// See the documentation for [computed field] for more information
+  ComputedFieldWithConverter<DartType, SqlType, $Table>
+      computedfieldWithConverter<DartType, SqlType extends Object>(
     GeneratedColumnWithTypeConverter<DartType, SqlType> Function(
-            $AnnotationComposer a)
+            $ComputedFieldComposer a)
         a,
   ) {
-    final composer = $state.createAnnotationComposer();
+    final composer = $state.createComputedFieldComposer();
     final expression = a(composer);
-    return AnnotationWithConverter(expression, composer.$joinBuilders.toSet());
+    return ComputedFieldWithConverter(
+        expression, composer.$joinBuilders.toSet());
   }
 }

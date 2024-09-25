@@ -255,7 +255,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
               i2.$$ShoppingCartsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i2.$$ShoppingCartsTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i2.$$ShoppingCartsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -702,7 +702,7 @@ class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
           createOrderingComposer: () =>
               i2.$$ShoppingCartEntriesTableOrderingComposer(
                   $db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i2.$$ShoppingCartEntriesTableAnnotationComposer(
                   $db: db, $table: table),
           updateCompanionCallback: ({

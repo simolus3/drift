@@ -1,6 +1,6 @@
 part of 'manager.dart';
 
-/// A base class for writing annotations/filters/orderings which have the correct aliases & joins applied
+/// A base class for writing computed fields/filters/orderings which have the correct aliases & joins applied
 @immutable
 class Composer<Database extends GeneratedDatabase, CurrentTable extends Table> {
   /// The database instance used by the composer.

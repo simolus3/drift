@@ -316,7 +316,7 @@ class $GeopolyTestTableManager extends RootTableManager<
               $GeopolyTestFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $GeopolyTestOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $GeopolyTestAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),

@@ -423,7 +423,7 @@ class $TodosTableManager extends i0.RootTableManager<
               i1.$TodosFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$TodosOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$TodosAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -736,7 +736,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
               i1.$CategoriesFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$CategoriesOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$CategoriesAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),

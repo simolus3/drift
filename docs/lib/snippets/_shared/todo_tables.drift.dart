@@ -484,7 +484,7 @@ class $$TodoItemsTableTableManager extends i0.RootTableManager<
               i1.$$TodoItemsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$$TodoItemsTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$$TodoItemsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -798,7 +798,7 @@ class $$CategoriesTableTableManager extends i0.RootTableManager<
               i1.$$CategoriesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$$CategoriesTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$$CategoriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -1097,7 +1097,7 @@ class $$UsersTableTableManager extends i0.RootTableManager<
               i1.$$UsersTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$$UsersTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$$UsersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),

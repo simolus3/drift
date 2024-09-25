@@ -335,25 +335,24 @@ Future<void> customOrdering(AppDatabase db) async {
 
 void _managerAnnotations(AppDatabase db) async {
   // #docregion manager_annotations
-  // First create an annotation with an expression you want to use
-  final titleLengthAnnotation =
-      db.managers.todoItems.annotation((o) => o.title.length);
+  // First create an computed field with an expression you want to use
+  final titleLengthField =
+      db.managers.todoItems.computedField((o) => o.title.length);
 
-  /// Create a copy of the manager with the annotations you want to use
-  final manager =
-      db.managers.todoItems.withAnnotations([titleLengthAnnotation]);
+  /// Create a copy of the manager with the computed fields you want to use
+  final manager = db.managers.todoItems.withFields([titleLengthField]);
 
-  // Then use the annotation in a filter
+  // Then use the computed field in a filter
   // This will filter all items whose title has exactly 10 characters
-  manager.filter((f) => titleLengthAnnotation.filter(10));
+  manager.filter((f) => titleLengthField.filter(10));
 
-  // You can also use the annotation in an ordering
+  // You can also use the computed field in an ordering
   // This will order all items by the length of their title in ascending order
-  manager.orderBy((o) => titleLengthAnnotation.order.asc());
+  manager.orderBy((o) => titleLengthField.order.asc());
 
-  /// You can read the result of the annotation too
+  /// You can read the result of the computed field too
   for (final (item, refs) in await manager.get()) {
-    final titleLength = titleLengthAnnotation.read(refs);
+    final titleLength = titleLengthField.read(refs);
     print('Item ${item.id} has a title length of $titleLength');
   }
 // #enddocregion manager_annotations
@@ -361,14 +360,14 @@ void _managerAnnotations(AppDatabase db) async {
 
 void _managerReferencedAnnotations(AppDatabase db) async {
   // #docregion referenced_annotations
-  // This annotation will get the name of the user of this todo
+  // This computed field will get the name of the user of this todo
   final todoUserName =
-      db.managers.todoItems.annotation((o) => o.category.user.name);
+      db.managers.todoItems.computedField((o) => o.category.user.name);
 
-  /// Create a copy of the manager with the annotations you want to use
-  final manager = db.managers.todoItems.withAnnotations([todoUserName]);
+  /// Create a copy of the manager with the computed fields you want to use
+  final manager = db.managers.todoItems.withFields([todoUserName]);
 
-  /// You can read the result of the annotation too
+  /// You can read the result of the computed field too
   for (final (item, refs) in await manager.get()) {
     final userName = todoUserName.read(refs);
     print('Item ${item.id} has a user with the name $userName');
@@ -380,16 +379,15 @@ void _managerAggregatedAnnotations(AppDatabase db) async {
   // #docregion aggregated_annotations
   // You can aggregate over multiple rows in a related table
   // to perform calculations on them
-  final todoCountAnnotation = db.managers.todoCategory
-      .annotation((o) => o.todoItemsRefs((o) => o.id).count());
+  final todoCountcomputedField = db.managers.todoCategory
+      .computedField((o) => o.todoItemsRefs((o) => o.id).count());
 
-  /// Create a copy of the manager with the annotations you want to use
-  final manager =
-      db.managers.todoCategory.withAnnotations([todoCountAnnotation]);
+  /// Create a copy of the manager with the computed fields you want to use
+  final manager = db.managers.todoCategory.withFields([todoCountcomputedField]);
 
-  /// Read the result of the annotation
+  /// Read the result of the computed field
   for (final (category, refs) in await manager.get()) {
-    final todoCount = todoCountAnnotation.read(refs);
+    final todoCount = todoCountcomputedField.read(refs);
     print('Category ${category.id} has $todoCount todos');
   }
   // #enddocregion aggregated_annotations

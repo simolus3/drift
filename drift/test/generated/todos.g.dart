@@ -3621,7 +3621,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
               $$CategoriesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$CategoriesTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$CategoriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
@@ -3881,7 +3881,7 @@ class $$TodosTableTableTableManager extends RootTableManager<
               $$TodosTableTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$TodosTableTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$TodosTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
@@ -4083,7 +4083,7 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$UsersTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$UsersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<RowId> id = const Value.absent(),
@@ -4213,7 +4213,7 @@ class $$SharedTodosTableTableManager extends RootTableManager<
               $$SharedTodosTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$SharedTodosTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$SharedTodosTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> todo = const Value.absent(),
@@ -4363,7 +4363,7 @@ class $$TableWithoutPKTableTableManager extends RootTableManager<
               $$TableWithoutPKTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$TableWithoutPKTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$TableWithoutPKTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> notReallyAnId = const Value.absent(),
@@ -4487,7 +4487,7 @@ class $$PureDefaultsTableTableManager extends RootTableManager<
               $$PureDefaultsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$PureDefaultsTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$PureDefaultsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<MyCustomObject?> txt = const Value.absent(),
@@ -4597,7 +4597,7 @@ class $$WithCustomTypeTableTableManager extends RootTableManager<
               $$WithCustomTypeTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$WithCustomTypeTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$WithCustomTypeTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<UuidValue> id = const Value.absent(),
@@ -4819,7 +4819,7 @@ class $$TableWithEveryColumnTypeTableTableManager extends RootTableManager<
           createOrderingComposer: () =>
               $$TableWithEveryColumnTypeTableOrderingComposer(
                   $db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$TableWithEveryColumnTypeTableAnnotationComposer(
                   $db: db, $table: table),
           updateCompanionCallback: ({
@@ -5033,7 +5033,7 @@ class $$DepartmentTableTableManager extends RootTableManager<
               $$DepartmentTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$DepartmentTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$DepartmentTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -5309,7 +5309,7 @@ class $$ProductTableTableManager extends RootTableManager<
               $$ProductTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$ProductTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$ProductTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> sku = const Value.absent(),
@@ -5536,7 +5536,7 @@ class $$StoreTableTableManager extends RootTableManager<
               $$StoreTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$StoreTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$StoreTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -5825,7 +5825,7 @@ class $$ListingTableTableManager extends RootTableManager<
               $$ListingTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$ListingTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$ListingTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),

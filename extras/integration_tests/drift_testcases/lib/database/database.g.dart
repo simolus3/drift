@@ -830,7 +830,7 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$UsersTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$UsersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -973,7 +973,7 @@ class $$FriendshipsTableTableManager extends RootTableManager<
               $$FriendshipsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$FriendshipsTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$FriendshipsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> firstUser = const Value.absent(),

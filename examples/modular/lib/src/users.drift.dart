@@ -443,7 +443,7 @@ class $UsersTableManager extends i0.RootTableManager<
               i1.$UsersFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$UsersOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$UsersAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -889,7 +889,7 @@ class $FollowsTableManager extends i0.RootTableManager<
               i1.$FollowsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$FollowsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$FollowsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> followed = const i0.Value.absent(),

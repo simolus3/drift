@@ -896,7 +896,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
               $$CategoriesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$CategoriesTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$CategoriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -1133,7 +1133,7 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
               $$TodoEntriesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$TodoEntriesTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$TodoEntriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -1282,7 +1282,7 @@ class $TextEntriesTableManager extends RootTableManager<
               $TextEntriesFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $TextEntriesOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $TextEntriesAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> description = const Value.absent(),

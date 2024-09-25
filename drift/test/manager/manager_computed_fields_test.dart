@@ -53,26 +53,25 @@ void main() {
         aDateTime: Value(DateTime.now().add(Duration(days: 3)))));
 
     final aTextAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aText);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aText);
     final aRealAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aReal);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aReal);
     final anIntEnumAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anIntEnum);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anIntEnum);
     final anIntEnumWithConverterAnnotation = db
         .managers.tableWithEveryColumnType
-        .annotationWithConverter((a) => a.anIntEnum);
+        .computedfieldWithConverter((a) => a.anIntEnum);
     final aDateTimeAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aDateTime);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aDateTime);
     final aBlobAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aBlob);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aBlob);
     final aBoolAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aBool);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aBool);
     final anIntAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anInt);
     final anInt64Annotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt64);
-    final (_, refs) =
-        await db.managers.tableWithEveryColumnType.withAnnotations([
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anInt64);
+    final (_, refs) = await db.managers.tableWithEveryColumnType.withFields([
       aTextAnnotation,
       aRealAnnotation,
       anIntEnumAnnotation,
@@ -98,26 +97,25 @@ void main() {
     await db.managers.tableWithEveryColumnType.create((o) => o());
 
     final aTextAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aText);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aText);
     final aRealAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aReal);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aReal);
     final anIntEnumAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anIntEnum);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anIntEnum);
     final anIntEnumWithConverterAnnotation = db
         .managers.tableWithEveryColumnType
-        .annotationWithConverter((a) => a.anIntEnum);
+        .computedfieldWithConverter((a) => a.anIntEnum);
     final aDateTimeAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aDateTime);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aDateTime);
     final aBlobAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aBlob);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aBlob);
     final aBoolAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aBool);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aBool);
     final anIntAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anInt);
     final anInt64Annotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt64);
-    final (_, refs) =
-        await db.managers.tableWithEveryColumnType.withAnnotations([
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anInt64);
+    final (_, refs) = await db.managers.tableWithEveryColumnType.withFields([
       aTextAnnotation,
       aRealAnnotation,
       anIntEnumAnnotation,
@@ -161,29 +159,29 @@ void main() {
         aDateTime: Value(DateTime.now().add(Duration(days: 2)))));
 
     final aTextAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aText);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aText);
     final aRealAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aReal);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aReal);
     final anIntEnumAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anIntEnum);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anIntEnum);
     final anIntEnumWithConverterAnnotation = db
         .managers.tableWithEveryColumnType
-        .annotationWithConverter((a) => a.anIntEnum);
+        .computedfieldWithConverter((a) => a.anIntEnum);
     final aDateTimeAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aDateTime);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aDateTime);
     final aBlobAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aBlob);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aBlob);
     final aBoolAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aBool);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aBool);
     final anIntAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anInt);
     final anInt64Annotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt64);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anInt64);
 
     // If any of these filters dont work, there will be more than one row returned, which will cause an exception
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aTextAnnotation])
+            .withFields([aTextAnnotation])
             .filter(
                 (f) => aTextAnnotation.filter("Get that math homework done"))
             .getSingle()
@@ -191,21 +189,21 @@ void main() {
         "Get that math homework done");
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aRealAnnotation])
+            .withFields([aRealAnnotation])
             .filter((f) => aRealAnnotation.filter(3.0))
             .getSingle()
             .then((value) => aRealAnnotation.read(value.$2)),
         3.0);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([anIntEnumAnnotation])
+            .withFields([anIntEnumAnnotation])
             .filter((f) => anIntEnumAnnotation.filter(TodoStatus.open.index))
             .getSingle()
             .then((value) => anIntEnumAnnotation.read(value.$2)),
         TodoStatus.open.index);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([anIntEnumWithConverterAnnotation])
+            .withFields([anIntEnumWithConverterAnnotation])
             .filter(
                 (f) => anIntEnumWithConverterAnnotation.filter(TodoStatus.open))
             .getSingle()
@@ -213,7 +211,7 @@ void main() {
         TodoStatus.open);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aDateTimeAnnotation])
+            .withFields([aDateTimeAnnotation])
             .filter((f) => aDateTimeAnnotation.filter(in3Days))
             .getSingle()
             // Default DB only has second level precision
@@ -223,28 +221,28 @@ void main() {
         in3Days.millisecondsSinceEpoch ~/ 1000);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aBlobAnnotation])
+            .withFields([aBlobAnnotation])
             .filter((f) => aBlobAnnotation.filter(Uint8List(0)))
             .getSingle()
             .then((value) => aBlobAnnotation.read(value.$2)),
         Uint8List(0));
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aBoolAnnotation])
+            .withFields([aBoolAnnotation])
             .filter((f) => aBoolAnnotation.filter(true))
             .getSingle()
             .then((value) => aBoolAnnotation.read(value.$2)),
         true);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([anIntAnnotation])
+            .withFields([anIntAnnotation])
             .filter((f) => anIntAnnotation.filter(5))
             .getSingle()
             .then((value) => anIntAnnotation.read(value.$2)),
         5);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([anInt64Annotation])
+            .withFields([anInt64Annotation])
             .filter((f) => anInt64Annotation.filter(BigInt.from(5)))
             .getSingle()
             .then((value) => anInt64Annotation.read(value.$2)),
@@ -275,29 +273,29 @@ void main() {
         aDateTime: Value(DateTime.now().add(Duration(days: 2)))));
 
     final aTextAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aText);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aText);
     final aRealAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aReal);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aReal);
     final anIntEnumAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anIntEnum);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anIntEnum);
     final anIntEnumWithConverterAnnotation = db
         .managers.tableWithEveryColumnType
-        .annotationWithConverter((a) => a.anIntEnum);
+        .computedfieldWithConverter((a) => a.anIntEnum);
     final aDateTimeAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aDateTime);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aDateTime);
     final aBlobAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aBlob);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aBlob);
     final aBoolAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.aBool);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.aBool);
     final anIntAnnotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anInt);
     final anInt64Annotation =
-        db.managers.tableWithEveryColumnType.annotation((a) => a.anInt64);
+        db.managers.tableWithEveryColumnType.computedField((a) => a.anInt64);
 
     // If any of these filters dont work, there will be more than one row returned, which will cause an exception
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aTextAnnotation])
+            .withFields([aTextAnnotation])
             .orderBy((f) => aTextAnnotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
@@ -305,56 +303,56 @@ void main() {
 
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aRealAnnotation])
+            .withFields([aRealAnnotation])
             .orderBy((f) => aRealAnnotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
         [2, 1]);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([anIntEnumAnnotation])
+            .withFields([anIntEnumAnnotation])
             .orderBy((f) => anIntEnumAnnotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
         [1, 2]);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([anIntEnumWithConverterAnnotation])
+            .withFields([anIntEnumWithConverterAnnotation])
             .orderBy((f) => anIntEnumWithConverterAnnotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
         [1, 2]);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aDateTimeAnnotation])
+            .withFields([aDateTimeAnnotation])
             .orderBy((f) => aDateTimeAnnotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
         [2, 1]);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aBlobAnnotation])
+            .withFields([aBlobAnnotation])
             .orderBy((f) => aBlobAnnotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
         [1, 2]);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([aBoolAnnotation])
+            .withFields([aBoolAnnotation])
             .orderBy((f) => aBoolAnnotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
         [2, 1]);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([anIntAnnotation])
+            .withFields([anIntAnnotation])
             .orderBy((f) => anIntAnnotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
         [2, 1]);
     expect(
         await db.managers.tableWithEveryColumnType
-            .withAnnotations([anInt64Annotation])
+            .withFields([anInt64Annotation])
             .orderBy((f) => anInt64Annotation.order.asc())
             .get()
             .then((value) => value.map((e) => e.$1.id).toList()),
@@ -363,14 +361,14 @@ void main() {
 
   test('manager - many to one annotation', () async {
     final productNameAnnotation =
-        db.managers.listing.annotation((a) => a.product.name);
+        db.managers.listing.computedField((a) => a.product.name);
     final departmentNameAnnotation =
-        db.managers.listing.annotation((a) => a.product.department.name);
+        db.managers.listing.computedField((a) => a.product.department.name);
     final storeNameAnnotation =
-        db.managers.listing.annotation((a) => a.store.name);
+        db.managers.listing.computedField((a) => a.store.name);
 
     final (_, refs) = await db.managers.listing
-        .withAnnotations([
+        .withFields([
           productNameAnnotation,
           departmentNameAnnotation,
           storeNameAnnotation
@@ -383,31 +381,31 @@ void main() {
   });
   test('manager - one to many aggregation annotation', () async {
     final productCountAnnotation =
-        db.managers.store.annotation((a) => a.listings((a) => a.id).count());
+        db.managers.store.computedField((a) => a.listings((a) => a.id).count());
 
     final (_, refs) = await db.managers.store
-        .withAnnotations([productCountAnnotation])
+        .withFields([productCountAnnotation])
         .limit(1)
         .getSingle();
     expect(productCountAnnotation.read(refs), 9);
 
     // Test with a filter
     final productCountMoreThanTenDollarsAnnotation = db.managers.store
-        .annotation((a) => a.listings(
+        .computedField((a) => a.listings(
             (a) => a.id.count(filter: a.price.isBiggerThanValue(10.0))));
 
     final (_, refs2) = await db.managers.store
-        .withAnnotations([productCountMoreThanTenDollarsAnnotation])
+        .withFields([productCountMoreThanTenDollarsAnnotation])
         .limit(1)
         .getSingle();
     expect(productCountMoreThanTenDollarsAnnotation.read(refs2), 5);
 
-    final productCountInElectronicsAnnotation = db.managers.store.annotation(
+    final productCountInElectronicsAnnotation = db.managers.store.computedField(
         (a) => a.listings((a) => a.id
             .count(filter: a.product.department.name.equals("Electronics"))));
 
     final (_, refs3) = await db.managers.store
-        .withAnnotations([productCountInElectronicsAnnotation])
+        .withFields([productCountInElectronicsAnnotation])
         .limit(1)
         .getSingle();
     expect(productCountInElectronicsAnnotation.read(refs3), 3);
@@ -415,10 +413,10 @@ void main() {
 
   test('manager - aggregation on annotation', () async {
     final productCountAnnotation = db.managers.store
-        .annotation((a) => a.listings((a) => a.product.name.groupConcat()));
+        .computedField((a) => a.listings((a) => a.product.name.groupConcat()));
 
     final (_, refs) = await db.managers.store
-        .withAnnotations([productCountAnnotation])
+        .withFields([productCountAnnotation])
         .limit(1)
         .getSingle();
     expect(productCountAnnotation.read(refs),
@@ -426,10 +424,10 @@ void main() {
   });
   test('manager - annotation of aggregation', () async {
     final productCountAnnotation = db.managers.listing
-        .annotation((a) => a.product.listings((a) => a.id).groupConcat());
+        .computedField((a) => a.product.listings((a) => a.id).groupConcat());
 
     final (_, refs) = await db.managers.listing
-        .withAnnotations([productCountAnnotation])
+        .withFields([productCountAnnotation])
         .limit(1)
         .getSingle();
     expect(productCountAnnotation.read(refs), '1,16');

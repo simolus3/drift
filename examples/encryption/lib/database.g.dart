@@ -268,7 +268,7 @@ class $$NotesTableTableManager extends RootTableManager<
               $$NotesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$NotesTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$NotesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),

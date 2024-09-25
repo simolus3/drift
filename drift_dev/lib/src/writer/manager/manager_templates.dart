@@ -234,7 +234,7 @@ class _ManagerCodeTemplates {
         table: table,
         createFilteringComposer: () => ${filterComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table),
         createOrderingComposer: () => ${orderingComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table),
-        createAnnotationComposer: () => ${annotationComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table),
+        createComputedFieldComposer: () => ${annotationComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table),
         updateCompanionCallback: $updateCompanionBuilder,
         createCompanionCallback: $createCompanionBuilder,
         withReferenceMapper: (p0) => p0

@@ -369,7 +369,7 @@ class $PostsTableManager extends i0.RootTableManager<
               i1.$PostsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$PostsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$PostsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -799,7 +799,7 @@ class $LikesTableManager extends i0.RootTableManager<
               i1.$LikesFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$LikesOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$LikesAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> post = const i0.Value.absent(),

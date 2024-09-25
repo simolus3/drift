@@ -325,7 +325,7 @@ class $$PeriodicRemindersTableTableManager extends i0.RootTableManager<
               i1.$$PeriodicRemindersTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () => i1
               .$$PeriodicRemindersTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$$PeriodicRemindersTableAnnotationComposer(
                   $db: db, $table: table),
           updateCompanionCallback: ({

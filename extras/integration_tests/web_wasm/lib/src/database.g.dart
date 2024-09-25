@@ -274,7 +274,7 @@ class $$TestTableTableTableManager extends RootTableManager<
               $$TestTableTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$TestTableTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$TestTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),

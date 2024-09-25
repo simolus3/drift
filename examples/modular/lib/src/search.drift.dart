@@ -295,7 +295,7 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
               i1.$SearchInPostsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i1.$SearchInPostsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i1.$SearchInPostsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<String> author = const i0.Value.absent(),

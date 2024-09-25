@@ -2087,7 +2087,7 @@ class $NoIdsTableManager extends RootTableManager<
               $NoIdsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $NoIdsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $NoIdsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<Uint8List> payload = const Value.absent(),
@@ -2199,7 +2199,7 @@ class $WithDefaultsTableManager extends RootTableManager<
               $WithDefaultsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $WithDefaultsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $WithDefaultsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
@@ -2335,7 +2335,7 @@ class $WithConstraintsTableManager extends RootTableManager<
               $WithConstraintsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $WithConstraintsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $WithConstraintsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String?> a = const Value.absent(),
@@ -2490,7 +2490,7 @@ class $ConfigTableTableManager extends RootTableManager<
               $ConfigTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $ConfigTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $ConfigTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> configKey = const Value.absent(),
@@ -2635,7 +2635,7 @@ class $MytableTableManager extends RootTableManager<
               $MytableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $MytableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $MytableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> someid = const Value.absent(),
@@ -2767,7 +2767,7 @@ class $EmailTableManager extends RootTableManager<
               $EmailFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $EmailOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $EmailAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> sender = const Value.absent(),
@@ -2890,7 +2890,7 @@ class $WeirdTableTableManager extends RootTableManager<
               $WeirdTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $WeirdTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $WeirdTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> sqlClass = const Value.absent(),

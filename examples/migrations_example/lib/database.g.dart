@@ -1150,7 +1150,7 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$UsersTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $$UsersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -1406,7 +1406,7 @@ class $GroupsTableManager extends RootTableManager<
               $GroupsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $GroupsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $GroupsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -1570,7 +1570,7 @@ class $NotesTableManager extends RootTableManager<
               $NotesFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $NotesOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               $NotesAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> title = const Value.absent(),

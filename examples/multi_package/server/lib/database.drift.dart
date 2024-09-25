@@ -385,7 +385,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
               i3.$$ActiveSessionsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i3.$$ActiveSessionsTableOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () => i3
+          createComputedFieldComposer: () => i3
               .$$ActiveSessionsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> user = const i0.Value.absent(),

@@ -195,7 +195,7 @@ class $UsersTableManager extends i0.RootTableManager<
               i2.$UsersFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i2.$UsersOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i2.$UsersAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> id = const i0.Value.absent(),
@@ -624,7 +624,7 @@ class $FriendsTableManager extends i0.RootTableManager<
               i2.$FriendsFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               i2.$FriendsOrderingComposer($db: db, $table: table),
-          createAnnotationComposer: () =>
+          createComputedFieldComposer: () =>
               i2.$FriendsAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> userA = const i0.Value.absent(),

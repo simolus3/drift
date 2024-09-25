@@ -119,7 +119,8 @@ Any rows that meet the specified condition will be deleted.
 {{ load_snippet('manager_delete','lib/snippets/dart_api/manager.dart.excerpt.json') }}
 
 
-## Annotations
+
+## Computed Fields
 
 Manager queries are great when you need to select entire rows from a database table along with their related data. However, there are situations where you might want to perform more complex operations directly within the database for better efficiency. 
 
