@@ -20,7 +20,7 @@ class Preferences {
   // #enddocregion start
 
   // #docregion simplified
-  static TypeConverter<Preferences, String> converter = TypeConverter.json(
+  static JsonTypeConverter<Preferences, String> converter = TypeConverter.json(
     fromJson: (json) => Preferences.fromJson(json as Map<String, Object?>),
     toJson: (pref) => pref.toJson(),
   );
@@ -31,7 +31,8 @@ class Preferences {
 
 // #docregion converter
 // stores preferences as strings
-class PreferenceConverter extends TypeConverter<Preferences, String> {
+class PreferenceConverter extends TypeConverter<Preferences, String>
+    with JsonTypeConverter<Preferences, String> {
   const PreferenceConverter();
 
   @override

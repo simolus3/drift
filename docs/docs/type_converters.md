@@ -33,10 +33,10 @@ also works with [compiled custom queries]("/queries/custom").
 
 !!! warning "Caution with equality"
 
-    
+
     If your converter returns an object that is not comparable by value, the generated dataclass will not
     be comparable by value. Consider implementing `==` and `hashCode` on those classes.
-    
+
 
 
 
@@ -46,6 +46,15 @@ for that. For instance, we could declare the type converter as a field in the
 
 {{ load_snippet('simplified','lib/snippets/type_converters/converters.dart.excerpt.json') }}
 
+!!! info "Why JSON converters?"
+
+    By default, type converters are only applied to the mapping from Dart to and from SQL.
+    Drift also generates `fromJson` and `toJson` methods on data classes, and those don't
+    apply type converters by default.
+    By mixing in `JsonTypeConverter`, you tell drift that the converter should also be considered
+    for JSON serialization.
+
+
 ### Implicit enum converters
 
 A common scenario for type converters is to map between enums and integers by representing enums
@@ -54,10 +63,10 @@ easier.
 
 ```dart
 enum Status {
-   none,
-   running,
-   stopped,
-   paused
+  none,
+  running,
+  stopped,
+  paused
 }
 
 class Tasks extends Table {
@@ -68,25 +77,25 @@ class Tasks extends Table {
 
 !!! warning "Caution with enums"
 
-    
+
     It can be easy to accidentally invalidate your database by introducing another enum value.
     For instance, let's say we inserted a `Task` into the database in the above example and set its
     `Status` to `running` (index = 1).
     Now we modify `Status` enum to include another entry:
     ```dart
     enum Status {
-    none,
-    starting, // new!
-    running,
-    stopped,
-    paused
+      none,
+      starting, // new!
+      running,
+      stopped,
+      paused
     }
     ```
     When selecting the task, it will now report as `starting`, as that's the new value at index 1.
     For this reason, it's best to add new values at the end of the enumeration, where they can't conflict
     with existing values. Otherwise you'd need to bump your schema version and run a custom update statement
     to fix this.
-    
+
 
 
 
@@ -108,29 +117,29 @@ class Tasks extends Table {
 
 !!! warning "Caution with enums"
 
-    
+
     It can be easy to accidentally invalidate your database by renaming your enum values.
     For instance, let's say we inserted a `Task` into the database in the above example and set its
     `Status` to `running`.
     Now we modify `Status` enum to rename `running` into `processing`:
     ```dart
     enum Status {
-    none,
-    processing,
-    stopped,
-    paused
+      none,
+      processing,
+      stopped,
+      paused
     }
     ```
     When selecting the task, it won't be able to find the enum value `running` anymore, and will throw an error.
-    
+
     For this reason, it's best to not modify the name of your enum values. Otherwise you'd need to bump your schema version and run a custom update statement to fix this.
-    
+
 
 
 
 Also note that you can't apply another type converter on a column declared with an enum converter.
 
-## Using converters in drift 
+## Using converters in drift files
 
 Type converters can also be used inside drift files.
 Assuming that the `Preferences` and `PreferenceConverter` are contained in
