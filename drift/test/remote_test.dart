@@ -341,13 +341,13 @@ void main() {
 
     await expectLater(
       testEventQueue,
-      emitsInOrder(['try-a', 'grant-a']),
+      emitsInOrder(['try-a', 'try-b']),
     );
 
     wait.complete();
     await expectLater(
       testEventQueue,
-      emitsInOrder(['close-a', 'try-b', 'grant-b', 'close-b']),
+      emitsInOrder(['grant-a', 'close-a', 'grant-b', 'close-b']),
     );
   });
 
