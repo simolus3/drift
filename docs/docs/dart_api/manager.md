@@ -46,6 +46,18 @@ This will return a record with the entity and a `refs` object which contains the
 The problem with the above approach is that it will issue a separate query for each row in the result set. This can be very inefficient if you have a large number of rows.  
 If there were 1000 todos, this would issue 1000 queries to fetch the category for each todo.
 
+!!! note "Filter on foreign keys"
+    
+    When filtering on a reference column, drift will apply the filter to the column itself instead of joining the referenced table.
+    For example, `todos.filter((f) => f.category.id(1))` will filter on the `category` column on the `todos` table, instead of joining the two tables and filtering on the `id` column of the `categories` table.
+
+    <h4>How does this affect me?</h4>
+
+    If you have foreign keys contraints enabled (`PRAGMA foreign_keys = ON`) this won't affect you. The database will enfore that the `id` column on the `categories` table is the same as the `category` column on the `todos` table.
+
+    If you don't have foreign key constraints enabled, you should be aware that the above query will not check that the category with `id` 1 exists. It will only check that the `category` column on the `todos` table is 1.
+
+
 #### Prefetching references
 
 Drift provides a way to prefetch references in a single query to avoid inefficient queries. This is done by using the callback in the `withReferences` method. The referenced item will then be available in the referenced managers `prefetchedData` field.
