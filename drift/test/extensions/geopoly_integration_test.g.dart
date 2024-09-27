@@ -246,31 +246,51 @@ typedef $GeopolyTestUpdateCompanionBuilder = GeopolyTestCompanion Function({
 });
 
 class $GeopolyTestFilterComposer
-    extends FilterComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestFilterComposer(super.$state);
-  ColumnFilters<GeopolyPolygon> get shape => $state.composableBuilder(
-      column: $state.table.shape,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
+    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<GeopolyPolygon> get shape => $composableBuilder(
+      column: $table.shape, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<DriftAny> get a => $state.composableBuilder(
-      column: $state.table.a,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<DriftAny> get a => $composableBuilder(
+      column: $table.a, builder: (column) => ColumnFilters(column));
 }
 
 class $GeopolyTestOrderingComposer
-    extends OrderingComposer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestOrderingComposer(super.$state);
-  ColumnOrderings<GeopolyPolygon> get shape => $state.composableBuilder(
-      column: $state.table.shape,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
+    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<GeopolyPolygon> get shape => $composableBuilder(
+      column: $table.shape, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<DriftAny> get a => $state.composableBuilder(
-      column: $state.table.a,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<DriftAny> get a => $composableBuilder(
+      column: $table.a, builder: (column) => ColumnOrderings(column));
+}
+
+class $GeopolyTestAnnotationComposer
+    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
+  $GeopolyTestAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<GeopolyPolygon> get shape =>
+      $composableBuilder(column: $table.shape, builder: (column) => column);
+
+  GeneratedColumn<DriftAny> get a =>
+      $composableBuilder(column: $table.a, builder: (column) => column);
 }
 
 class $GeopolyTestTableManager extends RootTableManager<
@@ -279,6 +299,7 @@ class $GeopolyTestTableManager extends RootTableManager<
     GeopolyTestData,
     $GeopolyTestFilterComposer,
     $GeopolyTestOrderingComposer,
+    $GeopolyTestAnnotationComposer,
     $GeopolyTestCreateCompanionBuilder,
     $GeopolyTestUpdateCompanionBuilder,
     (
@@ -291,10 +312,12 @@ class $GeopolyTestTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $GeopolyTestFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $GeopolyTestOrderingComposer(ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $GeopolyTestFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $GeopolyTestOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $GeopolyTestAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<GeopolyPolygon?> shape = const Value.absent(),
             Value<DriftAny?> a = const Value.absent(),
@@ -328,6 +351,7 @@ typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
     GeopolyTestData,
     $GeopolyTestFilterComposer,
     $GeopolyTestOrderingComposer,
+    $GeopolyTestAnnotationComposer,
     $GeopolyTestCreateCompanionBuilder,
     $GeopolyTestUpdateCompanionBuilder,
     (

@@ -62,26 +62,3 @@ class JoinBuilder {
         useColumns: useColumns);
   }
 }
-
-/// An interface for classes which need to hold the information needed to create
-/// orderings or where expressions.
-///
-/// Example:
-/// ```dart
-/// todos.filter((f) => f.category.id(3))
-/// ```
-///
-/// In the above example, f.category returns a [ComposableFilter] object, which
-/// is a subclass of [_Composable].
-/// This resulting where expression will require a join to be created
-/// between the `categories` and `todos` table.
-///
-/// This interface is used to ensure that the [ComposableFilter] object will have
-/// the information needed to create the join by expressions.
-abstract interface class _Composable {
-  /// The join builders that are associated with this class
-  /// They are ordered by the order in which they were added
-  /// These will be used by the [TableManagerState] to create the joins
-  /// that are needed to create the where expression
-  Set<JoinBuilder> get joinBuilders;
-}

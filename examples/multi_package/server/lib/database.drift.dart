@@ -254,53 +254,108 @@ typedef $$ActiveSessionsTableUpdateCompanionBuilder = i3.ActiveSessionsCompanion
 });
 
 class $$ActiveSessionsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
-  $$ActiveSessionsTableFilterComposer(super.$state);
-  i0.ColumnFilters<String> get bearerToken => $state.composableBuilder(
-      column: $state.table.bearerToken,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
+    extends i0.Composer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
+  $$ActiveSessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnFilters<String> get bearerToken => $composableBuilder(
+      column: $table.bearerToken,
+      builder: (column) => i0.ColumnFilters(column));
 
   i1.$$UsersTableFilterComposer get user {
-    final i1.$$UsersTableFilterComposer composer = $state.composerBuilder(
+    final i1.$$UsersTableFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.user,
-        referencedTable: i5.ReadDatabaseContainer($state.db)
-            .resultSet<i1.$UsersTable>('users'),
+        referencedTable:
+            i5.ReadDatabaseContainer($db).resultSet<i1.$UsersTable>('users'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            i1.$$UsersTableFilterComposer(i0.ComposerState(
-                $state.db,
-                i5.ReadDatabaseContainer($state.db)
-                    .resultSet<i1.$UsersTable>('users'),
-                joinBuilder,
-                parentComposers)));
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$$UsersTableFilterComposer(
+              $db: $db,
+              $table: i5.ReadDatabaseContainer($db)
+                  .resultSet<i1.$UsersTable>('users'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
     return composer;
   }
 }
 
 class $$ActiveSessionsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
-  $$ActiveSessionsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get bearerToken => $state.composableBuilder(
-      column: $state.table.bearerToken,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
+    extends i0.Composer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
+  $$ActiveSessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnOrderings<String> get bearerToken => $composableBuilder(
+      column: $table.bearerToken,
+      builder: (column) => i0.ColumnOrderings(column));
 
   i1.$$UsersTableOrderingComposer get user {
-    final i1.$$UsersTableOrderingComposer composer = $state.composerBuilder(
+    final i1.$$UsersTableOrderingComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.user,
-        referencedTable: i5.ReadDatabaseContainer($state.db)
-            .resultSet<i1.$UsersTable>('users'),
+        referencedTable:
+            i5.ReadDatabaseContainer($db).resultSet<i1.$UsersTable>('users'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            i1.$$UsersTableOrderingComposer(i0.ComposerState(
-                $state.db,
-                i5.ReadDatabaseContainer($state.db)
-                    .resultSet<i1.$UsersTable>('users'),
-                joinBuilder,
-                parentComposers)));
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$$UsersTableOrderingComposer(
+              $db: $db,
+              $table: i5.ReadDatabaseContainer($db)
+                  .resultSet<i1.$UsersTable>('users'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ActiveSessionsTableAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
+  $$ActiveSessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<String> get bearerToken => $composableBuilder(
+      column: $table.bearerToken, builder: (column) => column);
+
+  i1.$$UsersTableAnnotationComposer get user {
+    final i1.$$UsersTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.user,
+        referencedTable:
+            i5.ReadDatabaseContainer($db).resultSet<i1.$UsersTable>('users'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$$UsersTableAnnotationComposer(
+              $db: $db,
+              $table: i5.ReadDatabaseContainer($db)
+                  .resultSet<i1.$UsersTable>('users'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
     return composer;
   }
 }
@@ -311,6 +366,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
     i3.ActiveSession,
     i3.$$ActiveSessionsTableFilterComposer,
     i3.$$ActiveSessionsTableOrderingComposer,
+    i3.$$ActiveSessionsTableAnnotationComposer,
     $$ActiveSessionsTableCreateCompanionBuilder,
     $$ActiveSessionsTableUpdateCompanionBuilder,
     (
@@ -325,10 +381,12 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          filteringComposer: i3
-              .$$ActiveSessionsTableFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer: i3.$$ActiveSessionsTableOrderingComposer(
-              i0.ComposerState(db, table)),
+          createFilteringComposer: () =>
+              i3.$$ActiveSessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i3.$$ActiveSessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => i3
+              .$$ActiveSessionsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<int> user = const i0.Value.absent(),
             i0.Value<String> bearerToken = const i0.Value.absent(),
@@ -362,6 +420,7 @@ typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
     i3.ActiveSession,
     i3.$$ActiveSessionsTableFilterComposer,
     i3.$$ActiveSessionsTableOrderingComposer,
+    i3.$$ActiveSessionsTableAnnotationComposer,
     $$ActiveSessionsTableCreateCompanionBuilder,
     $$ActiveSessionsTableUpdateCompanionBuilder,
     (

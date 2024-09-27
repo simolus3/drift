@@ -46,6 +46,18 @@ This will return a record with the entity and a `refs` object which contains the
 The problem with the above approach is that it will issue a separate query for each row in the result set. This can be very inefficient if you have a large number of rows.  
 If there were 1000 todos, this would issue 1000 queries to fetch the category for each todo.
 
+!!! note "Filter on foreign keys"
+    
+    When filtering on a reference column, drift will apply the filter to the column itself instead of joining the referenced table.
+    For example, `todos.filter((f) => f.category.id(1))` will filter on the `category` column on the `todos` table, instead of joining the two tables and filtering on the `id` column of the `categories` table.
+
+    <h4>How does this affect me?</h4>
+
+    If you have foreign keys contraints enabled (`PRAGMA foreign_keys = ON`) this won't affect you. The database will enfore that the `id` column on the `categories` table is the same as the `category` column on the `todos` table.
+
+    If you don't have foreign key constraints enabled, you should be aware that the above query will not check that the category with `id` 1 exists. It will only check that the `category` column on the `todos` table is 1.
+
+
 #### Prefetching references
 
 Drift provides a way to prefetch references in a single query to avoid inefficient queries. This is done by using the callback in the `withReferences` method. The referenced item will then be available in the referenced managers `prefetchedData` field.
@@ -117,6 +129,27 @@ We may also delete rows from a table using the manager.
 Any rows that meet the specified condition will be deleted.
 
 {{ load_snippet('manager_delete','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+
+
+## Computed Fields
+
+Manager queries are great when you need to select entire rows from a database table along with their related data. However, there are situations where you might want to perform more complex operations directly within the database for better efficiency. 
+
+Drift offers strong support for writing SQL expressions. These expressions can be used to filter data, sort results, and perform various calculations directly within your SQL queries. This means you can leverage the full power of SQL to handle complex logic right in the database, making your queries more efficient and your code cleaner.
+
+If you want to learn more about how to write these SQL expressions, please refer to the [expression](expressions.md) documentation.
+
+{{ load_snippet('manager_annotations','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+You can write expressions which reference other columns in the same table or even other tables.
+The joins will be created automatically by the manager.
+
+{{ load_snippet('referenced_annotations','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+You can also use [aggregate](./expressions.md#aggregate-functions-like-count-and-sum) functions too.
+
+{{ load_snippet('aggregated_annotations','lib/snippets/dart_api/manager.dart.excerpt.json') }}
 
 <!-- 
 This documentation should added once the internal manager APIs are more stable
