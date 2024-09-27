@@ -295,6 +295,11 @@ class TableWithCustomConstraints extends Table {
 }
 // #enddocregion custom-constraint-table
 
+class GroupMemberships extends Table with PkMixin {
+  late final group = integer()();
+  late final user = integer()();
+}
+
 // #docregion custom-check
 class Student extends Table {
   late final id = integer().autoIncrement()();
