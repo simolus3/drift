@@ -3,6 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart'
     show InitialDeferrableMode, ReferenceAction;
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -545,13 +546,28 @@ class ColumnParser {
   }) async {
     if (customConstraints == null) return const [];
 
+    /// Attempt to translate a span in the resolved Dart constant containing an
+    /// SQL string into a Dart source span.
+    /// This might fail if [customConstraints] is a complex expression, but it
+    /// improves errors when passing string literals to `customConstraint`.
+    FileSpan translateSpan(FileSpan sql) {
+      final defaultSpan = DriftAnalysisError.dartAstSpan(
+          _resolver.discovered.dartElement, sourceForCustomConstraints!);
+
+      return switch (sourceForCustomConstraints) {
+        SingleStringLiteral(:final contentsOffset) => defaultSpan.file.span(
+            contentsOffset + sql.start.offset, contentsOffset + sql.end.offset),
+        _ => defaultSpan,
+      };
+    }
+
     final engine = _resolver.resolver.driver.newSqlEngine();
     final parseResult = engine.parseColumnConstraints(customConstraints);
     final constraints =
         (parseResult.rootNode as sql.ColumnDefinition).constraints;
 
     for (final error in parseResult.errors) {
-      _resolver.reportError(DriftAnalysisError(error.token.span,
+      _resolver.reportError(DriftAnalysisError(translateSpan(error.token.span),
           'Parse error in customConstraint(): ${error.message}'));
     }
 
@@ -583,9 +599,8 @@ class ColumnParser {
         final table =
             await _resolver.resolveSqlReferenceOrReportError<DriftTable>(
           clause.foreignTable.tableName,
-          (msg) => DriftAnalysisError.inDartAst(
-            _resolver.discovered.dartElement,
-            sourceForCustomConstraints!,
+          (msg) => DriftAnalysisError(
+            translateSpan(clause.span!),
             msg,
           ),
         );

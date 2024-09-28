@@ -21,6 +21,7 @@ import 'package:logging/logging.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:source_span/source_span.dart';
 import 'package:test/test.dart';
 
 /// A [DriftBackend] implementation used for testing.
@@ -331,7 +332,13 @@ String? requireDart(String minimalVersion) {
 }
 
 extension DriftErrorMatchers on TypeMatcher<DriftAnalysisError> {
-  TypeMatcher<DriftAnalysisError> withSpan(lexemeMatcher) {
-    return having((e) => e.span?.text, 'span.text', lexemeMatcher);
+  TypeMatcher<DriftAnalysisError> withSpan(lexemeMatcher, {String? filename}) {
+    final matcher = having((e) => e.span?.text, 'span.text', lexemeMatcher);
+    if (filename != null) {
+      return matcher.having((e) => (e.span as FileSpan).file.url.toString(),
+          'file.url', contains(filename));
+    }
+
+    return matcher;
   }
 }

@@ -279,7 +279,7 @@ class TestTable extends Table {
       expect(file.allErrors, [
         isDriftError(contains(
                 'Parse error in customConstraint(): Expected a constraint'))
-            .withSpan('invalid'),
+            .withSpan('invalid', filename: 'a.dart'),
       ]);
     });
 
@@ -307,9 +307,9 @@ class TestTable extends Table {
 
       expect(tableAnalysis.errorsDuringAnalysis, [
         isDriftError('`foo` could not be found in any import.')
-            .withSpan(contains('REFERENCES foo (bar)')),
+            .withSpan(contains('REFERENCES foo (bar)'), filename: 'a.dart'),
         isDriftError(contains('has no column named `foo`'))
-            .withSpan(contains('referenced_table (foo)')),
+            .withSpan(contains('referenced_table (foo)'), filename: 'a.dart'),
       ]);
 
       final testTable = tableAnalysis.result! as DriftTable;
@@ -339,7 +339,7 @@ class TestTable extends Table {
       expect(file.allErrors, [
         isDriftError(
                 contains('This column is not declared to be `.nullable()`'))
-            .withSpan("'UNIQUE'"),
+            .withSpan("'UNIQUE'", filename: 'a.dart'),
       ]);
     });
 
