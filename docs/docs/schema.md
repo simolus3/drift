@@ -22,9 +22,9 @@ Take this example of a table that stores superheroes:
 
 Here we have a table with 5 columns: `ID`, `Name`, `Secret Name`, `Age`, and `Height`. Each row in the table represents a single superhero.
 
-In our superhero table we want to limit how the data is stored.
+Also, we need to limit how the data is stored, for instance:
 
-- For instance, `ID` and `Name` should be unique for each row.
+- `ID` and `Name` should be unique for each row.
 - `Secret Name`, `Age`, and `Height` are optional fields.
 
 You can easily define a table in Drift using the following syntax:
