@@ -1,3 +1,8 @@
+## 2.20.3
+
+- Fix a deadlock when using nested transactions concurrently with a remote
+  isolate or web worker. This issue has been introduced in version 2.20.0.
+
 ## 2.20.2
 
 - Fix upcoming `unreachable_switch_default` lint.
