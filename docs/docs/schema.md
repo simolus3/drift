@@ -27,23 +27,22 @@ Also, we need to limit how the data is stored, for instance:
 - `ID` and `Name` should be unique for each row.
 - `Secret Name`, `Age`, and `Height` are optional fields.
 
-You can easily define a table in Drift using the following syntax:
+You can easily define such a table with the following class:
 
 {{ load_snippet('superhero_schema','lib/snippets/schema.dart.excerpt.json') }}
 
-After defining the schema, add the table to the database. 
+After defining the schema, add the table to the database class:
 
 {{ load_snippet('superhero_database','lib/snippets/schema.dart.excerpt.json') }}
 
-
-Now, run the code generator:
+and run the code generator:
 ```bash
 dart run build_runner build
 ```
 
 <h4>Congratulations! 🎉🎉</h4>
 
-You've successfully defined the schema for your database.
+You've successfully defined added a table to your database.
 You can now use the generated code to interact with your database.
 
 {{ load_snippet('superhero_query','lib/snippets/schema.dart.excerpt.json') }}
@@ -72,7 +71,7 @@ Other types can be stored in the database by converting them to one of the above
 
 ## Optional Columns
 
-By default, all columns are required. If you want a column to be nullable use the `nullable()` method. This will make the column optional and allow it to be set to `null`.
+By default, all columns are required and must contain a value. If you want a column to be nullable use the `nullable()` method. This will make the column optional and allow it to be set to `null`.
 
 {{ load_snippet('optional_columns','lib/snippets/schema.dart.excerpt.json') }}
 
@@ -123,7 +122,7 @@ Now the `name` column will only accept unique values. If you try to insert a rec
 
 You can also enforce uniqueness across multiple columns by overriding the `uniqueKeys` getter in your table class.
 
-For example, he we want to ensure that we don't reserve the same table for the same time.
+For example, in a restaurant management app, you might want to ensure that a table is only reserved once at a time. You can enforce this by making the combination of `time` and `table` unique.
 
 {{ load_snippet('unique-table','lib/snippets/schema.dart.excerpt.json') }}
 
@@ -139,15 +138,19 @@ For most use cases, you should use an `int` column with the `autoIncrement` prop
 
 Drift is smart enough to know that this should be the primary key for the table. It does this by looking for a single integer column that auto-increments and uses that as the primary key.
 
+??? question "What's `autoIncrement`?"
+    Every row in a table needs a unique ID. But how do you generate a unique ID?  
+    Maybe you could use a random number, but what if the same number is generated twice?
+
+    The solution is to use a `autoIncrement` column which automatically uses the previous ID and increments it by 1. (The 1st row gets ID 1, the 2nd row gets ID 2, and so on.)
+    That way, every time you add a new row you get a unique ID. 
+
+
 !!! tip "Reusable Mixins"
     Writing the same code for every table can be tedious. You can create a mixin that contains the primary key and use it in every table.
 
     {{ load_snippet('base_pk_class','lib/snippets/schema.dart.excerpt.json') }}
 
-??? question "What's `autoIncrement`?"
-    Every item in the database needs a unique ID. But how do you generate this ID? Maybe you could use a random number, but what if you generate the same number twice?
-
-    The simplest solution is to use a `autoIncrement` column. That way, every time you add a new row you get a new ID. The 1st row gets ID 1, the 2nd row gets ID 2, and so on.
 
 ### Custom Primary Keys
 
@@ -162,7 +165,7 @@ In the above example, we're using a `Text` column as the primary key.
 
 There are instances where each row in a table may not any unique ID. However, a combination of columns can be used to uniquely identify a row. This is called a composite primary key.
 
-Multiple columns can be used as a primary key by overriding the `primaryKey` getter in your table class.
+Multiple columns can be used as a primary key by overriding the `primaryKey` getter in your table class and passing in multiple columns.
 
 ??? example "Composite Primary Key"
 
@@ -216,8 +219,10 @@ Dart enums can either be stored as an `int` using their index or as a `String` u
 {{ load_snippet('enum','lib/snippets/schema.dart.excerpt.json') }}
 
 !!! warning "Footgun Alert"
-    It can be quite easy to break your database by using enums.  
-    If you were to change the order of the enum values (if using an `intEnum`) or rename an enum member (when using `textEnum`) you would break your database.
+    Using enums in your database can be risky.  
+    
+    - If you change the order of enum values (when using an `intEnum`), it can break your database.
+    - If you rename an enum member (when using a `textEnum`), it can also break your database.
 
 
 
@@ -226,7 +231,7 @@ Dart enums can either be stored as an `int` using their index or as a `String` u
 
 For most cases, use the standard `int` type for storing numbers. It's efficient and works well for typical integer values.
 
-Only use `BigInt` if you need to store extremely large numbers and you will be compiling your app to JavaScript. `BigInt` ensures accurate representation of these large numbers in JavaScript environments, but comes with a slight performance overhead.
+Only use `BigInt` if you need to store extremely large numbers, and you will be compiling your app to JavaScript. `BigInt` ensures accurate representation of these large numbers in JavaScript environments, but comes with a slight performance overhead.
 
 For the majority of applications, stick with `int` unless you have a specific need for `BigInt`.
 
@@ -235,12 +240,11 @@ For the majority of applications, stick with `int` unless you have a specific ne
 ## `DateTime` Columns
 
 Drift handles most of the complexity of working with `DateTime` objects for you.  
-When defining `DateTime` columns, use the `dateTime()` method.
-
+You can use `DateTime` objects directly in your Dart code, and Drift will take care of converting them to the correct format for the database.
 
 {{ load_snippet('datetime','lib/snippets/schema.dart.excerpt.json') }}
 
-Under the hood, however, Drift can store `DateTime` objects in one of two ways:
+Under the hood, Drift can store `DateTime` objects in one of two ways:
 
 1. As Unix timestamps (integers): This is the default method. It's slightly faster but provides only second-level accuracy and doesn't store timezone information.
 2. As ISO-8601 strings (text): This method is recommended for most applications. It's more precise, timezone-aware, and human-readable.
@@ -261,6 +265,38 @@ targets:
 ## Naming
 
 Drift generates quite a bit of SQL and Dart code for you. This section will help you customize the names of tables and columns in the database.
+
+### Data Class Name
+
+Drift generates a data class for each record in the database. The name of this class is derived from the table name. 
+
+- If the table name ends with an "s", the "s" is removed. For example, a table named `Superheroes` will have a data class named `Superhero`.
+- If the table name doesn't end with an "s", the name is used with `Data` appended to it. For example, a table named `Category` will have a data class named `CategoryData`.
+
+If you want to customize the name of the data class, use the `@DataClassName` decorator.
+
+{{ load_snippet('bad_name','lib/snippets/schema.dart.excerpt.json') }}
+
+### Json Key
+
+Drift generates a `toJson()` method for each data class. By default, the keys in the JSON map will be the `snake_case` version of the column getter names.
+
+If you want to customize the key in the JSON map, use the `@JsonKey` decorator.
+
+{{ load_snippet('json_key','lib/snippets/schema.dart.excerpt.json') }}
+
+Drift also has an option to use the column name as the key in the JSON map. To enable this, set the `use_column_name_as_json_key` option in your `build.yaml` file.
+
+```yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          use_sql_column_name_as_json_key: false # (default)
+          # To use column name as JSON key
+          # use_sql_column_name_as_json_key: true 
+```
 
 ### Table Name
 
@@ -305,37 +341,9 @@ If you want to customize the column name in SQL, use the `.named()` method.
 
 {{ load_snippet('named_column','lib/snippets/schema.dart.excerpt.json') }}
 
-### Data Class Name
 
-Drift generates a data class for each record in the database. The name of this class is derived from the table name. 
 
-- If the table name ends with an "s", the "s" is removed. For example, a table named `Superheroes` will have a data class named `Superhero`.
-- If the table name doesn't end with an "s", the name is used with `Data` appended to it. For example, a table named `Category` will have a data class named `CategoryData`.
 
-If you want to customize the name of the data class, use the `@DataClassName` decorator.
-
-{{ load_snippet('bad_name','lib/snippets/schema.dart.excerpt.json') }}
-
-### Json Key
-
-Drift generates a `toJson()` method for each data class. By default, the keys in the JSON map will be the `snake_case` version of the column getter names.
-
-If you want to customize the key in the JSON map, use the `@JsonKey` decorator.
-
-{{ load_snippet('json_key','lib/snippets/schema.dart.excerpt.json') }}
-
-Drift also has an option to use the column name as the key in the JSON map. To enable this, set the `use_column_name_as_json_key` option in your `build.yaml` file.
-
-```yaml
-targets:
-  $default:
-    builders:
-      drift_dev:
-        options:
-          use_sql_column_name_as_json_key: false # (default)
-          # To use column name as JSON key
-          # use_sql_column_name_as_json_key: true 
-```
 
 ## Advanced
 
@@ -357,7 +365,7 @@ You can also add custom constraints to the table itself by overriding the `table
 
 ### Custom Checks
 
-Drift supports using expressions to check the validity of data in a column. See the [expression] documentation for more information.
+Drift supports using expressions to check the validity of data in a column. See the [expression](./dart_api/expressions.md) documentation for more information.
 Here is a small example showing how to use a custom check to enforce that the `age` column is greater than 0.
 
 {{ load_snippet('custom-check','lib/snippets/schema.dart.excerpt.json') }}
