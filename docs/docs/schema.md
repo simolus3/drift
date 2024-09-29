@@ -7,7 +7,7 @@ description: Define the schema of your database.
 
 ## Overview
 
-Your schema in Drift is represented as a table. Fields in a class are like columns in a table: each field represents a piece of data stored in the class, similar to how each column represents a piece of data stored in a table.
+In Drift, your schema is represented as a table. Each column in the table represents a field in your data class.
 
 Take this example of a table that stores superheroes:
 
