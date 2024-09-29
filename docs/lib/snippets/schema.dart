@@ -241,7 +241,6 @@ class Users2 extends Table {
   // #docregion named_column
   late final createdAt = boolean().named('created')();
   // #enddocregion named_column
-
   // #docregion json_key
   @JsonKey('parent')
   late final parentCategory = integer()();
@@ -278,6 +277,7 @@ class ColumnConstraint extends Table {
   late final name =
       integer().nullable().customConstraint('COLLATE BINARY')(); // (1!)
   // #enddocregion custom_column_constraint
+
   // #docregion custom_column_constraint_not_nullable
   late final username = integer().customConstraint('NOT NULL COLLATE BINARY')();
   // #enddocregion custom_column_constraint_not_nullable
