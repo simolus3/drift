@@ -66,7 +66,7 @@ void _query() async {
   db.managers.superheros.create(
     (create) => create(
       name: "Ironman",
-      secretName: Value("Tony Stark"),
+      secretName: Value("Tony Stark"), // 👈👈👈
       age: Value(null), // 👈👈👈
     ),
   );
@@ -74,7 +74,7 @@ void _query() async {
 }
 
 // #docregion custom_pk
-class Table1 extends Table {
+class TableWithTextPrimaryKey extends Table {
   late final id = text()();
 
   @override
@@ -135,7 +135,7 @@ void _query1() async {
   // #enddocregion superhero_dataclass
 }
 
-@DriftDatabase(tables: [Categories, Reservations, Employee, PhoneNumbers])
+@DriftDatabase(tables: [Categories, Reservations, Employees, PhoneNumbers])
 class CatDatabase extends _$CatDatabase {
   CatDatabase(super.e);
 
@@ -195,7 +195,7 @@ class DurationConverter
 // #enddocregion converter
 
 // #docregion apply_converter
-class Employee extends Table {
+class Employees extends Table {
   late final vacationTimeRemaining = integer().map(const DurationConverter())();
 }
 
@@ -204,7 +204,7 @@ class Employee extends Table {
 void _query4() async {
   final db = CatDatabase(driftDatabase(name: "categories"));
   // #docregion use_converter
-  db.managers.employee.create(
+  db.managers.employees.create(
     (create) => create(vacationTimeRemaining: const Duration(days: 10)),
   );
   // #enddocregion use_converter

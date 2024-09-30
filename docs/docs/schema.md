@@ -342,9 +342,6 @@ If you want to customize the column name in SQL, use the `.named()` method.
 {{ load_snippet('named_column','lib/snippets/schema.dart.excerpt.json') }}
 
 
-
-
-
 ## Advanced
 
 ### Custom Constraints

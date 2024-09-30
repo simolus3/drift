@@ -153,6 +153,7 @@ nav:
   - Pub: https://pub.dev/packages/drift
   - New Docs:
       - schema.md
+      - queries.md
 
 docs_dir: "../docs"
 
