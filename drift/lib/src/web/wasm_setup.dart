@@ -373,7 +373,10 @@ Stream<WasmInitializationMessage> _readMessages(
       web.EventStreamProviders.messageEvent.forTarget(messageTarget);
   final errors = web.EventStreamProviders.errorEvent.forTarget(errorTarget);
 
-  final mappedMessages = messages.map(WasmInitializationMessage.read);
+  final mappedMessages = messages.map((raw) {
+    print('[client]: Received ${stringify(raw.data)}');
+    return WasmInitializationMessage.read(raw);
+  });
 
   return Stream.multi((listener) {
     StreamSubscription? subscription;
@@ -390,6 +393,8 @@ Stream<WasmInitializationMessage> _readMessages(
     );
 
     errors.first.then((value) {
+      print('[client] Worker error received!!');
+
       if (subscription != null) {
         listener
             .addSync(WorkerError('Worker emitted an error through onError.'));

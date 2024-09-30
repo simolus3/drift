@@ -25,6 +25,8 @@ class DedicatedDriftWorker {
 
   void start() {
     EventStreamProviders.messageEvent.forTarget(self).listen((event) {
+      workerDebugPrint(
+          'DedicatedDriftWorker message: ${stringify(event.data)}');
       final message = WasmInitializationMessage.read(event);
       _handleMessage(message);
     });

@@ -30,6 +30,21 @@ import 'package:stream_channel/stream_channel.dart';
 import '../channel_new.dart';
 import 'protocol.dart';
 
+/// Constant controlling whether the compiled worker should emit debug logs.
+const workerDebugLog =
+    bool.fromEnvironment('drift.worker.debug', defaultValue: false);
+
+/// Prints [message] if [workerDebugLog] has been enabled at compile-time.
+void workerDebugPrint(String message) {
+  if (workerDebugLog) {
+    print(message);
+  }
+}
+
+/// Calls `JSON.stringify`, obtaining a JSON representation of JS objects.
+@JS('JSON.stringify')
+external JSString stringify(JSAny? any);
+
 @JS('navigator')
 external Navigator get _navigator;
 

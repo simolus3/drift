@@ -27,6 +27,8 @@ class SharedDriftWorker {
   }
 
   void _newConnection(MessageEvent event) async {
+    workerDebugPrint('SharedDriftWorker._newConnection');
+
     final clientPort = event.ports.toDart[0];
     clientPort.start();
     EventStreamProviders.messageEvent
@@ -35,6 +37,9 @@ class SharedDriftWorker {
   }
 
   void _messageFromClient(MessagePort client, MessageEvent event) async {
+    workerDebugPrint(
+        'SharedDriftWorker._messageFromClient: ${stringify(event.data)}');
+
     try {
       final message = WasmInitializationMessage.read(event);
 
