@@ -79,7 +79,25 @@ const String _errorMessage = 'This getter does not create a valid column that '
 class ColumnParser {
   final DartTableResolver _resolver;
 
-  ColumnParser(this._resolver);
+  /// A map of elements to their name for elements defining columns.
+  ///
+  /// This is used to recognize column references in arbitrary Dart code, e.g.
+  /// in this definition:
+  ///
+  /// ```
+  ///  DateTimeColumn get creationTime => dateTime()
+  ///    .check(creationTime.isBiggerThan(Constant(DateTime(2020))))();
+  /// ```
+  ///
+  /// Here, the check constraint references the column itself. In some code
+  /// generation modes where we generate code for individual columns (instead
+  /// of for entire table structures, this mainly includes step-by-step
+  /// migrations), there might not be a `creationTime` in scope for the check
+  /// constraint. So, we annotate these references in [AnnotatedDartCode] and
+  /// use that information when generating code to transform the code.
+  final Map<Element, String> _columnsInSameTable;
+
+  ColumnParser(this._resolver, this._columnsInSameTable);
 
   Future<PendingColumnInformation?> parse(
       ColumnDeclaration columnDeclaration, Element element) async {
@@ -343,8 +361,9 @@ class ColumnParser {
           break;
         case _methodCheck:
           final expr = remainingExpr.argumentList.arguments.first;
-          foundConstraints
-              .add(DartCheckExpression(AnnotatedDartCode.ast(expr)));
+
+          foundConstraints.add(DartCheckExpression(AnnotatedDartCode.build(
+              (b) => b.addAstNode(expr, taggedElements: _columnsInSameTable))));
       }
 
       // We're not at a starting method yet, so we need to go deeper!

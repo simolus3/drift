@@ -15,7 +15,7 @@ funding:
   - https://github.com/sponsors/simolus3
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   charcode: ^1.3.1

@@ -16,7 +16,7 @@ const kDebugMode = true;
   include: {'tables.drift'},
 )
 class Database extends _$Database {
-  static const latestSchemaVersion = 10;
+  static const latestSchemaVersion = 11;
 
   @override
   int get schemaVersion => latestSchemaVersion;
@@ -103,6 +103,14 @@ class Database extends _$Database {
     from9To10: (m, schema) async {
       // Added an index to the users table
       await m.create(schema.userName);
+    },
+    from10To11: (m, schema) async {
+      // Added another check to the users table
+      await m.alterTable(TableMigration(schema.users));
+
+      // This is also the first version generated with drift >= 2.15.0, so we
+      // have to apply a workaround for this change: https://github.com/simolus3/drift/releases/tag/drift-2.15.0
+      await m.alterTable(TableMigration(schema.groups));
     },
   );
 }

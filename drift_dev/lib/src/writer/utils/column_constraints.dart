@@ -75,7 +75,10 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
           result.write(defaults);
         }
         if (feature.dialectSpecific[dialect] case final specific?) {
-          result.write(' $specific');
+          if (result.isNotEmpty) {
+            result.write(' ');
+          }
+          result.write(specific);
         }
         return result.toString();
       }

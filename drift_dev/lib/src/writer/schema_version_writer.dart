@@ -86,7 +86,28 @@ class SchemaVersionWriter {
   /// called in different places. This method looks up or creates a method for
   /// the given [column], returning it if doesn't exist.
   String _referenceColumn(DriftColumn column) {
-    final text = libraryScope.leaf();
+    final text = libraryScope.leaf(writeTaggedDartCode: (tag, buffer) {
+      final dartName = tag.tag;
+      final referencedColumn = column.owner.columns
+          .singleWhereOrNull((e) => e.nameInDart == dartName);
+
+      if (referencedColumn != null) {
+        // This references a column in the same table. Since we're not
+        // generating columns in a table structure where they would be in scope
+        // for Dart, we have to replace this with a custom expression evaluating
+        // to the column.
+        final sqlType = libraryScope.innerColumnType(referencedColumn.sqlType);
+        final result = libraryScope.dartCode(AnnotatedDartCode.build((b) => b
+          ..addText('(')
+          ..addSymbol('VersionedTable', _schemaLibrary)
+          ..addText('.col<')
+          ..addCode(sqlType)
+          ..addText('>(${asDartLiteral(referencedColumn.nameInSql)}))')));
+        buffer.write(result);
+      } else {
+        buffer.write(tag.lexeme);
+      }
+    });
     final (type, code) = TableOrViewWriter.instantiateColumn(column, text);
 
     return _columnCodeToFactory.putIfAbsent(code, () {

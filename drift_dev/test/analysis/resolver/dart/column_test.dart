@@ -443,4 +443,34 @@ class Database {}
     expect(studentGroupColumn.referenceName, equals('students'));
     expect(teacherGroupColumn.referenceName, equals('teachers'));
   });
+
+  test('recognizes column references in Dart code', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get creationTime => dateTime()
+    .check(creationTime.isBiggerThan(Constant(DateTime(2020))))
+    .withDefault(Constant(DateTime(2024, 1, 1)))();
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    final table = file.analyzedElements.single as DriftTable;
+    final creationTimeColumn = table.columns[1];
+    expect(creationTimeColumn.constraints, [
+      isA<DartCheckExpression>().having(
+        (e) => e.dartExpression.elements,
+        'dartExpression',
+        contains(
+          isA<TaggedDartLexeme>()
+              .having((e) => e.lexeme, 'lexeme', 'creationTime')
+              .having((e) => e.tag, 'tag', 'creationTime'),
+        ),
+      ),
+    ]);
+  });
 }

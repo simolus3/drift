@@ -125,6 +125,15 @@ class UsersData extends DataClass implements Insertable<UsersData> {
         birthday: birthday.present ? birthday.value : this.birthday,
         nextUser: nextUser.present ? nextUser.value : this.nextUser,
       );
+  UsersData copyWithCompanion(UsersCompanion data) {
+    return UsersData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      birthday: data.birthday.present ? data.birthday.value : this.birthday,
+      nextUser: data.nextUser.present ? data.nextUser.value : this.nextUser,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('UsersData(')
@@ -348,6 +357,15 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
         deleted: deleted.present ? deleted.value : this.deleted,
         owner: owner ?? this.owner,
       );
+  GroupsData copyWithCompanion(GroupsCompanion data) {
+    return GroupsData(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      owner: data.owner.present ? data.owner.value : this.owner,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('GroupsData(')
