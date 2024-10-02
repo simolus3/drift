@@ -1,20 +1,24 @@
 // ignore_for_file: unused_local_variable, unused_element
 
-// #docregion superhero_schema
+// #docregion superhero_schema_with_db
 import 'package:drift/drift.dart';
-// #enddocregion superhero_schema
+// #enddocregion superhero_schema_with_db
 
 import 'package:drift_flutter/drift_flutter.dart';
 
-// #docregion superhero_schema
+// #docregion superhero_schema_with_db
 
 part 'schema.g.dart';
 
-// #enddocregion superhero_schema
-
-// #docregion superhero_schema
+// #enddocregion superhero_schema_with_db
+// #docregion blank_superhero_schema
+// #docregion superhero_schema_with_db
 // #docregion superhero_dataclass
+// #docregion superhero_schema
+// #docregion optional_columns
 class Superheros extends Table {
+  // #enddocregion optional_columns
+  // #enddocregion blank_superhero_schema
   // #docregion superhero_columns
   // #docregion pk
   late final id = integer().autoIncrement()();
@@ -23,23 +27,28 @@ class Superheros extends Table {
   late final name = text().unique()();
   // #enddocregion unique_columns
   late final secretName = text().nullable()();
-  // #docregion optional_columns
+// #docregion optional_columns
   late final age = integer().nullable()();
-  // #enddocregion optional_columns
+// #enddocregion optional_columns
   late final height = text().nullable()();
   // #enddocregion superhero_columns
+// #docregion blank_superhero_schema
+// #docregion optional_columns
 }
+// #enddocregion optional_columns
+// #enddocregion blank_superhero_schema
+// #enddocregion superhero_schema
 
 // #enddocregion superhero_dataclass
-// #enddocregion superhero_schema
 // #docregion superhero_database
-@DriftDatabase(tables: [Superheros]) // 👈👈👈
+@DriftDatabase(tables: [Superheros])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
   int get schemaVersion => 1;
 }
+// #enddocregion superhero_schema_with_db
 // #enddocregion superhero_database
 
 void _query() async {
@@ -66,7 +75,7 @@ void _query() async {
   db.managers.superheros.create(
     (create) => create(
       name: "Ironman",
-      secretName: Value("Tony Stark"), // 👈👈👈
+      secretName: Value("Tony Stark"),
       age: Value(null), // 👈👈👈
     ),
   );
@@ -228,11 +237,11 @@ void _query5() async {
   // #enddocregion enum
 }
 
+// #docregion client_default
 class Users extends Table {
-  // #docregion client_default
   late final isAdmin = boolean().clientDefault(() => false)();
-  // #enddocregion client_default
 }
+// #enddocregion client_default
 
 class Users2 extends Table {
   // #docregion db_default
@@ -245,19 +254,6 @@ class Users2 extends Table {
   @JsonKey('parent')
   late final parentCategory = integer()();
   // #enddocregion json_key
-}
-
-class User {
-  final int id;
-  final String name;
-  final bool isAdmin;
-  // #docregion dart_default
-  User({
-    required this.id,
-    required this.name,
-    this.isAdmin = false, // 👈👈👈
-  });
-  // #enddocregion dart_default
 }
 
 // #docregion unique-table

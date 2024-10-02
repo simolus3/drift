@@ -10,6 +10,17 @@ CREATE TABLE categories (
     description TEXT NOT NULL
 ) AS Category; -- the AS xyz after the table defines the data class name
 
+/* #docregion superhero */
+CREATE TABLE Superheros (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    secretName TEXT,
+    age INTEGER,
+    height TEXT
+);
+/* #enddocregion superhero */
+
+
 -- You can also create an index or triggers with drift files
 CREATE INDEX categories_description ON categories(description);
 
@@ -17,3 +28,4 @@ CREATE INDEX categories_description ON categories(description);
 createEntry: INSERT INTO todos (title, content) VALUES (:title, :content);
 deleteById: DELETE FROM todos WHERE id = :id;
 allTodos: SELECT * FROM todos;
+
