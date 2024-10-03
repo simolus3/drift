@@ -298,7 +298,10 @@ const expected = r'''
                           {
                             "check": {
                               "dart_expression": {
-                                "elements": ["settings.length() > 10"]
+                                "elements": [
+                                  {"lexeme": "settings", "tag": "settings"},
+                                  ".length() > 10"
+                                ]
                               }
                             }
                           }
