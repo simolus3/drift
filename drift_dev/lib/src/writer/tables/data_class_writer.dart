@@ -30,7 +30,7 @@ class DataClassWriter {
       final nullable = converter.canBeSkippedForNulls && column.nullable;
       final code = AnnotatedDartCode([
         ...AnnotatedDartCode.type(converter.jsonType!).elements,
-        if (nullable) '?',
+        if (nullable) const DartLexeme('?'),
       ]);
 
       return _emitter.dartCode(code);

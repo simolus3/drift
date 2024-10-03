@@ -8,8 +8,11 @@ class Users extends Table {
   // added in schema version 2, got a default in version 4
   TextColumn get name => text().withDefault(const Constant('name'))();
 
-  // Column added in version 6
-  DateTimeColumn get birthday => dateTime().nullable()();
+  // Column added in version 6, check added in version 11
+  DateTimeColumn get birthday => dateTime()
+      .nullable()
+      // ignore: recursive_getters
+      .check(birthday.isBiggerThan(Constant(DateTime(1900))))();
 
   IntColumn get nextUser => integer().nullable().references(Users, #id)();
 

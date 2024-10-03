@@ -87,12 +87,12 @@ CustomParentClass? parseCustomParentClass(
         if (genericType.isDartCoreObject || genericType is DynamicType) {
           code = AnnotatedDartCode([
             DartTopLevelSymbol.topLevelElement(extendingType.element),
-            '<',
+            const DartLexeme('<'),
             DartTopLevelSymbol(
               dartTypeName ?? dataClassNameForClassName(element.name),
               null,
             ),
-            '>',
+            const DartLexeme('>'),
           ]);
         } else {
           resolver.reportError(

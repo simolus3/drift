@@ -73,6 +73,12 @@ class UsersData extends DataClass implements Insertable<UsersData> {
   UsersData copyWith({int? id}) => UsersData(
         id: id ?? this.id,
       );
+  UsersData copyWithCompanion(UsersCompanion data) {
+    return UsersData(
+      id: data.id.present ? data.id.value : this.id,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('UsersData(')

@@ -495,8 +495,9 @@ class SchemaReader {
       nullable: nullable,
       nameInSql: name,
       nameInDart: getterName ?? ReCase(name).camelCase,
-      defaultArgument:
-          defaultDart != null ? AnnotatedDartCode([defaultDart]) : null,
+      defaultArgument: defaultDart != null
+          ? AnnotatedDartCode([DartLexeme(defaultDart)])
+          : null,
       declaration: _declaration,
       customConstraints: customConstraints,
       constraints: dslFeatures,

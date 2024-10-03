@@ -306,7 +306,9 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           element.lookUpInheritedConcreteGetter(name, element.library);
       // ignore: deprecated_member_use
       return getter!.variable;
-    });
+    }).toList();
+    final all = {for (final entry in fields) entry.getter ?? entry: entry.name};
+
     final results = <PendingColumnInformation>[];
     for (final field in fields) {
       final ColumnDeclaration node;
@@ -317,14 +319,14 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
                     .loadElementDeclaration(field.declaration)
                 as VariableDeclaration,
             null);
-        column = await _parseColumn(node, field.declaration);
+        column = await _parseColumn(node, field.declaration, all);
       } else {
         node = ColumnDeclaration(
             null,
             await resolver.driver.backend.loadElementDeclaration(field.getter!)
                 as MethodDeclaration);
 
-        column = await _parseColumn(node, field.getter!);
+        column = await _parseColumn(node, field.getter!, all);
       }
 
       if (column != null) {
@@ -335,9 +337,9 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return results.whereType();
   }
 
-  Future<PendingColumnInformation?> _parseColumn(
-      ColumnDeclaration declaration, Element element) async {
-    return ColumnParser(this).parse(declaration, element);
+  Future<PendingColumnInformation?> _parseColumn(ColumnDeclaration declaration,
+      Element element, Map<Element, String> allColumns) async {
+    return ColumnParser(this, allColumns).parse(declaration, element);
   }
 
   Future<List<String>> _readCustomConstraints(Set<DriftElement> references,
