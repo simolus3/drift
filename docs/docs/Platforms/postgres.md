@@ -15,8 +15,6 @@ Most queries will work without any modification though.
 
 Begin by adding both `drift` and `drift_postgres` to your pubspec:
 
-
-
 ```yaml
 dependencies:
   drift: ^{{ versions.drift }}
@@ -80,7 +78,25 @@ PostgreSQL provides a much larger set of functions, of which currently only a fe
 `drift_postgres` package. You can call others with a `FunctionCallExpression` - if you do, contributions extending
 `drift_postgres` are always welcome!
 
-## Migrations
+## Avoiding sqlite-specific drift APIs
+
+Early drift versions were designed with SQLite in mind only. Support for PostgreSQL and other database systems
+has only been added in more recent versions, and this is reflected by some drift APIs being SQLite-specific.
+These will be moved into separate libraries in a future major release to avoid confusion, but it's best to be
+aware of them for the time being.
+This section lists affected APIs and workarounds to make them work PostgreSQL.
+
+1. Most parts of the `Migrator` API are SQLite-specific. You will be able to create tables on PostgreSQL as well,
+   but methods like `alterTable` will only work with SQLite.
+   The [migrations](#migrations) section below describes possible workarounds - the recommended approach is to
+   export your drift schema and then use dedicated migration tools for PostgreSQL.
+2. Drift's datetime columns were designed to work with SQLite, which doesn't have dedicated datetime types.
+   Most of the date time APIs (like `currentDateAndTime`) will not work with PostgreSQL.
+   When using drift databases with PostgreSQL, we suggest avoiding the default `dateTime()` column type and instead
+   use `PgTypes.date` or `PgTypes.datetime`.
+   If you need to support both sqlite3 and Postgres, consider using [dialect-aware types](../sql_api/types.md#dialect-awareness).
+
+### Migrations
 
 In sqlite3, the current schema version is stored in the database file. To support drift's migration API
 being built ontop of this mechanism in Postgres as well, drift creates a `__schema` table storing
