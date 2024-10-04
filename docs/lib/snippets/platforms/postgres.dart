@@ -8,7 +8,7 @@ part 'postgres.g.dart';
 class Users extends Table {
   UuidColumn get id => customType(PgTypes.uuid).withDefault(genRandomUuid())();
   TextColumn get name => text()();
-  DateTimeColumn get birthDate => dateTime().nullable()();
+  Column<PgDate> get birthDate => customType(PgTypes.date).nullable()();
 }
 
 @DriftDatabase(tables: [Users])
