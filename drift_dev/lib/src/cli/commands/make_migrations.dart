@@ -131,7 +131,6 @@ targets:
     for (var writer in databaseMigrationsWriters) {
       // Dump the schema files for all databases
       await writer.writeSchemaFile();
-      writer.flush();
       // Write the step by step migration files for all databases
       // This is done after all the schema files have been written to the disk
       // to ensure that the schema files are up to date
@@ -262,6 +261,7 @@ class _DatabaseMigrationWriter {
   }
 
   /// Create a .json dump of the current schema
+  /// This file is written instantly to the disk
   Future<void> writeSchemaFile() async {
     // If the latest schema file version is larger than the current schema version
     // then something is wrong
@@ -277,7 +277,7 @@ class _DatabaseMigrationWriter {
     if (!schemaFile.existsSync()) {
       cli.logger
           .info('$dbName: Creating schema file for version $schemaVersion');
-      writeTasks[schemaFile] = content;
+      schemaFile.writeAsStringSync(content);
       // Re-parse the schema to include the newly created schema file
       schemas = await parseSchema(schemaDir);
     } else if (schemaFile.readAsStringSync() != content) {
@@ -481,7 +481,7 @@ import 'package:drift/drift.dart';
 import '../schemas/schema_v$from.dart' as v$from;
 import '../schemas/schema_v$to.dart' as v$to;
 
-/// See `dart run drift_dev make-migrations --help` for more information
+/// Run `dart run drift_dev make-migrations --help` for more information
 ${tables.map((table) => """
 
 final ${table.dbGetterName}V$from = <Insertable<v$from.${table.nameOfRowClass}>>[];
