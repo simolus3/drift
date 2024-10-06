@@ -433,7 +433,7 @@ class ElementDeserializer {
 
     if (_currentlyReading.contains(id)) {
       throw StateError(
-          'Circular error when deserializing drift modules. This is a '
+          'Circular error when deserializing drift modules (cycle: $_currentlyReading -> $id). This is a '
           'bug in drift_dev!');
     }
 
