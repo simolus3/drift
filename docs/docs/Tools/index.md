@@ -48,10 +48,6 @@ INFO: lib/src/data/database.dart has drift databases or daos: AppDatabase
 INFO: test/fake_db.dart has drift databases or daos: TodoDb, SomeDao
 ```
 
-## Make Migration
-
-TODO
-
 ## Schema tools
 
 ### Dump for version control
