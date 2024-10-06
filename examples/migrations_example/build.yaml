@@ -3,6 +3,11 @@ targets:
     builders:
       drift_dev:
         options:
+          # Relative path to the database file
+          databases:
+            default: lib/database.dart
+
+          # Other Drift options
           store_date_time_values_as_text: true
           sql:
             dialect: sqlite

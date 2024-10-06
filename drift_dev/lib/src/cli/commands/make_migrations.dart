@@ -476,7 +476,7 @@ test(
     validateItems: (newDb) async {
       ${tables.map(
       (table) {
-        return "expect(v${from}_to_v$to.${table.dbGetterName}V$from, await newDb.select(newDb.${table.dbGetterName}).get());";
+        return "expect(v${from}_to_v$to.${table.dbGetterName}V$to, await newDb.select(newDb.${table.dbGetterName}).get());";
       },
     ).join('\n')}
     },
@@ -490,16 +490,17 @@ test(
   /// will fill in with before and after data
   /// to validate that the migration was successful and data was not lost
   String get validationModelsCode => """
-import 'package:drift/drift.dart';
 import '../schemas/schema_v$from.dart' as v$from;
 import '../schemas/schema_v$to.dart' as v$to;
 
 /// Run `dart run drift_dev make-migrations --help` for more information
-${tables.map((table) => """
+${tables.map((table) {
+        return """
 
-final ${table.dbGetterName}V$from = <Insertable<v$from.${table.nameOfRowClass}>>[];
-final ${table.dbGetterName}V$to = <Insertable<v$to.${table.nameOfRowClass}>>[];
-""").join('\n')}
+final ${table.dbGetterName}V$from = <v$from.${table.nameOfRowClass}>[];
+final ${table.dbGetterName}V$to = <v$to.${table.nameOfRowClass}>[];
+""";
+      }).join('\n')}
 
 """;
 }
