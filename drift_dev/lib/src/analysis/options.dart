@@ -6,6 +6,7 @@ import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart'
     show BasicType, ResolvedType, SchemaFromCreateTable, SqliteVersion;
 import 'package:string_scanner/string_scanner.dart';
+import 'package:yaml/yaml.dart';
 
 part '../generated/analysis/options.g.dart';
 
@@ -123,6 +124,15 @@ class DriftOptions {
   @JsonKey(name: 'fatal_warnings', defaultValue: false)
   final bool fatalWarnings;
 
+  @JsonKey(name: 'schema_dir', defaultValue: "drift_schemas")
+  final String schemaDir;
+
+  @JsonKey(name: 'test_dir', defaultValue: "test/drift")
+  final String testDir;
+
+  @JsonKey(name: 'databases', defaultValue: {})
+  final Map<String, String> databases;
+
   @internal
   const DriftOptions.defaults({
     this.generateFromJsonStringConstructor = false,
@@ -151,6 +161,9 @@ class DriftOptions {
     this.fatalWarnings = false,
     this.hasDriftAnalyzer = false,
     this.assumeCorrectReference = false,
+    this.schemaDir = "drift_schemas",
+    this.testDir = "test/drift",
+    this.databases = const {},
   });
 
   DriftOptions({
@@ -180,6 +193,9 @@ class DriftOptions {
     required this.hasDriftAnalyzer,
     required this.assumeCorrectReference,
     this.dialect,
+    required this.schemaDir,
+    required this.testDir,
+    required this.databases,
   }) {
     // ignore: deprecated_member_use_from_same_package
     if (sqliteAnalysisOptions != null && modules.isNotEmpty) {

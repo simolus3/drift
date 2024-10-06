@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:drift_dev/src/cli/commands/make_migration.dart';
 import 'package:drift_dev/src/cli/project.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -38,7 +39,8 @@ class DriftDevCli {
       ..addCommand(AnalyzeCommand(this))
       ..addCommand(IdentifyDatabases(this))
       ..addCommand(SchemaCommand(this))
-      ..addCommand(MigrateCommand(this));
+      ..addCommand(MigrateCommand(this))
+      ..addCommand(MakeMigrationCommand(this));
 
     _runner.argParser
         .addFlag('verbose', abbr: 'v', defaultsTo: false, negatable: false);

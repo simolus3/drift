@@ -66,23 +66,34 @@ class GenerateUtilsCommand extends Command {
       final version = versionAndEntities.key;
       final entities = versionAndEntities.value;
 
-      await _writeSchemaFile(
-        outputDir,
-        version,
-        entities,
-        argResults?['data-classes'] as bool,
-        argResults?['companions'] as bool,
-      );
+      final file = File(
+          p.join(outputDir.path, GenerateUtils._filenameForVersion(version)));
+      await file.writeAsString(GenerateUtils.generateSchemaCode(
+          cli,
+          version,
+          entities,
+          argResults?['data-classes'] as bool,
+          argResults?['companions'] as bool));
     }
 
     final versions = schema.keys.toList()..sort();
-    await _writeLibraryFile(outputDir, versions);
+    final libraryFile = File(p.join(outputDir.path, 'schema.dart'));
+    await libraryFile
+        .writeAsString(GenerateUtils.generateLibraryCode(versions));
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
+}
 
-  Future<void> _writeSchemaFile(
-    Directory output,
+class GenerateUtils {
+  static String _filenameForVersion(int version) => 'schema_v$version.dart';
+  static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.\n'
+      '// ignore_for_file: type=lint';
+  static final _dartfmt = DartFormatter();
+
+  /// Generates Dart code for a specific schema version.
+  static String generateSchemaCode(
+    DriftDevCli cli,
     int version,
     ExportedSchema schema,
     bool dataClasses,
@@ -105,7 +116,6 @@ class GenerateUtilsCommand extends Command {
         imports: NullImportManager(),
       ),
     );
-    final file = File(p.join(output.path, _filenameForVersion(version)));
 
     writer.leaf()
       ..writeln(_prefix)
@@ -126,10 +136,12 @@ class GenerateUtilsCommand extends Command {
 
     DatabaseWriter(input, writer.child()).write();
 
-    return file.writeAsString(_dartfmt.format(writer.writeGenerated()));
+    return _dartfmt.format(writer.writeGenerated());
   }
 
-  Future<void> _writeLibraryFile(Directory output, Iterable<int> versions) {
+  /// Generates the Dart code for a library file that instantiates the schema
+  /// for each version.
+  static String generateLibraryCode(Iterable<int> versions) {
     final buffer = StringBuffer()
       ..writeln(_prefix)
       ..writeln('//@dart=2.12')
@@ -159,13 +171,6 @@ class GenerateUtilsCommand extends Command {
       ..writeln('throw MissingSchemaException(version, const $missingAsSet);')
       ..writeln('}}}');
 
-    final file = File(p.join(output.path, 'schema.dart'));
-    return file.writeAsString(_dartfmt.format(buffer.toString()));
+    return _dartfmt.format(buffer.toString());
   }
-
-  String _filenameForVersion(int version) => 'schema_v$version.dart';
-
-  static final _dartfmt = DartFormatter();
-  static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.\n'
-      '// ignore_for_file: type=lint';
 }

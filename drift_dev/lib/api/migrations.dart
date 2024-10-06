@@ -214,3 +214,33 @@ class InitializedSchema {
   /// ```
   DatabaseConnection newConnection() => _createConnection();
 }
+
+/// Utility function used by generated tests to:
+/// 1. Create a database at a specific version
+/// 2. Insert data into the database
+/// 3. Migrate the database to a target version
+/// 4. Validate that the data is valid after the migration
+Future<void> testStepByStepigrations<OldDatabase extends GeneratedDatabase,
+        NewDatabase extends GeneratedDatabase>(
+    {required SchemaVerifier verifier,
+    required OldDatabase Function(QueryExecutor) oldDbCallback,
+    required NewDatabase Function(QueryExecutor) newDbCallback,
+    required GeneratedDatabase Function(QueryExecutor) currentDbCallback,
+    required void Function(Batch, OldDatabase) createItems,
+    required Future Function(NewDatabase) validateItems,
+    required int from,
+    required int to}) async {
+  final schema = await verifier.schemaAt(from);
+
+  final oldDb = oldDbCallback(schema.newConnection());
+  await oldDb.batch((batch) => createItems(batch, oldDb));
+  await oldDb.close();
+
+  final db = currentDbCallback(schema.newConnection());
+  await verifier.migrateAndValidate(db, to);
+  await db.close();
+
+  final newDb = newDbCallback(schema.newConnection());
+  await validateItems(newDb);
+  await newDb.close();
+}

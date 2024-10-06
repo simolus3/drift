@@ -47,7 +47,15 @@ class WriteVersions extends Command {
     if (!await outputDirectory.exists()) {
       await outputDirectory.create();
     }
+    final schemas = await parseSchema(inputDirectory);
+    await outputFile.writeAsString(
+        StepsGenerationUtil.generateStepByStepMigration(schemas));
+  }
+}
 
+class StepsGenerationUtil {
+  /// Generate dart code for incremental migrations between schema versions.
+  static String generateStepByStepMigration(Map<int, ExportedSchema> schemas) {
     final imports = LibraryImportManager();
     final writer = Writer(
       const DriftOptions.defaults(),
@@ -55,9 +63,8 @@ class WriteVersions extends Command {
     );
     imports.linkToWriter(writer);
 
-    final schema = await parseSchema(inputDirectory);
     final byVersion = [
-      for (final MapEntry(key: version, value: schema) in schema.entries)
+      for (final MapEntry(key: version, value: schema) in schemas.entries)
         SchemaVersion(
           version,
           schema.schema.whereType<DriftSchemaElement>().toList(),
@@ -75,7 +82,6 @@ class WriteVersions extends Command {
     } on FormatterException {
       // Ignore. Probably a bug in drift_dev, the user will notice.
     }
-
-    await outputFile.writeAsString(code);
+    return code;
   }
 }

@@ -51,7 +51,7 @@ class ExportSchemaCommand extends Command {
     final dialect =
         SqlDialect.values.byName(argResults!.option('dialect') ?? 'sqlite');
 
-    var (:elements, schemaVersion: _) =
+    var (:elements, schemaVersion: _, db: __) =
         await cli.readElementsFromSource(File(rest.single).absolute);
 
     // The roundtrip through the schema writer ensures that irrelevant things
