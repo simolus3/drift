@@ -60,7 +60,8 @@ This will generate the following:
 
 ### Configuration
 
-This tool requires the following configuration in your build.yaml file:
+This tool requires the database be defined in the build.yaml file.
+Example:
 
 ${blue.wrap("""
 targets:
