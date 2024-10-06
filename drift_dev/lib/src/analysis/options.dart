@@ -6,7 +6,6 @@ import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart'
     show BasicType, ResolvedType, SchemaFromCreateTable, SqliteVersion;
 import 'package:string_scanner/string_scanner.dart';
-import 'package:yaml/yaml.dart';
 
 part '../generated/analysis/options.g.dart';
 
