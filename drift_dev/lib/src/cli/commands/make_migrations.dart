@@ -18,14 +18,15 @@ class MakeMigrationCommand extends DriftCommand {
   String get description => """
 Generates migrations utilities for drift databases
 
-### Usage
+${styleBold.wrap("Usage")}:
+
 After defining your database for the first time, run this command to save the schema.
 When you are ready to make changes to the database, alter the schema in the database file, bump the schema version and run this command again.
 This will generate the following:
 
 1. A steps file which contains a helper function to write a migration from one version to another.
 
-  Example: 
+  Example:
   ${blue.wrap("class")} ${green.wrap("Database")} ${blue.wrap("extends")} ${green.wrap("_\$Database")} ${yellow.wrap("{")}
 
     ...
@@ -46,7 +47,7 @@ This will generate the following:
   Fill the generated validation models with data that should be present in the database before and after the migration.
   These lists will be imported in the test file to validate the data integrity of the migrations
 
-  Example: 
+  Example:
   // Validate that the data in the database is still correct after removing a the isAdmin column
   ${blue.wrap("final")} ${lightCyan.wrap("usersV1")} = ${yellow.wrap("[")}
     v1.${green.wrap("User")}${magenta.wrap("(")}${lightCyan.wrap("id")}: ${green.wrap("Value")}${blue.wrap("(")}1${blue.wrap(")")}, ${lightCyan.wrap("name")}: ${green.wrap("Value")}${blue.wrap("(")}${lightRed.wrap("'Simon'")}${blue.wrap(")")}, ${lightCyan.wrap("isAdmin")}: ${green.wrap("Value")}${blue.wrap("(")}${blue.wrap("true")}${blue.wrap(")")}${magenta.wrap(")")},
@@ -58,7 +59,7 @@ This will generate the following:
     v2.${green.wrap("User")}${magenta.wrap("(")}${lightCyan.wrap("id")}: ${green.wrap("Value")}${blue.wrap("(")}2${blue.wrap(")")}, ${lightCyan.wrap("name")}: ${green.wrap("Value")}${blue.wrap("(")}${lightRed.wrap("'John'")}${blue.wrap(")")}${magenta.wrap(")")},
   ${yellow.wrap("]")};
 
-### Configuration
+${styleBold.wrap("Configuration")}:
 
 This tool requires the database be defined in the build.yaml file.
 Example:
@@ -111,9 +112,8 @@ targets:
       ..createSync(recursive: true);
 
     if (cli.project.options.databases.isEmpty) {
-      cli.logger.info(
-          'No databases found in the build.yaml file. Check here to see how to add a database TODO: ADD LINK');
-      exit(0);
+      cli.exit(
+          'No databases found in the build.yaml file. Run `drift_dev make-migrations --help` or check the documentation for more information: https://drift.simonbinder.eu/Migrations/');
     }
 
     final databaseMigrationsWriters =
@@ -132,7 +132,7 @@ targets:
     for (var writer in databaseMigrationsWriters) {
       // Dump the schema files for all databases
       await writer.writeSchemaFile();
-      if (writer.schemaVersion == 1) {
+      if (writer.schemas.length == 1) {
         continue;
       }
       // Write the step by step migration files for all databases
@@ -464,8 +464,8 @@ class _MigrationWriter {
 test(
   "$dbName - migrate from v$from to v$to",
   () => testStepByStepigrations(
-    from: $from, to: $to, verifier: verifier, oldDbCallback: (e) => v$from.DatabaseAtV$from(e),
-    newDbCallback: (e) => v$to.DatabaseAtV$to(e), currentDbCallback: (e) => $dbClassName(e),
+    from: $from, to: $to, verifier: verifier, createOld: (e) => v$from.DatabaseAtV$from(e),
+    createNew: (e) => v$to.DatabaseAtV$to(e), openTestedDatabase: (e) => $dbClassName(e),
     createItems: (b, oldDb) {
       ${tables.map(
       (table) {

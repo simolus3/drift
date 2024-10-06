@@ -223,24 +223,24 @@ class InitializedSchema {
 Future<void> testStepByStepigrations<OldDatabase extends GeneratedDatabase,
         NewDatabase extends GeneratedDatabase>(
     {required SchemaVerifier verifier,
-    required OldDatabase Function(QueryExecutor) oldDbCallback,
-    required NewDatabase Function(QueryExecutor) newDbCallback,
-    required GeneratedDatabase Function(QueryExecutor) currentDbCallback,
+    required OldDatabase Function(QueryExecutor) createOld,
+    required NewDatabase Function(QueryExecutor) createNew,
+    required GeneratedDatabase Function(QueryExecutor) openTestedDatabase,
     required void Function(Batch, OldDatabase) createItems,
     required Future Function(NewDatabase) validateItems,
     required int from,
     required int to}) async {
   final schema = await verifier.schemaAt(from);
 
-  final oldDb = oldDbCallback(schema.newConnection());
+  final oldDb = createOld(schema.newConnection());
   await oldDb.batch((batch) => createItems(batch, oldDb));
   await oldDb.close();
 
-  final db = currentDbCallback(schema.newConnection());
+  final db = openTestedDatabase(schema.newConnection());
   await verifier.migrateAndValidate(db, to);
   await db.close();
 
-  final newDb = newDbCallback(schema.newConnection());
+  final newDb = createNew(schema.newConnection());
   await validateItems(newDb);
   await newDb.close();
 }
