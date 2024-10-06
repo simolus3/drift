@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:drift_dev/src/cli/commands/make_migration.dart';
+import 'package:drift_dev/src/cli/commands/make_migrations.dart';
 import 'package:drift_dev/src/cli/project.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
