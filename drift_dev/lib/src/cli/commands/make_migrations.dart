@@ -81,7 +81,7 @@ targets:
           ${blue.wrap("test_dir")}: ${lightRed.wrap("test/drift/")} ${green.wrap("# (default)")}
 
           ${green.wrap("# Optional: The directory where the schema files are stored")}:
-          ${blue.wrap("schema_dir")}: ${lightRed.wrap("drift_schema/")}  ${green.wrap("# (default)")}
+          ${blue.wrap("schema_dir")}: ${lightRed.wrap("drift_schemas/")}  ${green.wrap("# (default)")}
 
 """;
 
@@ -105,7 +105,7 @@ targets:
       ..createSync(recursive: true);
 
     /// The root directory where schema files for all databases are stored
-    /// e.g /drift_schema/
+    /// e.g /drift_schemas/
     final rootTestDir = Directory(
         p.join(cli.project.directory.path, cli.project.options.testDir))
       ..createSync(recursive: true);
@@ -132,6 +132,9 @@ targets:
     for (var writer in databaseMigrationsWriters) {
       // Dump the schema files for all databases
       await writer.writeSchemaFile();
+      if (writer.schemaVersion == 1) {
+        continue;
+      }
       // Write the step by step migration files for all databases
       // This is done after all the schema files have been written to the disk
       // to ensure that the schema files are up to date
@@ -153,7 +156,7 @@ class _DatabaseMigrationWriter {
   late final File dbClassFile;
 
   /// The directory where the schema files for this database are stored
-  /// e.g /drift_schema/my_database/
+  /// e.g /drift_schemas/my_database/
   final Directory schemaDir;
 
   /// The directory where the tests for this database are stored
@@ -225,6 +228,15 @@ class _DatabaseMigrationWriter {
       cli.exit(
           'The path for the "$dbName" database must be a relative path. Remove the leading slash');
     }
+    if (!relativeDbClassPath.endsWith(".dart")) {
+      if (dbName == "schema_dir" || dbName == "test_dir") {
+        cli.exit(
+            "The path for the $dbName must be a dart file. It seems you have $dbName under the `options` section in the build.yaml file instead of under the `databases` section");
+      } else {
+        cli.exit('The path for the "$dbName" database must be a dart file');
+      }
+    }
+
     final dbClassFile =
         File(p.join(cli.project.directory.path, relativeDbClassPath));
     final schemaDir = Directory(p.join(rootSchemaDir.path, dbName))
