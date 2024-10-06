@@ -45,3 +45,13 @@
 
 .SyntaxHighlight-16 { color: #000088; }
 @media (prefers-color-scheme: dark) { .SyntaxHighlight-16 { color: #b9eeff; } }
+
+
+
+
+.md-typeset__table table:not([class]) {
+    font-size: .74rem;
+}
+
+
+

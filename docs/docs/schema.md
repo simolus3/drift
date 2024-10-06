@@ -9,17 +9,15 @@ description: Define the schema of your database.
 
 ## Overview
 
-Drift supports defining your database schema using either Dart or SQL. This guide focuses on the Dart approach, which allows you to define your schema using Dart classes and annotations.
+You can define your schema using Dart or SQL(1). Use whichever method you're most comfortable with.  
+{ .annotate }
 
-#### Dart vs SQL Schema Definition
+1. The SQL is type-checked at compile time and the generated code is also type-safe.
+    You aren't sacrificing type safety or performance if you choose to use SQL.
 
-Whether you use Dart or SQL, Drift will generate type-safe code for database interactions. Choose whichever method you're most comfortable with.  
-
-If you're interested in using SQL, see the [SQL Schema](./sql_schema.md) guide.
+This page focuses on Dart. For the SQL approach, see the [SQL Schema](./sql_schema.md) documentation.
 
 #### Basic Example
-
-Let's start with a simple example to illustrate how to define a table using Dart :
 
 {{ load_snippet('superhero_schema_with_db','lib/snippets/schema.dart.excerpt.json',title="schema.dart") }}
 
@@ -32,6 +30,8 @@ Once, code generation is complete, you can interact with the database using the 
 In the following sections, we'll dive deeper into the various aspects of schema definition using Drift.
 
 ---
+
+## Tables
 
 In Drift, a table is represented by any class which extends the `Table` class.  
 
@@ -47,7 +47,7 @@ class Categories extends Table {
 ```
 
 !!! tip "Table Naming"
-    Table classes should be named in plural form (e.g., `Superheros`, `Categories`). This convention typically results in better-named generated classes. For more details, refer to the [Naming](#naming) section.
+    Table classes should be named in plural form (e.g., `Superheros`, `Categories`). This convention generally leads to more appropriately named generated classes. For more information, see the [Naming](#naming) section.
  
 
 ## Columns
@@ -55,8 +55,6 @@ class Categories extends Table {
 Each column in your table should be defined as a `late final` field that uses one of the column types provided by Drift.
 
 The following table lists the built-in column types:
-
-
 
 | Dart Type                        | Drift Column                                  |
 | -------------------------------- | --------------------------------------------- |
@@ -68,32 +66,38 @@ The following table lists the built-in column types:
 | `Uint8List`                      | `late final image = blob()()`                 |
 | [`DateTime`](#datetime-columns)  | `late final createdAt = dateTime()()`         |
 | [`enum`](#enums)                 | `late final category = intEnum<Category>()()` |
-| Anything Else                    | See [Custom Types](#custom-types)             |
-
-By default, all columns are required (non-nullable). To make a column nullable, use the `nullable()` method.
-
-{{ load_snippet('optional_columns','lib/snippets/schema.dart.excerpt.json') }}
-
 
 !!! note "Extra Parentheses"  
 
-    Each column must end with an extra pair of parentheses. Drift will warn you if you forget them.  
+    Each column must end with an extra pair of parentheses.  
+    Drift will warn you if you forget them.  
       
       ```dart
-      late final id = integer(); // Missing extra parentheses
-      late final id = integer()(); // Looks good
+      late final id = integer(); // Bad
+      late final id = integer()(); // 
       ```
-    
+
+In addition to these built-in types, you can also store custom types by converting them to one of these built-in types. See the [Custom Types](#custom-types) section for more information.
+
+## Required
+
+By default, all columns are required. To make a column optional, use the `nullable()` method.
+
+Example:
+
+{{ load_snippet('optional_columns','lib/snippets/schema.dart.excerpt.json') }}
+
+Now the `age` column is optional. If you try to insert a record without an `age`, it will be set to `null`.
 
 ## Defaults
 
-To set default values for your database fields, use the `clientDefault` method.
+To set default values for your database fields, use the `clientDefault()` method.
 
 {{ load_snippet('client_default','lib/snippets/schema.dart.excerpt.json') }}
 
 In the above example, the `isAdmin` field will default to `false` if no value is provided.
 
-??? question "What's `withDefault()`"
+??? question "`withDefault()`"
 
     `withDefault()` is similar to `clientDefault()`, but the default value is set in the database.
 
@@ -116,9 +120,9 @@ In the above example, the `isAdmin` field will default to `false` if no value is
 
 ## Primary Keys
 
-Every table in a relational database needs a primary key - a column or set of columns that uniquely identifies each row.
+Every table in a relational database needs a primary key - a column (or set of columns) that uniquely identifies each row.
 
-By default, Drift will use a single auto-incrementing integer column as the primary key. You can override this behavior by setting a custom primary key.
+This is the recommended way to define a primary key for a table:
 
 ```dart
 class Superheros extends Table {
@@ -209,11 +213,7 @@ Drift provides support for storing Dart enums in your database. Enums can be sto
 
 
 
-## `int` & `BigInt` Columns
 
-For most cases, use the standard `int` type for storing integers. It's efficient and works well for typical integer values.
-
-Only use `BigInt` if you need to store extremely large numbers, and will be compiling your app to JavaScript. `BigInt` ensures accurate representation of these large numbers in JavaScript environments, but comes with a slight performance overhead. See the dart-lang [documentation](https://dart.dev/guides/language/numbers#what-should-you-do) for more information.
 
 
 ## `DateTime` Columns
@@ -353,3 +353,7 @@ Here is a small example showing how to use a custom check to enforce that the `a
 If any record is inserted with an `age` less than 0, an exception will be thrown.
 
 Keep in mind that this check is run in the database, so if you change this check you will need to migrate the database.
+
+### `BigInt` Columns
+
+Use the standard `int` type for storing integers as it is efficient for typical values. Only use `BigInt` for extremely large numbers when compiling to JavaScript, as it ensures accuracy but has a performance cost. For more details, refer to the dart-lang [documentation](https://dart.dev/guides/language/numbers#what-should-you-do).
