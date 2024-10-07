@@ -175,6 +175,11 @@ void examples() {
     await db.managers.todoItems.filter((f) => f.id(1)).getSingle();
     // #enddocregion retrieve_single
 
+    // #docregion retrieve_single_or_null
+    // Retrieve the item with an id of 1 or null if it doesn't exist
+    await db.managers.todoItems.filter((f) => f.id(1)).getSingleOrNull();
+    // #enddocregion retrieve_single_or_null
+
     // #docregion retrieve_first
     // Retrieve the first item, or null if there are no items
     await db.managers.todoItems.limit(1).getSingleOrNull();

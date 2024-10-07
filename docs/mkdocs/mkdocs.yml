@@ -65,6 +65,7 @@ plugins:
   - macros
 
 markdown_extensions:
+  - pymdownx.tilde
   - admonition
   - pymdownx.details
   - attr_list
@@ -78,7 +79,11 @@ markdown_extensions:
       anchor_linenums: true
       use_pygments: true
   - pymdownx.betterem
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.inlinehilite
   - pymdownx.tabbed:
       alternate_style: true
@@ -154,6 +159,7 @@ nav:
   - New Docs:
       - schema.md
       - queries.md
+      - references.md
 
 docs_dir: "../docs"
 

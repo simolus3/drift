@@ -195,7 +195,7 @@ String lookupClassName(DynamicTextStyle cssClass) {
   if (className == null) {
     throw Exception(
       'A class name was not found for a given style. '
-      'Please add the style to the styles map. '
+      'Please add the style to the styles map in the css_classes.dart file. '
       'Then you must add the class to the CSS file. '
       'Style: $cssClass',
     );
@@ -292,6 +292,17 @@ final styles = <DynamicTextStyle, String>{
           fontStyle: null,
           fontWeight: null,
           decoration: null)): "SyntaxHighlight-16",
+  DynamicTextStyle(
+      lightStyle: TextStyle(
+          color: Color(4294901760),
+          fontStyle: null,
+          fontWeight: null,
+          decoration: null),
+      darkStyle: TextStyle(
+          color: Color(4294901760),
+          fontStyle: null,
+          fontWeight: null,
+          decoration: null)): "SyntaxHighlight-17"
 };
 
 // Small script for generating the CSS file from the styles map.

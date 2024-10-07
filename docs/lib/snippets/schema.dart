@@ -304,3 +304,9 @@ class Student extends Table {
       integer().nullable().check(age.isBiggerOrEqualValue(0))();
 }
 // #enddocregion custom-check
+
+// #docregion pk-example
+class Item extends Table {
+  late final id = integer().autoIncrement()();
+  // More columns...
+}

@@ -1,13 +1,13 @@
 ---
 
-title: Queries
+title: Query
 description: Create, read, update, and delete data in your database.
 
 ---
 
-Drift makes it easy to write type-safe queries, ensuring that your database interactions are reliable and error-free. Additionally, Drift can watch for changes in your data, allowing your application to react in real-time to updates, inserts, and deletions. 
+## Overview
 
-Drift offers 3 main ways to interact with your database:
+Drift offers 3 way to write queries:
 
 1. **Manager API**: A simple, high-level API for interacting with your database. The Manager API is the easiest way to get started with Drift, and is perfect for simple queries and updates.
 2. **Core API**: A low-level API that allows you to write custom queries and interact with your database in a more fine-grained way.
@@ -19,16 +19,18 @@ This page will cover the Manager API. For information on the Core API and Type-S
 <h2>Manager API</h2>
 
 Drift generates a manager for each table in your database. This manager provides a simple API for creating, reading, updating, and deleting data in your database.
-It can be accessed via the `managers` property on the `Database` object.
+It should be accessed via the `managers` property on the `Database` object.  
+
+Example:
 
 {{ load_snippet('superhero_query','lib/snippets/schema.dart.excerpt.json') }}
 
-If you don't plan to use the Manager API, you can disable it by setting `generate_manager: false` in your `build.yaml` file.
 
-<div class="result" markdown>
+!!! note "Disabling the Manager API"
 
-=== "`build.yaml`"
-    ```yaml
+    If you don't plan to use the Manager API, you can disable it by setting `generate_manager: false` in your `build.yaml` file.
+
+    ```yaml title="build.yaml"
     targets:
       $default:
         builders:
@@ -38,32 +40,22 @@ If you don't plan to use the Manager API, you can disable it by setting `generat
               # generate_manager: false
     ```
 
-
-</div>
-
-
 ## Query Builder
 
 The Manager API provides a query builder that allows you to build complex queries using a fluent API.
 By chaining methods together, you can filter, sort, and paginate your data with ease.
 
-Once you have built your query, you can execute it using the [`get`](#get-all-records), [`watch`](#get-all-records), [`update`](#update), [`delete`](#delete), [`count`](#count), or [`exists`](#exists) methods.
+Once the query is built, you can execute it using the [`get`](#get-all-records), [`watch`](#get-all-records), [`update`](#update), [`delete`](#delete), [`count`](#count), and [`exists`](#exists) methods.
 
 ### Filter
 
 Use the `filter` method to filter records based on a condition.
 
-In Dart, logical operators `&&` (AND) and `||` (OR) are commonly used within parentheses to combine multiple conditions for logical expressions.
-```dart
-if (condition1 && condition2) {
-  // do something
-}
-```
-Similarly, in Drift, an additional set of operators, `&` (AND) and `|` (OR), are available to combine conditions.
+Use the `&` (AND) and `|` (OR), are available to combine conditions together.
 
 {{ load_snippet('filter','lib/snippets/queries.dart.excerpt.json') }}
 
-To negate a condition, use the `not` method.
+To negate a condition, use the `not` method after the `filter` method.
 
 {{ load_snippet('filter-not','lib/snippets/queries.dart.excerpt.json') }}
 
@@ -76,7 +68,7 @@ The `&` operator is used to combine multiple sorting conditions.
 
 ### Limit
 
-Performing queries that return a large number of records can be inefficient.
+Performing queries that return many records at once can be inefficient.
 Use the `limit` and `offset` methods to paginate the results.
 
 {{ load_snippet('pagination','lib/snippets/queries.dart.excerpt.json') }}
@@ -97,22 +89,19 @@ Records can be read/watched using the `get` and `watch` methods provided by the 
 
 {{ load_snippet('retrieve_all','lib/snippets/queries.dart.excerpt.json') }}
 
-### Get a single record
+### Get Single Record
 
-The following example demonstrates how to retrieve a single record:
+To retrieve a single record, use the `getSingle`/ `watchSingle` method.
 
 {{ load_snippet('retrieve_single','lib/snippets/queries.dart.excerpt.json') }}
 
-Drift provides helper methods for retrieving singletons:
+This method will throw an exception if no records are found. If you want to handle this case gracefully, use the `getSingleOrNull`/ `watchSingleOrNull` method instead.
 
-- `getSingle` - Retrieve a single record, throwing an exception if exactly one record is not found.
-- `getSingleOrNull` - Retrieve a single record, throwing an exception if more than one record is found.
-- `watchSingle` - Same as `getSingle`, but returns a stream of the record.
-- `watchSingleOrNull` - Same as `getSingleOrNull`, but returns a stream of the record.
+{{ load_snippet('retrieve_single_or_null','lib/snippets/queries.dart.excerpt.json') }}
 
 ### Distinct
 
-When you perform complex queries that involve multiple tables, it is possible that duplicate records will be returned.
+When performing complex queries, you may encounter duplicate records in the result set.
 
 To avoid this, set `distinct: true`. This will remove duplicates.
 
@@ -126,7 +115,7 @@ Drift makes it easy to retrieve referenced fields from other tables using the `w
 
 {{ load_snippet('with-references-summary','lib/snippets/queries.dart.excerpt.json') }}
 
-See the [Read References](referenced-queries.md) documentation for more information on referencing other tables.
+See the [Read References](references.md#query-references) documentation for more information on referencing other tables.
 
 ## Update
 
@@ -152,11 +141,6 @@ Use the `count` method to count the number of records in a table.
 
 {{ load_snippet('manager_count','lib/snippets/queries.dart.excerpt.json') }}
 
-!!! note "Distinct"
-    When counting records, `distinct` is set to `true` by default.
-    This differs from the `get` and `watch` methods, where `distinct` is set to `false` by default.  
-    See the [Distinct](#distinct) section for more information.
-
 ## Exists
 
 To check if any records exist that match a certain condition, use the `exists` method.
@@ -169,8 +153,7 @@ To create a new record, use the `create` method on the manager. This method will
 { .annotate }
 
 1. If the primary key of the table is an auto-incrementing integer, the ID will be the value of the primary key.   
-    If the primary key is anything else, Drift adds a column named `rowid` to the table and returns the value of that column.
-
+    If the primary key is anything else, the `rowid` of the new record will be returned.
 
 {{ load_snippet('manager_simple_create_single','lib/snippets/queries.dart.excerpt.json') }}
 
@@ -212,7 +195,6 @@ This will insert all the records in a single transaction, which is more efficien
 You can use the `create` method to perform an upsert operation. An upsert combines insert and update operations, allowing you to create a new record or update an existing one if a conflict occurs.
 
 Note that this is a lower-level operation and is part of the Core API. For more details, refer to the [Core API](/docs/core) page.
-
 
 ## Performance Considerations
 
