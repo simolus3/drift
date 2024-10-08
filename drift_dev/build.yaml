@@ -15,8 +15,8 @@ builders:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["preparingBuilder"]
     build_extensions:
-      ".moor": [".drift_prep.json"]
-      ".drift": [".drift_prep.json"]
+      ".moor": [".drift_prep.json", ".expr.temp.dart"]
+      ".drift": [".drift_prep.json", ".expr.temp.dart"]
     build_to: cache
     applies_builders: ["drift_dev:cleanup"]
 
@@ -25,8 +25,15 @@ builders:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["discover", "analyzer", "driftBuilder"]
     build_extensions:
-      ".dart": [".drift.g.part", ".dart.drift_module.json"]
-      ".drift": [".drift.drift_module.json"]
+      ".dart":
+        - ".drift.g.part"
+        - ".dart.drift_module.json"
+        - ".dart.types.temp.dart"
+        - ".dart.drift_elements.json"
+      ".drift":
+        - ".drift.drift_module.json"
+        - ".drift.types.temp.dart"
+        - ".drift.drift_elements.json"
     auto_apply: dependents
     build_to: cache
     required_inputs: [".drift_prep.json"]
@@ -47,7 +54,7 @@ builders:
   modular:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["modular"]
-    build_extensions: {".dart": [".drift.dart"]}
+    build_extensions: {".dart": [".drift.dart"], ".drift": [".drift.dart"]}
     build_to: source
     auto_apply: none
     required_inputs: [".drift.drift_module.json"]
@@ -56,8 +63,8 @@ builders:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["discover", "analyzer"]
     build_extensions:
-      ".dart": [".dart.drift_module.json"]
-      ".drift": [".drift.drift_module.json"]
+      ".dart": [".dart.drift_elements.json", ".dart.drift_module.json", ".dart.types.temp.dart"]
+      ".drift": [".drift.drift_elements.json", ".drift.drift_module.json", ".drift.types.temp.dart"]
     build_to: cache
     auto_apply: none
     required_inputs: [".drift_prep.json"]

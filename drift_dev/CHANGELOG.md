@@ -12,7 +12,7 @@
     late final id = integer().nullable()();
   }
   ```
-
+- Make `build.yaml` definitions pass `build_runner doctor`.
 
 ## 2.20.3
 

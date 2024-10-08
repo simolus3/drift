@@ -98,6 +98,7 @@ jobs:
       - run: dart analyze --fatal-infos --fatal-warnings
       # build, test and upload coverage
       - run: dart run build_runner build --delete-conflicting-outputs
+      - run: dart run build_runner doctor
       - run: dart test --preset ci_unit_tests #-x background_isolate --coverage=coverage
         env:
           DID_RUN_BUILD_RUNNER: "1"
