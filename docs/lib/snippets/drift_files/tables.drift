@@ -4,11 +4,12 @@ CREATE TABLE todos (
     content TEXT NOT NULL,
     category INTEGER REFERENCES categories(id)
 );
-
+/* #docregion sql_custom_dataclass_name */
 CREATE TABLE categories (
     id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
     description TEXT NOT NULL
-) AS Category; -- the AS xyz after the table defines the data class name
+) AS Category;
+/* #enddocregion sql_custom_dataclass_name */
 
 /* #docregion superhero */
 CREATE TABLE Superheros (
@@ -28,4 +29,21 @@ CREATE INDEX categories_description ON categories(description);
 createEntry: INSERT INTO todos (title, content) VALUES (:title, :content);
 deleteById: DELETE FROM todos WHERE id = :id;
 allTodos: SELECT * FROM todos;
+
+
+/* #docregion sql_simple_schema */
+/* #docregion sql_json_key */
+CREATE TABLE todo_items (
+/* #enddocregion sql_json_key*/
+    name TEXT NOT NULL
+    /* #enddocregion sql_simple_schema*/
+/* #docregion sql_json_key */
+    parent_category INTEGER NOT NULL JSON KEY parent
+/* #enddocregion sql_json_key*/
+    /* #docregion sql_simple_schema */
+/* #docregion sql_json_key */
+);
+/* #enddocregion sql_json_key*/
+/* #enddocregion sql_simple_schema*/
+
 

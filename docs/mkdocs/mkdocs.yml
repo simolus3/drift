@@ -14,20 +14,14 @@ theme:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
       toggle:
-    #     icon: empty
-    #     name: ""
 
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      toggle:
-    #     icon: empty
-    #     name: ""
 
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      toggle:
 
   # TODO: Add logo & favicon
   logo: images/icon.png
@@ -157,7 +151,8 @@ nav:
       - Tools/devtools.md
   - Pub: https://pub.dev/packages/drift
   - New Docs:
-      - schema.md
+      - Fundamentals:
+        - schema.md
       - queries.md
       - references.md
 

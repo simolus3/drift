@@ -1,24 +1,15 @@
 // ignore_for_file: unused_local_variable, unused_element
 
-// #docregion superhero_schema_with_db
 import 'package:drift/drift.dart';
-// #enddocregion superhero_schema_with_db
 
 import 'package:drift_flutter/drift_flutter.dart';
 
-// #docregion superhero_schema_with_db
-
 part 'schema.g.dart';
 
-// #enddocregion superhero_schema_with_db
-// #docregion blank_superhero_schema
-// #docregion superhero_schema_with_db
 // #docregion superhero_dataclass
-// #docregion superhero_schema
 // #docregion optional_columns
 class Superheros extends Table {
   // #enddocregion optional_columns
-  // #enddocregion blank_superhero_schema
   // #docregion superhero_columns
   // #docregion pk
   late final id = integer().autoIncrement()();
@@ -27,17 +18,14 @@ class Superheros extends Table {
   late final name = text().unique()();
   // #enddocregion unique_columns
   late final secretName = text().nullable()();
-// #docregion optional_columns
+  // #docregion optional_columns
   late final age = integer().nullable()();
-// #enddocregion optional_columns
+  // #enddocregion optional_columns
   late final height = text().nullable()();
   // #enddocregion superhero_columns
-// #docregion blank_superhero_schema
 // #docregion optional_columns
 }
 // #enddocregion optional_columns
-// #enddocregion blank_superhero_schema
-// #enddocregion superhero_schema
 
 // #enddocregion superhero_dataclass
 // #docregion superhero_database
@@ -48,7 +36,7 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 }
-// #enddocregion superhero_schema_with_db
+
 // #enddocregion superhero_database
 
 void _query() async {
@@ -83,11 +71,11 @@ void _query() async {
 }
 
 // #docregion custom_pk
-class TableWithTextPrimaryKey extends Table {
-  late final id = text()();
+class Profiles extends Table {
+  late final email = text()();
 
   @override
-  Set<Column<Object>> get primaryKey => {id};
+  Set<Column<Object>> get primaryKey => {email};
 }
 // #enddocregion custom_pk
 
@@ -130,7 +118,6 @@ class Doctors extends Table {
 // #docregion bad_name
 @DataClassName('Category')
 class Categories extends Table {
-  late final id = integer().autoIncrement()();
   late final name = text()();
 }
 // #enddocregion bad_name
@@ -144,7 +131,7 @@ void _query1() async {
   // #enddocregion superhero_dataclass
 }
 
-@DriftDatabase(tables: [Categories, Reservations, Employees, PhoneNumbers])
+@DriftDatabase(tables: [Reservations, Employees, PhoneNumbers])
 class CatDatabase extends _$CatDatabase {
   CatDatabase(super.e);
 
@@ -152,22 +139,6 @@ class CatDatabase extends _$CatDatabase {
   int get schemaVersion => 1;
 }
 
-void _query2() async {
-  final db = CatDatabase(driftDatabase(name: "categories"));
-  // #docregion bad_name
-  List<Category> categories = await db.managers.categories.get();
-  // #enddocregion bad_name
-}
-
-// #docregion custom_table_name
-class TodoItems extends Table {
-  //...
-
-  @override
-  String get tableName => 'todoItems';
-}
-
-// #enddocregion custom_table_name
 // #docregion datetime
 class Reservations extends Table {
   late final id = integer().autoIncrement()();
@@ -310,3 +281,44 @@ class Item extends Table {
   late final id = integer().autoIncrement()();
   // More columns...
 }
+// #enddocregion pk-example
+
+// #docregion simple_schema
+class Todos extends Table {
+  late final name = text()();
+}
+// #enddocregion simple_schema
+
+// #docregion custom_table_name
+class Products extends Table {
+  @JsonKey('product_name')
+  late final name = text().named('product_name')();
+
+  @override
+  String get tableName => 'product_table';
+}
+// #enddocregion custom_table_name
+
+// #docregion simple_schema_db
+@DriftDatabase(tables: [Todos])
+class Database extends _$Database {
+  Database(super.e);
+
+  @override
+  int get schemaVersion => 1;
+}
+// #enddocregion simple_schema_db
+
+// #docregion table_mixin
+mixin TableMixin on Table {
+  // Primary key column
+  late final id = integer().autoIncrement()();
+
+  // Column for created at timestamp
+  late final createdAt = dateTime().withDefault(currentDateAndTime)();
+}
+
+class Posts extends Table with TableMixin {
+  late final content = text()();
+}
+// #enddocregion table_mixin
