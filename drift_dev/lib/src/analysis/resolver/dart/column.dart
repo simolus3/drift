@@ -597,9 +597,11 @@ class ColumnParser {
         _resolver.discovered.dartElement,
         sourceForCustomConstraints!,
         "This column is not declared to be `.nullable()`, but also doesn't "
-        'have `NOT NULL` in its custom constraints. Please explicitly declare '
-        'the column to be nullable in Dart, or add a `NOT NULL` constraint for '
-        'consistency.',
+        'have `NOT NULL` in its custom constraints. Since custom constraints '
+        'override the default, there will be no `NOT NULL` constraint in the '
+        'database.\n'
+        'To fix this, either add a `NOT NULL` constraint here or declare the '
+        'column with `nullable()`',
       ));
     }
 
