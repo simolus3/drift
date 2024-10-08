@@ -1,5 +1,7 @@
 // ignore_for_file: unused_local_variable, unused_element
 
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import 'package:drift_flutter/drift_flutter.dart';
@@ -178,7 +180,6 @@ class DurationConverter
 class Employees extends Table {
   late final vacationTimeRemaining = integer().map(const DurationConverter())();
 }
-
 // #enddocregion apply_converter
 
 void _query4() async {
@@ -277,7 +278,7 @@ class Student extends Table {
 // #enddocregion custom-check
 
 // #docregion pk-example
-class Item extends Table {
+class Items extends Table {
   late final id = integer().autoIncrement()();
   // More columns...
 }
@@ -322,3 +323,45 @@ class Posts extends Table with TableMixin {
   late final content = text()();
 }
 // #enddocregion table_mixin
+
+// #docregion jsonserializable_type
+class Preferences {
+  final bool isDarkMode;
+  final String language;
+
+  Preferences({required this.isDarkMode, required this.language});
+
+  // JSON Serialization
+  factory Preferences.fromJson(Map<String, dynamic> json) {
+    return Preferences(
+      isDarkMode: json['isDarkMode'] as bool,
+      language: json['language'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'isDarkMode': isDarkMode,
+        'language': language,
+      };
+
+  // Equality
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Preferences &&
+          runtimeType == other.runtimeType &&
+          isDarkMode == other.isDarkMode &&
+          language == other.language;
+
+  @override
+  int get hashCode => isDarkMode.hashCode ^ language.hashCode;
+}
+// #enddocregion jsonserializable_type
+
+// #docregion json_converter
+class Accounts extends Table {
+  late final profile = text().map(TypeConverter.json(
+      fromJson: (json) => Preferences.fromJson(json as Map<String, dynamic>),
+      toJson: (column) => column.toJson()))();
+}
+// #enddocregion json_converter

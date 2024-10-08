@@ -5,33 +5,31 @@ description: Define the schema of your database.
 
 ---
 
-
-
-
-## Dart or SQL
-
-There are two primary methods to define your database schema when using Drift:
-
-1. **Dart-based Schema Definition**: Define your schema using Dart classes and annotations. This method provides type safety and seamless integration with your Dart code.
-
-2. **SQL-based Schema Definition**: Define your schema using SQL statements. This method offers direct database control while maintaining type safety and SQL validation.
-
-This page primarily focuses on the Dart-based schema definition method. For detailed information on SQL-based schema definition, please refer to the [SQL](./sql.md) section of the documentation.
-
 ## Table Definition
 
 Tables are defined as classes that extend `Table`. Columns are added as properties to the class.
 
 {{ load_snippet('simple_schema','lib/snippets/schema.dart.excerpt.json') }}
 
-This table is added to the database by listing it in the `tables` parameter of the `@DriftDatabase` annotation.
+Define columns with as `late final` field with one of the built-in [column types](#column-types).
+
+!!! note "Extra Parentheses"  
+
+    Each column must end with an extra pair of parentheses. Drift will warn you if you forget them.  
+      
+      ```dart
+      late final id = integer(); // Bad
+      late final id = integer()(); // Good
+      ```
+
+To include this table in your database, you need to add it to the `tables` parameter of the `@DriftDatabase` annotation.
 
 {{ load_snippet('simple_schema_db','lib/snippets/schema.dart.excerpt.json') }}
 
 
 !!! tip "Table Name"
 
-    Tables should be named in plural form (e.g., `Superheroes`, `Products`). This convention generally leads to more appropriately named generated classes. See the [name] section to customize ;dsfldinvl
+    Tables should be named in plural form (e.g., `Superheroes`, `Products`). This convention generally leads to more appropriately named generated classes. See the [data class name](./dataclass.md#data-class-name) for more information.
 
 ## Primary Key
 
@@ -47,8 +45,8 @@ Every table in a database should have a primary key - a column or set of columns
 
     !!! tip "Mixin Helper"
 
-        Defining the same column over and over again can be tedious.  
-        Consider using a [Mixin](#reusable-mixins) as a more convenient way reuse columns.
+        Defining the same column for multiple tables can be tedious.  
+        Consider using a [Mixin](#reusable-mixins) to reuse common columns.
 
 2. **Custom Primary Key**
 
@@ -56,45 +54,34 @@ Every table in a database should have a primary key - a column or set of columns
 
     {{ load_snippet('custom_pk','lib/snippets/schema.dart.excerpt.json') }}
 
-    This sets the `email` column as the primary key.
+    This above would set the `email` column as the primary key.
 
 !!! warning "Always Define a Primary Key"
-    When using Drift with SQLite, always explicitly define a primary key for your tables. If you don't, SQLite automatically creates a hidden `rowid` column as the primary key, which can lead to unexpected behavior.
-
-## Supported Column Types
+    It is crucial to define a primary key for your tables. If you don't, a hidden `rowid` column will be created as the primary key in SQLite, which can lead to unexpected behavior.  
+    
+## Column Types
 
 Each column in your table should be defined as a `late final` field that uses one of the column types provided by Drift.
 
 The following table lists the built-in column types:
 
-| Dart Type                        | Drift Column                                  |
-| -------------------------------- | --------------------------------------------- |
-| `int`                            | `late final id = integer()()`                 |
-| [`BigInt`](#int--bigint-columns) | `late final atoms = int64()()`                |
-| `String`                         | `late final name = text()()`                  |
-| `bool`                           | `late final isAdmin = boolean()()`            |
-| `double`                         | `late final height = real()()`                |
-| `Uint8List`                      | `late final image = blob()()`                 |
-| [`DateTime`](#datetime-columns)  | `late final createdAt = dateTime()()`         |
-| [`enum`](#enums)                 | `late final category = intEnum<Category>()()` |
+| Dart Type                        | Drift Column                                  | SQL Type|
+| -------------------------------- | --------------------------------------------- | -------- |
+| `int`                            | `late final id = integer()()`                 | `INTEGER` |
+| [`BigInt`](#int--bigint-columns) | `late final atoms = int64()()`                | `INTEGER` |
+| `String`                         | `late final name = text()()`                  | `TEXT` |
+| `bool`                           | `late final isAdmin = boolean()()`            | `INTEGER` (1 or 0) |
+| `double`                         | `late final height = real()()`                | `REAL` |
+| `Uint8List`                      | `late final image = blob()()`                 | `BLOB` |
+| [`DateTime`](#datetime-columns)  | `late final createdAt = dateTime()()`         | `INTEGER`or `TEXT` [More details...](#datetime-columns) |
 
-!!! note "Extra Parentheses"  
-
-    Each column must end with an extra pair of parentheses.  
-    Drift will warn you if you forget them.  
-      
-      ```dart
-      late final id = integer(); // Bad
-      late final id = integer()(); // 
-      ```
-
-In addition to these built-in types, you can also store custom types by converting them to one of these built-in types. See the [Custom Types](#custom-types) section for more information.
+Drift also supports custom types, including enums and Dart objects, by converting them to built-in types. See [Enum Columns](#enum-columns) and [Custom Types](#custom-types) for details.
 
 ## Required Columns
 
 By default, all columns are required. To make a column optional, use the `nullable()` method.
 
-Example:
+**Example:**
 
 {{ load_snippet('optional_columns','lib/snippets/schema.dart.excerpt.json') }}
 
@@ -102,7 +89,7 @@ Now the `age` column is optional. If you try to insert a record without an `age`
 
 ## Default Values
 
-To set default values for your database fields, use the `clientDefault()` method.
+Use `clientDefault()` to set a default value for a column.
 
 {{ load_snippet('client_default','lib/snippets/schema.dart.excerpt.json') }}
 
@@ -147,19 +134,18 @@ For example, in a restaurant management app, you might want to ensure that a tab
 
 Now if we created a record with the same time and the same table, an exception will be thrown.
 
-### `DateTime`
+## Working with Date and Time
 
-Drift handles most of the complexity of working with `DateTime` objects for you.  
-You can use `DateTime` objects directly in your Dart code, and Drift will take care of converting them to the correct format for the database.
+Drift simplifies the handling of `DateTime` objects, allowing you to use them directly in your Dart code while managing the conversion to the appropriate database format.
 
 {{ load_snippet('datetime','lib/snippets/schema.dart.excerpt.json') }}
 
-Under the hood, Drift can store `DateTime` objects in one of two ways:
+Drift offers two storage methods for `DateTime` objects:
 
-1. As Unix timestamps (integers): This is the default method. It's slightly faster but provides only second-level accuracy and doesn't store timezone information.
-2. As ISO-8601 strings (text): This method is recommended for most applications. It's more precise, timezone-aware, and human-readable.
+1. Unix timestamps (integers): The default method, offering faster performance but limited to second-level precision and lacking timezone information.
+2. ISO-8601 strings (text): Recommended for most applications due to its higher precision, timezone awareness, and human-readable format.
 
-By default, Drift stores `DateTime` objects as Unix timestamps for backward compatibility reasons. However, we recommend using ISO-8601 strings for new projects. To enable this, set the `store_date_time_values_as_text` option in your `build.yaml` file.
+While Drift uses Unix timestamps by default for backward compatibility, we suggest using ISO-8601 strings for new projects. To enable this, adjust the `store_date_time_values_as_text` option in your `build.yaml` file:
 
 ```yaml title="build.yaml"
 targets:
@@ -172,20 +158,24 @@ targets:
           # store_date_time_values_as_text: true
 ```
 
-### Enums
+### Migrating Between Storage Methods
+
+For detailed information on migrating between DateTime storage methods, please refer to our comprehensive [DateTime storage migration guide](./guides/datetime-migration.md).
+
+## Enums
 
 Drift provides support for storing Dart enums in your database. Enums can be stored either as integers (using their index) or as strings (using their name).
 
 {{ load_snippet('enum','lib/snippets/schema.dart.excerpt.json') }}
 
-!!! warning "Enum Caution"
-    While enums can be convenient, they come with some risks when used in database schemas:
+!!! warning "Cautious Use of Enums"
+    While enums offer convenience, they require careful consideration in database schemas:
 
     1. **Changing Enum Order**: If you use `intEnum`, adding, removing, or reordering enum values can break existing data. The integer stored in the database may no longer correspond to the correct enum value.
 
     2. **Renaming Enum Values**: If you use `textEnum`, renaming an enum value will make it impossible to read existing data for that value.
 
-### Custom Types
+## Custom Types
 
 Any Dart type can be stored in the database by converting it to one of the built-in types.
 
@@ -206,13 +196,28 @@ Then use the `.map()` method to add the converter to the column.
 
 {{ load_snippet('apply_converter','lib/snippets/schema.dart.excerpt.json') }}
 
-
 Now we can use the `Duration` type as if it were a built-in type.
 
 {{ load_snippet('use_converter','lib/snippets/schema.dart.excerpt.json') }}
 
+!!! warning "Implement Equality for Custom Types"
+
+    Custom types should implement `==` and `hashCode` for correct equality comparisons. If you don't implement these, you won't be able to compare generated data classes reliably.
+
+    Consider using a package like `equatable`, `freezed` or `dart_mappable` to create classes which implement this automatically.
+
+    
 
 
+### JSON Serializable Types
+
+Drift offers a convenient way to store JSON serializable types using the `TypeConverter.json()` method.
+
+{{ load_snippet('json_converter','lib/snippets/schema.dart.excerpt.json') }}
+
+??? example "`Preferences` Class"
+
+    {{ load_snippet('jsonserializable_type','lib/snippets/schema.dart.excerpt.json') }}
 
 ## Naming Customization
 
@@ -235,7 +240,6 @@ targets:
           # case_from_dart_to_sql : PascalCase
           # case_from_dart_to_sql : lowercase
           # case_from_dart_to_sql : UPPERCASE
-
 ```
 
 #### Custom Names
@@ -248,45 +252,6 @@ If you prefer to use custom names for tables or columns, you can override the de
 Here's an example demonstrating these techniques:
 
 {{ load_snippet('custom_table_name','lib/snippets/schema.dart.excerpt.json') }}
-
-### Data Class Name
-
-Drift generates a data class for each table:
-
-- Table name ending with "s": Remove the "s" (e.g., `Superheroes` → `Superhero`)
-- Other table names: Append "Data" (e.g., `Category` → `CategoryData`)
-
-This name can be customized by using the `@DataClassName` decorator.
-
-{{ load_snippet('bad_name','lib/snippets/schema.dart.excerpt.json') }}
-
-### Json Key
-
-Drift automatically generates `fromJson` and `toJson` methods for each table's data class. These methods handle JSON serialization and deserialization. By default, the JSON keys correspond to the column names, converted to `snake_case`. For example:
-
-- A column named `emailAddress` will use `email_address` as its JSON key.
-- A column named `userName` will use `user_name` as its JSON key.
-
-This name can be customized by using the `@JsonKey` decorator.
-
-{{ load_snippet('json_key','lib/snippets/schema.dart.excerpt.json') }}
-
-#### Json Key from Column Name
-
-Drift offers an option to use the column name as the JSON key. When this option is enabled, the column name specified in  `named()` method in Dart will be used directly as the JSON key.
-
-Enable this by setting `use_column_name_as_json_key` in your `build.yaml` file:
-
-```yaml title="build.yaml"
-targets:
-  $default:
-    builders:
-      drift_dev:
-        options:
-          use_sql_column_name_as_json_key: false # (default)
-          # To use column name as JSON key
-          # use_sql_column_name_as_json_key: true 
-```
 
 ## Advanced
 
@@ -308,7 +273,7 @@ To add a custom constraint to a column, use the `customConstraint` method.
 
 {{ load_snippet('custom_column_constraint','lib/snippets/schema.dart.excerpt.json') }}
 
-Keep in mind that a `customConstraint` will override the default `NOT NULL` constraint. So if you want to keep the `NOT NULL` constraint, you need to add it manually.
+Adding `customConstraint` overrides any default constraints, including the `NOT NULL` constraint. To maintain the `NOT NULL` constraint while adding a custom constraint, explicitly include it in your `customConstraint` string. For example:
 
 {{ load_snippet('custom_column_constraint_not_nullable','lib/snippets/schema.dart.excerpt.json') }}
 
@@ -327,11 +292,21 @@ Here is a small example showing how to use a custom check to enforce that the `a
 
 {{ load_snippet('custom-check','lib/snippets/schema.dart.excerpt.json') }}
 
-If any record is inserted with an `age` less than 0, an exception will be thrown.
+If any record is inserted with an `age` less than `0`, an exception will be thrown.
 
 Keep in mind that this check is run in the database, so if you change this check you will need to migrate the database.
 
 ### `BigInt` Columns
 
-Use the standard `int` type for storing integers as it is efficient for typical values. Only use `BigInt` for extremely large numbers when compiling to JavaScript, as it ensures accuracy but has a performance cost. For more details, refer to the dart-lang [documentation](https://dart.dev/guides/language/numbers#what-should-you-do).
+Use the standard `int` type for storing integers as it is efficient for typical values. Only use `BigInt` for extremely large numbers(1) when compiling to JavaScript, as it ensures accuracy but has a performance cost. For more details, refer to the dart-lang [documentation](https://dart.dev/guides/language/numbers#what-should-you-do).
+{ .annotate }
+
+1. Like bigger than 4,503,599,627,370,496!
+
+#### Migrating from/to `BigInt`
+
+Drift uses an `INTEGER` column under the hood for both `int` and `BigInt` columns, so migrations are not required when switching between these types. The change only affects how Dart handles the values in your application code.
+
+
+
 

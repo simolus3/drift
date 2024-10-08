@@ -12,7 +12,7 @@ CREATE TABLE categories (
 /* #enddocregion sql_custom_dataclass_name */
 
 /* #docregion superhero */
-CREATE TABLE Superheros (
+CREATE TABLE superheros (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL,
     secretName TEXT,
@@ -45,5 +45,3 @@ CREATE TABLE todo_items (
 );
 /* #enddocregion sql_json_key*/
 /* #enddocregion sql_simple_schema*/
-
-

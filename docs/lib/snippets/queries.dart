@@ -104,6 +104,11 @@ void examples() {
       onConflict: DoNothing(),
     );
     // #enddocregion manager_create_upsert
+    await db.batch(
+      (batch) {
+        batch.insert(table, row);
+      },
+    );
 
     // #docregion manager_create_multiple
     // We can also create multiple items at once

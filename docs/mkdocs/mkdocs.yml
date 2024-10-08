@@ -38,6 +38,8 @@ theme:
     - content.code.copy
     - content.code.annotate
     - content.action.edit
+    - navigation.expand
+    - navigation.sections
 
 extra:
   social:
@@ -54,6 +56,7 @@ extra:
   #     property: G-XXXXXXXXXX
 
 plugins:
+  - tags
   - search
   - privacy
   - macros
@@ -151,7 +154,9 @@ nav:
       - Tools/devtools.md
   - Pub: https://pub.dev/packages/drift
   - New Docs:
-      - Fundamentals:
+      - Dart API:
+        - schema.md
+      - SQL API:
         - schema.md
       - queries.md
       - references.md
