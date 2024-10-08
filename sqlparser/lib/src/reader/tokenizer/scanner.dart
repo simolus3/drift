@@ -17,6 +17,14 @@ class Scanner {
   final List<Token> tokens = [];
   final List<TokenizerError> errors = [];
 
+  /// Pending opening tokens used to associate them with closing tokens.
+  ///
+  /// This used to pair matching parentheses, as the information can be used by
+  /// the parser to be more accurate about error recovery.
+  /// An entry in the stack is the opening token and the token type closing that
+  /// token.
+  final List<(Token, TokenType)> _tokenStack = [];
+
   int _startOffset = 0;
   int _currentOffset = 0;
   bool get _isAtEnd => _currentOffset >= source.length;
@@ -59,10 +67,10 @@ class Scanner {
     final char = _nextChar();
     switch (char) {
       case $lparen:
-        _addToken(TokenType.leftParen);
+        _addToken(TokenType.leftParen, closedBy: TokenType.rightParen);
         break;
       case $rparen:
-        _addToken(TokenType.rightParen);
+        _addToken(TokenType.rightParen, mayClose: true);
         break;
       case $comma:
         _addToken(TokenType.comma);
@@ -187,6 +195,7 @@ class Scanner {
         break;
       case $semicolon:
         _addToken(TokenType.semicolon);
+        _tokenStack.clear();
         break;
       case $x:
       case $X:
@@ -256,8 +265,28 @@ class Scanner {
     return true;
   }
 
-  void _addToken(TokenType type) {
-    tokens.add(Token(type, _currentSpan));
+  void _addToken(
+    TokenType type, {
+    TokenType? closedBy,
+    bool mayClose = false,
+  }) {
+    final token = Token(type, _currentSpan);
+    tokens.add(token);
+
+    if (closedBy != null) {
+      _tokenStack.add((token, closedBy));
+    }
+
+    if (mayClose && _tokenStack.isNotEmpty) {
+      final candidate = _tokenStack.removeLast();
+      if (candidate.$2 == type) {
+        candidate.$1.match = token;
+        token.match = candidate.$1;
+      } else {
+        // Stack association broken, nothing we can do...
+        _tokenStack.clear();
+      }
+    }
   }
 
   void _string({bool binary = false}) {

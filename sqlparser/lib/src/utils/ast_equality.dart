@@ -798,7 +798,7 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     if (otherChildren.moveNext()) {
       // Other has more elements than current
       throw NotEqualException(
-          "$_current and $other don't have an equal amount of children");
+          "$_current and $other don't have an equal amount of children (${_current.childNodes.length} and ${other.childNodes.length})");
     }
   }
 

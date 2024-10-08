@@ -458,6 +458,13 @@ class Token implements SyntacticEntity {
 
   Token? previous, next;
 
+  /// For opening tokens (e.g. `(`), the matching closing token (`)`), and
+  /// vice-versa.
+  ///
+  /// This information can be used to improve error recovery in the parser
+  /// later.
+  Token? match;
+
   Token(this.type, this.span);
 
   @override

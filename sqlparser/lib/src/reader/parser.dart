@@ -1,7 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
-import 'package:sqlparser/src/ast/ast.dart';
-import 'package:sqlparser/src/engine/autocomplete/engine.dart';
-import 'package:sqlparser/src/reader/tokenizer/token.dart';
+
+import '../ast/ast.dart';
+import '../engine/autocomplete/engine.dart';
+import 'recovery.dart';
+import 'tokenizer/token.dart';
 
 const _comparisonOperators = [
   TokenType.less,
@@ -37,6 +40,7 @@ class Parser {
   final bool enableDriftExtensions;
 
   int _current = 0;
+  final List<ErrorRecoveryScope> _errorRecovery = [];
 
   Parser(this.tokens, {bool useDrift = false, this.autoComplete})
       : enableDriftExtensions = useDrift;
@@ -166,22 +170,6 @@ class Parser {
     }
 
     return _consume(TokenType.identifier, message) as IdentifierToken;
-  }
-
-  /// Skips all tokens until it finds one with [type]. If [skipTarget] is true,
-  /// that token will be skipped as well.
-  ///
-  /// When using `_synchronize(TokenType.semicolon, skipTarget: true)`,
-  /// this will move the parser to the next statement, which can be useful for
-  /// error recovery.
-  void _synchronize(TokenType type, {bool skipTarget = false}) {
-    if (skipTarget) {
-      while (!_isAtEnd && _advance().type != type) {}
-    } else {
-      while (!_isAtEnd && !_check(type)) {
-        _advance();
-      }
-    }
   }
 
   /// Parses a statement without throwing when there's a parsing error.
@@ -411,32 +399,54 @@ class Parser {
     }
   }
 
+  void _withErrorRecovery(ErrorRecoveryScope scope, void Function() inner) {
+    _errorRecovery.add(scope);
+
+    try {
+      inner();
+    } on ParsingError {
+      while (!_isAtEnd) {
+        final next = _peek;
+        final leftScope =
+            _errorRecovery.lastWhereOrNull((scope) => scope.indicatesEnd(next));
+        if (leftScope == null) {
+          _advance();
+          continue;
+        }
+
+        if (leftScope != scope) {
+          rethrow; // The parent error recovery handler needs to deal with this.
+        } else {
+          break;
+        }
+      }
+    } finally {
+      final removed = _errorRecovery.removeLast();
+      assert(identical(removed, scope));
+    }
+  }
+
   /// Invokes [parser], sets the appropriate source span and attaches a
   /// semicolon if one exists.
   T? _parseAsStatement<T extends Statement>(T? Function() parser,
       {bool requireSemicolon = true}) {
     final first = _peek;
     T? result;
-    try {
+
+    _withErrorRecovery(const InStatement(), () {
       result = parser();
+    });
 
-      if (result != null && requireSemicolon) {
-        result.semicolon = _consume(TokenType.semicolon,
+    if (_matchOne(TokenType.semicolon)) {
+      result?.semicolon = _previous;
+      result?.setSpan(first, _previous);
+    } else if (result != null && requireSemicolon) {
+      try {
+        result!.semicolon = _consume(TokenType.semicolon,
             'Expected a semicolon after the statement ended');
-        result.setSpan(first, _previous);
+      } on ParsingError {
+        // Ignore
       }
-    } on ParsingError {
-      // the error is added to the list errors, so ignore. We skip after the
-      // next semicolon to parse the next statement.
-      _synchronize(TokenType.semicolon, skipTarget: true);
-
-      if (result == null) return null;
-
-      if (_matchOne(TokenType.semicolon)) {
-        result.semicolon = _previous;
-      }
-
-      result.setSpan(first, _previous);
     }
 
     return result;
@@ -2149,29 +2159,29 @@ class Parser {
     // the columns must come before the table constraints!
     var encounteredTableConstraint = false;
 
-    do {
-      try {
-        final tableConstraint = tableConstraintOrNull();
+    _withErrorRecovery(InParentheses(leftParen, leftParen.match), () {
+      do {
+        _withErrorRecovery(InCommaSeparatedList(), () {
+          final tableConstraint = tableConstraintOrNull();
 
-        if (tableConstraint != null) {
-          encounteredTableConstraint = true;
-          tableConstraints.add(tableConstraint);
-        } else {
-          if (encounteredTableConstraint) {
-            _error('Expected another table constraint');
+          if (tableConstraint != null) {
+            encounteredTableConstraint = true;
+            tableConstraints.add(tableConstraint);
           } else {
-            columns.add(_columnDefinition());
+            if (encounteredTableConstraint) {
+              _error('Expected another table constraint');
+            } else {
+              columns.add(_columnDefinition());
+            }
           }
-        }
-      } on ParsingError {
-        // if we're at the closing bracket, don't try to parse another column
-        if (_check(TokenType.rightParen)) break;
-        // error while parsing a column definition or table constraint. We try
-        // to recover to the next comma.
-        _synchronize(TokenType.comma);
-        if (_check(TokenType.rightParen)) break;
-      }
-    } while (_matchOne(TokenType.comma));
+
+          if (!_checkAny([TokenType.comma, TokenType.rightParen])) {
+            _error('Unrecognized table or column constraint, expected comma or '
+                'closing parenthesis here.');
+          }
+        });
+      } while (_matchOne(TokenType.comma));
+    });
 
     final rightParen =
         _consume(TokenType.rightParen, 'Expected closing parenthesis');

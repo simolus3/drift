@@ -1,3 +1,7 @@
+## 0.39.1
+
+- Improve recovery in parser when encountering syntax errors.
+
 ## 0.39.0
 
 - When using the `parse` methods on `SqlEngine`, tokenizer errors are now
