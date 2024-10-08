@@ -120,7 +120,7 @@ targets:
     final databaseMigrationsWriters =
         await Future.wait(cli.project.options.databases.entries.map(
       (entry) async {
-        final writer = await _DatabaseMigrationWriter.create(
+        final writer = await _MigrationTestEmitter.create(
             cli: cli,
             rootSchemaDir: rootSchemaDir,
             rootTestDir: rootTestDir,
@@ -149,7 +149,7 @@ targets:
   }
 }
 
-class _DatabaseMigrationWriter {
+class _MigrationTestEmitter {
   final DriftDevCli cli;
   final Directory rootSchemaDir;
   final Directory rootTestDir;
@@ -202,7 +202,7 @@ class _DatabaseMigrationWriter {
   /// Migration writer for each migration
   List<_MigrationWriter> get migrations => _MigrationWriter.fromSchema(schemas);
 
-  _DatabaseMigrationWriter({
+  _MigrationTestEmitter({
     required this.cli,
     required this.rootSchemaDir,
     required this.rootTestDir,
@@ -219,7 +219,7 @@ class _DatabaseMigrationWriter {
     required this.schemas,
   });
 
-  static Future<_DatabaseMigrationWriter> create(
+  static Future<_MigrationTestEmitter> create(
       {required DriftDevCli cli,
       required Directory rootSchemaDir,
       required Directory rootTestDir,
@@ -257,7 +257,7 @@ class _DatabaseMigrationWriter {
       cli.exit('Could not read database class from the "$dbName" database.');
     }
     final schemas = await parseSchema(schemaDir);
-    return _DatabaseMigrationWriter(
+    return _MigrationTestEmitter(
         cli: cli,
         rootSchemaDir: rootSchemaDir,
         rootTestDir: rootTestDir,
