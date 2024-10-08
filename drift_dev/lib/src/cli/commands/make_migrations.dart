@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dart_style/dart_style.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/cli/cli.dart';
 import 'package:drift_dev/src/cli/commands/schema.dart';
@@ -190,7 +191,7 @@ class _DatabaseMigrationWriter {
   /// Write all the files to the disk
   void flush() {
     for (final MapEntry(key: file, value: content) in writeTasks.entries) {
-      file.writeAsStringSync(content);
+      file.writeAsStringSync(DartFormatter().format(content));
     }
     writeTasks.clear();
   }
@@ -290,7 +291,7 @@ class _DatabaseMigrationWriter {
     if (!schemaFile.existsSync()) {
       cli.logger
           .info('$dbName: Creating schema file for version $schemaVersion');
-      schemaFile.writeAsStringSync(content);
+      schemaFile.writeAsStringSync(DartFormatter().format(content));
       // Re-parse the schema to include the newly created schema file
       schemas = await parseSchema(schemaDir);
     } else if (schemaFile.readAsStringSync() != content) {
