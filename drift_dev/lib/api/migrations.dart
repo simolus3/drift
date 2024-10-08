@@ -220,7 +220,7 @@ class InitializedSchema {
 /// 2. Insert data into the database
 /// 3. Migrate the database to a target version
 /// 4. Validate that the data is valid after the migration
-Future<void> testStepByStepigrations<OldDatabase extends GeneratedDatabase,
+Future<void> testStepByStepMigrations<OldDatabase extends GeneratedDatabase,
         NewDatabase extends GeneratedDatabase>(
     {required SchemaVerifier verifier,
     required OldDatabase Function(QueryExecutor) createOld,

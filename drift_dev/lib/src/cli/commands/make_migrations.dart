@@ -464,7 +464,7 @@ class _MigrationWriter {
     final test = """
 test(
   "$dbName - migrate from v$from to v$to",
-  () => testStepByStepigrations(
+  () => testStepByStepMigrations(
     from: $from, to: $to, verifier: verifier, createOld: (e) => v$from.DatabaseAtV$from(e),
     createNew: (e) => v$to.DatabaseAtV$to(e), openTestedDatabase: (e) => $dbClassName(e),
     createItems: (b, oldDb) {
