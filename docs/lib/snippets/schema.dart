@@ -20,9 +20,9 @@ class Superheros extends Table {
   late final name = text().unique()();
   // #enddocregion unique_columns
   late final secretName = text().nullable()();
-  // #docregion optional_columns
+// #docregion optional_columns
   late final age = integer().nullable()();
-  // #enddocregion optional_columns
+// #enddocregion optional_columns
   late final height = text().nullable()();
   // #enddocregion superhero_columns
 // #docregion optional_columns
@@ -209,9 +209,11 @@ void _query5() async {
   // #enddocregion enum
 }
 
+bool isInDarkMode() => false;
+
 // #docregion client_default
-class Users extends Table {
-  late final isAdmin = boolean().clientDefault(() => false)();
+class Settings extends Table {
+  late final useDarkMode = boolean().clientDefault(() => isInDarkMode())();
 }
 // #enddocregion client_default
 
@@ -272,7 +274,7 @@ class GroupMemberships extends Table with PkMixin {
 class Student extends Table {
   late final id = integer().autoIncrement()();
   late final name = text()();
-  late final IntColumn age =
+  late final IntColumn /*(1)!*/ age =
       integer().nullable().check(age.isBiggerOrEqualValue(0))();
 }
 // #enddocregion custom-check
@@ -286,7 +288,7 @@ class Items extends Table {
 
 // #docregion simple_schema
 class Todos extends Table {
-  late final name = text()();
+  late final name = text()(); // (1)!
 }
 // #enddocregion simple_schema
 
@@ -360,8 +362,35 @@ class Preferences {
 
 // #docregion json_converter
 class Accounts extends Table {
-  late final profile = text().map(TypeConverter.json(
+  late final preferences = text().map(TypeConverter.json(
       fromJson: (json) => Preferences.fromJson(json as Map<String, dynamic>),
       toJson: (column) => column.toJson()))();
 }
 // #enddocregion json_converter
+
+// #docregion custom_json_converter
+class PreferencesConverter extends TypeConverter<Preferences, String>
+    with
+        JsonTypeConverter2<Preferences, String /*(1)!*/,
+            Map<String, Object?> /*(2)!*/ > {
+  @override
+  Preferences fromJson(Map<String, Object?> json) {
+    return Preferences.fromJson(json);
+  }
+
+  @override
+  Preferences fromSql(String fromDb) {
+    return Preferences.fromJson(jsonDecode(fromDb) as Map<String, dynamic>);
+  }
+
+  @override
+  Map<String, Object?> toJson(Preferences value) {
+    return value.toJson();
+  }
+
+  @override
+  String toSql(Preferences value) {
+    return jsonEncode(value.toJson());
+  }
+}
+// #enddocregion custom_json_converter

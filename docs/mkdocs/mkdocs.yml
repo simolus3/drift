@@ -60,6 +60,7 @@ plugins:
   - search
   - privacy
   - macros
+  - autorefs
 
 markdown_extensions:
   - pymdownx.tilde
