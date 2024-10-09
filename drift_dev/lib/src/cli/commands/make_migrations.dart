@@ -190,8 +190,11 @@ class _MigrationTestEmitter {
 
   /// Write all the files to the disk
   void flush() {
-    for (final MapEntry(key: file, value: content) in writeTasks.entries) {
-      file.writeAsStringSync(DartFormatter().format(content));
+    for (var MapEntry(key: file, value: content) in writeTasks.entries) {
+      if (file.path.endsWith('.dart')) {
+        content = DartFormatter().format(content);
+      }
+      file.writeAsStringSync(content);
     }
     writeTasks.clear();
   }
@@ -291,7 +294,7 @@ class _MigrationTestEmitter {
     if (!schemaFile.existsSync()) {
       cli.logger
           .info('$dbName: Creating schema file for version $schemaVersion');
-      schemaFile.writeAsStringSync(DartFormatter().format(content));
+      schemaFile.writeAsStringSync(content);
       // Re-parse the schema to include the newly created schema file
       schemas = await parseSchema(schemaDir);
     } else if (schemaFile.readAsStringSync() != content) {
