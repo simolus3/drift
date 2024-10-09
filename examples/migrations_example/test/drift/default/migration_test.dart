@@ -38,7 +38,7 @@ void main() {
 
   test(
       "default - migrate from v1 to v2",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 1,
             to: 2,
             verifier: verifier,
@@ -55,7 +55,7 @@ void main() {
 
   test(
       "default - migrate from v2 to v3",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 2,
             to: 3,
             verifier: verifier,
@@ -72,7 +72,7 @@ void main() {
 
   test(
       "default - migrate from v3 to v4",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 3,
             to: 4,
             verifier: verifier,
@@ -91,7 +91,7 @@ void main() {
 
   test(
       "default - migrate from v4 to v5",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 4,
             to: 5,
             verifier: verifier,
@@ -110,7 +110,7 @@ void main() {
 
   test(
       "default - migrate from v5 to v6",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 5,
             to: 6,
             verifier: verifier,
@@ -129,7 +129,7 @@ void main() {
 
   test(
       "default - migrate from v6 to v7",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 6,
             to: 7,
             verifier: verifier,
@@ -148,7 +148,7 @@ void main() {
 
   test(
       "default - migrate from v7 to v8",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 7,
             to: 8,
             verifier: verifier,
@@ -169,7 +169,7 @@ void main() {
 
   test(
       "default - migrate from v8 to v9",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 8,
             to: 9,
             verifier: verifier,
@@ -190,7 +190,7 @@ void main() {
 
   test(
       "default - migrate from v9 to v10",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 9,
             to: 10,
             verifier: verifier,
@@ -212,7 +212,7 @@ void main() {
 
   test(
       "default - migrate from v10 to v11",
-      () => testStepByStepMigrations(
+      () => testWithDataIntegrity(
             from: 10,
             to: 11,
             verifier: verifier,

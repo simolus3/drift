@@ -73,6 +73,36 @@ abstract class SchemaVerifier {
   /// expected exist.
   Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
       {bool validateDropped = false});
+
+  /// Utility function used by generated tests to verify that migrations
+  /// modify the database schema as expected.
+  ///
+  /// Foreign key constraints are disabled for this operation.
+  Future<void> testWithDataIntegrity<OldDatabase extends GeneratedDatabase,
+          NewDatabase extends GeneratedDatabase>(
+      {required SchemaVerifier verifier,
+      required OldDatabase Function(QueryExecutor) createOld,
+      required NewDatabase Function(QueryExecutor) createNew,
+      required GeneratedDatabase Function(QueryExecutor) openTestedDatabase,
+      required void Function(Batch, OldDatabase) createItems,
+      required Future Function(NewDatabase) validateItems,
+      required int oldVersion,
+      required int newVersion}) async {
+    final schema = await verifier.schemaAt(oldVersion);
+
+    final oldDb = createOld(schema.newConnection());
+    await oldDb.customStatement('PRAGMA foreign_keys = OFF');
+    await oldDb.batch((batch) => createItems(batch, oldDb));
+    await oldDb.close();
+
+    final db = openTestedDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, newVersion);
+    await db.close();
+
+    final newDb = createNew(schema.newConnection());
+    await validateItems(newDb);
+    await newDb.close();
+  }
 }
 
 /// Utilities verifying that the current schema of the database matches what
@@ -213,34 +243,4 @@ class InitializedSchema {
   /// });
   /// ```
   DatabaseConnection newConnection() => _createConnection();
-}
-
-/// Utility function used by generated tests to:
-/// 1. Create a database at a specific version
-/// 2. Insert data into the database
-/// 3. Migrate the database to a target version
-/// 4. Validate that the data is valid after the migration
-Future<void> testStepByStepMigrations<OldDatabase extends GeneratedDatabase,
-        NewDatabase extends GeneratedDatabase>(
-    {required SchemaVerifier verifier,
-    required OldDatabase Function(QueryExecutor) createOld,
-    required NewDatabase Function(QueryExecutor) createNew,
-    required GeneratedDatabase Function(QueryExecutor) openTestedDatabase,
-    required void Function(Batch, OldDatabase) createItems,
-    required Future Function(NewDatabase) validateItems,
-    required int from,
-    required int to}) async {
-  final schema = await verifier.schemaAt(from);
-
-  final oldDb = createOld(schema.newConnection());
-  await oldDb.batch((batch) => createItems(batch, oldDb));
-  await oldDb.close();
-
-  final db = openTestedDatabase(schema.newConnection());
-  await verifier.migrateAndValidate(db, to);
-  await db.close();
-
-  final newDb = createNew(schema.newConnection());
-  await validateItems(newDb);
-  await newDb.close();
 }
