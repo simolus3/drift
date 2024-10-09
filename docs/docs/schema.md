@@ -1,14 +1,26 @@
 ---
 
-title: Schema
+title: Tables
 description: Define the schema of your database.
 
 ---
 
-## Table Definition
+# Tables
+
+A table in Drift represents a single entity or concept in your database. It defines the structure and behavior of the data you're storing.
+
+The Basics:
+
+- Each table is defined as a Dart class that extends `Table`.
+- Columns are defined as fields in the table class.
+- Each column must end with an extra pair of parentheses. Drift will warn you if you forget them.
+- Name your tables in plural form (e.g., `Superheroes`, `Products`).
 
 Tables are defined as classes that extend `Table`.
 Columns are then defined as `late final` fields with one of the built-in [column types](#column-types).
+
+## Quick example
+
 
 Example:
 <div class="annotate" markdown>
@@ -16,28 +28,163 @@ Example:
 </div>
 1. Each column must end with an extra pair of parentheses.   
     Drift will warn you if you forget them.  
-      
     ```dart
     late final id = integer(); // Bad
     late final id = integer()(); // Good
     ```
+2. By default, all columns are required. Use `nullable()` to make a column optional.
 
-The above example defines a simple table which stores Todos.
+`name`, `age`, and `id` are fields of the model. Each column is specified as a `late final` field of the class.
 
-!!! tip "Table Name"
+The above `Persons` table would create a table with the following schema:
 
-    Tables should be named in plural form (e.g., `Superheroes`, `Products`). This convention generally leads to more appropriately named generated classes. See the [data class name](./dataclass.md#data-class-name) for more information.
+```sql
+CREATE TABLE persons (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  age INTEGER,
+)
+```
+Some technical notes:
 
-### Using Tables
-
-Add tables to your database by including them in the `tables` list of the `@DriftDatabase` annotation:
-
-{{ load_snippet('simple_schema_db','lib/snippets/schema.dart.excerpt.json') }}
-
-
+- The name of the table, `persons` is automatically derived from the class name. This can be customized by overriding the `tableName` getter. See [Table Names](#table-name) for more information.
+- The `id` column is automatically set as the primary key because it is an auto-incrementing integer. See [Primary Key](#primary-key) for more information.
 
 
 ---
+
+## Using tables
+
+Once you have defined your tables, you need to include them in your database. This is done by adding them to the `tables` list of the `@DriftDatabase` annotation.
+
+{{ load_snippet('simple_schema_db','lib/snippets/schema.dart.excerpt.json') }}
+
+When you add a new table, you need to run the code generation again to update the database.
+
+```shell
+dart run build_runner build
+```
+
+## Creating tables
+
+Drift will create the tables automatically when initializing a new database. 
+Subsequent changes to the schema require a migration. See the [Migration Guide](./guides/migrations.md) for more information.
+
+---
+
+## Columns
+
+The most important part of a table is the list of columns. Columns are defined as fields in the table class.
+
+Example:
+
+{{ load_snippet('schema','lib/snippets/schema.dart.excerpt.json') }}
+
+### Column types
+
+Each column in you table should an instance of the appropriate column type. Drift provides a number of built-in column types to cover most use cases.
+
+| Dart Type                        | Drift Column                          | SQL Type                                                |
+| -------------------------------- | ------------------------------------- | ------------------------------------------------------- |
+| `int`                            | `late final id = integer()()`         | `INTEGER`                                               |
+| [`BigInt`](#int--bigint-columns) | `late final atoms = int64()()`        | `INTEGER`                                               |
+| `String`                         | `late final name = text()()`          | `TEXT`                                                  |
+| `bool`                           | `late final isAdmin = boolean()()`    | `INTEGER` (`1` or `0`)                                  |
+| `double`                         | `late final height = real()()`        | `REAL`                                                  |
+| `Uint8List`                      | `late final image = blob()()`         | `BLOB`                                                  |
+| [`DateTime`](#datetime-columns)  | `late final createdAt = dateTime()()` | `INTEGER`or `TEXT` [More details...](#datetime-columns) |
+
+In addition to these basic types, column can be configured to store any type which can be converted to a built-in type. See [Custom Types](#custom-types) for more information.
+
+---
+
+
+### Column options
+
+Columns can be customized with a number of options. These options are available on all column types:
+
+
+####  `nullable()`:
+:    If this is called on a column, it will be allowed to store `null` values. By default, all columns are required.
+    
+    {{ load_snippet('optional_columns','lib/snippets/schema.dart.excerpt.json') }}
+
+#### `withDefault()`:  
+:    Set a default value as a SQL expression that is applied in the database itself.  Changing the default value requires a database migration. See [Expressions](./dart_api/expressions.md) for more information.
+
+    {{ load_snippet('db_default','lib/snippets/schema.dart.excerpt.json') }}
+
+#### `clientDefault()`:  
+:    This sets a default value that is applied in your Dart code. Adding, removing, or changing the default value does not require a database migration.(1)
+    { .annotate }
+
+    1. Because this default value is only applied in your Dart code, it is not applied when interacting with the database outside of Drift.
+
+    {{ load_snippet('client_default','lib/snippets/schema.dart.excerpt.json') }}
+
+    !!! tip ""
+        `clientDefault` is recommended over ``withDefault()` for most use cases as it offers more flexibility and does not require a database migration.
+
+####  `unique()`:
+:   If this is called on a column, it will enforce that all values in this column are unique.
+
+    {{ load_snippet('unique_columns','lib/snippets/schema.dart.excerpt.json') }}
+
+#### `check()`:
+:   Adds a check constraint to the column. If this expression evaluates to `false`, an exception will be thrown when inserting or updating a record. See [Expressions](./dart_api/expressions.md) for more information.
+
+    <div class="annotate" markdown>
+    {{ load_snippet('check_column','lib/snippets/schema.dart.excerpt.json') }}
+    </div>
+
+    !!! note ""
+        You must explicitly define types for columns referenced in a check. As in the example above, the `age` column is explicitly defined as an `Column<int>`.
+
+#### `named()`:
+:   Set the name of the column in the database. 
+
+    {{ load_snippet('named_column','lib/snippets/schema.dart.excerpt.json') }}
+
+    If `named()` is not used, the column name defaults to the field name in `snake_case`.
+
+    ??? note "Alternative Casing"
+        In addition to `snake_case`, Drift supports the following casing options:
+
+        - `preserve`
+        - `camelCase`
+        - `CONSTANT_CASE`
+        - `PascalCase`
+        - `lowercase`
+        - `UPPERCASE`
+
+        Customize this by setting the `case_from_dart_to_sql` option in your `build.yaml` file.     
+        
+        ```yaml
+        targets:
+          $default:
+            builders:
+              drift_dev:
+                options:
+                  case_from_dart_to_sql : snake_case # default
+        ```
+
+#### `generatedAs()`:
+:   Set the column to be generated by the database. This is useful for columns which are calculated based on other columns in the table.
+
+    === "Virtual Generated Columns (Default)"
+        By default, generated columns are virtual, meaning they are not stored in the database. They are calculated on the fly when queried.
+
+        {{ load_snippet('generated_column','lib/snippets/schema.dart.excerpt.json') }}
+
+    === "Stored Generated Columns"
+
+        Setting `stored` to `true` will store the generated value in the database. This can be useful for performance reasons, as the value does not need to be recalculated each time it is queried.
+
+        {{ load_snippet('generated_column_stored','lib/snippets/schema.dart.excerpt.json') }}
+
+    
+
+
 
 ## Primary Key
 
@@ -69,21 +216,6 @@ Every table in a database should have a primary key - a column or set of columns
 
 ---
 
-## Column Types
-
-The following table lists the built-in column types:
-
-| Dart Type                        | Drift Column                                  | SQL Type |
-| -------------------------------- | --------------------------------------------- | -------- |
-| `int`                            | `late final id = integer()()`                 | `INTEGER` |
-| [`BigInt`](#int--bigint-columns) | `late final atoms = int64()()`                | `INTEGER` |
-| `String`                         | `late final name = text()()`                  | `TEXT` |
-| `bool`                           | `late final isAdmin = boolean()()`            | `INTEGER` (`1` or `0`) |
-| `double`                         | `late final height = real()()`                | `REAL` |
-| `Uint8List`                      | `late final image = blob()()`                 | `BLOB` |
-| [`DateTime`](#datetime-columns)  | `late final createdAt = dateTime()()`         | `INTEGER`or `TEXT` [More details...](#datetime-columns) |
-
-Drift also supports custom types, including [enums](#enum-columns) and [Dart objects](#custom-types), by converting them to built-in types.
 
 ---
 
@@ -93,7 +225,7 @@ By default, all columns are required. To make a column optional, use the `nullab
 
 Example:
 
-{{ load_snippet('optional_columns','lib/snippets/schema.dart.excerpt.json') }}
+
 
 
 ---
@@ -115,7 +247,7 @@ Drift offers two ways to set default values for columns:
 
 Set the default dark mode setting based on the user's system settings.
 
-{{ load_snippet('client_default','lib/snippets/schema.dart.excerpt.json') }}
+
 
 #### 2. `withDefault()`
 
@@ -128,7 +260,6 @@ Set the default dark mode setting based on the user's system settings.
 
 Set the default value for the `isAdmin` field to `false` if no value is provided.
 
-{{ load_snippet('db_default','lib/snippets/schema.dart.excerpt.json') }}
 
 
 ---
@@ -280,20 +411,7 @@ By default, Drift uses `snake_case` for table and column names in the database. 
 
 This conversion can be customized by setting the `case_from_dart_to_sql` option in your `build.yaml` file.
 
-```yaml title="build.yaml"
-targets:
-  $default:
-    builders:
-      drift_dev:
-        options:
-          case_from_dart_to_sql : snake_case # default
-          # case_from_dart_to_sql : preserve # (Original case)
-          # case_from_dart_to_sql : camelCase
-          # case_from_dart_to_sql : CONSTANT_CASE
-          # case_from_dart_to_sql : PascalCase
-          # case_from_dart_to_sql : lowercase
-          # case_from_dart_to_sql : UPPERCASE
-```
+
 
 #### Custom Names
 

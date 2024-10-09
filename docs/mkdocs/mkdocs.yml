@@ -63,6 +63,7 @@ plugins:
   - autorefs
 
 markdown_extensions:
+  - def_list
   - pymdownx.tilde
   - admonition
   - pymdownx.details
@@ -156,9 +157,9 @@ nav:
   - Pub: https://pub.dev/packages/drift
   - New Docs:
       - Dart API:
-        - schema.md
+          - schema.md
       - SQL API:
-        - schema.md
+          - schema.md
       - queries.md
       - references.md
 

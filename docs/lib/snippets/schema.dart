@@ -8,26 +8,91 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 part 'schema.g.dart';
 
-// #docregion superhero_dataclass
-// #docregion optional_columns
-class Superheros extends Table {
+// #docregion simple_schema
+class Persons extends Table {
+  late final id = integer().autoIncrement()();
+  late final name = text()(); // (1)!
+  late final age = integer().nullable()(); // (2)!
+}
+// #enddocregion simple_schema
+
+// #docregion simple_schema_db
+@DriftDatabase(tables: [Persons])
+class Database extends _$Database {
+  Database(super.e);
+
+  @override
+  int get schemaVersion => 1;
+}
+// #enddocregion simple_schema_db
+
+// #docregion schema
+class Musicians extends Table {
+  late final id = integer().autoIncrement()();
+  late final firstName = text()();
+  late final lastName = text()();
+  late final instrument = text()();
+}
+
+class Albums extends Table {
+  late final id = integer().autoIncrement()();
+  late final title = text()();
+  late final releaseDate = dateTime()();
+  late final numStars = integer()();
+  late final artist = integer().references(Musicians, #id)();
+}
+// #enddocregion schema
+
+bool isInDarkMode() => false;
+
+class Table1 extends Table {
+  // #docregion client_default
+  late final useDarkMode = boolean().clientDefault(() => false)();
+  // #enddocregion client_default
+  // #docregion db_default
+  late final isAdmin = boolean().withDefault(Constant(false))();
+  // #enddocregion db_default
+  // #docregion optional_columns
+  late final age = integer().nullable()();
   // #enddocregion optional_columns
+  // #docregion unique_columns
+  late final username = text().unique()();
+  // #enddocregion unique_columns
+}
+
+class Table2 extends Table {
+  // #docregion check_column
+  late final Column<int> age = integer().check(age.isBiggerOrEqualValue(0))();
+  // #enddocregion check_column
+}
+
+// #docregion generated_column
+class Squares extends Table {
+  late final length = integer()();
+  late final width = integer()();
+  late final area = integer().generatedAs(length * width)();
+}
+// #enddocregion generated_column
+
+// #docregion generated_column_stored
+class Boxes extends Table {
+  late final length = integer()();
+  late final width = integer()();
+  late final area = integer().generatedAs(length * width, stored: true)();
+}
+// #enddocregion generated_column_stored
+
+// #docregion superhero_dataclass
+class Superheros extends Table {
   // #docregion superhero_columns
   // #docregion pk
   late final id = integer().autoIncrement()();
   // #enddocregion pk
-  // #docregion unique_columns
-  late final name = text().unique()();
-  // #enddocregion unique_columns
   late final secretName = text().nullable()();
-// #docregion optional_columns
   late final age = integer().nullable()();
-// #enddocregion optional_columns
   late final height = text().nullable()();
   // #enddocregion superhero_columns
-// #docregion optional_columns
 }
-// #enddocregion optional_columns
 
 // #enddocregion superhero_dataclass
 // #docregion superhero_database
@@ -40,37 +105,6 @@ class AppDatabase extends _$AppDatabase {
 }
 
 // #enddocregion superhero_database
-
-void _query() async {
-  // #docregion superhero_query
-  // Initialize the database
-  final db = AppDatabase(driftDatabase(name: "superheroes"));
-
-  // Create a new superhero
-  db.managers.superheros.create(
-    (create) => create(
-        name: "Ironman", secretName: Value("Tony Stark"), height: Value("6'1")),
-  );
-
-  // Query all superheros
-  final superheros = await db.managers.superheros.get();
-
-  // Print the superheros
-  for (var hero in superheros) {
-    print("Superhero: ${hero.name} - Secret Name: ${hero.secretName}");
-  }
-
-  // #enddocregion superhero_query
-  // #docregion optional_usage
-  db.managers.superheros.create(
-    (create) => create(
-      name: "Ironman",
-      secretName: Value("Tony Stark"),
-      age: Value(null), // 👈👈👈
-    ),
-  );
-  // #enddocregion optional_usage
-}
 
 // #docregion custom_pk
 class Profiles extends Table {
@@ -127,9 +161,7 @@ class Categories extends Table {
 void _query1() async {
   final db = AppDatabase(driftDatabase(name: "superheroes"));
   // #docregion superhero_dataclass
-  Superhero batman = await db.managers.superheros
-      .filter((s) => s.name.equals("Batman"))
-      .getSingle();
+  Superhero batman = await db.managers.superheros.getSingle();
   // #enddocregion superhero_dataclass
 }
 
@@ -209,18 +241,8 @@ void _query5() async {
   // #enddocregion enum
 }
 
-bool isInDarkMode() => false;
-
-// #docregion client_default
-class Settings extends Table {
-  late final useDarkMode = boolean().clientDefault(() => isInDarkMode())();
-}
-// #enddocregion client_default
-
 class Users2 extends Table {
-  // #docregion db_default
   late final isAdmin = boolean().withDefault(Constant(false))();
-  // #enddocregion db_default
   // #docregion named_column
   late final createdAt = boolean().named('created')();
   // #enddocregion named_column
@@ -274,8 +296,7 @@ class GroupMemberships extends Table with PkMixin {
 class Student extends Table {
   late final id = integer().autoIncrement()();
   late final name = text()();
-  late final IntColumn /*(1)!*/ age =
-      integer().nullable().check(age.isBiggerOrEqualValue(0))();
+  late final Column<int> age = integer().check(age.isBiggerOrEqualValue(0))();
 }
 // #enddocregion custom-check
 
@@ -286,12 +307,6 @@ class Items extends Table {
 }
 // #enddocregion pk-example
 
-// #docregion simple_schema
-class Todos extends Table {
-  late final name = text()(); // (1)!
-}
-// #enddocregion simple_schema
-
 // #docregion custom_table_name
 class Products extends Table {
   @JsonKey('product_name')
@@ -301,16 +316,6 @@ class Products extends Table {
   String get tableName => 'product_table';
 }
 // #enddocregion custom_table_name
-
-// #docregion simple_schema_db
-@DriftDatabase(tables: [Todos])
-class Database extends _$Database {
-  Database(super.e);
-
-  @override
-  int get schemaVersion => 1;
-}
-// #enddocregion simple_schema_db
 
 // #docregion table_mixin
 mixin TableMixin on Table {
