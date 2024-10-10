@@ -14,6 +14,8 @@
   ```
 - Make `build.yaml` definitions pass `build_runner doctor`.
 - Fix `generate_manager` option not consistently being applied to modular builds.
+- Add the `make-migrations` command which combines the existing schema commands
+  into a single tool.
 
 ## 2.20.3
 

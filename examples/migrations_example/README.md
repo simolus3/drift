@@ -9,20 +9,20 @@ See `test/migration_test.dart` on how to use the generated verification code.
 After adapting a schema and incrementing the `schemaVersion` in the database, run
 
 ```
-dart run drift_dev schema dump lib/database.dart drift_migrations/
+dart run drift_dev make-migrations
 ```
 
-### Generating test code
+### Testing
 
-Run
-
-```
-dart run drift_dev schema generate drift_migrations/ test/generated/ --data-classes --companions
-```
-
-Since we're using the step-by-step generator to make writing migrations easier, this command
-is used to generate a helper file in `lib/`:
+Write the migration using the step-by-step migration helper.
+To verify the migration, run the tests.
 
 ```
-dart run drift_dev schema steps drift_migrations/ lib/src/versions.dart
+dart test
+```
+
+To test a specific migration, use the `-N` flag with the migration name.
+
+```
+dart test -N "v1 to v2"
 ```

@@ -12,6 +12,21 @@ callback. However, the callbacks also give you an instance of `Migrator` as a
 parameter. This class knows about the target schema of the database and can be
 used to create, drop and alter most elements in your schema.
 
+## General tips 
+
+To ensure your schema stays consistent during a migration, you can wrap it in a `transaction` block.
+However, be aware that some pragmas (including `foreign_keys`) can't be changed inside transactions.
+Still, it can be useful to:
+
+- always re-enable foreign keys before using the database, by enabling them in [`beforeOpen`](#post-migration-callbacks).
+- disable foreign-keys before migrations
+- run migrations inside a transaction
+- make sure your migrations didn't introduce any inconsistencies with `PRAGMA foreign_key_check`.
+
+With all of this combined, a migration callback can look like this:
+
+{{ load_snippet('structured','lib/snippets/migrations/migrations.dart.excerpt.json') }}
+
 ## Migrating views, triggers and indices
 
 When changing the definition of a view, a trigger or an index, the easiest way
