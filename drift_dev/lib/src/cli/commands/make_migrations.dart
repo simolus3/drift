@@ -23,8 +23,11 @@ Generates migrations utilities for drift databases
 
 ${styleBold.wrap("Usage")}:
 
-After defining your database for the first time, run this command to save the schema.
-When you are ready to make changes to the database, alter the schema in the database file, bump the schema version and run this command again.
+Run this command to manage database migrations:
+
+1. After initially defining your database to save the schema.
+2. After modifying the database schema and incrementing the version.
+
 This will generate the following:
 
 1. A steps file which contains a helper function to write a migration from one version to another.
@@ -44,27 +47,16 @@ This will generate the following:
       ${blue.wrap(")")};
     ${yellow.wrap("}")}
 
-2. A test file which contains tests to validate that the migrations are correct. This will allow you to try out your migrations easily.
+2. A test file containing:
+   a) Automated tests to validate the correctness of migrations. 
 
-3. (Optional) The generated test can also be used to validate the data integrity of the migrations. 
-  Fill the generated validation models with data that should be present in the database before and after the migration.
-  These lists will be imported in the test file to validate the data integrity of the migrations
-
-  Example:
-  // Validate that the data in the database is still correct after removing a the isAdmin column
-  ${blue.wrap("final")} ${lightCyan.wrap("usersV1")} = ${yellow.wrap("[")}
-    v1.${green.wrap("User")}${magenta.wrap("(")}${lightCyan.wrap("id")}: ${green.wrap("Value")}${blue.wrap("(")}1${blue.wrap(")")}, ${lightCyan.wrap("name")}: ${green.wrap("Value")}${blue.wrap("(")}${lightRed.wrap("'Simon'")}${blue.wrap(")")}, ${lightCyan.wrap("isAdmin")}: ${green.wrap("Value")}${blue.wrap("(")}${blue.wrap("true")}${blue.wrap(")")}${magenta.wrap(")")},
-    v1.${green.wrap("User")}${magenta.wrap("(")}${lightCyan.wrap("id")}: ${green.wrap("Value")}${blue.wrap("(")}2${blue.wrap(")")}, ${lightCyan.wrap("name")}: ${green.wrap("Value")}${blue.wrap("(")}${lightRed.wrap("'John'")}${blue.wrap(")")}, ${lightCyan.wrap("isAdmin")}: ${green.wrap("Value")}${blue.wrap("(")}${blue.wrap("false")}${blue.wrap(")")}${magenta.wrap(")")},
-  ${yellow.wrap("]")};
-
-  ${blue.wrap("final")} ${lightCyan.wrap("usersV2")} = ${yellow.wrap("[")}
-    v2.${green.wrap("User")}${magenta.wrap("(")}${lightCyan.wrap("id")}: ${green.wrap("Value")}${blue.wrap("(")}1${blue.wrap(")")}, ${lightCyan.wrap("name")}: ${green.wrap("Value")}${blue.wrap("(")}${lightRed.wrap("'Simon'")}${blue.wrap(")")}${magenta.wrap(")")},
-    v2.${green.wrap("User")}${magenta.wrap("(")}${lightCyan.wrap("id")}: ${green.wrap("Value")}${blue.wrap("(")}2${blue.wrap(")")}, ${lightCyan.wrap("name")}: ${green.wrap("Value")}${blue.wrap("(")}${lightRed.wrap("'John'")}${blue.wrap(")")}${magenta.wrap(")")},
-  ${yellow.wrap("]")};
+   b) A sample data integrity test for the first migration. This test ensures that the initial schema is created correctly and that basic data operations work as expected.
+      This sample test should be adapted for subsequent migrations, especially those involving complex modifications to existing tables.
 
 ${styleBold.wrap("Configuration")}:
 
 This tool requires the database be defined in the build.yaml file.
+
 Example:
 
 ${blue.wrap("""
