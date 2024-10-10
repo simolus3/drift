@@ -403,7 +403,7 @@ void main() {
 
     cli.logger.info(
         '$dbName: Generated test in ${blue.wrap(p.relative(testFile.path))}.\n'
-        'Run this test to validate that your migrations are written correctly. ${yellow.wrap("dart test ${blue.wrap(p.relative(testFile.path))}")}');
+        'Run this test to validate that your migrations are written correctly. ${yellow.wrap("dart test ${p.relative(testFile.path)}")}');
     writeTasks[testFile] = code;
   }
 
@@ -464,14 +464,13 @@ class _MigrationWriter {
   /// It will also import the validation models to test data integrity
   String testStepByStepMigrationCode(String dbName, String dbClassName) {
     return """
-//////////////////////////////////////////////////////////////////////////////
-    ///////////////////// CUSTOM TESTS - MODIFY AS NEEDED ////////////////////////
-    //////////////////////////////////////////////////////////////////////////////
+/// Write data integrity tests for migrations that modify existing tables.
+/// These tests are important because the auto-generated tests only check empty schemas.
+    /// Testing with actual data helps ensure migrations don't corrupt existing information.
+    ///
+    /// The following is an example of how to write such a test:
 test("migration from v$from to v$to does not corrupt data",
       () async {
-    // TODO: Consider writing these kinds of tests when altering tables in a way that might affect existing rows.
-    // The automatically generated migration tests run with an empty schema, so it's a recommended practice to also test with
-    // data for relevant migrations.
     ${tables.map((table) {
       return """
 final old${table.dbGetterName.pascalCase}Data = <v$from.${table.nameOfRowClass}>[]; // TODO: Add expected data at version $from using v$from.${table.nameOfRowClass}
@@ -502,9 +501,9 @@ final expectedNew${table.dbGetterName.pascalCase}Data = <v$to.${table.nameOfRowC
       },
     );
   });
-  ///////////////////////////////////////////////////////////////////////////////
-  /////////////////////// END OF CUSTOM TESTS ///////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////
+    
+    /// Add additional data integrity tests here
+
 """;
   }
 }

@@ -36,13 +36,12 @@ void main() {
     /////////////////////// END OF GENERATED TESTS ///////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////////
-    ///////////////////// CUSTOM TESTS - MODIFY AS NEEDED ////////////////////////
-    //////////////////////////////////////////////////////////////////////////////
+    /// Write data integrity tests for migrations that modify existing tables.
+    /// These tests are important because the auto-generated tests only check empty schemas.
+    /// Testing with actual data helps ensure migrations don't corrupt existing information.
+    ///
+    /// The following is an example of how to write such a test:
     test("migration from v1 to v2 does not corrupt data", () async {
-      // TODO: Consider writing these kinds of tests when altering tables in a way that might affect existing rows.
-      // The automatically generated migration tests run with an empty schema, so it's a recommended practice to also test with
-      // data for relevant migrations.
       final oldUsersData = <v1
           .UsersData>[]; // TODO: Add expected data at version 1 using v1.UsersData
       final expectedNewUsersData = <v2
@@ -63,8 +62,7 @@ void main() {
         },
       );
     });
-    ///////////////////////////////////////////////////////////////////////////////
-    /////////////////////// END OF CUSTOM TESTS ///////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////
+
+    /// Add additional data integrity tests here
   });
 }
