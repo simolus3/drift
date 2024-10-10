@@ -70,9 +70,8 @@ This command will generate the following files:
 - A step-by-step migration file will be generated next to your database class. Use this function to write your migrations incrementally. See the [step-by-step migration guide](step_by_step.md) for more information.
 
 
-- Drift will also generate a test file for your migrations. After you've written your migration, run the tests to verify that your migrations are written correctly.
+- Drift will also generate a test file for your migrations. After you've written your migration, run the tests to verify that your migrations are written correctly. This files will also contain a sample data integrity test for the first migration.
 
-- Drift will also generate a file which can be used to make the tests validate the data integrity of your migrations. These files should be filled in with before and after data for each migration.
 
 If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/drift/discussions).
 
