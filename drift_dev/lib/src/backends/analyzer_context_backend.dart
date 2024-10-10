@@ -179,7 +179,9 @@ class AnalysisContextBackend extends DriftBackend {
           await this.context.currentSession.getResolvedLibrary(pathForTemp);
 
       if (result is ResolvedLibraryResult) {
-        return result.element.scope.lookup(reference).getter;
+        return result.element.definingCompilationUnit.scope
+            .lookup(reference)
+            .getter;
       }
     } finally {
       provider.removeOverlay(path);

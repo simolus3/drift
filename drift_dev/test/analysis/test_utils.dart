@@ -231,8 +231,9 @@ class TestBackend extends DriftBackend {
           await analysisContext.currentSession.getResolvedLibrary(path);
 
       if (result is ResolvedLibraryResult) {
-        final lookup = result.element.scope.lookup(reference);
-        return lookup.getter;
+        return result.element.definingCompilationUnit.scope
+            .lookup(reference)
+            .getter;
       }
     } finally {
       resourceProvider.removeOverlay(path);
