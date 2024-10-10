@@ -290,15 +290,15 @@ class _DriftBuildRun {
   }
 
   Future<void> _generateModular(FileState entrypointState) async {
+    final managerWriter = DatabaseManagerWriter(writer.child(), '');
+
     for (final element in entrypointState.analysis.values) {
       final result = element.result;
 
       if (result is DriftTable) {
         TableWriter(result, writer.child()).writeInto();
 
-        final scope = writer.child();
-        final manager = DatabaseManagerWriter(scope, '')..addTable(result);
-        manager.writeTableManagers();
+        managerWriter.addTable(result);
       } else if (result is DriftView) {
         ViewWriter(result, writer.child(), null).write();
       } else if (result is DriftTrigger) {
@@ -355,6 +355,10 @@ class _DriftBuildRun {
     }
 
     ModularAccessorWriter(writer.child(), entrypointState, driver).write();
+
+    if (options.generateManager) {
+      managerWriter.writeTableManagers();
+    }
   }
 
   Future<void> _generateMonolithic(FileState entrypointState) async {

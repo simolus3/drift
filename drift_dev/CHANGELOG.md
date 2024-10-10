@@ -13,6 +13,7 @@
   }
   ```
 - Make `build.yaml` definitions pass `build_runner doctor`.
+- Fix `generate_manager` option not consistently being applied to modular builds.
 
 ## 2.20.3
 

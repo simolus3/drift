@@ -285,6 +285,28 @@ q: INSERT INTO my_table (b, c, d) VALUES (?, ?, ?);
     }, result.dartOutputs, result.writer);
   });
 
+  test('can disable manager code for modular builds', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.drift': '''
+CREATE TABLE my_table (
+  a INTEGER PRIMARY KEY,
+  b TEXT,
+  c BLOB,
+  d ANY
+) STRICT;
+''',
+      },
+      modularBuild: true,
+      options: BuilderOptions({'generate_manager': false}),
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/main.drift.dart': decodedMatches(isNot(contains('Manager'))),
+    }, result.dartOutputs, result.writer);
+  });
+
   test('supports `MAPPED BY` for columns', () async {
     final results = await emulateDriftBuild(
       inputs: {
