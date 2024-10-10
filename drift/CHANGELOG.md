@@ -2,6 +2,7 @@
 
 - To infer whether serialization is required for inter-isolate communication,
   drift now sends a test message instead serializing by default.
+- The DevTools extension can now clear drift databases.
 
 ## 2.20.2
 

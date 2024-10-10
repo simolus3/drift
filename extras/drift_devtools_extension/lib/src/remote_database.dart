@@ -77,6 +77,10 @@ class RemoteDatabase {
     return (res as List).cast();
   }
 
+  Future<void> clear() async {
+    await _driftRequest('clear');
+  }
+
   Future<int> _newTableSubscription() async {
     final result = await _driftRequest('subscribe-to-tables');
     return result as int;
