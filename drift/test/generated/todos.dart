@@ -288,24 +288,6 @@ const uuidType = DialectAwareSqlType<UuidValue>.via(
   overrides: {SqlDialect.postgres: NativeUuidType()},
 );
 
-/// Tables to test that foreign keys which target foreign keys
-/// columns are handled correctly in manager code
-class FkToPk0 extends Table {
-  IntColumn get fk => integer().references(FkToPk0, #fk)();
-}
-
-class FkToPk1 extends Table {
-  IntColumn get fk => integer().references(FkToPk2, #fk)();
-}
-
-class FkToPk2 extends Table {
-  IntColumn get fk => integer().references(FkToPk3, #id)();
-}
-
-class FkToPk3 extends Table {
-  IntColumn get id => integer().autoIncrement()();
-}
-
 @DriftDatabase(
   tables: [
     TodosTable,
@@ -320,10 +302,6 @@ class FkToPk3 extends Table {
     Product,
     Listing,
     Store,
-    FkToPk0,
-    FkToPk1,
-    FkToPk2,
-    FkToPk3,
   ],
   views: [
     CategoryTodoCountView,
