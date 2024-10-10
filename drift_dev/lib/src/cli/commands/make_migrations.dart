@@ -7,10 +7,12 @@ import 'package:drift_dev/src/cli/cli.dart';
 import 'package:drift_dev/src/cli/commands/schema.dart';
 import 'package:drift_dev/src/cli/commands/schema/generate_utils.dart';
 import 'package:drift_dev/src/cli/commands/schema/steps.dart';
+import 'package:collection/collection.dart';
 
 import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:io/ansi.dart';
 import 'package:path/path.dart' as p;
+import 'package:recase/recase.dart';
 
 class MakeMigrationCommand extends DriftCommand {
   MakeMigrationCommand(super.cli);
@@ -143,7 +145,7 @@ targets:
       // Write the generated test databases
       await writer.writeTestDatabases();
       // Write the generated test
-      await writer.writeTests();
+      await writer.writeTest();
       writer.flush();
     }
   }
@@ -167,10 +169,6 @@ class _MigrationTestEmitter {
   /// The directory where the generated test utils are stored
   /// e.g /test/drift/my_database/generated/
   final Directory testDatabasesDir;
-
-  /// The directory where the generated test utils are stored
-  /// e.g /test/drift/my_database/validation/
-  final Directory validationModelsDir;
 
   /// Current schema version of the database
   final int schemaVersion;
@@ -214,7 +212,6 @@ class _MigrationTestEmitter {
     required this.schemaDir,
     required this.testDir,
     required this.testDatabasesDir,
-    required this.validationModelsDir,
     required this.schemaVersion,
     required this.dbClassName,
     required this.db,
@@ -247,9 +244,7 @@ class _MigrationTestEmitter {
       ..createSync(recursive: true);
     final testDir = Directory(p.join(rootTestDir.path, dbName))
       ..createSync(recursive: true);
-    final testDatabasesDir = Directory(p.join(testDir.path, 'schemas'))
-      ..createSync(recursive: true);
-    final validationModelsDir = Directory(p.join(testDir.path, 'validation'))
+    final testDatabasesDir = Directory(p.join(testDir.path, 'generated'))
       ..createSync(recursive: true);
     final (:db, :elements, :schemaVersion) =
         await cli.readElementsFromSource(dbClassFile.absolute);
@@ -273,7 +268,6 @@ class _MigrationTestEmitter {
         driftElements: elements,
         dbClassName: db.definingDartClass.toString(),
         testDatabasesDir: testDatabasesDir,
-        validationModelsDir: validationModelsDir,
         schemaVersion: schemaVersion);
   }
 
@@ -347,41 +341,31 @@ ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green
         GenerateUtils.generateLibraryCode(schemas.keys);
   }
 
-  Future<void> writeTests() async {
+  Future<void> writeTest() async {
+    final testFile = File(p.join(testDir.path, 'migration_test.dart'));
+    if (testFile.existsSync()) {
+      return;
+    }
+    if (migrations.isEmpty) {
+      return;
+    }
+
+    final firstMigration =
+        migrations.sorted((a, b) => a.from.compareTo(b.from)).first;
+
     final packageName = cli.project.buildConfig.packageName;
     final relativeDbPath = p.relative(dbClassFile.path,
         from: p.join(cli.project.directory.path, 'lib'));
 
-    final files = <File>[];
-    for (final migration in migrations) {
-      // Generate the validation models
-      final validationFile = File(p.join(validationModelsDir.path,
-          'v${migration.from}_to_v${migration.to}.dart'));
-      if (!validationFile.existsSync()) {
-        files.add(validationFile);
-        writeTasks[validationFile] = migration.validationModelsCode;
-      }
-    }
-    if (files.isNotEmpty) {
-      cli.logger.info(
-          '$dbName: Generated validation models in ${blue.wrap(files.map((e) => p.relative(e.path)).join(', '))}\n'
-          'Fill these lists with data that should be present in the database before and after the migration.\n'
-          'These lists will be used to validate that the migration was successful and that no data was lost');
-    }
-
-    final stepByStepTests = migrations
-        .map((e) => e.testStepByStepMigrationCode(dbName, dbClassName));
-
     final code = """
 // ignore_for_file: unused_local_variable, unused_import
-// GENERATED CODE, DO NOT EDIT BY HAND.
 import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations.dart';
 import 'package:$packageName/$relativeDbPath';
 import 'package:test/test.dart';
-import 'schemas/schema.dart';
+import 'generated/schema.dart';
 
-${stepByStepTests.map((e) => e.imports).expand((imports) => imports).toSet().join('\n')}
+${firstMigration.schemaImports().join('\n')}
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -391,20 +375,35 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  ${stepByStepTests.map((e) => e.test).join('\n')}
+  group('$dbName database', () {
+  //////////////////////////////////////////////////////////////////////////////
+  ////////////////////// GENERATED TESTS - DO NOT MODIFY ///////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+    if (GeneratedHelper.versions.length < 2) return;
+    for (var i
+        in List.generate(GeneratedHelper.versions.length - 1, (i) => i)) {
+      final oldVersion = GeneratedHelper.versions.elementAt(i);
+      final newVersion = GeneratedHelper.versions.elementAt(i + 1);
+      test("migrate from v\$oldVersion to v\$newVersion", () async {
+        final schema = await verifier.schemaAt(oldVersion);
+        final db = $dbClassName(schema.newConnection());
+        await verifier.migrateAndValidate(db, newVersion);
+        await db.close();
+      });
+  }
+  //////////////////////////////////////////////////////////////////////////////
+  /////////////////////// END OF GENERATED TESTS ///////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
+  ${firstMigration.testStepByStepMigrationCode(dbName, dbClassName)}
+  });
+  
 }
 """;
-    final testFile = File(p.join(testDir.path, 'migration_test.dart'));
-    if (testFile.existsSync()) {
-      cli.logger.fine(
-          '$dbName: Updated test in ${blue.wrap(p.relative(testFile.path))}');
-    } else {
-      cli.logger.info(
-          '$dbName: Generated test in ${blue.wrap(p.relative(testFile.path))}.\n'
-          'Run this test to validate that your migrations are written correctly. ${yellow.wrap("dart test ${blue.wrap(p.relative(testFile.path))}")}');
-    }
 
+    cli.logger.info(
+        '$dbName: Generated test in ${blue.wrap(p.relative(testFile.path))}.\n'
+        'Run this test to validate that your migrations are written correctly. ${yellow.wrap("dart test ${blue.wrap(p.relative(testFile.path))}")}');
     writeTasks[testFile] = code;
   }
 
@@ -453,58 +452,59 @@ class _MigrationWriter {
     return result;
   }
 
+  List<String> schemaImports() {
+    return [
+      "import 'generated/schema_v$from.dart' as v$from;",
+      "import 'generated/schema_v$to.dart' as v$to;"
+    ];
+  }
+
   /// Generate a step by step migration test
   /// This test will test the migration from version [from] to version [to]
   /// It will also import the validation models to test data integrity
-  ({Set<String> imports, String test}) testStepByStepMigrationCode(
-      String dbName, String dbClassName) {
-    final imports = <String>{
-      "import 'schemas/schema_v$from.dart' as v$from;",
-      "import 'schemas/schema_v$to.dart' as v$to;",
-      "import 'validation/v${from}_to_v$to.dart' as v${from}_to_v$to;"
-    };
-
-    final test = """
-test(
-  "$dbName - migrate from v$from to v$to",
-  () => testWithDataIntegrity(
-    from: $from, to: $to, verifier: verifier, createOld: (e) => v$from.DatabaseAtV$from(e),
-    createNew: (e) => v$to.DatabaseAtV$to(e), openTestedDatabase: (e) => $dbClassName(e),
-    createItems: (b, oldDb) {
-      ${tables.map(
-      (table) {
-        return "b.insertAll(oldDb.${table.dbGetterName}, v${from}_to_v$to.${table.dbGetterName}V$from);";
-      },
-    ).join('\n')}
-    },
-    validateItems: (newDb) async {
-      ${tables.map(
-      (table) {
-        return "expect(v${from}_to_v$to.${table.dbGetterName}V$to, await newDb.select(newDb.${table.dbGetterName}).get());";
-      },
-    ).join('\n')}
-    },
-  )
-);
+  String testStepByStepMigrationCode(String dbName, String dbClassName) {
+    return """
+//////////////////////////////////////////////////////////////////////////////
+    ///////////////////// CUSTOM TESTS - MODIFY AS NEEDED ////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+test("migration from v$from to v$to does not corrupt data",
+      () async {
+    // TODO: Consider writing these kinds of tests when altering tables in a way that might affect existing rows.
+    // The automatically generated migration tests run with an empty schema, so it's a recommended practice to also test with
+    // data for relevant migrations.
+    ${tables.map((table) {
+      return """
+final old${table.dbGetterName.pascalCase}Data = <v$from.${table.nameOfRowClass}>[]; // TODO: Add expected data at version $from using v$from.${table.nameOfRowClass}
+final expectedNew${table.dbGetterName.pascalCase}Data = <v$to.${table.nameOfRowClass}>[]; // TODO: Add expected data at version $to using v$to.${table.nameOfRowClass}
 """;
-    return (imports: imports, test: test);
+    }).join('\n')}
+
+    await verifier.testWithDataIntegrity(
+      oldVersion: $from,
+      newVersion: $to,
+      verifier: verifier,
+      createOld: (e) => v1.DatabaseAtV$from(e),
+      createNew: (e) => v2.DatabaseAtV$to(e),
+      openTestedDatabase: (e) => $dbClassName(e),
+      createItems: (batch, oldDb) {
+        ${tables.map(
+      (table) {
+        return "batch.insertAll(oldDb.${table.dbGetterName}, old${table.dbGetterName.pascalCase}Data);";
+      },
+    ).join('\n')}
+      },
+      validateItems: (newDb) async {
+        ${tables.map(
+      (table) {
+        return "expect(expectedNew${table.dbGetterName.pascalCase}Data, await newDb.select(newDb.${table.dbGetterName}).get());";
+      },
+    ).join('\n')}
+      },
+    );
+  });
+  ///////////////////////////////////////////////////////////////////////////////
+  /////////////////////// END OF CUSTOM TESTS ///////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////
+""";
   }
-
-  /// Generate the code for a file which users
-  /// will fill in with before and after data
-  /// to validate that the migration was successful and data was not lost
-  String get validationModelsCode => """
-import '../schemas/schema_v$from.dart' as v$from;
-import '../schemas/schema_v$to.dart' as v$to;
-
-/// Run `dart run drift_dev make-migrations --help` for more information
-${tables.map((table) {
-        return """
-
-final ${table.dbGetterName}V$from = <v$from.${table.nameOfRowClass}>[];
-final ${table.dbGetterName}V$to = <v$to.${table.nameOfRowClass}>[];
-""";
-      }).join('\n')}
-
-""";
 }

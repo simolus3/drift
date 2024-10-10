@@ -66,10 +66,9 @@ targets:
         // Test files should be created
         await d.dir('app/test/drift/my_database', [
           d.file('migration_test.dart', IsValidDartFile(anything)),
-          d.file('schemas/schema.dart', IsValidDartFile(anything)),
-          d.file('schemas/schema_v1.dart', IsValidDartFile(anything)),
-          d.file('schemas/schema_v2.dart', IsValidDartFile(anything)),
-          d.file('validation/v1_to_v2.dart', IsValidDartFile(anything)),
+          d.file('generated/schema.dart', IsValidDartFile(anything)),
+          d.file('generated/schema_v1.dart', IsValidDartFile(anything)),
+          d.file('generated/schema_v2.dart', IsValidDartFile(anything)),
         ]).validate();
         // Steps file should be created
         await d

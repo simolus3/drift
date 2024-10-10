@@ -87,22 +87,7 @@ abstract class SchemaVerifier {
       required void Function(Batch, OldDatabase) createItems,
       required Future Function(NewDatabase) validateItems,
       required int oldVersion,
-      required int newVersion}) async {
-    final schema = await verifier.schemaAt(oldVersion);
-
-    final oldDb = createOld(schema.newConnection());
-    await oldDb.customStatement('PRAGMA foreign_keys = OFF');
-    await oldDb.batch((batch) => createItems(batch, oldDb));
-    await oldDb.close();
-
-    final db = openTestedDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, newVersion);
-    await db.close();
-
-    final newDb = createNew(schema.newConnection());
-    await validateItems(newDb);
-    await newDb.close();
-  }
+      required int newVersion});
 }
 
 /// Utilities verifying that the current schema of the database matches what

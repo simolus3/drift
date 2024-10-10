@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as p;
+import 'package:collection/collection.dart';
 
 import '../../../analysis/results/file_results.dart';
 import '../../../analysis/results/results.dart';
@@ -165,11 +166,16 @@ class GenerateUtils {
         ..writeln('return v$version.DatabaseAtV$version(db);');
     }
 
-    final missingAsSet = '{${versions.join(', ')}}';
+    final versionsSet =
+        '{${versions.sorted((a, b) => a.compareTo(b)).join(', ')}}';
     buffer
       ..writeln('default:')
-      ..writeln('throw MissingSchemaException(version, const $missingAsSet);')
-      ..writeln('}}}');
+      ..writeln('throw MissingSchemaException(version, versions);')
+      ..writeln('}}');
+
+    buffer
+      ..writeln('static const versions = const $versionsSet;')
+      ..writeln('}');
 
     return _dartfmt.format(buffer.toString());
   }
