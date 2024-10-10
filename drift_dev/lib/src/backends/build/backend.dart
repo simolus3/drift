@@ -111,7 +111,7 @@ class DriftBuildBackend extends DriftBackend {
     if (await _buildStep.canRead(tempDart)) {
       final library = await _buildStep.resolver.libraryFor(tempDart);
 
-      return library.scope.lookup(reference).getter;
+      return library.definingCompilationUnit.scope.lookup(reference).getter;
     } else {
       // If there's no temporary file whose imports we can use, then that means
       // that there aren't any Dart imports in [context] at all. So we just need
