@@ -335,7 +335,7 @@ jobs:
       - name: Test with older sqlite3
         working-directory: examples/migrations_example
         run: |
-          LD_LIBRARY_PATH=$(realpath drift/.dart_tool/sqlite3/minimum) dart test
+          LD_LIBRARY_PATH=$(realpath ../../drift/.dart_tool/sqlite3/minimum) dart test
       - name: Check that extracting schema still works
         working-directory: examples/migrations_example
         run: dart run drift_dev schema dump lib/database.dart drift_migrations/
