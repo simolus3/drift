@@ -3120,6 +3120,635 @@ class ListingCompanion extends UpdateCompanion<ListingData> {
   }
 }
 
+class $FkToPk0Table extends FkToPk0 with TableInfo<$FkToPk0Table, FkToPk0Data> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FkToPk0Table(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _fkMeta = const VerificationMeta('fk');
+  @override
+  late final GeneratedColumn<int> fk = GeneratedColumn<int>(
+      'fk', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES fk_to_pk0 (fk)'));
+  @override
+  List<GeneratedColumn> get $columns => [fk];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fk_to_pk0';
+  @override
+  VerificationContext validateIntegrity(Insertable<FkToPk0Data> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('fk')) {
+      context.handle(_fkMeta, fk.isAcceptableOrUnknown(data['fk']!, _fkMeta));
+    } else if (isInserting) {
+      context.missing(_fkMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  FkToPk0Data map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FkToPk0Data(
+      fk: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}fk'])!,
+    );
+  }
+
+  @override
+  $FkToPk0Table createAlias(String alias) {
+    return $FkToPk0Table(attachedDatabase, alias);
+  }
+}
+
+class FkToPk0Data extends DataClass implements Insertable<FkToPk0Data> {
+  final int fk;
+  const FkToPk0Data({required this.fk});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['fk'] = Variable<int>(fk);
+    return map;
+  }
+
+  FkToPk0Companion toCompanion(bool nullToAbsent) {
+    return FkToPk0Companion(
+      fk: Value(fk),
+    );
+  }
+
+  factory FkToPk0Data.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FkToPk0Data(
+      fk: serializer.fromJson<int>(json['fk']),
+    );
+  }
+  factory FkToPk0Data.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      FkToPk0Data.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'fk': serializer.toJson<int>(fk),
+    };
+  }
+
+  FkToPk0Data copyWith({int? fk}) => FkToPk0Data(
+        fk: fk ?? this.fk,
+      );
+  FkToPk0Data copyWithCompanion(FkToPk0Companion data) {
+    return FkToPk0Data(
+      fk: data.fk.present ? data.fk.value : this.fk,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FkToPk0Data(')
+          ..write('fk: $fk')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => fk.hashCode;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is FkToPk0Data && other.fk == this.fk);
+}
+
+class FkToPk0Companion extends UpdateCompanion<FkToPk0Data> {
+  final Value<int> fk;
+  final Value<int> rowid;
+  const FkToPk0Companion({
+    this.fk = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FkToPk0Companion.insert({
+    required int fk,
+    this.rowid = const Value.absent(),
+  }) : fk = Value(fk);
+  static Insertable<FkToPk0Data> custom({
+    Expression<int>? fk,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (fk != null) 'fk': fk,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FkToPk0Companion copyWith({Value<int>? fk, Value<int>? rowid}) {
+    return FkToPk0Companion(
+      fk: fk ?? this.fk,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (fk.present) {
+      map['fk'] = Variable<int>(fk.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FkToPk0Companion(')
+          ..write('fk: $fk, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FkToPk3Table extends FkToPk3 with TableInfo<$FkToPk3Table, FkToPk3Data> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FkToPk3Table(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  @override
+  List<GeneratedColumn> get $columns => [id];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fk_to_pk3';
+  @override
+  VerificationContext validateIntegrity(Insertable<FkToPk3Data> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FkToPk3Data map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FkToPk3Data(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+    );
+  }
+
+  @override
+  $FkToPk3Table createAlias(String alias) {
+    return $FkToPk3Table(attachedDatabase, alias);
+  }
+}
+
+class FkToPk3Data extends DataClass implements Insertable<FkToPk3Data> {
+  final int id;
+  const FkToPk3Data({required this.id});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    return map;
+  }
+
+  FkToPk3Companion toCompanion(bool nullToAbsent) {
+    return FkToPk3Companion(
+      id: Value(id),
+    );
+  }
+
+  factory FkToPk3Data.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FkToPk3Data(
+      id: serializer.fromJson<int>(json['id']),
+    );
+  }
+  factory FkToPk3Data.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      FkToPk3Data.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+    };
+  }
+
+  FkToPk3Data copyWith({int? id}) => FkToPk3Data(
+        id: id ?? this.id,
+      );
+  FkToPk3Data copyWithCompanion(FkToPk3Companion data) {
+    return FkToPk3Data(
+      id: data.id.present ? data.id.value : this.id,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FkToPk3Data(')
+          ..write('id: $id')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is FkToPk3Data && other.id == this.id);
+}
+
+class FkToPk3Companion extends UpdateCompanion<FkToPk3Data> {
+  final Value<int> id;
+  const FkToPk3Companion({
+    this.id = const Value.absent(),
+  });
+  FkToPk3Companion.insert({
+    this.id = const Value.absent(),
+  });
+  static Insertable<FkToPk3Data> custom({
+    Expression<int>? id,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+    });
+  }
+
+  FkToPk3Companion copyWith({Value<int>? id}) {
+    return FkToPk3Companion(
+      id: id ?? this.id,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FkToPk3Companion(')
+          ..write('id: $id')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FkToPk2Table extends FkToPk2 with TableInfo<$FkToPk2Table, FkToPk2Data> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FkToPk2Table(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _fkMeta = const VerificationMeta('fk');
+  @override
+  late final GeneratedColumn<int> fk = GeneratedColumn<int>(
+      'fk', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES fk_to_pk3 (id)'));
+  @override
+  List<GeneratedColumn> get $columns => [fk];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fk_to_pk2';
+  @override
+  VerificationContext validateIntegrity(Insertable<FkToPk2Data> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('fk')) {
+      context.handle(_fkMeta, fk.isAcceptableOrUnknown(data['fk']!, _fkMeta));
+    } else if (isInserting) {
+      context.missing(_fkMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  FkToPk2Data map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FkToPk2Data(
+      fk: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}fk'])!,
+    );
+  }
+
+  @override
+  $FkToPk2Table createAlias(String alias) {
+    return $FkToPk2Table(attachedDatabase, alias);
+  }
+}
+
+class FkToPk2Data extends DataClass implements Insertable<FkToPk2Data> {
+  final int fk;
+  const FkToPk2Data({required this.fk});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['fk'] = Variable<int>(fk);
+    return map;
+  }
+
+  FkToPk2Companion toCompanion(bool nullToAbsent) {
+    return FkToPk2Companion(
+      fk: Value(fk),
+    );
+  }
+
+  factory FkToPk2Data.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FkToPk2Data(
+      fk: serializer.fromJson<int>(json['fk']),
+    );
+  }
+  factory FkToPk2Data.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      FkToPk2Data.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'fk': serializer.toJson<int>(fk),
+    };
+  }
+
+  FkToPk2Data copyWith({int? fk}) => FkToPk2Data(
+        fk: fk ?? this.fk,
+      );
+  FkToPk2Data copyWithCompanion(FkToPk2Companion data) {
+    return FkToPk2Data(
+      fk: data.fk.present ? data.fk.value : this.fk,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FkToPk2Data(')
+          ..write('fk: $fk')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => fk.hashCode;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is FkToPk2Data && other.fk == this.fk);
+}
+
+class FkToPk2Companion extends UpdateCompanion<FkToPk2Data> {
+  final Value<int> fk;
+  final Value<int> rowid;
+  const FkToPk2Companion({
+    this.fk = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FkToPk2Companion.insert({
+    required int fk,
+    this.rowid = const Value.absent(),
+  }) : fk = Value(fk);
+  static Insertable<FkToPk2Data> custom({
+    Expression<int>? fk,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (fk != null) 'fk': fk,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FkToPk2Companion copyWith({Value<int>? fk, Value<int>? rowid}) {
+    return FkToPk2Companion(
+      fk: fk ?? this.fk,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (fk.present) {
+      map['fk'] = Variable<int>(fk.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FkToPk2Companion(')
+          ..write('fk: $fk, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FkToPk1Table extends FkToPk1 with TableInfo<$FkToPk1Table, FkToPk1Data> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FkToPk1Table(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _fkMeta = const VerificationMeta('fk');
+  @override
+  late final GeneratedColumn<int> fk = GeneratedColumn<int>(
+      'fk', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES fk_to_pk2 (fk)'));
+  @override
+  List<GeneratedColumn> get $columns => [fk];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fk_to_pk1';
+  @override
+  VerificationContext validateIntegrity(Insertable<FkToPk1Data> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('fk')) {
+      context.handle(_fkMeta, fk.isAcceptableOrUnknown(data['fk']!, _fkMeta));
+    } else if (isInserting) {
+      context.missing(_fkMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  FkToPk1Data map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FkToPk1Data(
+      fk: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}fk'])!,
+    );
+  }
+
+  @override
+  $FkToPk1Table createAlias(String alias) {
+    return $FkToPk1Table(attachedDatabase, alias);
+  }
+}
+
+class FkToPk1Data extends DataClass implements Insertable<FkToPk1Data> {
+  final int fk;
+  const FkToPk1Data({required this.fk});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['fk'] = Variable<int>(fk);
+    return map;
+  }
+
+  FkToPk1Companion toCompanion(bool nullToAbsent) {
+    return FkToPk1Companion(
+      fk: Value(fk),
+    );
+  }
+
+  factory FkToPk1Data.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FkToPk1Data(
+      fk: serializer.fromJson<int>(json['fk']),
+    );
+  }
+  factory FkToPk1Data.fromJsonString(String encodedJson,
+          {ValueSerializer? serializer}) =>
+      FkToPk1Data.fromJson(
+          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          serializer: serializer);
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'fk': serializer.toJson<int>(fk),
+    };
+  }
+
+  FkToPk1Data copyWith({int? fk}) => FkToPk1Data(
+        fk: fk ?? this.fk,
+      );
+  FkToPk1Data copyWithCompanion(FkToPk1Companion data) {
+    return FkToPk1Data(
+      fk: data.fk.present ? data.fk.value : this.fk,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FkToPk1Data(')
+          ..write('fk: $fk')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => fk.hashCode;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is FkToPk1Data && other.fk == this.fk);
+}
+
+class FkToPk1Companion extends UpdateCompanion<FkToPk1Data> {
+  final Value<int> fk;
+  final Value<int> rowid;
+  const FkToPk1Companion({
+    this.fk = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FkToPk1Companion.insert({
+    required int fk,
+    this.rowid = const Value.absent(),
+  }) : fk = Value(fk);
+  static Insertable<FkToPk1Data> custom({
+    Expression<int>? fk,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (fk != null) 'fk': fk,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FkToPk1Companion copyWith({Value<int>? fk, Value<int>? rowid}) {
+    return FkToPk1Companion(
+      fk: fk ?? this.fk,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (fk.present) {
+      map['fk'] = Variable<int>(fk.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FkToPk1Companion(')
+          ..write('fk: $fk, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class CategoryTodoCountViewData extends DataClass {
   final int? categoryId;
   final String? description;
@@ -3358,6 +3987,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
   late final $ProductTable product = $ProductTable(this);
   late final $StoreTable store = $StoreTable(this);
   late final $ListingTable listing = $ListingTable(this);
+  late final $FkToPk0Table fkToPk0 = $FkToPk0Table(this);
+  late final $FkToPk3Table fkToPk3 = $FkToPk3Table(this);
+  late final $FkToPk2Table fkToPk2 = $FkToPk2Table(this);
+  late final $FkToPk1Table fkToPk1 = $FkToPk1Table(this);
   late final $CategoryTodoCountViewView categoryTodoCountView =
       $CategoryTodoCountViewView(this);
   late final $TodoWithCategoryViewView todoWithCategoryView =
@@ -3451,6 +4084,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
         product,
         store,
         listing,
+        fkToPk0,
+        fkToPk3,
+        fkToPk2,
+        fkToPk1,
         categoryTodoCountView,
         todoWithCategoryView
       ];
@@ -5913,6 +6550,585 @@ typedef $$ListingTableProcessedTableManager = ProcessedTableManager<
     (ListingData, $$ListingTableReferences),
     ListingData,
     PrefetchHooks Function({bool product, bool store})>;
+typedef $$FkToPk0TableCreateCompanionBuilder = FkToPk0Companion Function({
+  required int fk,
+  Value<int> rowid,
+});
+typedef $$FkToPk0TableUpdateCompanionBuilder = FkToPk0Companion Function({
+  Value<int> fk,
+  Value<int> rowid,
+});
+
+class $$FkToPk0TableFilterComposer extends Composer<_$TodoDb, $FkToPk0Table> {
+  $$FkToPk0TableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$FkToPk0TableOrderingComposer extends Composer<_$TodoDb, $FkToPk0Table> {
+  $$FkToPk0TableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$FkToPk0TableAnnotationComposer
+    extends Composer<_$TodoDb, $FkToPk0Table> {
+  $$FkToPk0TableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$FkToPk0TableTableManager extends RootTableManager<
+    _$TodoDb,
+    $FkToPk0Table,
+    FkToPk0Data,
+    $$FkToPk0TableFilterComposer,
+    $$FkToPk0TableOrderingComposer,
+    $$FkToPk0TableAnnotationComposer,
+    $$FkToPk0TableCreateCompanionBuilder,
+    $$FkToPk0TableUpdateCompanionBuilder,
+    (FkToPk0Data, BaseReferences<_$TodoDb, $FkToPk0Table, FkToPk0Data>),
+    FkToPk0Data,
+    PrefetchHooks Function()> {
+  $$FkToPk0TableTableManager(_$TodoDb db, $FkToPk0Table table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FkToPk0TableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FkToPk0TableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FkToPk0TableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> fk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FkToPk0Companion(
+            fk: fk,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int fk,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FkToPk0Companion.insert(
+            fk: fk,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FkToPk0TableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $FkToPk0Table,
+    FkToPk0Data,
+    $$FkToPk0TableFilterComposer,
+    $$FkToPk0TableOrderingComposer,
+    $$FkToPk0TableAnnotationComposer,
+    $$FkToPk0TableCreateCompanionBuilder,
+    $$FkToPk0TableUpdateCompanionBuilder,
+    (FkToPk0Data, BaseReferences<_$TodoDb, $FkToPk0Table, FkToPk0Data>),
+    FkToPk0Data,
+    PrefetchHooks Function()>;
+typedef $$FkToPk3TableCreateCompanionBuilder = FkToPk3Companion Function({
+  Value<int> id,
+});
+typedef $$FkToPk3TableUpdateCompanionBuilder = FkToPk3Companion Function({
+  Value<int> id,
+});
+
+final class $$FkToPk3TableReferences
+    extends BaseReferences<_$TodoDb, $FkToPk3Table, FkToPk3Data> {
+  $$FkToPk3TableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$FkToPk2Table, List<FkToPk2Data>>
+      _fkToPk2RefsTable(_$TodoDb db) =>
+          MultiTypedResultKey.fromTable(db.fkToPk2,
+              aliasName: $_aliasNameGenerator(db.fkToPk3.id, db.fkToPk2.fk));
+
+  $$FkToPk2TableProcessedTableManager get fkToPk2Refs {
+    final manager = $$FkToPk2TableTableManager($_db, $_db.fkToPk2)
+        .filter((f) => f.fk.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_fkToPk2RefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$FkToPk3TableFilterComposer extends Composer<_$TodoDb, $FkToPk3Table> {
+  $$FkToPk3TableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> fkToPk2Refs(
+      Expression<bool> Function($$FkToPk2TableFilterComposer f) f) {
+    final $$FkToPk2TableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.fkToPk2,
+        getReferencedColumn: (t) => t.fk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FkToPk2TableFilterComposer(
+              $db: $db,
+              $table: $db.fkToPk2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$FkToPk3TableOrderingComposer extends Composer<_$TodoDb, $FkToPk3Table> {
+  $$FkToPk3TableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+}
+
+class $$FkToPk3TableAnnotationComposer
+    extends Composer<_$TodoDb, $FkToPk3Table> {
+  $$FkToPk3TableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  Expression<T> fkToPk2Refs<T extends Object>(
+      Expression<T> Function($$FkToPk2TableAnnotationComposer a) f) {
+    final $$FkToPk2TableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.fkToPk2,
+        getReferencedColumn: (t) => t.fk,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FkToPk2TableAnnotationComposer(
+              $db: $db,
+              $table: $db.fkToPk2,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$FkToPk3TableTableManager extends RootTableManager<
+    _$TodoDb,
+    $FkToPk3Table,
+    FkToPk3Data,
+    $$FkToPk3TableFilterComposer,
+    $$FkToPk3TableOrderingComposer,
+    $$FkToPk3TableAnnotationComposer,
+    $$FkToPk3TableCreateCompanionBuilder,
+    $$FkToPk3TableUpdateCompanionBuilder,
+    (FkToPk3Data, $$FkToPk3TableReferences),
+    FkToPk3Data,
+    PrefetchHooks Function({bool fkToPk2Refs})> {
+  $$FkToPk3TableTableManager(_$TodoDb db, $FkToPk3Table table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FkToPk3TableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FkToPk3TableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FkToPk3TableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+          }) =>
+              FkToPk3Companion(
+            id: id,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+          }) =>
+              FkToPk3Companion.insert(
+            id: id,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$FkToPk3TableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({fkToPk2Refs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (fkToPk2Refs) db.fkToPk2],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (fkToPk2Refs)
+                    await $_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            $$FkToPk3TableReferences._fkToPk2RefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$FkToPk3TableReferences(db, table, p0).fkToPk2Refs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) =>
+                                referencedItems.where((e) => e.fk == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$FkToPk3TableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $FkToPk3Table,
+    FkToPk3Data,
+    $$FkToPk3TableFilterComposer,
+    $$FkToPk3TableOrderingComposer,
+    $$FkToPk3TableAnnotationComposer,
+    $$FkToPk3TableCreateCompanionBuilder,
+    $$FkToPk3TableUpdateCompanionBuilder,
+    (FkToPk3Data, $$FkToPk3TableReferences),
+    FkToPk3Data,
+    PrefetchHooks Function({bool fkToPk2Refs})>;
+typedef $$FkToPk2TableCreateCompanionBuilder = FkToPk2Companion Function({
+  required int fk,
+  Value<int> rowid,
+});
+typedef $$FkToPk2TableUpdateCompanionBuilder = FkToPk2Companion Function({
+  Value<int> fk,
+  Value<int> rowid,
+});
+
+final class $$FkToPk2TableReferences
+    extends BaseReferences<_$TodoDb, $FkToPk2Table, FkToPk2Data> {
+  $$FkToPk2TableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $FkToPk3Table _fkTable(_$TodoDb db) => db.fkToPk3
+      .createAlias($_aliasNameGenerator(db.fkToPk2.fk, db.fkToPk3.id));
+
+  $$FkToPk3TableProcessedTableManager? get fk {
+    if ($_item.fk == null) return null;
+    final manager = $$FkToPk3TableTableManager($_db, $_db.fkToPk3)
+        .filter((f) => f.id($_item.fk!));
+    final item = $_typedResult.readTableOrNull(_fkTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$FkToPk2TableFilterComposer extends Composer<_$TodoDb, $FkToPk2Table> {
+  $$FkToPk2TableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$FkToPk3TableFilterComposer get fk {
+    final $$FkToPk3TableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.fk,
+        referencedTable: $db.fkToPk3,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FkToPk3TableFilterComposer(
+              $db: $db,
+              $table: $db.fkToPk3,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$FkToPk2TableOrderingComposer extends Composer<_$TodoDb, $FkToPk2Table> {
+  $$FkToPk2TableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$FkToPk3TableOrderingComposer get fk {
+    final $$FkToPk3TableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.fk,
+        referencedTable: $db.fkToPk3,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FkToPk3TableOrderingComposer(
+              $db: $db,
+              $table: $db.fkToPk3,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$FkToPk2TableAnnotationComposer
+    extends Composer<_$TodoDb, $FkToPk2Table> {
+  $$FkToPk2TableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$FkToPk3TableAnnotationComposer get fk {
+    final $$FkToPk3TableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.fk,
+        referencedTable: $db.fkToPk3,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$FkToPk3TableAnnotationComposer(
+              $db: $db,
+              $table: $db.fkToPk3,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$FkToPk2TableTableManager extends RootTableManager<
+    _$TodoDb,
+    $FkToPk2Table,
+    FkToPk2Data,
+    $$FkToPk2TableFilterComposer,
+    $$FkToPk2TableOrderingComposer,
+    $$FkToPk2TableAnnotationComposer,
+    $$FkToPk2TableCreateCompanionBuilder,
+    $$FkToPk2TableUpdateCompanionBuilder,
+    (FkToPk2Data, $$FkToPk2TableReferences),
+    FkToPk2Data,
+    PrefetchHooks Function({bool fk})> {
+  $$FkToPk2TableTableManager(_$TodoDb db, $FkToPk2Table table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FkToPk2TableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FkToPk2TableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FkToPk2TableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> fk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FkToPk2Companion(
+            fk: fk,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int fk,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FkToPk2Companion.insert(
+            fk: fk,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$FkToPk2TableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: ({fk = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (fk) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.fk,
+                    referencedTable: $$FkToPk2TableReferences._fkTable(db),
+                    referencedColumn: $$FkToPk2TableReferences._fkTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$FkToPk2TableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $FkToPk2Table,
+    FkToPk2Data,
+    $$FkToPk2TableFilterComposer,
+    $$FkToPk2TableOrderingComposer,
+    $$FkToPk2TableAnnotationComposer,
+    $$FkToPk2TableCreateCompanionBuilder,
+    $$FkToPk2TableUpdateCompanionBuilder,
+    (FkToPk2Data, $$FkToPk2TableReferences),
+    FkToPk2Data,
+    PrefetchHooks Function({bool fk})>;
+typedef $$FkToPk1TableCreateCompanionBuilder = FkToPk1Companion Function({
+  required int fk,
+  Value<int> rowid,
+});
+typedef $$FkToPk1TableUpdateCompanionBuilder = FkToPk1Companion Function({
+  Value<int> fk,
+  Value<int> rowid,
+});
+
+class $$FkToPk1TableFilterComposer extends Composer<_$TodoDb, $FkToPk1Table> {
+  $$FkToPk1TableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$FkToPk1TableOrderingComposer extends Composer<_$TodoDb, $FkToPk1Table> {
+  $$FkToPk1TableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$FkToPk1TableAnnotationComposer
+    extends Composer<_$TodoDb, $FkToPk1Table> {
+  $$FkToPk1TableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$FkToPk1TableTableManager extends RootTableManager<
+    _$TodoDb,
+    $FkToPk1Table,
+    FkToPk1Data,
+    $$FkToPk1TableFilterComposer,
+    $$FkToPk1TableOrderingComposer,
+    $$FkToPk1TableAnnotationComposer,
+    $$FkToPk1TableCreateCompanionBuilder,
+    $$FkToPk1TableUpdateCompanionBuilder,
+    (FkToPk1Data, BaseReferences<_$TodoDb, $FkToPk1Table, FkToPk1Data>),
+    FkToPk1Data,
+    PrefetchHooks Function()> {
+  $$FkToPk1TableTableManager(_$TodoDb db, $FkToPk1Table table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FkToPk1TableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FkToPk1TableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FkToPk1TableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> fk = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FkToPk1Companion(
+            fk: fk,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required int fk,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              FkToPk1Companion.insert(
+            fk: fk,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$FkToPk1TableProcessedTableManager = ProcessedTableManager<
+    _$TodoDb,
+    $FkToPk1Table,
+    FkToPk1Data,
+    $$FkToPk1TableFilterComposer,
+    $$FkToPk1TableOrderingComposer,
+    $$FkToPk1TableAnnotationComposer,
+    $$FkToPk1TableCreateCompanionBuilder,
+    $$FkToPk1TableUpdateCompanionBuilder,
+    (FkToPk1Data, BaseReferences<_$TodoDb, $FkToPk1Table, FkToPk1Data>),
+    FkToPk1Data,
+    PrefetchHooks Function()>;
 
 class $TodoDbManager {
   final _$TodoDb _db;
@@ -5942,6 +7158,14 @@ class $TodoDbManager {
       $$StoreTableTableManager(_db, _db.store);
   $$ListingTableTableManager get listing =>
       $$ListingTableTableManager(_db, _db.listing);
+  $$FkToPk0TableTableManager get fkToPk0 =>
+      $$FkToPk0TableTableManager(_db, _db.fkToPk0);
+  $$FkToPk3TableTableManager get fkToPk3 =>
+      $$FkToPk3TableTableManager(_db, _db.fkToPk3);
+  $$FkToPk2TableTableManager get fkToPk2 =>
+      $$FkToPk2TableTableManager(_db, _db.fkToPk2);
+  $$FkToPk1TableTableManager get fkToPk1 =>
+      $$FkToPk1TableTableManager(_db, _db.fkToPk1);
 }
 
 class AllTodosWithCategoryResult extends CustomResultSet {

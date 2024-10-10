@@ -175,9 +175,49 @@ class _Fake$ListingTable_13 extends _i1.SmartFake implements _i3.$ListingTable {
         );
 }
 
-class _Fake$CategoryTodoCountViewView_14 extends _i1.SmartFake
+class _Fake$FkToPk0Table_14 extends _i1.SmartFake implements _i3.$FkToPk0Table {
+  _Fake$FkToPk0Table_14(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$FkToPk3Table_15 extends _i1.SmartFake implements _i3.$FkToPk3Table {
+  _Fake$FkToPk3Table_15(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$FkToPk2Table_16 extends _i1.SmartFake implements _i3.$FkToPk2Table {
+  _Fake$FkToPk2Table_16(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$FkToPk1Table_17 extends _i1.SmartFake implements _i3.$FkToPk1Table {
+  _Fake$FkToPk1Table_17(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$CategoryTodoCountViewView_18 extends _i1.SmartFake
     implements _i3.$CategoryTodoCountViewView {
-  _Fake$CategoryTodoCountViewView_14(
+  _Fake$CategoryTodoCountViewView_18(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -186,9 +226,9 @@ class _Fake$CategoryTodoCountViewView_14 extends _i1.SmartFake
         );
 }
 
-class _Fake$TodoWithCategoryViewView_15 extends _i1.SmartFake
+class _Fake$TodoWithCategoryViewView_19 extends _i1.SmartFake
     implements _i3.$TodoWithCategoryViewView {
-  _Fake$TodoWithCategoryViewView_15(
+  _Fake$TodoWithCategoryViewView_19(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -197,8 +237,8 @@ class _Fake$TodoWithCategoryViewView_15 extends _i1.SmartFake
         );
 }
 
-class _FakeSomeDao_16 extends _i1.SmartFake implements _i3.SomeDao {
-  _FakeSomeDao_16(
+class _FakeSomeDao_20 extends _i1.SmartFake implements _i3.SomeDao {
+  _FakeSomeDao_20(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -207,9 +247,9 @@ class _FakeSomeDao_16 extends _i1.SmartFake implements _i3.SomeDao {
         );
 }
 
-class _Fake$TodoDbManager_17 extends _i1.SmartFake
+class _Fake$TodoDbManager_21 extends _i1.SmartFake
     implements _i3.$TodoDbManager {
-  _Fake$TodoDbManager_17(
+  _Fake$TodoDbManager_21(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -218,9 +258,9 @@ class _Fake$TodoDbManager_17 extends _i1.SmartFake
         );
 }
 
-class _FakeGeneratedDatabase_18 extends _i1.SmartFake
+class _FakeGeneratedDatabase_22 extends _i1.SmartFake
     implements _i2.GeneratedDatabase {
-  _FakeGeneratedDatabase_18(
+  _FakeGeneratedDatabase_22(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -229,9 +269,9 @@ class _FakeGeneratedDatabase_18 extends _i1.SmartFake
         );
 }
 
-class _FakeStreamQueryUpdateRules_19 extends _i1.SmartFake
+class _FakeStreamQueryUpdateRules_23 extends _i1.SmartFake
     implements _i2.StreamQueryUpdateRules {
-  _FakeStreamQueryUpdateRules_19(
+  _FakeStreamQueryUpdateRules_23(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -240,9 +280,9 @@ class _FakeStreamQueryUpdateRules_19 extends _i1.SmartFake
         );
 }
 
-class _FakeDatabaseConnection_20 extends _i1.SmartFake
+class _FakeDatabaseConnection_24 extends _i1.SmartFake
     implements _i2.DatabaseConnection {
-  _FakeDatabaseConnection_20(
+  _FakeDatabaseConnection_24(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -251,8 +291,8 @@ class _FakeDatabaseConnection_20 extends _i1.SmartFake
         );
 }
 
-class _FakeQueryExecutor_21 extends _i1.SmartFake implements _i2.QueryExecutor {
-  _FakeQueryExecutor_21(
+class _FakeQueryExecutor_25 extends _i1.SmartFake implements _i2.QueryExecutor {
+  _FakeQueryExecutor_25(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -261,9 +301,9 @@ class _FakeQueryExecutor_21 extends _i1.SmartFake implements _i2.QueryExecutor {
         );
 }
 
-class _FakeStreamQueryStore_22 extends _i1.SmartFake
+class _FakeStreamQueryStore_26 extends _i1.SmartFake
     implements _i4.StreamQueryStore {
-  _FakeStreamQueryStore_22(
+  _FakeStreamQueryStore_26(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -272,9 +312,9 @@ class _FakeStreamQueryStore_22 extends _i1.SmartFake
         );
 }
 
-class _FakeDatabaseConnectionUser_23 extends _i1.SmartFake
+class _FakeDatabaseConnectionUser_27 extends _i1.SmartFake
     implements _i2.DatabaseConnectionUser {
-  _FakeDatabaseConnectionUser_23(
+  _FakeDatabaseConnectionUser_27(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -283,8 +323,8 @@ class _FakeDatabaseConnectionUser_23 extends _i1.SmartFake
         );
 }
 
-class _FakeSelectable_24<T> extends _i1.SmartFake implements _i2.Selectable<T> {
-  _FakeSelectable_24(
+class _FakeSelectable_28<T> extends _i1.SmartFake implements _i2.Selectable<T> {
+  _FakeSelectable_28(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -293,8 +333,8 @@ class _FakeSelectable_24<T> extends _i1.SmartFake implements _i2.Selectable<T> {
         );
 }
 
-class _FakeMigrator_25 extends _i1.SmartFake implements _i2.Migrator {
-  _FakeMigrator_25(
+class _FakeMigrator_29 extends _i1.SmartFake implements _i2.Migrator {
+  _FakeMigrator_29(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -303,8 +343,8 @@ class _FakeMigrator_25 extends _i1.SmartFake implements _i2.Migrator {
         );
 }
 
-class _FakeFuture_26<T1> extends _i1.SmartFake implements _i5.Future<T1> {
-  _FakeFuture_26(
+class _FakeFuture_30<T1> extends _i1.SmartFake implements _i5.Future<T1> {
+  _FakeFuture_30(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -313,9 +353,9 @@ class _FakeFuture_26<T1> extends _i1.SmartFake implements _i5.Future<T1> {
         );
 }
 
-class _FakeInsertStatement_27<T1 extends _i2.Table, D1> extends _i1.SmartFake
+class _FakeInsertStatement_31<T1 extends _i2.Table, D1> extends _i1.SmartFake
     implements _i2.InsertStatement<T1, D1> {
-  _FakeInsertStatement_27(
+  _FakeInsertStatement_31(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -324,9 +364,9 @@ class _FakeInsertStatement_27<T1 extends _i2.Table, D1> extends _i1.SmartFake
         );
 }
 
-class _FakeUpdateStatement_28<T extends _i2.Table, D> extends _i1.SmartFake
+class _FakeUpdateStatement_32<T extends _i2.Table, D> extends _i1.SmartFake
     implements _i2.UpdateStatement<T, D> {
-  _FakeUpdateStatement_28(
+  _FakeUpdateStatement_32(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -335,9 +375,9 @@ class _FakeUpdateStatement_28<T extends _i2.Table, D> extends _i1.SmartFake
         );
 }
 
-class _FakeSimpleSelectStatement_29<T1 extends _i2.HasResultSet, D>
+class _FakeSimpleSelectStatement_33<T1 extends _i2.HasResultSet, D>
     extends _i1.SmartFake implements _i2.SimpleSelectStatement<T1, D> {
-  _FakeSimpleSelectStatement_29(
+  _FakeSimpleSelectStatement_33(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -346,9 +386,9 @@ class _FakeSimpleSelectStatement_29<T1 extends _i2.HasResultSet, D>
         );
 }
 
-class _FakeJoinedSelectStatement_30<FirstT extends _i2.HasResultSet, FirstD>
+class _FakeJoinedSelectStatement_34<FirstT extends _i2.HasResultSet, FirstD>
     extends _i1.SmartFake implements _i2.JoinedSelectStatement<FirstT, FirstD> {
-  _FakeJoinedSelectStatement_30(
+  _FakeJoinedSelectStatement_34(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -357,9 +397,9 @@ class _FakeJoinedSelectStatement_30<FirstT extends _i2.HasResultSet, FirstD>
         );
 }
 
-class _FakeDeleteStatement_31<T1 extends _i2.Table, D1> extends _i1.SmartFake
+class _FakeDeleteStatement_35<T1 extends _i2.Table, D1> extends _i1.SmartFake
     implements _i2.DeleteStatement<T1, D1> {
-  _FakeDeleteStatement_31(
+  _FakeDeleteStatement_35(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -368,9 +408,9 @@ class _FakeDeleteStatement_31<T1 extends _i2.Table, D1> extends _i1.SmartFake
         );
 }
 
-class _FakeGenerationContext_32 extends _i1.SmartFake
+class _FakeGenerationContext_36 extends _i1.SmartFake
     implements _i2.GenerationContext {
-  _FakeGenerationContext_32(
+  _FakeGenerationContext_36(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -601,14 +641,66 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
       ) as _i3.$ListingTable);
 
   @override
+  _i3.$FkToPk0Table get fkToPk0 => (super.noSuchMethod(
+        Invocation.getter(#fkToPk0),
+        returnValue: _Fake$FkToPk0Table_14(
+          this,
+          Invocation.getter(#fkToPk0),
+        ),
+        returnValueForMissingStub: _Fake$FkToPk0Table_14(
+          this,
+          Invocation.getter(#fkToPk0),
+        ),
+      ) as _i3.$FkToPk0Table);
+
+  @override
+  _i3.$FkToPk3Table get fkToPk3 => (super.noSuchMethod(
+        Invocation.getter(#fkToPk3),
+        returnValue: _Fake$FkToPk3Table_15(
+          this,
+          Invocation.getter(#fkToPk3),
+        ),
+        returnValueForMissingStub: _Fake$FkToPk3Table_15(
+          this,
+          Invocation.getter(#fkToPk3),
+        ),
+      ) as _i3.$FkToPk3Table);
+
+  @override
+  _i3.$FkToPk2Table get fkToPk2 => (super.noSuchMethod(
+        Invocation.getter(#fkToPk2),
+        returnValue: _Fake$FkToPk2Table_16(
+          this,
+          Invocation.getter(#fkToPk2),
+        ),
+        returnValueForMissingStub: _Fake$FkToPk2Table_16(
+          this,
+          Invocation.getter(#fkToPk2),
+        ),
+      ) as _i3.$FkToPk2Table);
+
+  @override
+  _i3.$FkToPk1Table get fkToPk1 => (super.noSuchMethod(
+        Invocation.getter(#fkToPk1),
+        returnValue: _Fake$FkToPk1Table_17(
+          this,
+          Invocation.getter(#fkToPk1),
+        ),
+        returnValueForMissingStub: _Fake$FkToPk1Table_17(
+          this,
+          Invocation.getter(#fkToPk1),
+        ),
+      ) as _i3.$FkToPk1Table);
+
+  @override
   _i3.$CategoryTodoCountViewView get categoryTodoCountView =>
       (super.noSuchMethod(
         Invocation.getter(#categoryTodoCountView),
-        returnValue: _Fake$CategoryTodoCountViewView_14(
+        returnValue: _Fake$CategoryTodoCountViewView_18(
           this,
           Invocation.getter(#categoryTodoCountView),
         ),
-        returnValueForMissingStub: _Fake$CategoryTodoCountViewView_14(
+        returnValueForMissingStub: _Fake$CategoryTodoCountViewView_18(
           this,
           Invocation.getter(#categoryTodoCountView),
         ),
@@ -617,11 +709,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$TodoWithCategoryViewView get todoWithCategoryView => (super.noSuchMethod(
         Invocation.getter(#todoWithCategoryView),
-        returnValue: _Fake$TodoWithCategoryViewView_15(
+        returnValue: _Fake$TodoWithCategoryViewView_19(
           this,
           Invocation.getter(#todoWithCategoryView),
         ),
-        returnValueForMissingStub: _Fake$TodoWithCategoryViewView_15(
+        returnValueForMissingStub: _Fake$TodoWithCategoryViewView_19(
           this,
           Invocation.getter(#todoWithCategoryView),
         ),
@@ -630,11 +722,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.SomeDao get someDao => (super.noSuchMethod(
         Invocation.getter(#someDao),
-        returnValue: _FakeSomeDao_16(
+        returnValue: _FakeSomeDao_20(
           this,
           Invocation.getter(#someDao),
         ),
-        returnValueForMissingStub: _FakeSomeDao_16(
+        returnValueForMissingStub: _FakeSomeDao_20(
           this,
           Invocation.getter(#someDao),
         ),
@@ -643,11 +735,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$TodoDbManager get managers => (super.noSuchMethod(
         Invocation.getter(#managers),
-        returnValue: _Fake$TodoDbManager_17(
+        returnValue: _Fake$TodoDbManager_21(
           this,
           Invocation.getter(#managers),
         ),
-        returnValueForMissingStub: _Fake$TodoDbManager_17(
+        returnValueForMissingStub: _Fake$TodoDbManager_21(
           this,
           Invocation.getter(#managers),
         ),
@@ -671,11 +763,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i2.GeneratedDatabase get attachedDatabase => (super.noSuchMethod(
         Invocation.getter(#attachedDatabase),
-        returnValue: _FakeGeneratedDatabase_18(
+        returnValue: _FakeGeneratedDatabase_22(
           this,
           Invocation.getter(#attachedDatabase),
         ),
-        returnValueForMissingStub: _FakeGeneratedDatabase_18(
+        returnValueForMissingStub: _FakeGeneratedDatabase_22(
           this,
           Invocation.getter(#attachedDatabase),
         ),
@@ -684,11 +776,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i2.StreamQueryUpdateRules get streamUpdateRules => (super.noSuchMethod(
         Invocation.getter(#streamUpdateRules),
-        returnValue: _FakeStreamQueryUpdateRules_19(
+        returnValue: _FakeStreamQueryUpdateRules_23(
           this,
           Invocation.getter(#streamUpdateRules),
         ),
-        returnValueForMissingStub: _FakeStreamQueryUpdateRules_19(
+        returnValueForMissingStub: _FakeStreamQueryUpdateRules_23(
           this,
           Invocation.getter(#streamUpdateRules),
         ),
@@ -697,11 +789,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i2.DatabaseConnection get connection => (super.noSuchMethod(
         Invocation.getter(#connection),
-        returnValue: _FakeDatabaseConnection_20(
+        returnValue: _FakeDatabaseConnection_24(
           this,
           Invocation.getter(#connection),
         ),
-        returnValueForMissingStub: _FakeDatabaseConnection_20(
+        returnValueForMissingStub: _FakeDatabaseConnection_24(
           this,
           Invocation.getter(#connection),
         ),
@@ -723,11 +815,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i2.QueryExecutor get executor => (super.noSuchMethod(
         Invocation.getter(#executor),
-        returnValue: _FakeQueryExecutor_21(
+        returnValue: _FakeQueryExecutor_25(
           this,
           Invocation.getter(#executor),
         ),
-        returnValueForMissingStub: _FakeQueryExecutor_21(
+        returnValueForMissingStub: _FakeQueryExecutor_25(
           this,
           Invocation.getter(#executor),
         ),
@@ -736,11 +828,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i4.StreamQueryStore get streamQueries => (super.noSuchMethod(
         Invocation.getter(#streamQueries),
-        returnValue: _FakeStreamQueryStore_22(
+        returnValue: _FakeStreamQueryStore_26(
           this,
           Invocation.getter(#streamQueries),
         ),
-        returnValueForMissingStub: _FakeStreamQueryStore_22(
+        returnValueForMissingStub: _FakeStreamQueryStore_26(
           this,
           Invocation.getter(#streamQueries),
         ),
@@ -749,11 +841,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i2.DatabaseConnectionUser get resolvedEngine => (super.noSuchMethod(
         Invocation.getter(#resolvedEngine),
-        returnValue: _FakeDatabaseConnectionUser_23(
+        returnValue: _FakeDatabaseConnectionUser_27(
           this,
           Invocation.getter(#resolvedEngine),
         ),
-        returnValueForMissingStub: _FakeDatabaseConnectionUser_23(
+        returnValueForMissingStub: _FakeDatabaseConnectionUser_27(
           this,
           Invocation.getter(#resolvedEngine),
         ),
@@ -766,7 +858,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           #allTodosWithCategory,
           [],
         ),
-        returnValue: _FakeSelectable_24<_i3.AllTodosWithCategoryResult>(
+        returnValue: _FakeSelectable_28<_i3.AllTodosWithCategoryResult>(
           this,
           Invocation.method(
             #allTodosWithCategory,
@@ -774,7 +866,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           ),
         ),
         returnValueForMissingStub:
-            _FakeSelectable_24<_i3.AllTodosWithCategoryResult>(
+            _FakeSelectable_28<_i3.AllTodosWithCategoryResult>(
           this,
           Invocation.method(
             #allTodosWithCategory,
@@ -808,7 +900,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             var3,
           ],
         ),
-        returnValue: _FakeSelectable_24<_i3.TodoEntry>(
+        returnValue: _FakeSelectable_28<_i3.TodoEntry>(
           this,
           Invocation.method(
             #withIn,
@@ -819,7 +911,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             ],
           ),
         ),
-        returnValueForMissingStub: _FakeSelectable_24<_i3.TodoEntry>(
+        returnValueForMissingStub: _FakeSelectable_28<_i3.TodoEntry>(
           this,
           Invocation.method(
             #withIn,
@@ -840,7 +932,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           [],
           {#id: id},
         ),
-        returnValue: _FakeSelectable_24<_i3.TodoEntry>(
+        returnValue: _FakeSelectable_28<_i3.TodoEntry>(
           this,
           Invocation.method(
             #search,
@@ -848,7 +940,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             {#id: id},
           ),
         ),
-        returnValueForMissingStub: _FakeSelectable_24<_i3.TodoEntry>(
+        returnValueForMissingStub: _FakeSelectable_28<_i3.TodoEntry>(
           this,
           Invocation.method(
             #search,
@@ -864,14 +956,14 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           #findCustom,
           [],
         ),
-        returnValue: _FakeSelectable_24<_i3.MyCustomObject>(
+        returnValue: _FakeSelectable_28<_i3.MyCustomObject>(
           this,
           Invocation.method(
             #findCustom,
             [],
           ),
         ),
-        returnValueForMissingStub: _FakeSelectable_24<_i3.MyCustomObject>(
+        returnValueForMissingStub: _FakeSelectable_28<_i3.MyCustomObject>(
           this,
           Invocation.method(
             #findCustom,
@@ -886,14 +978,14 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           #createMigrator,
           [],
         ),
-        returnValue: _FakeMigrator_25(
+        returnValue: _FakeMigrator_29(
           this,
           Invocation.method(
             #createMigrator,
             [],
           ),
         ),
-        returnValueForMissingStub: _FakeMigrator_25(
+        returnValueForMissingStub: _FakeMigrator_29(
           this,
           Invocation.method(
             #createMigrator,
@@ -1025,7 +1117,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
               ),
               (T v) => _i5.Future<T>.value(v),
             ) ??
-            _FakeFuture_26<T>(
+            _FakeFuture_30<T>(
               this,
               Invocation.method(
                 #doWhenOpened,
@@ -1042,7 +1134,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
               ),
               (T v) => _i5.Future<T>.value(v),
             ) ??
-            _FakeFuture_26<T>(
+            _FakeFuture_30<T>(
               this,
               Invocation.method(
                 #doWhenOpened,
@@ -1059,14 +1151,14 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           #into,
           [table],
         ),
-        returnValue: _FakeInsertStatement_27<T, D>(
+        returnValue: _FakeInsertStatement_31<T, D>(
           this,
           Invocation.method(
             #into,
             [table],
           ),
         ),
-        returnValueForMissingStub: _FakeInsertStatement_27<T, D>(
+        returnValueForMissingStub: _FakeInsertStatement_31<T, D>(
           this,
           Invocation.method(
             #into,
@@ -1083,14 +1175,14 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           #update,
           [table],
         ),
-        returnValue: _FakeUpdateStatement_28<Tbl, R>(
+        returnValue: _FakeUpdateStatement_32<Tbl, R>(
           this,
           Invocation.method(
             #update,
             [table],
           ),
         ),
-        returnValueForMissingStub: _FakeUpdateStatement_28<Tbl, R>(
+        returnValueForMissingStub: _FakeUpdateStatement_32<Tbl, R>(
           this,
           Invocation.method(
             #update,
@@ -1110,7 +1202,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           [table],
           {#distinct: distinct},
         ),
-        returnValue: _FakeSimpleSelectStatement_29<T, R>(
+        returnValue: _FakeSimpleSelectStatement_33<T, R>(
           this,
           Invocation.method(
             #select,
@@ -1118,7 +1210,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             {#distinct: distinct},
           ),
         ),
-        returnValueForMissingStub: _FakeSimpleSelectStatement_29<T, R>(
+        returnValueForMissingStub: _FakeSimpleSelectStatement_33<T, R>(
           this,
           Invocation.method(
             #select,
@@ -1139,7 +1231,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           [table],
           {#distinct: distinct},
         ),
-        returnValue: _FakeJoinedSelectStatement_30<T, R>(
+        returnValue: _FakeJoinedSelectStatement_34<T, R>(
           this,
           Invocation.method(
             #selectOnly,
@@ -1147,7 +1239,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             {#distinct: distinct},
           ),
         ),
-        returnValueForMissingStub: _FakeJoinedSelectStatement_30<T, R>(
+        returnValueForMissingStub: _FakeJoinedSelectStatement_34<T, R>(
           this,
           Invocation.method(
             #selectOnly,
@@ -1165,14 +1257,14 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           #selectExpressions,
           [columns],
         ),
-        returnValue: _FakeSelectable_24<_i2.TypedResult>(
+        returnValue: _FakeSelectable_28<_i2.TypedResult>(
           this,
           Invocation.method(
             #selectExpressions,
             [columns],
           ),
         ),
-        returnValueForMissingStub: _FakeSelectable_24<_i2.TypedResult>(
+        returnValueForMissingStub: _FakeSelectable_28<_i2.TypedResult>(
           this,
           Invocation.method(
             #selectExpressions,
@@ -1189,14 +1281,14 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           #delete,
           [table],
         ),
-        returnValue: _FakeDeleteStatement_31<T, D>(
+        returnValue: _FakeDeleteStatement_35<T, D>(
           this,
           Invocation.method(
             #delete,
             [table],
           ),
         ),
-        returnValueForMissingStub: _FakeDeleteStatement_31<T, D>(
+        returnValueForMissingStub: _FakeDeleteStatement_35<T, D>(
           this,
           Invocation.method(
             #delete,
@@ -1282,7 +1374,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             #readsFrom: readsFrom,
           },
         ),
-        returnValue: _FakeSelectable_24<_i2.QueryRow>(
+        returnValue: _FakeSelectable_28<_i2.QueryRow>(
           this,
           Invocation.method(
             #customSelect,
@@ -1293,7 +1385,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             },
           ),
         ),
-        returnValueForMissingStub: _FakeSelectable_24<_i2.QueryRow>(
+        returnValueForMissingStub: _FakeSelectable_28<_i2.QueryRow>(
           this,
           Invocation.method(
             #customSelect,
@@ -1321,7 +1413,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             #readsFrom: readsFrom,
           },
         ),
-        returnValue: _FakeSelectable_24<_i2.QueryRow>(
+        returnValue: _FakeSelectable_28<_i2.QueryRow>(
           this,
           Invocation.method(
             #customSelectQuery,
@@ -1332,7 +1424,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             },
           ),
         ),
-        returnValueForMissingStub: _FakeSelectable_24<_i2.QueryRow>(
+        returnValueForMissingStub: _FakeSelectable_28<_i2.QueryRow>(
           this,
           Invocation.method(
             #customSelectQuery,
@@ -1384,7 +1476,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
               ),
               (T v) => _i5.Future<T>.value(v),
             ) ??
-            _FakeFuture_26<T>(
+            _FakeFuture_30<T>(
               this,
               Invocation.method(
                 #transaction,
@@ -1403,7 +1495,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
               ),
               (T v) => _i5.Future<T>.value(v),
             ) ??
-            _FakeFuture_26<T>(
+            _FakeFuture_30<T>(
               this,
               Invocation.method(
                 #transaction,
@@ -1430,7 +1522,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
               ),
               (T v) => _i5.Future<T>.value(v),
             ) ??
-            _FakeFuture_26<T>(
+            _FakeFuture_30<T>(
               this,
               Invocation.method(
                 #exclusively,
@@ -1447,7 +1539,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
               ),
               (T v) => _i5.Future<T>.value(v),
             ) ??
-            _FakeFuture_26<T>(
+            _FakeFuture_30<T>(
               this,
               Invocation.method(
                 #exclusively,
@@ -1482,7 +1574,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             #startIndex: startIndex,
           },
         ),
-        returnValue: _FakeGenerationContext_32(
+        returnValue: _FakeGenerationContext_36(
           this,
           Invocation.method(
             #$write,
@@ -1493,7 +1585,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             },
           ),
         ),
-        returnValueForMissingStub: _FakeGenerationContext_32(
+        returnValueForMissingStub: _FakeGenerationContext_36(
           this,
           Invocation.method(
             #$write,
@@ -1521,7 +1613,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           ],
           {#startIndex: startIndex},
         ),
-        returnValue: _FakeGenerationContext_32(
+        returnValue: _FakeGenerationContext_36(
           this,
           Invocation.method(
             #$writeInsertable,
@@ -1532,7 +1624,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
             {#startIndex: startIndex},
           ),
         ),
-        returnValueForMissingStub: _FakeGenerationContext_32(
+        returnValueForMissingStub: _FakeGenerationContext_36(
           this,
           Invocation.method(
             #$writeInsertable,
