@@ -48,7 +48,7 @@ This will generate the following:
     ${yellow.wrap("}")}
 
 2. A test file containing:
-   a) Automated tests to validate the correctness of migrations. 
+   a) Automated tests to validate the correctness of migrations.
 
    b) A sample data integrity test for the first migration. This test ensures that the initial schema is created correctly and that basic data operations work as expected.
       This sample test should be adapted for subsequent migrations, especially those involving complex modifications to existing tables.
@@ -367,29 +367,33 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  group('$dbName database', () {
-  //////////////////////////////////////////////////////////////////////////////
-  ////////////////////// GENERATED TESTS - DO NOT MODIFY ///////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-    if (GeneratedHelper.versions.length < 2) return;
-    for (var i
-        in List.generate(GeneratedHelper.versions.length - 1, (i) => i)) {
-      final oldVersion = GeneratedHelper.versions.elementAt(i);
-      final newVersion = GeneratedHelper.versions.elementAt(i + 1);
-      test("migrate from v\$oldVersion to v\$newVersion", () async {
-        final schema = await verifier.schemaAt(oldVersion);
-        final db = $dbClassName(schema.newConnection());
-        await verifier.migrateAndValidate(db, newVersion);
-        await db.close();
+  group('simple database migrations', () {
+    // These simple tests verify all possible schema updates with a simple (no
+    // data) migration. This is a quick way to ensure that written database
+    // migrations properly alter the schema.
+    final versions = GeneratedHelper.versions;
+    for (final (i, fromVersion) in versions.indexed) {
+      group('from \$fromVersion', () {
+        for (final toVersion in versions.skip(i + 1)) {
+          test('to \$toVersion', () async {
+            final schema = await verifier.schemaAt(fromVersion);
+            final db = Database(schema.newConnection());
+            await verifier.migrateAndValidate(db, toVersion);
+            await db.close();
+          });
+        }
       });
-  }
-  //////////////////////////////////////////////////////////////////////////////
-  /////////////////////// END OF GENERATED TESTS ///////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-
-  ${firstMigration.testStepByStepMigrationCode(dbName, dbClassName)}
+    }
   });
-  
+
+  // Simple tests ensure the schema is transformed correctly, but some
+  // migrations benefit from a test verifying that data is transformed correctly
+  // too. This is particularly true for migrations that change existing columns
+  // (e.g. altering their type or constraints). Migrations that only add tables
+  // or columns typically don't need these advanced tests.
+  // TODO: Check whether you have migrations that could benefit from these tests
+  // and adapt this example to your database if necessary:
+  ${firstMigration.testStepByStepMigrationCode(dbName, dbClassName)}
 }
 """;
 
@@ -456,27 +460,23 @@ class _MigrationWriter {
   /// It will also import the validation models to test data integrity
   String testStepByStepMigrationCode(String dbName, String dbClassName) {
     return """
-/// Write data integrity tests for migrations that modify existing tables.
-/// These tests are important because the auto-generated tests only check empty schemas.
-    /// Testing with actual data helps ensure migrations don't corrupt existing information.
-    ///
-    /// The following is an example of how to write such a test:
 test("migration from v$from to v$to does not corrupt data",
       () async {
+  // Add data to insert into the old database, and the expected rows after the
+  // migration.
     ${tables.map((table) {
       return """
-final old${table.dbGetterName.pascalCase}Data = <v$from.${table.nameOfRowClass}>[]; // TODO: Add expected data at version $from using v$from.${table.nameOfRowClass}
-final expectedNew${table.dbGetterName.pascalCase}Data = <v$to.${table.nameOfRowClass}>[]; // TODO: Add expected data at version $to using v$to.${table.nameOfRowClass}
+final old${table.dbGetterName.pascalCase}Data = <v$from.${table.nameOfRowClass}>[];
+final expectedNew${table.dbGetterName.pascalCase}Data = <v$to.${table.nameOfRowClass}>[];
 """;
     }).join('\n')}
 
     await verifier.testWithDataIntegrity(
       oldVersion: $from,
       newVersion: $to,
-      verifier: verifier,
-      createOld: (e) => v1.DatabaseAtV$from(e),
-      createNew: (e) => v2.DatabaseAtV$to(e),
-      openTestedDatabase: (e) => $dbClassName(e),
+      createOld: v1.DatabaseAtV$from.new,
+      createNew: v2.DatabaseAtV$to.new,
+      openTestedDatabase: $dbClassName.new,
       createItems: (batch, oldDb) {
         ${tables.map(
       (table) {
@@ -493,9 +493,6 @@ final expectedNew${table.dbGetterName.pascalCase}Data = <v$to.${table.nameOfRowC
       },
     );
   });
-    
-    /// Add additional data integrity tests here
-
 """;
   }
 }

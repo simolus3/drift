@@ -79,15 +79,15 @@ abstract class SchemaVerifier {
   ///
   /// Foreign key constraints are disabled for this operation.
   Future<void> testWithDataIntegrity<OldDatabase extends GeneratedDatabase,
-          NewDatabase extends GeneratedDatabase>(
-      {required SchemaVerifier verifier,
-      required OldDatabase Function(QueryExecutor) createOld,
-      required NewDatabase Function(QueryExecutor) createNew,
-      required GeneratedDatabase Function(QueryExecutor) openTestedDatabase,
-      required void Function(Batch, OldDatabase) createItems,
-      required Future Function(NewDatabase) validateItems,
-      required int oldVersion,
-      required int newVersion});
+      NewDatabase extends GeneratedDatabase>({
+    required OldDatabase Function(QueryExecutor) createOld,
+    required NewDatabase Function(QueryExecutor) createNew,
+    required GeneratedDatabase Function(QueryExecutor) openTestedDatabase,
+    required void Function(Batch, OldDatabase) createItems,
+    required Future Function(NewDatabase) validateItems,
+    required int oldVersion,
+    required int newVersion,
+  });
 }
 
 /// Utilities verifying that the current schema of the database matches what

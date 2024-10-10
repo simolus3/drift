@@ -167,7 +167,7 @@ class GenerateUtils {
     }
 
     final versionsSet =
-        '{${versions.sorted((a, b) => a.compareTo(b)).join(', ')}}';
+        '[${versions.sorted((a, b) => a.compareTo(b)).join(', ')}]';
     buffer
       ..writeln('default:')
       ..writeln('throw MissingSchemaException(version, versions);')

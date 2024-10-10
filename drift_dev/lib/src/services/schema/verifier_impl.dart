@@ -104,22 +104,21 @@ class VerifierImplementation implements SchemaVerifier {
   @override
   Future<void> testWithDataIntegrity<OldDatabase extends GeneratedDatabase,
           NewDatabase extends GeneratedDatabase>(
-      {required SchemaVerifier verifier,
-      required OldDatabase Function(QueryExecutor p1) createOld,
+      {required OldDatabase Function(QueryExecutor p1) createOld,
       required NewDatabase Function(QueryExecutor p1) createNew,
       required GeneratedDatabase Function(QueryExecutor p1) openTestedDatabase,
       required void Function(Batch p1, OldDatabase p2) createItems,
       required Future Function(NewDatabase p1) validateItems,
       required int oldVersion,
       required int newVersion}) async {
-    final schema = await verifier.schemaAt(oldVersion);
+    final schema = await schemaAt(oldVersion);
 
     final oldDb = createOld(schema.newConnection());
     await oldDb.batch((batch) => createItems(batch, oldDb));
     await oldDb.close();
 
     final db = openTestedDatabase(schema.newConnection());
-    await verifier.migrateAndValidate(db, newVersion);
+    await migrateAndValidate(db, newVersion);
     await db.close();
 
     final newDb = createNew(schema.newConnection());
