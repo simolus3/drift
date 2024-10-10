@@ -115,7 +115,6 @@ class VerifierImplementation implements SchemaVerifier {
     final schema = await verifier.schemaAt(oldVersion);
 
     final oldDb = createOld(schema.newConnection());
-    await oldDb.customStatement('PRAGMA foreign_keys = OFF');
     await oldDb.batch((batch) => createItems(batch, oldDb));
     await oldDb.close();
 
