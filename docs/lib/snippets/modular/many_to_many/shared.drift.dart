@@ -4,6 +4,149 @@ import 'package:drift_docs/snippets/modular/many_to_many/shared.drift.dart'
     as i1;
 import 'package:drift_docs/snippets/modular/many_to_many/shared.dart' as i2;
 
+typedef $$BuyableItemsTableCreateCompanionBuilder = i1.BuyableItemsCompanion
+    Function({
+  i0.Value<int> id,
+  required String description,
+  required int price,
+});
+typedef $$BuyableItemsTableUpdateCompanionBuilder = i1.BuyableItemsCompanion
+    Function({
+  i0.Value<int> id,
+  i0.Value<String> description,
+  i0.Value<int> price,
+});
+
+class $$BuyableItemsTableFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
+  $$BuyableItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description,
+      builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<int> get price => $composableBuilder(
+      column: $table.price, builder: (column) => i0.ColumnFilters(column));
+}
+
+class $$BuyableItemsTableOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
+  $$BuyableItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description,
+      builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<int> get price => $composableBuilder(
+      column: $table.price, builder: (column) => i0.ColumnOrderings(column));
+}
+
+class $$BuyableItemsTableAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
+  $$BuyableItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  i0.GeneratedColumn<int> get price =>
+      $composableBuilder(column: $table.price, builder: (column) => column);
+}
+
+class $$BuyableItemsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$BuyableItemsTable,
+    i1.BuyableItem,
+    i1.$$BuyableItemsTableFilterComposer,
+    i1.$$BuyableItemsTableOrderingComposer,
+    i1.$$BuyableItemsTableAnnotationComposer,
+    $$BuyableItemsTableCreateCompanionBuilder,
+    $$BuyableItemsTableUpdateCompanionBuilder,
+    (
+      i1.BuyableItem,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$BuyableItemsTable,
+          i1.BuyableItem>
+    ),
+    i1.BuyableItem,
+    i0.PrefetchHooks Function()> {
+  $$BuyableItemsTableTableManager(
+      i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              i1.$$BuyableItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i1.$$BuyableItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              i1.$$BuyableItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<String> description = const i0.Value.absent(),
+            i0.Value<int> price = const i0.Value.absent(),
+          }) =>
+              i1.BuyableItemsCompanion(
+            id: id,
+            description: description,
+            price: price,
+          ),
+          createCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required String description,
+            required int price,
+          }) =>
+              i1.BuyableItemsCompanion.insert(
+            id: id,
+            description: description,
+            price: price,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$BuyableItemsTable,
+    i1.BuyableItem,
+    i1.$$BuyableItemsTableFilterComposer,
+    i1.$$BuyableItemsTableOrderingComposer,
+    i1.$$BuyableItemsTableAnnotationComposer,
+    $$BuyableItemsTableCreateCompanionBuilder,
+    $$BuyableItemsTableUpdateCompanionBuilder,
+    (
+      i1.BuyableItem,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$BuyableItemsTable,
+          i1.BuyableItem>
+    ),
+    i1.BuyableItem,
+    i0.PrefetchHooks Function()>;
+
 class $BuyableItemsTable extends i2.BuyableItems
     with i0.TableInfo<$BuyableItemsTable, i1.BuyableItem> {
   @override
@@ -227,146 +370,3 @@ class BuyableItemsCompanion extends i0.UpdateCompanion<i1.BuyableItem> {
         .toString();
   }
 }
-
-typedef $$BuyableItemsTableCreateCompanionBuilder = i1.BuyableItemsCompanion
-    Function({
-  i0.Value<int> id,
-  required String description,
-  required int price,
-});
-typedef $$BuyableItemsTableUpdateCompanionBuilder = i1.BuyableItemsCompanion
-    Function({
-  i0.Value<int> id,
-  i0.Value<String> description,
-  i0.Value<int> price,
-});
-
-class $$BuyableItemsTableFilterComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
-  $$BuyableItemsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get description => $composableBuilder(
-      column: $table.description,
-      builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<int> get price => $composableBuilder(
-      column: $table.price, builder: (column) => i0.ColumnFilters(column));
-}
-
-class $$BuyableItemsTableOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
-  $$BuyableItemsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get description => $composableBuilder(
-      column: $table.description,
-      builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<int> get price => $composableBuilder(
-      column: $table.price, builder: (column) => i0.ColumnOrderings(column));
-}
-
-class $$BuyableItemsTableAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$BuyableItemsTable> {
-  $$BuyableItemsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  i0.GeneratedColumn<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => column);
-
-  i0.GeneratedColumn<int> get price =>
-      $composableBuilder(column: $table.price, builder: (column) => column);
-}
-
-class $$BuyableItemsTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$BuyableItemsTable,
-    i1.BuyableItem,
-    i1.$$BuyableItemsTableFilterComposer,
-    i1.$$BuyableItemsTableOrderingComposer,
-    i1.$$BuyableItemsTableAnnotationComposer,
-    $$BuyableItemsTableCreateCompanionBuilder,
-    $$BuyableItemsTableUpdateCompanionBuilder,
-    (
-      i1.BuyableItem,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$BuyableItemsTable,
-          i1.BuyableItem>
-    ),
-    i1.BuyableItem,
-    i0.PrefetchHooks Function()> {
-  $$BuyableItemsTableTableManager(
-      i0.GeneratedDatabase db, i1.$BuyableItemsTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              i1.$$BuyableItemsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$$BuyableItemsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$$BuyableItemsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<String> description = const i0.Value.absent(),
-            i0.Value<int> price = const i0.Value.absent(),
-          }) =>
-              i1.BuyableItemsCompanion(
-            id: id,
-            description: description,
-            price: price,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required String description,
-            required int price,
-          }) =>
-              i1.BuyableItemsCompanion.insert(
-            id: id,
-            description: description,
-            price: price,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$BuyableItemsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$BuyableItemsTable,
-    i1.BuyableItem,
-    i1.$$BuyableItemsTableFilterComposer,
-    i1.$$BuyableItemsTableOrderingComposer,
-    i1.$$BuyableItemsTableAnnotationComposer,
-    $$BuyableItemsTableCreateCompanionBuilder,
-    $$BuyableItemsTableUpdateCompanionBuilder,
-    (
-      i1.BuyableItem,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$BuyableItemsTable,
-          i1.BuyableItem>
-    ),
-    i1.BuyableItem,
-    i0.PrefetchHooks Function()>;
