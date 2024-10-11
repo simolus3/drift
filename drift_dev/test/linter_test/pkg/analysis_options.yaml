@@ -1,0 +1,11 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  plugins:
+    - custom_lint
+  language:
+    strict-casts: true
+
+custom_lint:
+  debug: true
+  verbose: true

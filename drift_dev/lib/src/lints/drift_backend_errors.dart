@@ -20,9 +20,8 @@ class DriftBuildErrors extends DartLintRule {
   DriftBuildErrors() : super(code: _code);
 
   static const _code = LintCode(
-    name: 'unawaited_futures_in_transaction',
-    problemMessage:
-        'All futures in a transaction should be awaited to ensure that all operations are completed before the transaction is closed.',
+    name: 'drift_build_errors',
+    problemMessage: '{0}',
     errorSeverity: ErrorSeverity.ERROR,
   );
 
@@ -34,11 +33,9 @@ class DriftBuildErrors extends DartLintRule {
     final driver = DriftAnalysisDriver(backend, const DriftOptions.defaults());
 
     final file = await driver.fullyAnalyze(unit.uri);
-    print(
-        'test? - ${unit.uri} - ${file.allErrors.length} - ${file.analysis.length}');
     for (final error in file.allErrors) {
       if (error.span case final span?) {
-        reporter.reportErrorForSpan(_code, span);
+        reporter.reportErrorForSpan(_code, span, [error.message.trim()]);
       }
     }
   }
