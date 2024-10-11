@@ -5,6 +5,9 @@ description: Generate test code to write unit tests for your migrations.
 
 ---
 
+!!! warning "Important Note"
+
+      If you are using the `make-migrations` command, tests are already generated for you.  
 
 
 
@@ -31,7 +34,7 @@ based on those schema files.
 For verifications, drift will generate a much smaller database implementation that can only be used to
 test migrations.
 
-You can put this test code whereever you want, but it makes sense to put it in a subfolder of `test/`.
+You can put this test code wherever you want, but it makes sense to put it in a subfolder of `test/`.
 If we wanted to write them to `test/generated_migrations/`, we could use
 
 ```
@@ -66,8 +69,6 @@ If it sees anything unexpected, it will throw a `SchemaMismatch` exception to fa
     Or, use [step-by-step migrations](step_by_step.md) which do this automatically.
     
 
-
-
 ## Verifying data integrity
 
 In addition to the changes made in your table structure, its useful to ensure that data that was present before a migration
@@ -91,3 +92,21 @@ Then, you can import the generated classes with an alias:
 This can then be used to manually create and verify data at a specific version:
 
 {{ load_snippet('main','lib/snippets/migrations/tests/verify_data_integrity_test.dart.excerpt.json') }}
+
+## Verifying a database schema at runtime
+
+Instead (or in addition to) [writing tests](#verifying-a-database-schema-at-runtime) to ensure your migrations work as they should,
+you can use a new API from `drift_dev` 1.5.0 to verify the current schema without any additional setup.
+
+{{ load_snippet('(full)','lib/snippets/migrations/runtime_verification.dart.excerpt.json') }}
+
+When you use `validateDatabaseSchema`, drift will transparently:
+
+- collect information about your database by reading from `sqlite3_schema`.
+- create a fresh in-memory instance of your database and create a reference schema with `Migrator.createAll()`.
+- compare the two. Ideally, your actual schema at runtime should be identical to the fresh one even though it
+  grew through different versions of your app.
+
+When a mismatch is found, an exception with a message explaining exactly where another value was expected will
+be thrown.
+This allows you to find issues with your schema migrations quickly.

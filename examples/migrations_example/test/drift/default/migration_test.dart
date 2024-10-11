@@ -1,10 +1,9 @@
-import 'package:drift/native.dart';
-import 'package:migrations_example/database.dart';
+// ignore_for_file: unused_local_variable, unused_import
 import 'package:drift/drift.dart';
-import 'package:test/test.dart';
+import 'package:drift/native.dart';
 import 'package:drift_dev/api/migrations.dart';
-
-// Import the generated schema helper to instantiate databases at old versions.
+import 'package:migrations_example/database.dart';
+import 'package:test/test.dart';
 import 'generated/schema.dart';
 
 import 'generated/schema_v1.dart' as v1;
@@ -20,48 +19,49 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  // Test all possible schema migrations with a simple test that just ensures
-  // the schema is correct after the migration.
-  // More complex tests ensuring data integrity are written below.
-  group('general migration', () {
-    const currentSchema = Database.latestSchemaVersion;
-
-    for (var oldVersion = 1; oldVersion < currentSchema; oldVersion++) {
-      group('from v$oldVersion', () {
-        for (var targetVersion = oldVersion + 1;
-            targetVersion <= currentSchema;
-            targetVersion++) {
-          test('to v$targetVersion', () async {
-            final connection = await verifier.startAt(oldVersion);
-            final db = Database(connection);
-            addTearDown(db.close);
-
-            await verifier.migrateAndValidate(db, targetVersion);
+  group('simple database migrations', () {
+    // These simple tests verify all possible schema updates with a simple (no
+    // data) migration. This is a quick way to ensure that written database
+    // migrations properly alter the schema.
+    final versions = GeneratedHelper.versions;
+    for (final (i, fromVersion) in versions.indexed) {
+      group('from $fromVersion', () {
+        for (final toVersion in versions.skip(i + 1)) {
+          test('to $toVersion', () async {
+            final schema = await verifier.schemaAt(fromVersion);
+            final db = Database(schema.newConnection());
+            await verifier.migrateAndValidate(db, toVersion);
+            await db.close();
           });
         }
       });
     }
   });
 
-  test('preserves existing data in migration from v1 to v2', () async {
-    final schema = await verifier.schemaAt(1);
+  // Simple tests ensure the schema is transformed correctly, but some
+  // migrations benefit from a test verifying that data is transformed correctly
+  // too. This is particularly true for migrations that change existing columns
+  // (e.g. altering their type or constraints). Migrations that only add tables
+  // or columns typically don't need these advanced tests.
+  test("migration from v1 to v2 does not corrupt data", () async {
+    final oldUsersData = <v1.UsersData>[v1.UsersData(id: 1)];
+    final expectedNewUsersData = <v2.UsersData>[
+      v2.UsersData(id: 1, name: 'no name')
+    ];
 
-    // Add some data to the users table, which only has an id column at v1
-    final oldDb = v1.DatabaseAtV1(schema.newConnection());
-    await oldDb.into(oldDb.users).insert(const v1.UsersCompanion(id: Value(1)));
-    await oldDb.close();
-
-    // Run the migration and verify that it adds the name column.
-    final db = Database(schema.newConnection());
-    await verifier.migrateAndValidate(db, 2);
-    await db.close();
-
-    // Make sure the user is still here
-    final migratedDb = v2.DatabaseAtV2(schema.newConnection());
-    final user = await migratedDb.select(migratedDb.users).getSingle();
-    expect(user.id, 1);
-    expect(user.name, 'no name'); // default from the migration
-    await migratedDb.close();
+    await verifier.testWithDataIntegrity(
+      oldVersion: 1,
+      newVersion: 2,
+      createOld: v1.DatabaseAtV1.new,
+      createNew: v2.DatabaseAtV2.new,
+      openTestedDatabase: Database.new,
+      createItems: (batch, oldDb) {
+        batch.insertAll(oldDb.users, oldUsersData);
+      },
+      validateItems: (newDb) async {
+        expect(expectedNewUsersData, await newDb.select(newDb.users).get());
+      },
+    );
   });
 
   test('foreign key constraints work after upgrade from v4 to v5', () async {

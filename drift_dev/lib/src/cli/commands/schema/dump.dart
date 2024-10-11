@@ -88,7 +88,7 @@ class DumpSchemaCommand extends Command {
       final userVersion =
           opened.select('pragma user_version').single.columnAt(0) as int;
 
-      return (elements: elements, schemaVersion: userVersion);
+      return (elements: elements, schemaVersion: userVersion, db: null);
     } finally {
       opened.dispose();
     }

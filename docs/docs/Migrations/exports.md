@@ -5,6 +5,12 @@ description: Store all schema versions of your app for validation.
 
 ---
 
+
+!!! warning "Important Note"
+
+    This command is specifically for exporting schemas.  
+    If you are using the `make-migrations` command, this is already done for you.
+
 By design, drift's code generator can only see the current state of your database
 schema. When you change it, it can be helpful to store a snapshot of the older
 schema in a file.
@@ -38,27 +44,16 @@ my_app
 Of course, you can also use another folder or a subfolder somewhere if that suits your workflow
 better.
 
-!!! note "Examples available"
+Exporting schemas and generating code for them can't be done with `build_runner` alone, which is
+why this setup described here is necessary.
 
-    
-    Exporting schemas and generating code for them can't be done with `build_runner` alone, which is
-    why this setup described here is necessary.
-    
-    We hope it's worth it though! Verifying migrations can give you confidence that you won't run
-    into issues after changing your database.
-    If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/drift/discussions).
-    
-    Also there are two examples in the drift repository which may be useful as a reference:
-    
-    - A [Flutter app](https://github.com/simolus3/drift/tree/latest-release/examples/app)
-    - An [example specific to migrations](https://github.com/simolus3/drift/tree/latest-release/examples/migrations_example).
-    
-
-
-
+We hope it's worth it though! Verifying migrations can give you confidence that you won't run
+into issues after changing your database.
+If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/drift/discussions).
+  
 ## Exporting the schema
 
-To begin, lets create the first schema representation:
+To begin, let's create the first schema representation:
 
 ```
 $ mkdir drift_schemas
@@ -93,9 +88,6 @@ $ dart run drift_dev schema dump lib/database/database.dart drift_schemas/drift_
     database file, you can do that as well! `drift_dev schema dump` recognizes a sqlite3 database file as its first
     argument and can extract the relevant schema from there.
     
-
-
-
 ## What now?
 
 Having exported your schema versions into files like this, drift tools are able

@@ -41,6 +41,8 @@ targets:
             dialect: sqlite
             options:
               version: "3.39"
+          databases:
+            main_db: "lib/snippets/dart_api/manager.dart"
         generate_for:
           include: &modular
             - "lib/snippets/_shared/**"
