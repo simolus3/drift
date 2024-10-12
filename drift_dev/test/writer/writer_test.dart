@@ -121,6 +121,47 @@ CREATE VIEW a AS SELECT nullif(bar, '') FROM foo;
     },
   );
 
+  test(
+      'generates valid code for for references whose target columnis a reference column itself',
+      () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': r'''
+import 'package:drift/drift.dart';
+
+class FkToPk0 extends Table {
+  IntColumn get fk => integer().references(FkToPk0, #fk)();
+}
+
+class FkToPk1 extends Table {
+  IntColumn get fk => integer().references(FkToPk2, #fk)();
+}
+
+class FkToPk2 extends Table {
+  IntColumn get fk => integer().references(FkToPk3, #id)();
+}
+
+class FkToPk3 extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
+@DriftDatabase(tables: [FkToPk0,FkToPk1,FkToPk2,FkToPk3])
+class MyDatabase {}
+''',
+      },
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': allOf(IsValidDartFile(anything),
+            decodedMatches(isNot(contains('f.fk.fk'))))
+      },
+      result.dartOutputs,
+      result.writer,
+    );
+  });
+
   test('generates valid code for columns containing dollar signs', () async {
     final result = await emulateDriftBuild(
       inputs: {

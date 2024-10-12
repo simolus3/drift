@@ -56,6 +56,19 @@ class _TableManagerWriter {
       relations.addAll(reverseRelations);
     }
 
+    // Remove relations whose target column is a foreign key itself
+    relations = relations.where((r) {
+      if (r.isReverse) {
+        return r.currentColumn.constraints
+            .whereType<ForeignKeyReference>()
+            .isEmpty;
+      } else {
+        return r.referencedColumn.constraints
+            .whereType<ForeignKeyReference>()
+            .isEmpty;
+      }
+    }).toList();
+
     // Get all the field names that could be added for this class
     // Including ones that access relations
     final allFieldNames = <String>[];
