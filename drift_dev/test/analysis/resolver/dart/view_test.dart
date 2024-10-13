@@ -1,7 +1,9 @@
+import 'package:build_test/build_test.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
+import '../../../utils.dart';
 import '../../test_utils.dart';
 
 void main() {
@@ -148,5 +150,42 @@ class Database {}
     final view = file.analyzedElements.whereType<DriftView>().single;
     expect(view.columns.map((e) => e.nameInDart), ['id', 'id1', 'id2']);
     expect(view.columns.map((e) => e.nameInSql), ['id', 'id1', 'id2']);
+  });
+
+  test('can use groupBy without join', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+abstract class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+
+abstract class CommonNames extends View {
+  Users get users;
+
+  Expression<int> get amount => users.id.count();
+
+  @override
+  Query as() => select([amount]).from(users)
+    ..groupBy([users.id], having: users.id.isBiggerThanValue(10));
+}
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+  @override
+  i0.Query? get query =>
+      (attachedDatabase.selectOnly(users)..addColumns($columns))
+        ..groupBy([users.id],
+            having: i3.ComparableExpr(users.id).isBiggerThanValue(10));
+'''))
+    }, result.dartOutputs, result.writer);
   });
 }

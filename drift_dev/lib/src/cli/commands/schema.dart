@@ -15,7 +15,7 @@ import 'schema/steps.dart';
 
 class SchemaCommand extends Command {
   @override
-  String get description => 'Inspect or manage the schema of a moor database';
+  String get description => 'Inspect or manage the schema of a drift database';
 
   @override
   String get name => 'schema';

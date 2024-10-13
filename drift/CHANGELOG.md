@@ -4,7 +4,8 @@
   drift now sends a test message instead serializing by default.
 - The manager API now ignores references whose target column is a foreign key itself.
 - The DevTools extension can now clear drift databases.
-
+- `View.from` is now declared to return a `JoinedSelectStatement`, the type it
+  returns at runtime.
 
 ## 2.20.2
 
