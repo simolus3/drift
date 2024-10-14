@@ -5,6 +5,8 @@ analyzer:
     - custom_lint
   language:
     strict-casts: true
+  exclude:
+    - "**/*.g.dart"
 
 custom_lint:
   debug: true
