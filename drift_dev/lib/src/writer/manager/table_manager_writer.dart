@@ -104,16 +104,7 @@ class _TableManagerWriter {
 
       final currentType = typeForColumn(relation.currentColumn);
       final referencedType = typeForColumn(relation.referencedColumn);
-      if (currentType != referencedType) {
-        print(
-            "\"${relation.currentTable.baseDartName}.${relation.currentColumn.nameInSql}\" has a type of \"$currentType\""
-            " and \"${relation.referencedTable.baseDartName}.${relation.referencedColumn.nameInSql}\" has a type of \"$referencedType\"."
-            " Filters, orderings and reference getters for this relation wont be generated."
-            " The Manager API can only generate filters and orderings for relations where the types are exactly the same."
-            " If you aren't using the Manager API, you can ignore this message.");
-        return false;
-      }
-      return true;
+      return currentType == referencedType;
     }).toList();
 
     final columnFilters = <String>[];

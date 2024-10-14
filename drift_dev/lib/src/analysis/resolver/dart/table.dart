@@ -41,6 +41,16 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       } else {
         for (final constraint in column.column.constraints) {
           if (constraint is ForeignKeyReference) {
+            if (column.column.sqlType.builtin !=
+                    constraint.otherColumn.sqlType.builtin ||
+                column.column.typeConverter?.dartType !=
+                    constraint.otherColumn.typeConverter?.dartType) {
+              print(
+                  "The Manager API can only generate filters and orderings for relations where the types are exactly the same.");
+              reportError(DriftAnalysisError.forDartElement(column.element,
+                  "This column references a column whose type doesn't match this one. The generated managers will ignore this relation",
+                  level: DriftAnalysisErrorLevel.warning));
+            }
             references.add(constraint.otherColumn.owner);
           }
         }

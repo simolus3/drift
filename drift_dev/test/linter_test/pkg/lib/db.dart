@@ -9,6 +9,19 @@ class Users extends Table {
   late final age = integer();
   // ignore: drift_build_errors
   late final age2 = integer()();
+  // expect_lint: drift_build_errors
+  late final group = integer().references(Group, #id)();
+  // expect_lint: drift_build_errors
+  late final group2 = integer().references(Group, #id)();
+}
+
+extension type PK(String id) {}
+
+class Group extends Table {
+  late final id = text() //
+      .map(TypeConverter.extensionType<PK, String>())();
+  late final id2 = integer() //
+      .map(TypeConverter.extensionType<PK, int>())();
 }
 
 class BrokenTable extends Table {
@@ -16,7 +29,7 @@ class BrokenTable extends Table {
   IntColumn get unknownRef => integer().customConstraint('CHECK foo > 10')();
 }
 
-@DriftDatabase(tables: [Users])
+@DriftDatabase(tables: [Users, Group])
 class TestDatabase extends _$TestDatabase {
   TestDatabase(super.e);
 
@@ -46,7 +59,8 @@ class TestDatabase extends _$TestDatabase {
     transaction(
       () async {
         // expect_lint: unawaited_futures_in_transaction
-        into(users).insert(UsersCompanion.insert(name: 'name'));
+        into(users)
+            .insert(UsersCompanion.insert(name: 'name', age2: 1, group: 5));
       },
     );
   }

@@ -8,6 +8,7 @@ import 'package:analyzer/error/error.dart' hide LintCode;
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 import 'package:drift_dev/src/analysis/backend.dart';
+import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:logging/logging.dart';
 
@@ -25,6 +26,11 @@ class DriftBuildErrors extends DartLintRule {
     errorSeverity: ErrorSeverity.ERROR,
   );
 
+  LintCode get _codeAsWarning => LintCode(
+      name: _code.name,
+      problemMessage: _code.problemMessage,
+      errorSeverity: ErrorSeverity.WARNING);
+
   @override
   void run(CustomLintResolver resolver, ErrorReporter reporter,
       CustomLintContext context) async {
@@ -35,7 +41,12 @@ class DriftBuildErrors extends DartLintRule {
     final file = await driver.fullyAnalyze(unit.uri);
     for (final error in file.allErrors) {
       if (error.span case final span?) {
-        reporter.reportErrorForSpan(_code, span, [error.message.trim()]);
+        reporter.reportErrorForSpan(
+            error.level == DriftAnalysisErrorLevel.warning
+                ? _codeAsWarning
+                : _code,
+            span,
+            [error.message.trim()]);
       }
     }
   }
