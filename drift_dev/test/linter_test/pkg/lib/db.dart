@@ -23,6 +23,13 @@ class TestDatabase extends _$TestDatabase {
   @override
   int get schemaVersion => 1;
 
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          m.addColumn(users, users.name);
+        },
+      );
+
   a() async {
     // expect_lint: offset_without_limit
     managers.users.get(offset: 1);

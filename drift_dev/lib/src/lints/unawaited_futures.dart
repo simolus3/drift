@@ -11,6 +11,8 @@ final databaseConnectionUserChecker =
     TypeChecker.fromName('DatabaseConnectionUser', packageName: 'drift');
 final columnBuilderChecker =
     TypeChecker.fromName('ColumnBuilder', packageName: 'drift');
+final migrationStrategyChecker =
+    TypeChecker.fromName('MigrationStrategy', packageName: 'drift');
 
 class UnawaitedFuturesInTransaction extends DartLintRule {
   UnawaitedFuturesInTransaction() : super(code: _code);
@@ -24,14 +26,70 @@ class UnawaitedFuturesInTransaction extends DartLintRule {
   @override
   void run(CustomLintResolver resolver, ErrorReporter reporter,
       CustomLintContext context) {
+    bool inTransactionBlock(AstNode node) {
+      return node.thisOrAncestorMatching(
+            (method) {
+              if (method is! MethodInvocation) return false;
+              final methodElement = method.methodName.staticElement;
+              if (methodElement is! MethodElement ||
+                  methodElement.name != 'transaction') return false;
+              final enclosingElement = methodElement.enclosingElement;
+              if (enclosingElement is! ClassElement ||
+                  !databaseConnectionUserChecker.isExactly(enclosingElement)) {
+                return false;
+              }
+              return true;
+            },
+          ) !=
+          null;
+    }
+
     context.registry.addExpressionStatement((node) {
-      node.accept(_Visitor(this, reporter, _code));
+      node.accept(
+          _Visitor(this, reporter, _code, additionalCheck: inTransactionBlock));
     });
     context.registry.addCascadeExpression((node) {
-      node.accept(_Visitor(this, reporter, _code));
+      node.accept(
+          _Visitor(this, reporter, _code, additionalCheck: inTransactionBlock));
     });
     context.registry.addInterpolationExpression((node) {
-      node.accept(_Visitor(this, reporter, _code));
+      node.accept(
+          _Visitor(this, reporter, _code, additionalCheck: inTransactionBlock));
+    });
+  }
+}
+
+class UnawaitedFuturesInMigration extends DartLintRule {
+  UnawaitedFuturesInMigration() : super(code: _code);
+
+  static const _code = LintCode(
+    name: 'unawaited_futures_in_migration',
+    problemMessage:
+        'All futures in a migrations should be awaited to ensure that all operations are completed before the other opperations are performed.',
+    errorSeverity: ErrorSeverity.ERROR,
+  );
+  @override
+  void run(CustomLintResolver resolver, ErrorReporter reporter,
+      CustomLintContext context) {
+    bool inMigrationBlock(AstNode node) {
+      return node.thisOrAncestorMatching((node) =>
+              (node is InstanceCreationExpression &&
+                  node.staticType != null &&
+                  migrationStrategyChecker.isExactlyType(node.staticType!))) !=
+          null;
+    }
+
+    context.registry.addExpressionStatement((node) {
+      node.accept(
+          _Visitor(this, reporter, _code, additionalCheck: inMigrationBlock));
+    });
+    context.registry.addCascadeExpression((node) {
+      node.accept(
+          _Visitor(this, reporter, _code, additionalCheck: inMigrationBlock));
+    });
+    context.registry.addInterpolationExpression((node) {
+      node.accept(
+          _Visitor(this, reporter, _code, additionalCheck: inMigrationBlock));
     });
   }
 }
@@ -40,12 +98,16 @@ class UnawaitedFuturesInTransaction extends DartLintRule {
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 // Source: https://github.com/dart-lang/sdk/blob/main/pkg/linter/lib/src/rules/unawaited_futures.dart
+/// A visitor which will report any future that is not awaited.
+/// If an [additionalCheck] is provided, it will be used to check if the future should be reported
 class _Visitor extends SimpleAstVisitor<void> {
   final LintRule rule;
   final ErrorReporter reporter;
   final LintCode code;
+  final bool Function(AstNode node) additionalCheck;
 
-  _Visitor(this.rule, this.reporter, this.code);
+  _Visitor(this.rule, this.reporter, this.code,
+      {required this.additionalCheck});
 
   @override
   void visitCascadeExpression(CascadeExpression node) {
@@ -71,9 +133,10 @@ class _Visitor extends SimpleAstVisitor<void> {
         return;
       }
 
-      if (_isEnclosedInAsyncFunctionBody(node) && _inTransactionBlock(node)) {
+      if (_isEnclosedInAsyncFunctionBody(node) && additionalCheck(node)) {
         // Future expression statement that isn't awaited in an async function:
         // while this is legal, it's a very frequent sign of an error.
+
         reporter.atNode(node, code);
       }
     }
@@ -87,24 +150,6 @@ class _Visitor extends SimpleAstVisitor<void> {
   bool _isEnclosedInAsyncFunctionBody(AstNode node) {
     var enclosingFunctionBody = node.thisOrAncestorOfType<FunctionBody>();
     return enclosingFunctionBody?.isAsynchronous ?? false;
-  }
-
-  bool _inTransactionBlock(AstNode node) {
-    return node.thisOrAncestorMatching(
-          (method) {
-            if (method is! MethodInvocation) return false;
-            final methodElement = method.methodName.staticElement;
-            if (methodElement is! MethodElement ||
-                methodElement.name != 'transaction') return false;
-            final enclosingElement = methodElement.enclosingElement;
-            if (enclosingElement is! ClassElement ||
-                !databaseConnectionUserChecker.isExactly(enclosingElement)) {
-              return false;
-            }
-            return true;
-          },
-        ) !=
-        null;
   }
 
   /// Detects `Future.delayed(duration, [computation])` creations with a
@@ -128,7 +173,7 @@ class _Visitor extends SimpleAstVisitor<void> {
     if ((expr.staticType?.isDartAsyncFuture ?? false) &&
         _isEnclosedInAsyncFunctionBody(expr) &&
         expr is! AssignmentExpression &&
-        _inTransactionBlock(expr)) {
+        additionalCheck(expr)) {
       reporter.atNode(expr, code);
     }
   }
