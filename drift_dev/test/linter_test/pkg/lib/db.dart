@@ -26,6 +26,7 @@ class TestDatabase extends _$TestDatabase {
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onUpgrade: (m, from, to) async {
+          // expect_lint: unawaited_futures_in_migration
           m.addColumn(users, users.name);
         },
       );
