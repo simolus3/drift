@@ -7,6 +7,8 @@ class Users extends Table {
   late final name = text()();
   // expect_lint: drift_build_errors
   late final age = integer();
+  // ignore: drift_build_errors
+  late final age2 = integer()();
 }
 
 class BrokenTable extends Table {
@@ -22,6 +24,17 @@ class TestDatabase extends _$TestDatabase {
   int get schemaVersion => 1;
 
   a() async {
+    // expect_lint: offset_without_limit
+    managers.users.get(offset: 1);
+    // expect_lint: offset_without_limit
+    managers.users.watch(offset: 1);
+    managers.users.get();
+    managers.users.get(distinct: true);
+    managers.users.get(limit: 1);
+    managers.users.get(limit: 1, distinct: true);
+    managers.users.get(limit: 1, offset: 1);
+    managers.users.get(limit: 1, offset: 1, distinct: true);
+
     transaction(
       () async {
         // expect_lint: unawaited_futures_in_transaction
@@ -29,4 +42,12 @@ class TestDatabase extends _$TestDatabase {
       },
     );
   }
+}
+
+class A {
+  void get() {}
+}
+
+void a() {
+  A().get();
 }
