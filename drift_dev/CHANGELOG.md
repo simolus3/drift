@@ -1,4 +1,4 @@
-## 2.21.0-dev
+## 2.21.0
 
 - Fix Dart-defined `check` constraints not being considered in exported
   schemas.

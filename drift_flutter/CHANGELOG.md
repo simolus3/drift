@@ -1,4 +1,4 @@
-## 0.2.1-dev
+## 0.2.1
 
 - Enable serialization between background isolates where necessary.
 
