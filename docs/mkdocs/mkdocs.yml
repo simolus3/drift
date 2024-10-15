@@ -14,20 +14,14 @@ theme:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
       toggle:
-    #     icon: empty
-    #     name: ""
 
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      toggle:
-    #     icon: empty
-    #     name: ""
 
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      toggle:
 
   # TODO: Add logo & favicon
   logo: images/icon.png
@@ -65,6 +59,8 @@ plugins:
   - macros
 
 markdown_extensions:
+  - def_list
+  - pymdownx.tilde
   - admonition
   - pymdownx.details
   - attr_list
@@ -150,6 +146,8 @@ nav:
   - Tools:
       - Tools/index.md
       - Tools/devtools.md
+  - Guides:
+      - guides/datetime-migrations.md
   - Pub: https://pub.dev/packages/drift
 
 docs_dir: "../docs"
