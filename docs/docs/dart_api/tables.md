@@ -269,68 +269,22 @@ To enforce that a combination of columns is unique, override the `uniqueKeys` ge
 
 The above example would enforce that the same table cant be reserved for the same date and time.
 
-## Relations
+## References
 
+[Foreign key references](https://www.sqlite.org/foreignkeys.html) can be expressed
+in Dart tables with the `references()` method when building a column:
 
-### Many-to-one
+{{ load_snippet('references','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-```mermaid
-flowchart BT
-    n2["User 1"] --> n1["Admin Group"]
-    n3["User 2"] --> n1
-    n4["User 3"] --> n1
-    n5["User 4"] --> n10["Regular Group"]
-    n6["User 5"] --> n10
-    n7["User 6"] --> n10
-```
+The first parameter to `references` points to the table on which a reference should be created.
+The second parameter is a [symbol](https://dart.dev/guides/language/language-tour#symbols) of the column to use for the reference.
 
-In a many-to-one relationship, a column in the "many" table (e.g., `Users`) references a column in the "one" table (e.g., `Groups`).
+Optionally, the `onUpdate` and `onDelete` parameters can be used to describe what
+should happen when the target row gets updated or deleted.
 
-??? note "Visualization"
-
-    Take the example of a `Users` table that references a `Groups` table. 
-
-    **Users**
-
-    | id  | email            | group |
-    | --- | ---------------- | ----- |
-    | 1   | user1@domain.com | 1     |
-    | 2   | user2@domain.com | 1     |
-    | 3   | user3@domain.com | 2     |
-
-    **Groups**
-    
-    | id  | name    |
-    | --- | ------- |
-    | 1   | Admin   |
-    | 2   | Regular |
-
-    In this example, the `group` column in the `Users` table references the `id` column in the `Groups` table. So users 1 and 2 belong to the `Admin` group, and user 3 belongs to the `Regular` group.
-
-To define a foreign key in Drift, use the `references()` method. This method takes two arguments:
-
-1. The referenced table (e.g., `Groups`)
-2. The referenced column as a [symbol](https://dart.dev/guides/language/language-tour#symbols) (e.g., `#id`)
-
-
-
-**Example:**
-
-In this schema we have a users table and a groups table. Each user belongs to a group. 
-To create this relationship, we add a `group` column to the "many" side of the relationship, the `Users` table. This column is a foreign key that references the `id` column in the `Groups` table.
-
-{{ load_snippet('many-to-one','lib/snippets/dart_api/references.dart.excerpt.json') }}
-
-Here is how you would create a user that belongs to an `Admin` group:
-  
-{{ load_snippet('many-to-one-usage','lib/snippets/dart_api/references.dart.excerpt.json') }}
-
-
-
-
-By default, the relationship is required, meaning that every row in the `Users` table must reference a row in the `Groups` table. To make the relationship optional, add the `nullable()` modifier to the column.
-
-
+Be aware that, in sqlite3, foreign key references aren't enabled by default.
+They need to be enabled with `PRAGMA foreign_keys = ON`.
+A suitable place to issue that pragma with drift is in a [post-migration callback](../Migrations/index.md#post-migration-callbacks).
 
 ## Generated columns
 Use the `generatedAs` method to create a column which is calculated based on other columns in the table.
