@@ -38,7 +38,7 @@ jobs:
         working-directory: .
       - name: Run build
         env:
-          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
+          IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/fix-docs' }}
         run: |
           chmod +x ./docs.sh
           ./docs.sh build
