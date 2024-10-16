@@ -1,6 +1,6 @@
 ---
 
-title: Frequently asked questions
+title: FAQ
 
 ---
 

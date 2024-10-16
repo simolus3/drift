@@ -1,6 +1,6 @@
 ---
 
-title: Migrating to drift
+title: Migrate to Drift
 description: Resources on how to migrate to drift from other database packages.
 
 ---

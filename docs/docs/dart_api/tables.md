@@ -179,7 +179,7 @@ Columns can be customized with several options. These options are available on a
 
         Customize this by setting the `case_from_dart_to_sql` option in your `build.yaml` file.     
         
-        ```yaml
+        ```yaml title="build.yaml"
         targets:
           $default:
             builders:
@@ -258,7 +258,6 @@ Every table in a database should have a primary key - a column or set of columns
 
 ---
 
-
 ## Multi-column uniqueness
 
 To enforce that a combination of columns is unique, override the `uniqueKeys` getter in your table class.
@@ -328,13 +327,22 @@ See the [DateTime Guide](../guides/datetime-migrations.md) for more information 
 
 ---
 
+
 ## Custom types
 
 Any Dart type can be stored in the database by converting it to one of the built-in types.
 
-Define a class which extends `TypeConverter` and implement the `toSql` and `fromSql` methods to convert between the Dart type and the type stored in the database.
+Use the `.map()` method on the column to apply a `TypeConverter` to a column.
 
-Apply the converter to a column using the `.map()` method on the column.
+To create a custom type converter:
+
+1. Define a class that extends `TypeConverter<D, S>`, where:
+     - `D` is the Dart type you want to use in your code
+     - `S` is the SQL type that will be stored in the database
+2. Implement the `toSql(D value)` and `fromSql(S fromDb)` methods
+3. Mix in `JsonTypeConverter<D, S>` to enable serialization to/from JSON (Optional).
+    - This is optional, but recommended for dataclasses.
+    - Use the same generic parameters as the `TypeConverter<D, S>` class.
 
 #### Example:
 
@@ -348,6 +356,9 @@ Apply the converter to a column using the `.map()` method on the column.
     In this case, we are storing `Duration`.
 2. Built-in type we are converting to.
     In this case, we are converting `Duration` to `int`.
+3. Mix in `JsonTypeConverter<Duration, int>` so that we can serialize dataclasses to/from JSON.
+
+Apply the converter to a column using the `.map()` method on the column.
 
 {{ load_snippet('apply_converter','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
@@ -361,9 +372,43 @@ Now we can use the `Duration` type as if it were a built-in type.
 
     Consider using a package like `equatable`, `freezed` or `dart_mappable` to create classes which implement this automatically.
 
-### JSON conversion
+??? note "Different Types for JSON and SQL Serialization"
 
-Drift offers a convenient way to store JSON serializable types using `TypeConverter.json()`.
+    If you would like to convert to a different type for JSON and SQL serialization, use `JsonTypeConverter2` instead of `JsonTypeConverter`.
+    
+    **Example:**
+
+    A common use case is to store a `Preferences` object as a JSON string in the database, but represent it as a `Map<String, Object?>` in JSON.
+
+    ??? example "`Preferences` Class"
+
+        {{ load_snippet('jsonserializable_type','lib/snippets/dart_api/tables.dart.excerpt.json') }}
+
+    <div class="annotate" markdown>
+    {{ load_snippet('custom_json_converter','lib/snippets/dart_api/tables.dart.excerpt.json', indent=4) }}
+    </div>
+
+    This is how the above example looks like in JSON:
+
+    **Before:**
+
+    ```json
+    {
+        "preferences": "{\"isDarkMode\": true, \"language\": \"en\"}"
+    }
+    ```
+
+    **After:**
+
+    ```json
+    {
+        "preferences": {"isDarkMode": true, "language": "en"}
+    }
+    ```
+    
+### JSON types
+
+Drift offers a convenient way to store JSON serializable objects using `TypeConverter.json()`.
 
 **Example:**
 
@@ -373,7 +418,7 @@ Drift offers a convenient way to store JSON serializable types using `TypeConver
 
     {{ load_snippet('jsonserializable_type','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
-
+---
 
 ### Enums
 

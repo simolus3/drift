@@ -343,18 +343,24 @@ SELECT
 FROM users;
 ```
 
-More details on type converts in drift files are available
-[here](../type_converters.md#using-converters-in-drift).
-
 When using type converters, we recommend the [`apply_converters_on_variables`](../generation_options/index.md)
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
+Drift files also have special support for implicit enum converters:
+
+```sql
+import 'status.dart';
+
+CREATE TABLE tasks (
+  id INTEGER NOT NULL PRIMARY KEY,
+  status ENUM(Status)
+);
+```
+
+Of course, the [warning](../dart_api/tables.md#implicit-enum-converters) about automatic enum converters also applies to drift files.
 
 ### Existing row classes
-
-
-
 
 You can use custom row classes instead of having drift generate one for you.
 For instance, let's say you had a Dart class defined as

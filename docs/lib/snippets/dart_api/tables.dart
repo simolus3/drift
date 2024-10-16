@@ -166,6 +166,7 @@ class Preferences {
 
 // #docregion json_converter
 class Accounts extends Table {
+  late final name = text()();
   late final preferences = text().map(TypeConverter.json(
       fromJson: (json) => Preferences.fromJson(json as Map<String, dynamic>),
       toJson: (column) => column.toJson()))();
@@ -174,9 +175,7 @@ class Accounts extends Table {
 
 // #docregion custom_json_converter
 class PreferencesConverter extends TypeConverter<Preferences, String>
-    with
-        JsonTypeConverter2<Preferences, String /*(1)!*/,
-            Map<String, Object?> /*(2)!*/ > {
+    with JsonTypeConverter2<Preferences, String, Map<String, Object?>> {
   @override
   Preferences fromJson(Map<String, Object?> json) {
     return Preferences.fromJson(json);
@@ -211,9 +210,8 @@ class ColumnConstraint extends Table {
 }
 
 // #docregion converter
-/// Converter for [Duration] to [int] and vice versa
-class DurationConverter
-    extends TypeConverter<Duration /*(1)!*/, int /*(2)!*/ > {
+class DurationConverter extends TypeConverter<Duration /*(1)!*/, int /*(2)!*/ >
+    with JsonTypeConverter<Duration, int> /*(3)!*/ {
   const DurationConverter();
 
   @override
@@ -285,9 +283,10 @@ void _query3() async {
 void _query4() async {
   final db = CatDatabase(driftDatabase(name: "categories"));
   // #docregion use_converter
-  db.managers.employees.create(
+  await db.managers.employees.createReturning(
     (create) => create(vacationTimeRemaining: const Duration(days: 10)),
   );
+
   // #enddocregion use_converter
 }
 
@@ -307,3 +306,17 @@ class Patients extends Table {
   late final age = integer()();
 }
 // #enddocregion index
+
+// #docregion references
+class TodoItems extends Table {
+  // ...
+  IntColumn get category =>
+      integer().nullable().references(TodoCategories, #id)();
+}
+
+@DataClassName("Category")
+class TodoCategories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  // and more columns...
+}
+// #enddocregion references
