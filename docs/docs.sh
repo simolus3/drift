@@ -67,8 +67,13 @@ if [ $arg1 == "build" ]; then
 
     # If the environmental value IS_RELEASE is set to true, then DONT generate the robots.txt file
     if [ "$IS_RELEASE" != "true" ]; then
+        echo "Not a release build, set IS_RELEASE to true to allow crawling."
         echo "User-agent: *" > ./web/robots.txt
         echo "Disallow: /" >> ./web/robots.txt
+    else
+        echo "Release build!"
+        echo "User-agent: *" > ./web/robots.txt
+        echo "Disallow:" >> ./web/robots.txt
     fi
 
 
@@ -127,14 +132,14 @@ elif [ $arg1 == "serve" ]; then
 
     drift_dev
 
-    dart run build_runner build --delete-conflicting-outputs 
+    dart run build_runner build --delete-conflicting-outputs
     if [ $? -ne 0 ]; then
         echo "Failed to build the project"
         exit 1
     fi
 
     run_webdev
-    
+
     build_container
 
     serve_mkdocs &
