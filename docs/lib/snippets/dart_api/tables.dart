@@ -116,6 +116,11 @@ class TableWithCustomConstraints extends Table {
 }
 // #enddocregion custom-constraint-table
 
+class GroupMemberships extends Table {
+  late final group = integer()();
+  late final user = integer()();
+}
+
 // #docregion table_mixin
 mixin TableMixin on Table {
   // Primary key column
