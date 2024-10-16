@@ -4,7 +4,6 @@ site_author: Simon Binder
 site_url: https://drift.simonbinder.eu/
 repo_url: https://github.com/simolus3/drift
 
-# TODO: Change to develop
 edit_uri: edit/develop/docs/docs
 theme:
   name: material
@@ -38,6 +37,7 @@ theme:
     - navigation.tracking
     - navigation.tabs
     - navigation.path
+    - navigation.footer
     - toc.follow
     - navigation.top
     - search.highlight
@@ -96,6 +96,13 @@ markdown_extensions:
 nav:
   - index.md
   - Documentation:
+      - Fundamentals:
+          - fundamentals/getting-started.md
+          - fundamentals/tables.md
+          - fundamentals/row_classes.md
+          - fundamentals/queries.md
+          - fundamentals/transactions.md
+          - fundamentals/migrations.md
       - Getting Started: setup.md
       - Dart API:
           - dart_api/manager.md

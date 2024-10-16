@@ -1,7 +1,7 @@
 // ignore_for_file: unused_element
-// #docregion flutter,sqlite3,postgres,before_generation
+// #docregion flutter,sqlite3,postgres,before_generation,scaffold
 import 'package:drift/drift.dart';
-// #enddocregion flutter,sqlite3,postgres,before_generation
+// #enddocregion flutter,sqlite3,postgres,before_generation,scaffold
 
 // #docregion flutter
 import 'package:drift_flutter/drift_flutter.dart';
@@ -15,26 +15,25 @@ import 'package:drift_postgres/drift_postgres.dart';
 import 'package:postgres/postgres.dart' as pg;
 // #enddocregion postgres
 
-// #docregion flutter,sqlite3,postgres,before_generation
+// #docregion flutter,sqlite3,postgres,before_generation,scaffold
 
 part 'database.g.dart';
 
 // #docregion table
 class TodoItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 32)();
-  TextColumn get content => text().named('body')();
-  IntColumn get category =>
-      integer().nullable().references(TodoCategory, #id)();
-  DateTimeColumn get createdAt => dateTime().nullable()();
+  late final id = integer().autoIncrement()();
+  late final title = text().withLength(min: 6, max: 32)();
+  late final content = text().named('body')();
+  late final category = integer().nullable().references(TodoCategory, #id)();
+  late final createdAt = dateTime().nullable()();
 }
 
 class TodoCategory extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get description => text()();
+  late final id = integer().autoIncrement()();
+  late final description = text()();
 }
 
-// #enddocregion table
+// #enddocregion table,scaffold
 @DriftDatabase(tables: [TodoItems, TodoCategory])
 class AppDatabase extends _$AppDatabase {
 // #enddocregion before_generation
