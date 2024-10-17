@@ -1,3 +1,7 @@
+## 0.39.2-dev
+
+- Fix false-positive lint for a parameter count mismatch on `bm25()`.
+
 ## 0.39.1
 
 - Improve recovery in parser when encountering syntax errors.
