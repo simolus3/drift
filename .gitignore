@@ -36,3 +36,6 @@ docs/docs/*.js
 docs/docs/*.wasm
 docs/docs/examples/**
 docs/web/robots.txt
+
+# Linting
+custom_lint.log

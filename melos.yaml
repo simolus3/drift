@@ -6,6 +6,7 @@ packages:
   - drift
   - drift_sqflite
   - drift_dev
+  - drift_dev/test/linter_test/pkg
   - drift_flutter
   - sqlparser
   - examples/*
