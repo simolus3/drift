@@ -76,6 +76,20 @@ bitwise operations:
 
 {{ load_snippet('bitwise','lib/snippets/dart_api/expressions.dart.excerpt.json') }}
 
+### BigInt
+
+You may want to cast an expression to a `BigInt` if:
+
+- The result of an arithmetic operation will be extremely large[^1].
+- You are compiling to JavaScript.
+
+[^1]: Like bigger than 4,503,599,627,370,496!
+
+Using `dartCast<BigInt>()` will ensure that the result is interpreted as a `BigInt` by drift.
+
+**Example:**
+For an expression `(table.columnA * table.columnB).dartCast<BigInt>()`, drift will report the resulting value as a `BigInt` even if `columnA` and `columnB` were defined as regular integers.
+
 ## Null checks 
 To check whether an expression evaluates to `NULL` in SQL, you can use the `isNull` extension:
 

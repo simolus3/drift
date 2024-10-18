@@ -53,4 +53,6 @@
 /docs/platforms/postgres/ /Platforms/postgres/
 /docs/advanced-features/daos/ /dart_api/daos/
 /api/* https://pub.dev/documentation/drift/latest/index.html
+https://drift.simonbinder.eu/custom_row_classes/ /dart_api/dataclass/
+https://drift.simonbinder.eu/type_converters/ /dart_api/tables/#custom-types
 
