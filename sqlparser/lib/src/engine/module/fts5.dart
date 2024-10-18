@@ -157,7 +157,7 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
         if (argumentIndex == 0) {
           return const ResolveResult.unknown();
         } else {
-          return const ResolveResult(ResolvedType(type: BasicType.int));
+          return const ResolveResult(ResolvedType(type: BasicType.real));
         }
 
       case 'highlight':
@@ -184,7 +184,7 @@ class _Fts5Functions with ArgumentCountLinter implements FunctionHandler {
   @override
   ResolveResult inferReturnType(AnalysisContext context, SqlInvocation call,
       List<Typeable> expandedArgs) {
-    switch (call.name) {
+    switch (call.name.toLowerCase()) {
       case 'bm25':
         return const ResolveResult(ResolvedType(type: BasicType.real));
       case 'highlight':
