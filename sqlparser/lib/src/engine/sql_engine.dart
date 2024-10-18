@@ -264,11 +264,7 @@ class SqlEngine {
   AnalysisContext analyzeParsed(ParseResult result,
       {AnalyzeStatementOptions? stmtOptions}) {
     final node = result.rootNode;
-
-    final context = _createContext(node, result.sql, stmtOptions);
-    _analyzeContext(context);
-
-    return context;
+    return analyzeNode(node, result.sql, stmtOptions: stmtOptions);
   }
 
   /// Analyzes the given [node], which should be a [CrudStatement].

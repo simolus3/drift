@@ -167,6 +167,8 @@ void main() {
       final column = select.resolvedColumns!.singleWhere((c) => c.name == 'b');
       expect(result.typeOf(column),
           const ResolveResult(ResolvedType(type: BasicType.real)));
+      expect(result.typeOf((column as ExpressionColumn).expression),
+          const ResolveResult(ResolvedType(type: BasicType.real)));
     });
 
     test('return type of highlight()', () {
@@ -245,8 +247,8 @@ void main() {
       checkVarTypes(
         'SELECT bm25(fts, ?, ?) FROM fts;',
         [
-          BasicType.int,
-          BasicType.int,
+          BasicType.real,
+          BasicType.real,
         ],
       );
     });
