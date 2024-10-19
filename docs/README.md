@@ -1,3 +1,36 @@
+## todo restructuring notes
+
+1. Basics (getting started + duplicated important information for new users):
+  - Getting started
+  - Introduction to tables (deliberately only an introduction with the most important options, link to full pages for more)
+  - Using drift: Explain basics row classes, companions, manager + non-manager, transactions, migrations
+  - Unit tests and drift
+  - Migrating to drift
+  - FAQ
+2. Defining your schema
+  - Dart tables
+  - Dart views
+  - Type converters
+  - Drift files
+  - Migrations
+  - Custom row classes
+3. Queries (in-depth guides)
+  - Manager (ORM):
+  - Core Query builder
+4. Platforms
+5. Advanced topics
+ - Custom isolate setups
+ - Migrating between datetime formats
+ - Runtime schema introspection
+6. Other pages (community, upgrading)
+
+The idea here is that we make basics really easy to digest for new users.
+Then the rest of the restructuring is mostly just moving pages around and adding
+more information, but definitely something that can be done incremental.
+Having a complete but short overview over everything drift has to offer is probably
+the biggest shortcoming of the current structure, it's really bad that users write
+20+ migrations before realizing we have dedicated tooling for that.
+
 ### Documentation for the Drift package
 
 Folder Structure:
