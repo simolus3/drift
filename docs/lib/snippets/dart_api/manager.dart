@@ -1,4 +1,4 @@
-// ignore_for_file: invalid_use_of_internal_member, unused_local_variable, unused_element
+// ignore_for_file: invalid_use_of_internal_member, unused_local_variable, unused_element, avoid_single_cascade_in_expression_statements
 
 import 'package:drift/drift.dart';
 
@@ -103,43 +103,6 @@ extension ManagerExamples on AppDatabase {
   }
   // #enddocregion manager_delete
 
-  // #docregion manager_select
-  Future<void> selectTodoItems() async {
-    // Get all items
-    managers.todoItems.get();
-
-    // A stream of all the todo items, updated in real-time
-    managers.todoItems.watch();
-
-    // To get a single item, apply a filter and call `getSingle`
-    await managers.todoItems.filter((f) => f.id(1)).getSingle();
-  }
-  // #enddocregion manager_select
-
-  // #docregion manager_filter
-  Future<void> filterTodoItems() async {
-    // All items with a title of "Title"
-    managers.todoItems.filter((f) => f.title("Title"));
-
-    // All items with a title of "Title" and content of "Content"
-    managers.todoItems.filter((f) => f.title("Title") & f.content("Content"));
-
-    // All items with a title of "Title" or content that is not null
-    managers.todoItems.filter((f) => f.title("Title") | f.content.not.isNull());
-  }
-  // #enddocregion manager_filter
-
-  // #docregion manager_type_specific_filter
-  Future<void> filterWithType() async {
-    // Filter all items created since 7 days ago
-    managers.todoItems.filter(
-        (f) => f.createdAt.isAfter(DateTime.now().subtract(Duration(days: 7))));
-
-    // Filter all items with a title that starts with "Title"
-    managers.todoItems.filter((f) => f.title.startsWith('Title'));
-  }
-// #enddocregion manager_type_specific_filter
-
 // #docregion manager_ordering
   Future<void> orderWithType() async {
     // Order all items by their creation date in ascending order
@@ -210,23 +173,6 @@ extension ManagerExamples on AppDatabase {
   }
 // #enddocregion manager_filter_custom_back_references
 
-// #docregion manager_references
-  Future<void> references() async {
-    /// Get each todo, along with a its categories
-    final todosWithRefs = await managers.todoItems.withReferences().get();
-    for (final (todo, refs) in todosWithRefs) {
-      final category = await refs.category?.getSingle();
-    }
-
-    /// This also works in the reverse
-    final categoriesWithRefs =
-        await managers.todoCategory.withReferences().get();
-    for (final (category, refs) in categoriesWithRefs) {
-      final todos = await refs.todoItemsRefs.get();
-    }
-  }
-
-// #enddocregion manager_references
 // #docregion manager_prefetch_references
   Future<void> referencesPrefetch() async {
     /// Get each todo, along with a its categories
@@ -391,4 +337,133 @@ void _managerAggregatedAnnotations(AppDatabase db) async {
     print('Category ${category.id} has $todoCount todos');
   }
   // #enddocregion aggregated_annotations
+}
+
+Future<void> selectTodoItems(AppDatabase db) async {
+  // #docregion manager_select
+  await db.managers.todoItems.get();
+  // #enddocregion manager_select
+  // #docregion core_select
+  await db.select(db.todoItems).get();
+  // #enddocregion core_select
+
+  // #docregion manager_watch
+  db.managers.todoItems.watch();
+
+  // #enddocregion manager_watch
+  // #docregion core_watch
+  db.select(db.todoItems).watch();
+  // #enddocregion core_watch
+
+  // #docregion manager_limit
+  // Get 1st 10 items
+  await db.managers.todoItems.limit(10).get();
+  // Get the next 10 items
+  await db.managers.todoItems.limit(10, offset: 10).get();
+  // #enddocregion manager_limit
+  // #docregion core_limit
+  // Get 1st 10 items
+  await (db.select(db.todoItems)..limit(10)).get();
+  // Get the next 10 items
+  await (db.select(db.todoItems)..limit(10, offset: 10)).get();
+  // #enddocregion core_limit
+}
+
+Future<void> filterTodoItems(AppDatabase db) async {
+  // #docregion manager_filter
+  // All items with a title of "Title"
+  db.managers.todoItems.filter((f) => f.title("Title"));
+  // #enddocregion manager_filter
+
+  // #docregion core_filter
+  // All items with a title of "Title"
+  db.select(db.todoItems)..where((tbl) => tbl.title.equals("Title"));
+  // #enddocregion core_filter
+
+  // #docregion manager_complex_filter
+  // All items with a title of "Title" and content of "Content"
+  db.managers.todoItems.filter((f) => f.title("Title") & f.content("Content"));
+
+  /// Todos that:
+  /// 1. Have a title that is not "Title"
+  /// OR
+  /// 2. Have no content and start with "Hello World"
+  db.managers.todoItems.filter(
+    (f) =>
+        f.title("Title").not() |
+        (f.content.isNull() & f.content.startsWith("Hello World")),
+  );
+  // #enddocregion manager_complex_filter
+
+  // #docregion core_complex_filter
+  // All items with a title of "Title" and content of "Content"
+  db.select(db.todoItems)
+    ..where((tbl) => tbl.title.equals("Title") & tbl.content.equals("Content"));
+
+  /// Todos that:
+  /// 1. Have a title that is not "Title"
+  /// OR
+  /// 2. Have no content and start with "Hello World"
+  db.select(db.todoItems)
+    ..where(
+      (tbl) =>
+          tbl.title.equals("Title").not() |
+          (tbl.content.isNull() & tbl.content.like("Hello World%")),
+    );
+  // #enddocregion core_complex_filter
+}
+
+Future<void> filterTodoItemsRefs(AppDatabase db) async {
+  // #docregion manager_filter_references
+  // All items with a category description of "School"
+  db.managers.todoItems.filter((f) => f.category.description("School"));
+  // #enddocregion manager_filter_references
+
+  // #docregion core_filter_references
+  // All items with a title of "Title"
+  db.select(db.todoItems).join([
+    leftOuterJoin(
+        db.todoCategory, db.todoCategory.id.equalsExp(db.todoItems.category),
+        useColumns: false)
+  ]).where(db.todoCategory.description.equals("School"));
+  // #enddocregion core_filter_references
+
+  // #docregion manager_references
+  for (final (todo, refs)
+      in await db.managers.todoItems.withReferences().get()) {
+    final category = await refs.category?.getSingle();
+    print(
+        'Todo ${todo.id} has a category with the description ${category?.description}');
+  }
+  // #enddocregion manager_references
+  // #docregion manager_references_prefetch
+  for (final (todo, refs) in await db.managers.todoItems
+      .withReferences((prefetch) => prefetch(category: true))
+      .get()) {
+    final category = refs.category?.prefetchedData?.firstOrNull;
+    print(
+        'Todo ${todo.id} has a category with the description ${category?.description}');
+  }
+  // #enddocregion manager_references_prefetch
+
+  // #docregion core_references
+  // Build a select statement with a left outer join to fetch the referenced data
+  final query = db.select(db.todoItems).join([
+    leftOuterJoin(
+        db.todoCategory, db.todoCategory.id.equalsExp(db.todoItems.category))
+  ])
+    ..where(db.todoCategory.description.equals("School"));
+
+  // Map the results to a list of tuples containing the todo and category
+  final results = await query
+      .asyncMap((p0) =>
+          (p0.readTable(db.todoItems), p0.readTableOrNull(db.todoCategory)))
+      .get();
+
+  // Print the results
+  for (final (todo, category) in results) {
+    print(
+        'Todo ${todo.id} has a category with the description ${category?.description}');
+  }
+  // #enddocregion core_references
 }

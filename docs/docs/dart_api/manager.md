@@ -5,29 +5,99 @@ description: Use easier bindings for common queries.
 
 ---
 
+Drift offers three main approaches for querying your database:
 
-The examples on this page use the database from the [setup](../setup.md)
-instructions.
+- **Manages API**: The Manager API provides a simpler, more intuitive interface for common operations
+- **Core API**: The Core API provides a more flexible and powerful interface for complex queries
+- **Raw SQL**: For those comfortable with SQL, you can write raw SQL queries directly. The SQL is parsed and validated at compile time.
 
-When manager generation is enabled (default), drift will generate a manager for each table in the database.  
-A collection of these managers are accessed by a getter `managers` on the database class.
-Each table will have a manager generated for it unless it uses a custom row class.
+This page will cover the Manager API and the Core API. For more information on raw SQL queries, see the [Raw SQL](./raw_sql.md) page.
 
-## Select
+??? tip "Disable Manager API"
+    If you don't want to use the Manager API, you can disable it by setting `generate_manager` to `false` in the `drift` section of your `build.yaml` file. This will save you some build time and reduce the size of your generated code.
+    
+    ```yaml title="build.yaml"
+    targets:
+      $default:
+        builders:
+          drift_dev:
+            options:
+              generate_manager: false
+    ```
 
-The manager simplifies the process of retrieving rows from a table. Use it to read rows from the table or watch
-for changes.
+### Example schema
 
-{{ load_snippet('manager_select','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+The examples on this page use the following database schema:
 
-The manager provides a really easy to use API for selecting rows from a table. These can be combined with `|` and `&`  and parenthesis to construct more complex queries. Use `.not` to negate a condition.
+{{ load_snippet('before_generation','lib/snippets/setup/database.dart.excerpt.json') }}
 
-{{ load_snippet('manager_filter','lib/snippets/dart_api/manager.dart.excerpt.json') }}
 
-Every column has filters for equality, inequality and nullability.
-Type specific filters for `int`, `double`, `Int64`, `DateTime` and `String` are included out of the box.
+## Read
 
-{{ load_snippet('manager_type_specific_filter','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+=== "Manager API"
+
+    
+    To select all rows from a table, just call the `get()`/`watch()` method on the table manager. This will return a list of all rows in the table.
+
+    {{ load_snippet('manager_select','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+=== "Core API"
+
+    Write `SELECT` queries using the `select` method on the database class. This method returns a query object which can be used to retrieve rows from the database.
+
+    Any query can be run once with `get()` or be turned into an auto-updating stream using `watch()`.
+
+    {{ load_snippet('core_select','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+
+### Limit and Offset
+
+You can limit the amount of results returned by calling `limit` on queries. The method accepts
+the amount of rows to return and an optional offset.
+
+=== "Manager API"
+
+    {{ load_snippet('manager_limit','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+=== "Core API"
+
+    {{ load_snippet('core_limit','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+
+
+### Filtering
+
+#### Simple filters
+
+Drift generates prebuilt filters for each column in your table. These filters can be used to filter rows based on the value of a column.
+
+=== "Manager API"
+
+    You can apply filters to a query by calling `filter()`. The filter method takes a function that should return a filter on the given table.
+
+    {{ load_snippet('manager_filter','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+=== "Core API"
+
+    You can apply filters to a query by calling `where()`. The `where` method takes a function that should map the given table to an `Expression` of boolean. For more details on expressions, see the [expression](./expressions.md) docs.
+
+    {{ load_snippet('core_filter','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+#### Complex filters
+
+- Use the `&` and `|` operators to combine multiple filters.
+- Use `()` to group filters.
+- Use `.not` to negate a condition.
+
+
+=== "Manager API"
+
+    {{ load_snippet('manager_complex_filter','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
+=== "Core API"
+
+    {{ load_snippet('core_complex_filter','lib/snippets/dart_api/manager.dart.excerpt.json') }}
+
 
 
 ### Referencing other tables

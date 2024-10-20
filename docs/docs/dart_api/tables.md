@@ -1,6 +1,6 @@
 ---
 
-title: Tables
+title: Schema
 description: Define the schema of your database.
 
 ---

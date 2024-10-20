@@ -34,10 +34,10 @@ class TodoCategory extends Table {
   TextColumn get description => text()();
 }
 
+// #enddocregion before_generation
 // #enddocregion table
 @DriftDatabase(tables: [TodoItems, TodoCategory])
 class AppDatabase extends _$AppDatabase {
-// #enddocregion before_generation
   // After generating code, this class needs to define a `schemaVersion` getter
   // and a constructor telling drift where the database should be stored.
   // These are described in the getting started guide: https://drift.simonbinder.eu/getting-started/#open
@@ -50,10 +50,7 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _openConnection() {
     throw 'should not show as snippet';
   }
-
-// #docregion before_generation
 }
-// #enddocregion before_generation
 
 class OpenFlutter {
 // #docregion flutter

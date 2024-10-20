@@ -27,6 +27,7 @@ theme:
   logo: images/icon.png
   favicon: images/icon.png
   features:
+    - content.tabs.link
     - content.tooltips
     - navigation.instant
     - navigation.tracking
@@ -94,8 +95,8 @@ nav:
   - Documentation:
       - Getting Started: setup.md
       - dart_api/tables.md
-      - dart_api/dataclass.md
       - dart_api/manager.md
+      - dart_api/dataclass.md
       - dart_api/transactions.md
       - Core API:
           - dart_api/select.md
