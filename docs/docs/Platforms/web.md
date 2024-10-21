@@ -124,9 +124,9 @@ Just like the official sqlite3 port to the web, __this requires your website to 
 - `Cross-Origin-Embedder-Policy`: Needs to be set to `require-corp` or `credentialless`.
 
 For more details, see the [security requirements](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) explained by MDN, and the [documentation on web.dev](https://web.dev/coop-coep/).
-Unfortunately, there's no way (that I'm aware of) to add these headers onto `flutter run`'s web server.
-Drift will fall back to a (slightly slower) implementation in that case (see [storages](#supported-storage-implementations)),
-but we recommend researching and enabling these headers in production if possible.
+You can use ``flutter run  --web-header=Cross-Origin-Opener-Policy=same-origin --web-header=Cross-Origin-Embedder-Policy=require-corp`` to add these headers onto `flutter run`'s web server.
+However, if you use `flutter run` just like always Drift will fall back to a (slightly slower) implementation (see [storages](#supported-storage-implementations)).
+We recommend researching and enabling these headers in production, too, if possible.
 
 Also, note that the `sqlite3.wasm` file needs to be served with a `Content-Type` of
 `application/wasm` since browsers will reject the module otherwise.
