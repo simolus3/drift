@@ -1,7 +1,7 @@
 ---
 
-title: Drift internals
-description: Work in progress documentation on drift internals
+title: Install from GitHub
+description: How to install drift from GitHub
 
 ---
 

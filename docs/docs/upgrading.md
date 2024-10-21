@@ -1,6 +1,6 @@
 ---
 
-title: Upgrading
+title: Upgrading Drift
 description: How to upgrade between major drift versions
 
 ---

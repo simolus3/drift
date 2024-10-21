@@ -1,16 +1,10 @@
 ---
 
-title: Manager
+title: Queries
 description: Use easier bindings for common queries.
 
 ---
 
-
-
-With generated code, drift allows writing SQL queries in type-safe Dart.
-While this is provides lots of flexibility, it requires familiarity with SQL.
-As a simpler alternative, drift 2.18 introduced a new set of APIs designed to
-make common queries much easier to write.
 
 The examples on this page use the database from the [setup](../setup.md)
 instructions.
