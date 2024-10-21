@@ -27,7 +27,7 @@ class ColumnOrderings<T extends Object> {
 
   /// Sort this column in descending order
   ///
-  ///  1 -> 10 | A -> Z | Jan 1 -> Dec 31
+  /// 10 -> 1 | Z -> A | Dec 31 -> Jan 1
   ComposableOrdering desc() =>
       $composableOrdering({OrderingBuilder(OrderingMode.desc, column)});
 }

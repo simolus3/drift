@@ -21,17 +21,20 @@ part 'database.g.dart';
 
 // #docregion table
 class TodoItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 32)();
-  TextColumn get content => text().named('body')();
-  IntColumn get category =>
+  late final id = integer().autoIncrement()();
+  late final title = text().withLength(min: 6, max: 32)();
+  late final content = text().named('body')();
+  @ReferenceName("mainCategory")
+  late final category = integer().nullable().references(TodoCategory, #id)();
+  @ReferenceName("secondaryCategory")
+  late final secondaryCategory =
       integer().nullable().references(TodoCategory, #id)();
-  DateTimeColumn get createdAt => dateTime().nullable()();
+  late final createdAt = dateTime().nullable()();
 }
 
 class TodoCategory extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get description => text()();
+  late final id = integer().autoIncrement()();
+  late final description = text()();
 }
 
 // #enddocregion before_generation
