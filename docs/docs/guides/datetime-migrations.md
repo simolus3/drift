@@ -19,9 +19,9 @@ Drift supports two approaches of storing `DateTime` values in SQL:
    unchanged (e.g. `2022-07-25 09:28:42.015Z`), while local values have their
    UTC offset appended (e.g. `2022-07-25T11:28:42.015 +02:00`).
    Most of sqlite3's date and time functions operate on UTC values, but parsing
-   datetimes in SQL respects the UTC offset added to the value.  
+   datetimes in SQL respects the UTC offset added to the value.
    When reading values back from the database, drift will use `DateTime.parse`
-   as following:  
+   as following:
     - If the textual value ends with `Z`, drift will use `DateTime.parse`
       directly. The `Z` suffix will be recognized and a UTC value is returned.
     - If the textual value ends with a UTC offset (e.g. `+02:00`), drift first
@@ -31,14 +31,14 @@ Drift supports two approaches of storing `DateTime` values in SQL:
     - If the textual value neither has a `Z` suffix nor a UTC offset, drift
       will parse it as if it had a `Z` modifier, returning a UTC datetime.
       The motivation for this is that the `datetime` function in sqlite3 returns
-      values in this format and uses UTC by default.  
+      values in this format and uses UTC by default.
    This behavior works well with the date functions in sqlite3 while also
    preserving "UTC-ness" for stored values.
 
 The mode can be changed with the `store_date_time_values_as_text` [build option](../generation_options/index.md).
 
 Regardless of the option used, drift's builtin support for
-[date and time functions](expressions.md#date-and-time)
+[date and time functions](../dart_api/expressions.md#date-and-time)
 return an equivalent values. Drift internally inserts the `unixepoch`
 [modifier](https://sqlite.org/lang_datefunc.html#modifiers) when unix timestamps
 are used to make the date functions work. When comparing dates stored as text,
@@ -55,7 +55,7 @@ option, toggling this behavior is not compatible with existing database schemas:
 2. If you are using SQL statements defined in `.drift` files, use custom SQL
   at runtime or manually invoke datetime expressions with a direct
   `FunctionCallExpression` instead of using the higher-level date time APIs, you
-  may have to adapt those usages.  
+  may have to adapt those usages.
   For instance, comparison operators like `<` work on unix timestamps, but they
   will compare textual datetime values lexicographically. So depending on the
   mode used, you will have to wrap the value in `unixepoch` or `julianday` to
