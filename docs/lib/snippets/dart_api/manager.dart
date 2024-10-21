@@ -1,10 +1,9 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_local_variable, unused_element, avoid_single_cascade_in_expression_statements
 
 import 'package:drift/drift.dart';
-import 'package:drift_docs/snippets/modular/schema_inspection.dart';
 import 'package:drift_docs/snippets/setup/database.dart';
 
-part 'manager.g.dart';
+// part 'manager.g.dart';
 
 // @DriftDatabase(tables: [TodoItems, TodoCategory, Groups, Users])
 // class Database extends _$Database {
@@ -274,7 +273,7 @@ void _managerReferencedAnnotations(AppDatabase db) async {
   // #docregion referenced_annotations
   // This computed field will get the name of the user of this todo
   final todoUserName =
-      db.managers.todoItems.computedField((o) => o.category.user.name);
+      db.managers.todoItems.computedField((o) => o.category.description);
 
   /// Create a copy of the manager with the computed fields you want to use
   final manager = db.managers.todoItems.withFields([todoUserName]);
