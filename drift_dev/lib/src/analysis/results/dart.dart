@@ -612,6 +612,10 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
     if (node.typeArguments case final typeArgs?) {
       visitTypeArgumentList(typeArgs);
     }
+
+    if (node.question != null) {
+      _builder.addText('?');
+    }
   }
 
   @override

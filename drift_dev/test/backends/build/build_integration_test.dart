@@ -1223,4 +1223,51 @@ CREATE TABLE b (foo INTEGER);
       ),
     );
   });
+
+  test('generates generic type converters correctly', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3300
+    final build = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': '''
+import 'dart:convert';
+import 'package:drift/drift.dart';
+
+part 'main.drift.dart';
+
+class MapConverter<T> extends TypeConverter<Map<String, T>, String> {
+  @override
+  Map<String, T> fromSql(String fromDb) {
+    return Map<String, T>.from(jsonDecode(fromDb) ?? {});
+  }
+
+  @override
+  String toSql(Map<String, T> value) {
+    return jsonEncode(value);
+  }
+}
+
+class Users extends Table {
+  IntColumn get id => integer()();
+  TextColumn get extraData => text().map(MapConverter<Object?>())();
+}
+
+@DriftDatabase(tables: [Users])
+class Database {}
+''',
+      },
+      logger: loggerThat(neverEmits(anything)),
+      options: BuilderOptions({'generate_manager': false}),
+    );
+
+    checkOutputs(
+      {
+        'a|lib/main.drift.dart': decodedMatches(contains(r'''
+  static TypeConverter<Map<String, Object?>, String> $converterextraData =
+      MapConverter<Object?>();
+'''))
+      },
+      build.dartOutputs,
+      build.writer,
+    );
+  });
 }

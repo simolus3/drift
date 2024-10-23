@@ -1,3 +1,7 @@
+## 2.21.1
+
+- Fix generated code missing question marks for nullable types in some instances.
+
 ## 2.21.0
 
 - Fix Dart-defined `check` constraints not being considered in exported
