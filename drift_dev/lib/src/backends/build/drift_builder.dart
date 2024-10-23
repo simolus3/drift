@@ -9,6 +9,7 @@ import '../../analysis/driver/driver.dart';
 import '../../analysis/driver/state.dart';
 import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';
+import '../../utils/dartfmt.dart';
 import '../../utils/string_escaper.dart';
 import '../../writer/database_writer.dart';
 import '../../writer/drift_accessor_writer.dart';
@@ -125,10 +126,12 @@ class _DriftBuildRun {
   /// well.
   Version? overriddenLanguageVersion;
 
-  /// The Dart language version from the package. When it's too old and we're
-  /// generating libraries, we need to apply a `// @dart` version comment to get
-  /// a suitable version.
-  Version? packageLanguageVersion;
+  /// The language version that that the generated file will have. This is the
+  /// version of the input library for part files and the default version of the
+  /// surrounding package otherwise.
+  ///
+  /// Set in [_checkForLanguageVersions].
+  Version? sourceLanguageVersion;
 
   late Writer writer;
 
@@ -273,7 +276,8 @@ class _DriftBuildRun {
       final library = await buildStep.inputLibrary;
       overriddenLanguageVersion = library.languageVersion.override;
 
-      final effectiveVersion = library.languageVersion.effective;
+      final effectiveVersion =
+          sourceLanguageVersion = library.languageVersion.effective;
       if (effectiveVersion < _minimalDartLanguageVersion) {
         final effective = effectiveVersion.majorMinor;
         final minimum = _minimalDartLanguageVersion.majorMinor;
@@ -285,6 +289,33 @@ class _DriftBuildRun {
           '$minimum, or add a `// @dart=$minimum` comment at the top of this '
           'file.',
         );
+      }
+    } else {
+      // We don't have a primary library from which we'd inherit language
+      // versions - look it up from the package instead.
+      final config = await buildStep.packageConfig;
+      for (final package in config.packages) {
+        if (package.name == buildStep.inputId.package) {
+          final version = package.languageVersion;
+          if (version != null) {
+            final asPubSemver = Version(version.major, version.minor, 0);
+
+            if (asPubSemver < _minimalDartLanguageVersion) {
+              sourceLanguageVersion = _minimalDartLanguageVersion;
+              overriddenLanguageVersion = _minimalDartLanguageVersion;
+            } else {
+              sourceLanguageVersion = asPubSemver;
+            }
+          }
+
+          break;
+        }
+      }
+
+      if (sourceLanguageVersion == null) {
+        // Fallback to defaults if we were unable to resolve language versions.
+        sourceLanguageVersion = _minimalDartLanguageVersion;
+        overriddenLanguageVersion = _minimalDartLanguageVersion;
       }
     }
   }
@@ -460,8 +491,15 @@ class _DriftBuildRun {
     output.write(writer.writeGenerated());
 
     var code = output.toString();
+
     try {
-      code = DartFormatter().format(code);
+      code = formatDartCode(
+        code,
+        sourceLanguageVersion ?? DartFormatter.latestLanguageVersion,
+        // source_gen will include the linewidth comment for us.
+        includeWidthComment: !mode.appliesCombiningBuilderFromSourceGen &&
+            options.preamble == null,
+      );
     } on FormatterException {
       log.warning('Could not format generated source. The generated code is '
           'probably invalid, and this is most likely a bug in drift_dev.');

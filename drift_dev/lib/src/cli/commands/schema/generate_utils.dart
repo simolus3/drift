@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as p;
 import 'package:collection/collection.dart';
 
@@ -69,7 +68,7 @@ class GenerateUtilsCommand extends Command {
 
       final file = File(
           p.join(outputDir.path, GenerateUtils._filenameForVersion(version)));
-      await file.writeAsString(GenerateUtils.generateSchemaCode(
+      await file.writeAsString(await GenerateUtils.generateSchemaCode(
           cli,
           version,
           entities,
@@ -80,7 +79,7 @@ class GenerateUtilsCommand extends Command {
     final versions = schema.keys.toList()..sort();
     final libraryFile = File(p.join(outputDir.path, 'schema.dart'));
     await libraryFile
-        .writeAsString(GenerateUtils.generateLibraryCode(versions));
+        .writeAsString(await GenerateUtils.generateLibraryCode(cli, versions));
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
@@ -90,16 +89,15 @@ class GenerateUtils {
   static String _filenameForVersion(int version) => 'schema_v$version.dart';
   static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.\n'
       '// ignore_for_file: type=lint';
-  static final _dartfmt = DartFormatter();
 
   /// Generates Dart code for a specific schema version.
-  static String generateSchemaCode(
+  static Future<String> generateSchemaCode(
     DriftDevCli cli,
     int version,
     ExportedSchema schema,
     bool dataClasses,
     bool companions,
-  ) {
+  ) async {
     // let serialized options take precedence, otherwise use current options
     // from project.
     final options = DriftOptions.fromJson({
@@ -120,7 +118,6 @@ class GenerateUtils {
 
     writer.leaf()
       ..writeln(_prefix)
-      ..writeln('//@dart=2.12')
       ..writeln("import 'package:drift/drift.dart';");
 
     final database = DriftDatabase(
@@ -137,15 +134,15 @@ class GenerateUtils {
 
     DatabaseWriter(input, writer.child()).write();
 
-    return _dartfmt.format(writer.writeGenerated());
+    return await cli.project.formatSource(writer.writeGenerated());
   }
 
   /// Generates the Dart code for a library file that instantiates the schema
   /// for each version.
-  static String generateLibraryCode(Iterable<int> versions) {
+  static Future<String> generateLibraryCode(
+      DriftDevCli cli, Iterable<int> versions) async {
     final buffer = StringBuffer()
       ..writeln(_prefix)
-      ..writeln('//@dart=2.12')
       ..writeln("import 'package:drift/drift.dart';")
       ..writeln("import 'package:drift/internal/migrations.dart';");
 
@@ -177,6 +174,6 @@ class GenerateUtils {
       ..writeln('static const versions = const $versionsSet;')
       ..writeln('}');
 
-    return _dartfmt.format(buffer.toString());
+    return await cli.project.formatSource(buffer.toString());
   }
 }

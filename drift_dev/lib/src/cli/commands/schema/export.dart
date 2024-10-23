@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:args/command_runner.dart';
-import 'package:dart_style/dart_style.dart';
 import 'package:drift/drift.dart' show SqlDialect;
 
 import '../../../analysis/options.dart';
@@ -101,12 +100,11 @@ void main(List<String> args, SendPort port) {
     final input = DatabaseGenerationInput(database, resolved, const {}, null);
 
     DatabaseWriter(input, writer.child()).write();
-    final output = _dartfmt.format(writer.writeGenerated());
 
     final receive = ReceivePort();
     final receiveErrors = ReceivePort();
     final isolate = await Isolate.spawnUri(
-      Uri.dataFromString(output),
+      Uri.dataFromString(writer.writeGenerated()),
       [dialect.name],
       receive.sendPort,
       errorsAreFatal: true,
@@ -134,8 +132,6 @@ void main(List<String> args, SendPort port) {
     receiveErrors.close();
     receive.close();
   }
-
-  static final _dartfmt = DartFormatter();
 }
 
 extension<T> on Stream<T> {

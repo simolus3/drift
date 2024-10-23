@@ -1,3 +1,4 @@
+// dart format width=80
 import 'package:drift/internal/versioned_schema.dart' as i0;
 import 'package:drift/drift.dart' as i1;
 import 'package:drift/src/runtime/query_builder/query_builder.dart' as i2;

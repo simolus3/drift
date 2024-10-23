@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_style/dart_style.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/cli/cli.dart';
 import 'package:drift_dev/src/cli/commands/schema.dart';
@@ -138,7 +137,7 @@ targets:
       await writer.writeTestDatabases();
       // Write the generated test
       await writer.writeTest();
-      writer.flush();
+      await writer.flush();
     }
   }
 }
@@ -179,12 +178,10 @@ class _MigrationTestEmitter {
   final writeTasks = <File, String>{};
 
   /// Write all the files to the disk
-  void flush() {
+  Future<void> flush() async {
     for (var MapEntry(key: file, value: content) in writeTasks.entries) {
-      if (file.path.endsWith('.dart')) {
-        content = DartFormatter().format(content);
-      }
-      file.writeAsStringSync(content);
+      // Note: Content is formatted Dart code at this point.
+      await file.writeAsString(content);
     }
     writeTasks.clear();
   }
@@ -317,7 +314,7 @@ ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green
           "$dbName: Updating step by step migration helper in ${blue.wrap(p.relative(stepsFile.path))}");
     }
     writeTasks[stepsFile] =
-        StepsGenerationUtil.generateStepByStepMigration(schemas);
+        await StepsGenerationUtil.generateStepByStepMigration(cli, schemas);
   }
 
   /// Generate a built database for each schema version
@@ -327,10 +324,11 @@ ${blue.wrap("class")} ${green.wrap(dbClassName)} ${blue.wrap("extends")} ${green
       final version = versionAndEntities.key;
       final entities = versionAndEntities.value;
       writeTasks[testUtilityFile(version)] =
-          GenerateUtils.generateSchemaCode(cli, version, entities, true, true);
+          await GenerateUtils.generateSchemaCode(
+              cli, version, entities, true, true);
     }
     writeTasks[File(p.join(testDatabasesDir.path, 'schema.dart'))] =
-        GenerateUtils.generateLibraryCode(schemas.keys);
+        await GenerateUtils.generateLibraryCode(cli, schemas.keys);
   }
 
   Future<void> writeTest() async {
@@ -400,7 +398,7 @@ void main() {
     cli.logger.info(
         '$dbName: Generated test in ${blue.wrap(p.relative(testFile.path))}.\n'
         'Run this test to validate that your migrations are written correctly. ${yellow.wrap("dart test ${p.relative(testFile.path)}")}');
-    writeTasks[testFile] = code;
+    writeTasks[testFile] = await cli.project.formatSource(code);
   }
 
   /// The json file where the schema for the current version of the database is stored
