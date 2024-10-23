@@ -2,6 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
+import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/resolver/shared/data_class.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
@@ -69,6 +70,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       ],
       overrideTableConstraints: tableConstraints,
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
+      strict: await _isStrict(element) ?? false,
       attachedIndices: [
         for (final id in discovered.attachedIndices) id.name,
       ],
@@ -120,6 +122,18 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
         element,
         'The uniqueKeys override contains the primary key, which is '
         'already unique by default.',
+      ));
+    }
+
+    if (!table.strict &&
+        table.columns.any((c) => switch (c.sqlType) {
+              ColumnDriftType(:final builtin) => builtin == DriftSqlType.any,
+              ColumnCustomType() => false,
+            })) {
+      reportError(DriftAnalysisError.forDartElement(
+        element,
+        'The `ANY` type is only meaningful for `STRICT` tables. '
+        'Override `bool get isStrict => true;` to use the `ANY` type.',
       ));
     }
 
@@ -233,9 +247,9 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return parsedUniqueKeys;
   }
 
-  Future<bool?> _overrideWithoutRowId(ClassElement element) async {
+  Future<bool?> _booleanGetter(ClassElement element, String name) async {
     // ignore: deprecated_member_use
-    final getter = element.lookUpGetter('withoutRowId', element.library);
+    final getter = element.lookUpGetter(name, element.library);
 
     // Was the getter overridden at all?
     if (getter == null || getter.isFromDefaultTable) return null;
@@ -256,6 +270,14 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     }
 
     return null;
+  }
+
+  Future<bool?> _overrideWithoutRowId(ClassElement element) async {
+    return await _booleanGetter(element, 'withoutRowId');
+  }
+
+  Future<bool?> _isStrict(ClassElement element) async {
+    return await _booleanGetter(element, 'isStrict');
   }
 
   Future<Iterable<PendingColumnInformation>> _parseColumns(

@@ -473,4 +473,28 @@ class Users extends Table {
       ),
     ]);
   });
+
+  test('recognizes ANY columns', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Preferences extends Table {
+  TextColumn get key => text()();
+  AnyColumn get value => sqliteAny()();
+
+  @override
+  bool get isStrict => true;
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    expect(table.columns.map((c) => c.sqlType.builtin),
+        [DriftSqlType.string, DriftSqlType.any]);
+    expect(table.strict, isTrue);
+  });
 }

@@ -1,4 +1,4 @@
-## 2.21.1-dev
+## 2.22.0-dev
 
 - Pass language version to dart formatter when generating code.
 

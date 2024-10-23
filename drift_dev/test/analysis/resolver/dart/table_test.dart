@@ -473,4 +473,22 @@ class MyTable extends Table {
         contains(isA<PrimaryKeyColumn>()
             .having((e) => e.isAutoIncrement, 'isAutoIncrement', isTrue)));
   });
+
+  test('warns about using ANY outside of strict tables', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Preferences extends Table {
+  TextColumn get key => text()();
+  AnyColumn get value => sqliteAny()();
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+
+    expect(file.allErrors,
+        [isDriftError(contains('is only meaningful for `STRICT` tables'))]);
+  });
 }

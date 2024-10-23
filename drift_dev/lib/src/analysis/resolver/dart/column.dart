@@ -24,6 +24,7 @@ const String _startBool = 'boolean';
 const String _startDateTime = 'dateTime';
 const String _startBlob = 'blob';
 const String _startReal = 'real';
+const String _startAny = 'sqliteAny';
 const String _startCustom = 'customType';
 
 const Set<String> _starters = {
@@ -36,6 +37,7 @@ const Set<String> _starters = {
   _startDateTime,
   _startBlob,
   _startReal,
+  _startAny,
   _startCustom,
 };
 
@@ -522,6 +524,7 @@ class ColumnParser {
       _startDateTime: DriftSqlType.dateTime,
       _startBlob: DriftSqlType.blob,
       _startReal: DriftSqlType.double,
+      _startAny: DriftSqlType.any,
     }[name]!;
   }
 

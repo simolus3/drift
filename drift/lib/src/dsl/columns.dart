@@ -85,6 +85,9 @@ typedef BlobColumn = Column<Uint8List>;
 /// A column that stores floating point numeric values.
 typedef RealColumn = Column<double>;
 
+/// A column storing arbitrary values using SQLite's `ANY` type.
+typedef AnyColumn = Column<DriftAny>;
+
 class _BaseColumnBuilder<T extends Object> {}
 
 /// A column builder is used to specify which columns should appear in a table.
