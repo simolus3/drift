@@ -103,8 +103,12 @@ extension StepByStep3 on MyDatabase {
         await m.runMigrationSteps(
           from: math.max(2, from),
           to: to,
-          // ignore: missing_required_argument
           steps: migrationSteps(
+            // #enddocregion stepbystep3
+            from1To2: (m, schema) async {
+              throw 'users would not have this as v2 would be their first schema';
+            },
+            // #docregion stepbystep3
             from2To3: (m, schema) async {
               // we added the priority property in the change from version 1 or
               // 2 to version 3
