@@ -17,8 +17,6 @@ The Basics:
 - In table classes, columns are defined as `late final` fields with one of the built-in [column types](#column-types).
 - Tables are included in the database by adding them to the `tables` list in the `@DriftDatabase` annotation.
 
-
-
 ## Quick example
 
 Let's take another look at the tables defined in the [getting started]('getting-started.md')
@@ -85,6 +83,7 @@ Drift offers a variety of built-in column types to suit most database needs.
 | `bool`                           | `late final isAdmin = boolean()()`    | `INTEGER` (`1` or `0`)                                  |
 | `double`                         | `late final height = real()()`        | `REAL`                                                  |
 | `Uint8List`                      | `late final image = blob()()`         | `BLOB`                                                  |
+| `DriftAny`                       | `late final value = sqliteAny()()`    | `ANY` (for `STRICT` tables)                             |
 | [`DateTime`](#datetime-options)  | `late final createdAt = dateTime()()` | `INTEGER`or `TEXT` [More details...](#datetime-options) |
 | Types specific to Postgres | See [postgres docs](../Platforms/postgres.md). | Depending on type. |
 
