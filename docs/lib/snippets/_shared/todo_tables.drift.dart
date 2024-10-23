@@ -1,8 +1,519 @@
+// dart format width=80
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:drift_docs/snippets/_shared/todo_tables.drift.dart' as i1;
 import 'package:drift_docs/snippets/_shared/todo_tables.dart' as i2;
 import 'package:drift/internal/modular.dart' as i3;
+
+typedef $$TodoItemsTableCreateCompanionBuilder = i1.TodoItemsCompanion
+    Function({
+  i0.Value<int> id,
+  required String title,
+  required String content,
+  i0.Value<int?> category,
+  i0.Value<DateTime?> dueDate,
+});
+typedef $$TodoItemsTableUpdateCompanionBuilder = i1.TodoItemsCompanion
+    Function({
+  i0.Value<int> id,
+  i0.Value<String> title,
+  i0.Value<String> content,
+  i0.Value<int?> category,
+  i0.Value<DateTime?> dueDate,
+});
+
+class $$TodoItemsTableFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
+  $$TodoItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<DateTime> get dueDate => $composableBuilder(
+      column: $table.dueDate, builder: (column) => i0.ColumnFilters(column));
+
+  i1.$$CategoriesTableFilterComposer get category {
+    final i1.$$CategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.category,
+        referencedTable: i3.ReadDatabaseContainer($db)
+            .resultSet<i1.$CategoriesTable>('categories'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$$CategoriesTableFilterComposer(
+              $db: $db,
+              $table: i3.ReadDatabaseContainer($db)
+                  .resultSet<i1.$CategoriesTable>('categories'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TodoItemsTableOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
+  $$TodoItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<DateTime> get dueDate => $composableBuilder(
+      column: $table.dueDate, builder: (column) => i0.ColumnOrderings(column));
+
+  i1.$$CategoriesTableOrderingComposer get category {
+    final i1.$$CategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.category,
+        referencedTable: i3.ReadDatabaseContainer($db)
+            .resultSet<i1.$CategoriesTable>('categories'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$$CategoriesTableOrderingComposer(
+              $db: $db,
+              $table: i3.ReadDatabaseContainer($db)
+                  .resultSet<i1.$CategoriesTable>('categories'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TodoItemsTableAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
+  $$TodoItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  i0.GeneratedColumn<DateTime> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  i1.$$CategoriesTableAnnotationComposer get category {
+    final i1.$$CategoriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.category,
+        referencedTable: i3.ReadDatabaseContainer($db)
+            .resultSet<i1.$CategoriesTable>('categories'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$$CategoriesTableAnnotationComposer(
+              $db: $db,
+              $table: i3.ReadDatabaseContainer($db)
+                  .resultSet<i1.$CategoriesTable>('categories'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TodoItemsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$TodoItemsTable,
+    i1.TodoItem,
+    i1.$$TodoItemsTableFilterComposer,
+    i1.$$TodoItemsTableOrderingComposer,
+    i1.$$TodoItemsTableAnnotationComposer,
+    $$TodoItemsTableCreateCompanionBuilder,
+    $$TodoItemsTableUpdateCompanionBuilder,
+    (
+      i1.TodoItem,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem>
+    ),
+    i1.TodoItem,
+    i0.PrefetchHooks Function({bool category})> {
+  $$TodoItemsTableTableManager(
+      i0.GeneratedDatabase db, i1.$TodoItemsTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              i1.$$TodoItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i1.$$TodoItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              i1.$$TodoItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<String> title = const i0.Value.absent(),
+            i0.Value<String> content = const i0.Value.absent(),
+            i0.Value<int?> category = const i0.Value.absent(),
+            i0.Value<DateTime?> dueDate = const i0.Value.absent(),
+          }) =>
+              i1.TodoItemsCompanion(
+            id: id,
+            title: title,
+            content: content,
+            category: category,
+            dueDate: dueDate,
+          ),
+          createCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required String title,
+            required String content,
+            i0.Value<int?> category = const i0.Value.absent(),
+            i0.Value<DateTime?> dueDate = const i0.Value.absent(),
+          }) =>
+              i1.TodoItemsCompanion.insert(
+            id: id,
+            title: title,
+            content: content,
+            category: category,
+            dueDate: dueDate,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TodoItemsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$TodoItemsTable,
+    i1.TodoItem,
+    i1.$$TodoItemsTableFilterComposer,
+    i1.$$TodoItemsTableOrderingComposer,
+    i1.$$TodoItemsTableAnnotationComposer,
+    $$TodoItemsTableCreateCompanionBuilder,
+    $$TodoItemsTableUpdateCompanionBuilder,
+    (
+      i1.TodoItem,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem>
+    ),
+    i1.TodoItem,
+    i0.PrefetchHooks Function({bool category})>;
+typedef $$CategoriesTableCreateCompanionBuilder = i1.CategoriesCompanion
+    Function({
+  i0.Value<int> id,
+  required String name,
+});
+typedef $$CategoriesTableUpdateCompanionBuilder = i1.CategoriesCompanion
+    Function({
+  i0.Value<int> id,
+  i0.Value<String> name,
+});
+
+class $$CategoriesTableFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$CategoriesTable> {
+  $$CategoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => i0.ColumnFilters(column));
+
+  i0.Expression<bool> todoItemsRefs(
+      i0.Expression<bool> Function(i1.$$TodoItemsTableFilterComposer f) f) {
+    final i1.$$TodoItemsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: i3.ReadDatabaseContainer($db)
+            .resultSet<i1.$TodoItemsTable>('todo_items'),
+        getReferencedColumn: (t) => t.category,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$$TodoItemsTableFilterComposer(
+              $db: $db,
+              $table: i3.ReadDatabaseContainer($db)
+                  .resultSet<i1.$TodoItemsTable>('todo_items'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$CategoriesTableOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$CategoriesTable> {
+  $$CategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
+}
+
+class $$CategoriesTableAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$CategoriesTable> {
+  $$CategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  i0.Expression<T> todoItemsRefs<T extends Object>(
+      i0.Expression<T> Function(i1.$$TodoItemsTableAnnotationComposer a) f) {
+    final i1.$$TodoItemsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: i3.ReadDatabaseContainer($db)
+            .resultSet<i1.$TodoItemsTable>('todo_items'),
+        getReferencedColumn: (t) => t.category,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$$TodoItemsTableAnnotationComposer(
+              $db: $db,
+              $table: i3.ReadDatabaseContainer($db)
+                  .resultSet<i1.$TodoItemsTable>('todo_items'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$CategoriesTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$CategoriesTable,
+    i1.Category,
+    i1.$$CategoriesTableFilterComposer,
+    i1.$$CategoriesTableOrderingComposer,
+    i1.$$CategoriesTableAnnotationComposer,
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder,
+    (
+      i1.Category,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$CategoriesTable, i1.Category>
+    ),
+    i1.Category,
+    i0.PrefetchHooks Function({bool todoItemsRefs})> {
+  $$CategoriesTableTableManager(
+      i0.GeneratedDatabase db, i1.$CategoriesTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              i1.$$CategoriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i1.$$CategoriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              i1.$$CategoriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<String> name = const i0.Value.absent(),
+          }) =>
+              i1.CategoriesCompanion(
+            id: id,
+            name: name,
+          ),
+          createCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required String name,
+          }) =>
+              i1.CategoriesCompanion.insert(
+            id: id,
+            name: name,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CategoriesTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$CategoriesTable,
+    i1.Category,
+    i1.$$CategoriesTableFilterComposer,
+    i1.$$CategoriesTableOrderingComposer,
+    i1.$$CategoriesTableAnnotationComposer,
+    $$CategoriesTableCreateCompanionBuilder,
+    $$CategoriesTableUpdateCompanionBuilder,
+    (
+      i1.Category,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.$CategoriesTable, i1.Category>
+    ),
+    i1.Category,
+    i0.PrefetchHooks Function({bool todoItemsRefs})>;
+typedef $$UsersTableCreateCompanionBuilder = i1.UsersCompanion Function({
+  i0.Value<int> id,
+  required DateTime birthDate,
+});
+typedef $$UsersTableUpdateCompanionBuilder = i1.UsersCompanion Function({
+  i0.Value<int> id,
+  i0.Value<DateTime> birthDate,
+});
+
+class $$UsersTableFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
+  $$UsersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<DateTime> get birthDate => $composableBuilder(
+      column: $table.birthDate, builder: (column) => i0.ColumnFilters(column));
+}
+
+class $$UsersTableOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
+  $$UsersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<DateTime> get birthDate => $composableBuilder(
+      column: $table.birthDate,
+      builder: (column) => i0.ColumnOrderings(column));
+}
+
+class $$UsersTableAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
+  $$UsersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  i0.GeneratedColumn<DateTime> get birthDate =>
+      $composableBuilder(column: $table.birthDate, builder: (column) => column);
+}
+
+class $$UsersTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.$UsersTable,
+    i1.User,
+    i1.$$UsersTableFilterComposer,
+    i1.$$UsersTableOrderingComposer,
+    i1.$$UsersTableAnnotationComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.$UsersTable, i1.User>),
+    i1.User,
+    i0.PrefetchHooks Function()> {
+  $$UsersTableTableManager(i0.GeneratedDatabase db, i1.$UsersTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              i1.$$UsersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i1.$$UsersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              i1.$$UsersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<DateTime> birthDate = const i0.Value.absent(),
+          }) =>
+              i1.UsersCompanion(
+            id: id,
+            birthDate: birthDate,
+          ),
+          createCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required DateTime birthDate,
+          }) =>
+              i1.UsersCompanion.insert(
+            id: id,
+            birthDate: birthDate,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$UsersTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$UsersTable,
+    i1.User,
+    i1.$$UsersTableFilterComposer,
+    i1.$$UsersTableOrderingComposer,
+    i1.$$UsersTableAnnotationComposer,
+    $$UsersTableCreateCompanionBuilder,
+    $$UsersTableUpdateCompanionBuilder,
+    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.$UsersTable, i1.User>),
+    i1.User,
+    i0.PrefetchHooks Function()>;
 
 class $TodoItemsTable extends i2.TodoItems
     with i0.TableInfo<$TodoItemsTable, i1.TodoItem> {
@@ -311,179 +822,6 @@ class TodoItemsCompanion extends i0.UpdateCompanion<i1.TodoItem> {
   }
 }
 
-typedef $$TodoItemsTableCreateCompanionBuilder = i1.TodoItemsCompanion
-    Function({
-  i0.Value<int> id,
-  required String title,
-  required String content,
-  i0.Value<int?> category,
-  i0.Value<DateTime?> dueDate,
-});
-typedef $$TodoItemsTableUpdateCompanionBuilder = i1.TodoItemsCompanion
-    Function({
-  i0.Value<int> id,
-  i0.Value<String> title,
-  i0.Value<String> content,
-  i0.Value<int?> category,
-  i0.Value<DateTime?> dueDate,
-});
-
-class $$TodoItemsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
-  $$TodoItemsTableFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnFilters<String> get title => $state.composableBuilder(
-      column: $state.table.title,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnFilters<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnFilters<DateTime> get dueDate => $state.composableBuilder(
-      column: $state.table.dueDate,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i1.$$CategoriesTableFilterComposer get category {
-    final i1.$$CategoriesTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.category,
-        referencedTable: i3.ReadDatabaseContainer($state.db)
-            .resultSet<i1.$CategoriesTable>('categories'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            i1.$$CategoriesTableFilterComposer(i0.ComposerState(
-                $state.db,
-                i3.ReadDatabaseContainer($state.db)
-                    .resultSet<i1.$CategoriesTable>('categories'),
-                joinBuilder,
-                parentComposers)));
-    return composer;
-  }
-}
-
-class $$TodoItemsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
-  $$TodoItemsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<String> get title => $state.composableBuilder(
-      column: $state.table.title,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<DateTime> get dueDate => $state.composableBuilder(
-      column: $state.table.dueDate,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i1.$$CategoriesTableOrderingComposer get category {
-    final i1.$$CategoriesTableOrderingComposer composer =
-        $state.composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.category,
-            referencedTable: i3.ReadDatabaseContainer($state.db)
-                .resultSet<i1.$CategoriesTable>('categories'),
-            getReferencedColumn: (t) => t.id,
-            builder: (joinBuilder, parentComposers) =>
-                i1.$$CategoriesTableOrderingComposer(i0.ComposerState(
-                    $state.db,
-                    i3.ReadDatabaseContainer($state.db)
-                        .resultSet<i1.$CategoriesTable>('categories'),
-                    joinBuilder,
-                    parentComposers)));
-    return composer;
-  }
-}
-
-class $$TodoItemsTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$TodoItemsTable,
-    i1.TodoItem,
-    i1.$$TodoItemsTableFilterComposer,
-    i1.$$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder,
-    (
-      i1.TodoItem,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem>
-    ),
-    i1.TodoItem,
-    i0.PrefetchHooks Function({bool category})> {
-  $$TodoItemsTableTableManager(
-      i0.GeneratedDatabase db, i1.$TodoItemsTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              i1.$$TodoItemsTableFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i1.$$TodoItemsTableOrderingComposer(i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<String> title = const i0.Value.absent(),
-            i0.Value<String> content = const i0.Value.absent(),
-            i0.Value<int?> category = const i0.Value.absent(),
-            i0.Value<DateTime?> dueDate = const i0.Value.absent(),
-          }) =>
-              i1.TodoItemsCompanion(
-            id: id,
-            title: title,
-            content: content,
-            category: category,
-            dueDate: dueDate,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required String title,
-            required String content,
-            i0.Value<int?> category = const i0.Value.absent(),
-            i0.Value<DateTime?> dueDate = const i0.Value.absent(),
-          }) =>
-              i1.TodoItemsCompanion.insert(
-            id: id,
-            title: title,
-            content: content,
-            category: category,
-            dueDate: dueDate,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$TodoItemsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$TodoItemsTable,
-    i1.TodoItem,
-    i1.$$TodoItemsTableFilterComposer,
-    i1.$$TodoItemsTableOrderingComposer,
-    $$TodoItemsTableCreateCompanionBuilder,
-    $$TodoItemsTableUpdateCompanionBuilder,
-    (
-      i1.TodoItem,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem>
-    ),
-    i1.TodoItem,
-    i0.PrefetchHooks Function({bool category})>;
-
 class $CategoriesTable extends i2.Categories
     with i0.TableInfo<$CategoriesTable, i1.Category> {
   @override
@@ -661,106 +999,6 @@ class CategoriesCompanion extends i0.UpdateCompanion<i1.Category> {
         .toString();
   }
 }
-
-typedef $$CategoriesTableCreateCompanionBuilder = i1.CategoriesCompanion
-    Function({
-  i0.Value<int> id,
-  required String name,
-});
-typedef $$CategoriesTableUpdateCompanionBuilder = i1.CategoriesCompanion
-    Function({
-  i0.Value<int> id,
-  i0.Value<String> name,
-});
-
-class $$CategoriesTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$CategoriesTable> {
-  $$CategoriesTableFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$CategoriesTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$CategoriesTable> {
-  $$CategoriesTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$CategoriesTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$CategoriesTable,
-    i1.Category,
-    i1.$$CategoriesTableFilterComposer,
-    i1.$$CategoriesTableOrderingComposer,
-    $$CategoriesTableCreateCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder,
-    (
-      i1.Category,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$CategoriesTable, i1.Category>
-    ),
-    i1.Category,
-    i0.PrefetchHooks Function()> {
-  $$CategoriesTableTableManager(
-      i0.GeneratedDatabase db, i1.$CategoriesTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              i1.$$CategoriesTableFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i1.$$CategoriesTableOrderingComposer(i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<String> name = const i0.Value.absent(),
-          }) =>
-              i1.CategoriesCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required String name,
-          }) =>
-              i1.CategoriesCompanion.insert(
-            id: id,
-            name: name,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$CategoriesTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$CategoriesTable,
-    i1.Category,
-    i1.$$CategoriesTableFilterComposer,
-    i1.$$CategoriesTableOrderingComposer,
-    $$CategoriesTableCreateCompanionBuilder,
-    $$CategoriesTableUpdateCompanionBuilder,
-    (
-      i1.Category,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$CategoriesTable, i1.Category>
-    ),
-    i1.Category,
-    i0.PrefetchHooks Function()>;
 
 class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
   @override
@@ -941,94 +1179,3 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
         .toString();
   }
 }
-
-typedef $$UsersTableCreateCompanionBuilder = i1.UsersCompanion Function({
-  i0.Value<int> id,
-  required DateTime birthDate,
-});
-typedef $$UsersTableUpdateCompanionBuilder = i1.UsersCompanion Function({
-  i0.Value<int> id,
-  i0.Value<DateTime> birthDate,
-});
-
-class $$UsersTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.$UsersTable> {
-  $$UsersTableFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnFilters<DateTime> get birthDate => $state.composableBuilder(
-      column: $state.table.birthDate,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$UsersTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.$UsersTable> {
-  $$UsersTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<DateTime> get birthDate => $state.composableBuilder(
-      column: $state.table.birthDate,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$UsersTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$UsersTable,
-    i1.User,
-    i1.$$UsersTableFilterComposer,
-    i1.$$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder,
-    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.$UsersTable, i1.User>),
-    i1.User,
-    i0.PrefetchHooks Function()> {
-  $$UsersTableTableManager(i0.GeneratedDatabase db, i1.$UsersTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              i1.$$UsersTableFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i1.$$UsersTableOrderingComposer(i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<DateTime> birthDate = const i0.Value.absent(),
-          }) =>
-              i1.UsersCompanion(
-            id: id,
-            birthDate: birthDate,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required DateTime birthDate,
-          }) =>
-              i1.UsersCompanion.insert(
-            id: id,
-            birthDate: birthDate,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$UsersTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$UsersTable,
-    i1.User,
-    i1.$$UsersTableFilterComposer,
-    i1.$$UsersTableOrderingComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder,
-    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.$UsersTable, i1.User>),
-    i1.User,
-    i0.PrefetchHooks Function()>;

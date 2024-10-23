@@ -25,12 +25,11 @@ class AnnotatedDartCode {
   static final Uri dartCore = Uri.parse('dart:core');
   static final Uri drift = Uri.parse('package:drift/drift.dart');
 
-  final List<dynamic /* String|DartTopLevelSymbol */ > elements;
+  final List<DartCodeElement> elements;
 
-  AnnotatedDartCode(this.elements)
-      : assert(elements.every((e) => e is String || e is DartTopLevelSymbol));
+  AnnotatedDartCode(this.elements);
 
-  AnnotatedDartCode.text(String e) : elements = [e];
+  AnnotatedDartCode.text(String e) : elements = [DartLexeme(e)];
 
   factory AnnotatedDartCode.ast(AstNode node) {
     return AnnotatedDartCode.build(((builder) => builder.addAstNode(node)));
@@ -55,8 +54,7 @@ class AnnotatedDartCode {
     final serializedElements = json['elements'] as List;
 
     return AnnotatedDartCode([
-      for (final part in serializedElements)
-        if (part is Map) DartTopLevelSymbol.fromJson(part) else part as String
+      for (final part in serializedElements) DartCodeElement.fromJson(part)
     ]);
   }
 
@@ -66,10 +64,7 @@ class AnnotatedDartCode {
 
   Map<String, Object?> toJson() {
     return {
-      'elements': [
-        for (final element in elements)
-          if (element is DartTopLevelSymbol) element.toJson() else element
-      ],
+      'elements': [for (final element in elements) element.toJson()],
     };
   }
 
@@ -90,12 +85,12 @@ class AnnotatedDartCode {
 }
 
 class AnnotatedDartCodeBuilder {
-  final List<dynamic> _elements = [];
+  final List<DartCodeElement> _elements = [];
   final StringBuffer _pendingText = StringBuffer();
 
   void _addPendingText() {
     if (_pendingText.isNotEmpty) {
-      _elements.add(_pendingText.toString());
+      _elements.add(DartLexeme(_pendingText.toString()));
       _pendingText.clear();
     }
   }
@@ -122,12 +117,21 @@ class AnnotatedDartCodeBuilder {
     _elements.add(DartTopLevelSymbol.topLevelElement(element));
   }
 
+  void addTagged(String lexeme, String tag) {
+    _addPendingText();
+    _elements.add(TaggedDartLexeme(lexeme, tag));
+  }
+
   void addDartType(DartType type) {
     type.accept(_AddFromDartType(this));
   }
 
-  void addAstNode(AstNode node, {Set<AstNode> exclude = const {}}) {
-    final visitor = _AddFromAst(this, exclude);
+  void addAstNode(
+    AstNode node, {
+    Set<AstNode> exclude = const {},
+    Map<Element, String> taggedElements = const {},
+  }) {
+    final visitor = _AddFromAst(this, exclude, taggedElements);
     node.accept(visitor);
   }
 
@@ -224,8 +228,64 @@ class AnnotatedDartCodeBuilder {
   }
 }
 
+sealed class DartCodeElement {
+  Object? toJson();
+
+  factory DartCodeElement.fromJson(Object? json) {
+    return switch (json) {
+      String s => DartLexeme(s),
+      {'import_uri': _} => DartTopLevelSymbol.fromJson(json),
+      {'tag': _} => TaggedDartLexeme.fromJson(json),
+      _ => throw ArgumentError.value(json, 'json', 'Unknown code element'),
+    };
+  }
+}
+
+final class DartLexeme implements DartCodeElement {
+  final String lexeme;
+
+  const DartLexeme(this.lexeme);
+
+  @override
+  Object? toJson() {
+    return lexeme;
+  }
+
+  @override
+  String toString() {
+    return lexeme;
+  }
+}
+
+/// A variant of [DartLexeme] with a custom associated [tag].
+///
+/// For a motivation, see `ColumnParser._columnsInSameTable` - essentially, some
+/// drift tools need to resolve column references in Dart code to rewrite them
+/// depending on the generation mode.
 @JsonSerializable()
-class DartTopLevelSymbol {
+final class TaggedDartLexeme implements DartCodeElement {
+  final String lexeme;
+  final String tag;
+
+  TaggedDartLexeme(this.lexeme, this.tag);
+
+  factory TaggedDartLexeme.fromJson(Map json) =>
+      _$TaggedDartLexemeFromJson(json);
+
+  @override
+  Map<String, Object?> toJson() => _$TaggedDartLexemeToJson(this);
+
+  @override
+  String toString() {
+    return lexeme;
+  }
+}
+
+/// A variant of [DartLexeme] that is used for top-level elements to also store
+/// the import URI. This allows drift's code generator, when encountering such
+/// element, to automatically add the relevant import to generated Dart files.
+@JsonSerializable()
+final class DartTopLevelSymbol implements DartCodeElement {
   static final _driftUri = Uri.parse('package:drift/drift.dart');
 
   static final list = DartTopLevelSymbol('List', AnnotatedDartCode.dartCore);
@@ -259,6 +319,7 @@ class DartTopLevelSymbol {
   factory DartTopLevelSymbol.fromJson(Map json) =>
       _$DartTopLevelSymbolFromJson(json);
 
+  @override
   Map<String, Object?> toJson() => _$DartTopLevelSymbolToJson(this);
 }
 
@@ -452,8 +513,9 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
 class _AddFromAst extends GeneralizingAstVisitor<void> {
   final AnnotatedDartCodeBuilder _builder;
   final Set<AstNode> _excluding;
+  final Map<Element, String> _taggedElements;
 
-  _AddFromAst(this._builder, this._excluding);
+  _AddFromAst(this._builder, this._excluding, this._taggedElements);
 
   void _addTopLevelReference(Element? element, Token name2) {
     if (element == null || (element.isSynthetic && element.library == null)) {
@@ -546,6 +608,9 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   @override
   void visitNamedType(NamedType node) {
     _addTopLevelReference(node.element, node.name2);
+    if (node.typeArguments case final typeArgs?) {
+      visitTypeArgumentList(typeArgs);
+    }
   }
 
   @override
@@ -571,6 +636,8 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
 
     if (isTopLevel) {
       _builder.addTopLevelElement(target!);
+    } else if (_taggedElements[target] case final tag?) {
+      _builder.addTagged(node.token.lexeme, tag);
     } else {
       _builder.addText(node.name);
     }

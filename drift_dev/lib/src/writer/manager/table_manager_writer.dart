@@ -56,6 +56,19 @@ class _TableManagerWriter {
       relations.addAll(reverseRelations);
     }
 
+    // Remove relations whose target column is a foreign key itself
+    relations = relations.where((r) {
+      if (r.isReverse) {
+        return r.currentColumn.constraints
+            .whereType<ForeignKeyReference>()
+            .isEmpty;
+      } else {
+        return r.referencedColumn.constraints
+            .whereType<ForeignKeyReference>()
+            .isEmpty;
+      }
+    }).toList();
+
     // Get all the field names that could be added for this class
     // Including ones that access relations
     final allFieldNames = <String>[];
@@ -117,6 +130,7 @@ class _TableManagerWriter {
 
     final columnFilters = <String>[];
     final columnOrderings = <String>[];
+    final columnAnnotations = <String>[];
 
     for (var column in table.columns) {
       // Skip columns that have a relation,
@@ -130,8 +144,12 @@ class _TableManagerWriter {
       if (column.typeConverter != null) {
         columnFilters.add(_templates.columnWithTypeConverterFilters(
             column: column, leaf: leaf, type: type));
+        columnAnnotations.add(_templates.columnWithTypeConverterAnnotations(
+            column: column, leaf: leaf, type: type));
       } else {
         columnFilters.add(_templates.standardColumnFilters(
+            column: column, leaf: leaf, type: type));
+        columnAnnotations.add(_templates.standardColumnAnnotation(
             column: column, leaf: leaf, type: type));
       }
       columnOrderings.add(_templates.standardColumnOrderings(
@@ -146,7 +164,11 @@ class _TableManagerWriter {
         columnOrderings
             .add(_templates.relatedOrderings(leaf: leaf, relation: relation));
       }
+
+      columnAnnotations
+          .add(_templates.relatedAnnotations(leaf: leaf, relation: relation));
     }
+
     if (!scope.generationOptions.isModular && relations.isNotEmpty) {
       leaf.write(_templates.rowReferencesClass(
           table: table,
@@ -165,6 +187,11 @@ class _TableManagerWriter {
         leaf: leaf,
         dbClassName: dbClassName,
         columnOrderings: columnOrderings));
+    leaf.write(_templates.annotationComposer(
+        table: table,
+        leaf: leaf,
+        dbClassName: dbClassName,
+        columnAnnotations: columnAnnotations));
 
     // Write the root and processed table managers
     leaf.write(_templates.rootTableManager(

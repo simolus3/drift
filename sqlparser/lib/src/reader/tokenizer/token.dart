@@ -5,6 +5,9 @@ import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 enum TokenType {
+  /// A token representing an invalid lexeme in the source.
+  errorToken,
+
   $case,
   $default,
   $do,
@@ -455,6 +458,13 @@ class Token implements SyntacticEntity {
 
   Token? previous, next;
 
+  /// For opening tokens (e.g. `(`), the matching closing token (`)`), and
+  /// vice-versa.
+  ///
+  /// This information can be used to improve error recovery in the parser
+  /// later.
+  Token? match;
+
   Token(this.type, this.span);
 
   @override
@@ -687,11 +697,12 @@ class CommentToken extends Token {
       : super(TokenType.comment, span);
 }
 
-class TokenizerError {
+class TokenizerError extends Token {
   final String message;
-  final SourceLocation location;
+  final FileLocation location;
 
-  TokenizerError(this.message, this.location);
+  TokenizerError(this.message, this.location)
+      : super(TokenType.errorToken, location.pointSpan());
 
   @override
   String toString() {

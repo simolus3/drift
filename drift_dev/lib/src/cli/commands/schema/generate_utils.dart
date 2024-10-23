@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as p;
+import 'package:collection/collection.dart';
 
 import '../../../analysis/results/file_results.dart';
 import '../../../analysis/results/results.dart';
@@ -66,28 +66,38 @@ class GenerateUtilsCommand extends Command {
       final version = versionAndEntities.key;
       final entities = versionAndEntities.value;
 
-      await _writeSchemaFile(
-        outputDir,
-        version,
-        entities,
-        argResults?['data-classes'] as bool,
-        argResults?['companions'] as bool,
-      );
+      final file = File(
+          p.join(outputDir.path, GenerateUtils._filenameForVersion(version)));
+      await file.writeAsString(await GenerateUtils.generateSchemaCode(
+          cli,
+          version,
+          entities,
+          argResults?['data-classes'] as bool,
+          argResults?['companions'] as bool));
     }
 
     final versions = schema.keys.toList()..sort();
-    await _writeLibraryFile(outputDir, versions);
+    final libraryFile = File(p.join(outputDir.path, 'schema.dart'));
+    await libraryFile
+        .writeAsString(await GenerateUtils.generateLibraryCode(cli, versions));
     print(
         'Wrote ${schema.length + 1} files into ${p.relative(outputDir.path)}');
   }
+}
 
-  Future<void> _writeSchemaFile(
-    Directory output,
+class GenerateUtils {
+  static String _filenameForVersion(int version) => 'schema_v$version.dart';
+  static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.\n'
+      '// ignore_for_file: type=lint';
+
+  /// Generates Dart code for a specific schema version.
+  static Future<String> generateSchemaCode(
+    DriftDevCli cli,
     int version,
     ExportedSchema schema,
     bool dataClasses,
     bool companions,
-  ) {
+  ) async {
     // let serialized options take precedence, otherwise use current options
     // from project.
     final options = DriftOptions.fromJson({
@@ -105,11 +115,9 @@ class GenerateUtilsCommand extends Command {
         imports: NullImportManager(),
       ),
     );
-    final file = File(p.join(output.path, _filenameForVersion(version)));
 
     writer.leaf()
       ..writeln(_prefix)
-      ..writeln('//@dart=2.12')
       ..writeln("import 'package:drift/drift.dart';");
 
     final database = DriftDatabase(
@@ -126,13 +134,15 @@ class GenerateUtilsCommand extends Command {
 
     DatabaseWriter(input, writer.child()).write();
 
-    return file.writeAsString(_dartfmt.format(writer.writeGenerated()));
+    return await cli.project.formatSource(writer.writeGenerated());
   }
 
-  Future<void> _writeLibraryFile(Directory output, Iterable<int> versions) {
+  /// Generates the Dart code for a library file that instantiates the schema
+  /// for each version.
+  static Future<String> generateLibraryCode(
+      DriftDevCli cli, Iterable<int> versions) async {
     final buffer = StringBuffer()
       ..writeln(_prefix)
-      ..writeln('//@dart=2.12')
       ..writeln("import 'package:drift/drift.dart';")
       ..writeln("import 'package:drift/internal/migrations.dart';");
 
@@ -153,19 +163,17 @@ class GenerateUtilsCommand extends Command {
         ..writeln('return v$version.DatabaseAtV$version(db);');
     }
 
-    final missingAsSet = '{${versions.join(', ')}}';
+    final versionsSet =
+        '[${versions.sorted((a, b) => a.compareTo(b)).join(', ')}]';
     buffer
       ..writeln('default:')
-      ..writeln('throw MissingSchemaException(version, const $missingAsSet);')
-      ..writeln('}}}');
+      ..writeln('throw MissingSchemaException(version, versions);')
+      ..writeln('}}');
 
-    final file = File(p.join(output.path, 'schema.dart'));
-    return file.writeAsString(_dartfmt.format(buffer.toString()));
+    buffer
+      ..writeln('static const versions = const $versionsSet;')
+      ..writeln('}');
+
+    return await cli.project.formatSource(buffer.toString());
   }
-
-  String _filenameForVersion(int version) => 'schema_v$version.dart';
-
-  static final _dartfmt = DartFormatter();
-  static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.\n'
-      '// ignore_for_file: type=lint';
 }

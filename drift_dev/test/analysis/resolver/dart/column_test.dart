@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
@@ -279,7 +279,7 @@ class TestTable extends Table {
       expect(file.allErrors, [
         isDriftError(contains(
                 'Parse error in customConstraint(): Expected a constraint'))
-            .withSpan('invalid'),
+            .withSpan('invalid', filename: 'a.dart'),
       ]);
     });
 
@@ -307,9 +307,9 @@ class TestTable extends Table {
 
       expect(tableAnalysis.errorsDuringAnalysis, [
         isDriftError('`foo` could not be found in any import.')
-            .withSpan(contains('REFERENCES foo (bar)')),
+            .withSpan(contains('REFERENCES foo (bar)'), filename: 'a.dart'),
         isDriftError(contains('has no column named `foo`'))
-            .withSpan(contains('referenced_table (foo)')),
+            .withSpan(contains('referenced_table (foo)'), filename: 'a.dart'),
       ]);
 
       final testTable = tableAnalysis.result! as DriftTable;
@@ -339,7 +339,7 @@ class TestTable extends Table {
       expect(file.allErrors, [
         isDriftError(
                 contains('This column is not declared to be `.nullable()`'))
-            .withSpan("'UNIQUE'"),
+            .withSpan("'UNIQUE'", filename: 'a.dart'),
       ]);
     });
 
@@ -365,5 +365,112 @@ class TestTable extends Table {
       expect(column.isGenerated, isTrue);
       expect(table.isColumnRequiredForInsert(column), isFalse);
     });
+
+    test('reads default', () async {
+      final state = await TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class TestTable extends Table {
+  TextColumn get textColumn => text()
+      .customConstraint("NOT NULL DEFAULT 'foo'")();
+}
+''',
+      });
+
+      final file = await state.analyze('package:a/a.dart');
+      state.expectNoErrors();
+
+      final table = file.analyzedElements.single as DriftTable;
+      final column = table.columns.single;
+
+      expect(column.nullable, isFalse);
+      expect(column.defaultArgument, isNotNull);
+      expect(column.customConstraints, isNotNull);
+      expect(table.isColumnRequiredForInsert(column), isFalse);
+    });
+  });
+  test('columns by getter and declaration', () async {
+    final state = await TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class Students extends Table {
+  @JsonKey('group_id')
+  @ReferenceName('students')
+  IntColumn get myGroup => integer().references(Groups,#id)();
+}
+
+class Teachers extends Table {
+  @JsonKey('group_id')
+  @ReferenceName('teachers')
+  late final myGroup = integer().references(Groups,#id)();
+}
+
+class Groups extends Table {
+  late final id = integer().autoIncrement()();
+}
+
+@DriftDatabase(tables: [Groups, Students, Teachers])
+class Database {}
+''',
+    });
+
+    final file = await state.analyze('package:a/a.dart');
+    state.expectNoErrors();
+    final tables = file.analyzedElements.whereType<DriftTable>();
+
+    final studentTable =
+        tables.where((element) => element.schemaName == 'students').single;
+    final teacherTable =
+        tables.where((element) => element.schemaName == 'teachers').single;
+    final studentGroupColumn = studentTable.columns.single;
+    final teacherGroupColumn = teacherTable.columns.single;
+
+    // Ensure that the columns are the same
+    expect(studentGroupColumn.customConstraints,
+        equals(teacherGroupColumn.customConstraints));
+    expect(
+        studentGroupColumn.nameInDart, equals(teacherGroupColumn.nameInDart));
+    expect(studentGroupColumn.nameInSql, equals(teacherGroupColumn.nameInSql));
+    expect(studentGroupColumn.sqlType.builtin,
+        equals(teacherGroupColumn.sqlType.builtin));
+    expect(studentGroupColumn.nullable, equals(teacherGroupColumn.nullable));
+    expect(studentGroupColumn.overriddenJsonName,
+        equals(teacherGroupColumn.overriddenJsonName));
+
+    // Ensure that the correct reference name is set
+    expect(studentGroupColumn.referenceName, equals('students'));
+    expect(teacherGroupColumn.referenceName, equals('teachers'));
+  });
+
+  test('recognizes column references in Dart code', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get creationTime => dateTime()
+    .check(creationTime.isBiggerThan(Constant(DateTime(2020))))
+    .withDefault(Constant(DateTime(2024, 1, 1)))();
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    final table = file.analyzedElements.single as DriftTable;
+    final creationTimeColumn = table.columns[1];
+    expect(creationTimeColumn.constraints, [
+      isA<DartCheckExpression>().having(
+        (e) => e.dartExpression.elements,
+        'dartExpression',
+        contains(
+          isA<TaggedDartLexeme>()
+              .having((e) => e.lexeme, 'lexeme', 'creationTime')
+              .having((e) => e.tag, 'tag', 'creationTime'),
+        ),
+      ),
+    ]);
   });
 }

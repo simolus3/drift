@@ -1,3 +1,16 @@
+## 0.39.2-dev
+
+- Fix false-positive lint for a parameter count mismatch on `bm25()`.
+
+## 0.39.1
+
+- Improve recovery in parser when encountering syntax errors.
+
+## 0.39.0
+
+- When using the `parse` methods on `SqlEngine`, tokenizer errors are now
+  included in the result instead of throwing an exception.
+
 ## 0.38.1
 
 - Fix upcoming `unreachable_switch_default` lint.

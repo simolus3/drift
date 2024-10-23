@@ -3,6 +3,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart'
     show InitialDeferrableMode, ReferenceAction;
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -78,11 +79,29 @@ const String _errorMessage = 'This getter does not create a valid column that '
 class ColumnParser {
   final DartTableResolver _resolver;
 
-  ColumnParser(this._resolver);
+  /// A map of elements to their name for elements defining columns.
+  ///
+  /// This is used to recognize column references in arbitrary Dart code, e.g.
+  /// in this definition:
+  ///
+  /// ```
+  ///  DateTimeColumn get creationTime => dateTime()
+  ///    .check(creationTime.isBiggerThan(Constant(DateTime(2020))))();
+  /// ```
+  ///
+  /// Here, the check constraint references the column itself. In some code
+  /// generation modes where we generate code for individual columns (instead
+  /// of for entire table structures, this mainly includes step-by-step
+  /// migrations), there might not be a `creationTime` in scope for the check
+  /// constraint. So, we annotate these references in [AnnotatedDartCode] and
+  /// use that information when generating code to transform the code.
+  final Map<Element, String> _columnsInSameTable;
+
+  ColumnParser(this._resolver, this._columnsInSameTable);
 
   Future<PendingColumnInformation?> parse(
-      MethodDeclaration getter, Element element) async {
-    final expr = returnExpressionOfMethod(getter);
+      ColumnDeclaration columnDeclaration, Element element) async {
+    final expr = columnDeclaration.expression;
 
     if (expr is! FunctionExpressionInvocation) {
       _resolver.reportError(
@@ -342,8 +361,9 @@ class ColumnParser {
           break;
         case _methodCheck:
           final expr = remainingExpr.argumentList.arguments.first;
-          foundConstraints
-              .add(DartCheckExpression(AnnotatedDartCode.ast(expr)));
+
+          foundConstraints.add(DartCheckExpression(AnnotatedDartCode.build(
+              (b) => b.addAstNode(expr, taggedElements: _columnsInSameTable))));
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -353,7 +373,7 @@ class ColumnParser {
 
     final sqlName = foundExplicitName ??
         _resolver.resolver.driver.options.caseFromDartToSql
-            .apply(getter.name.lexeme);
+            .apply(columnDeclaration.lexemeName);
     ColumnType columnType;
 
     final helper = await _resolver.resolver.driver.knownTypes;
@@ -461,13 +481,15 @@ class ColumnParser {
       );
     }
 
-    final docString =
-        getter.documentationComment?.tokens.map((t) => t.toString()).join('\n');
+    final docString = columnDeclaration.documentationComment?.tokens
+        .map((t) => t.toString())
+        .join('\n');
 
     foundConstraints.addAll(await _driftConstraintsFromCustomConstraints(
       isNullable: nullable,
       customConstraints: foundCustomConstraint,
       sourceForCustomConstraints: customConstraintSource,
+      setDefault: (arg) => foundDefaultExpression = arg,
     ));
     return PendingColumnInformation(
       DriftColumn(
@@ -537,10 +559,26 @@ class ColumnParser {
 
   Future<List<DriftColumnConstraint>> _driftConstraintsFromCustomConstraints({
     required bool isNullable,
+    required void Function(AnnotatedDartCode) setDefault,
     String? customConstraints,
     AstNode? sourceForCustomConstraints,
   }) async {
     if (customConstraints == null) return const [];
+
+    /// Attempt to translate a span in the resolved Dart constant containing an
+    /// SQL string into a Dart source span.
+    /// This might fail if [customConstraints] is a complex expression, but it
+    /// improves errors when passing string literals to `customConstraint`.
+    FileSpan translateSpan(FileSpan sql) {
+      final defaultSpan = DriftAnalysisError.dartAstSpan(
+          _resolver.discovered.dartElement, sourceForCustomConstraints!);
+
+      return switch (sourceForCustomConstraints) {
+        SingleStringLiteral(:final contentsOffset) => defaultSpan.file.span(
+            contentsOffset + sql.start.offset, contentsOffset + sql.end.offset),
+        _ => defaultSpan,
+      };
+    }
 
     final engine = _resolver.resolver.driver.newSqlEngine();
     final parseResult = engine.parseColumnConstraints(customConstraints);
@@ -548,7 +586,7 @@ class ColumnParser {
         (parseResult.rootNode as sql.ColumnDefinition).constraints;
 
     for (final error in parseResult.errors) {
-      _resolver.reportError(DriftAnalysisError(error.token.span,
+      _resolver.reportError(DriftAnalysisError(translateSpan(error.token.span),
           'Parse error in customConstraint(): ${error.message}'));
     }
 
@@ -559,9 +597,11 @@ class ColumnParser {
         _resolver.discovered.dartElement,
         sourceForCustomConstraints!,
         "This column is not declared to be `.nullable()`, but also doesn't "
-        'have `NOT NULL` in its custom constraints. Please explicitly declare '
-        'the column to be nullable in Dart, or add a `NOT NULL` constraint for '
-        'consistency.',
+        'have `NOT NULL` in its custom constraints. Since custom constraints '
+        'override the default, there will be no `NOT NULL` constraint in the '
+        'database.\n'
+        'To fix this, either add a `NOT NULL` constraint here or declare the '
+        'column with `nullable()`',
       ));
     }
 
@@ -580,9 +620,8 @@ class ColumnParser {
         final table =
             await _resolver.resolveSqlReferenceOrReportError<DriftTable>(
           clause.foreignTable.tableName,
-          (msg) => DriftAnalysisError.inDartAst(
-            _resolver.discovered.dartElement,
-            sourceForCustomConstraints!,
+          (msg) => DriftAnalysisError(
+            translateSpan(clause.span!),
             msg,
           ),
         );
@@ -608,6 +647,8 @@ class ColumnParser {
             ));
           }
         }
+      } else if (constraint is sql.Default) {
+        setDefault(DriftColumn.defaultFromParser(constraint));
       }
     }
 

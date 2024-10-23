@@ -38,7 +38,10 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'assume_correct_reference',
             'has_separate_analyzer',
             'preamble',
-            'fatal_warnings'
+            'fatal_warnings',
+            'schema_dir',
+            'test_dir',
+            'databases'
           ],
         );
         final val = DriftOptions(
@@ -105,6 +108,17 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
               'assume_correct_reference', (v) => v as bool? ?? false),
           dialect: $checkedConvert('sql',
               (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
+          schemaDir: $checkedConvert(
+              'schema_dir', (v) => v as String? ?? 'drift_schemas'),
+          testDir:
+              $checkedConvert('test_dir', (v) => v as String? ?? 'test/drift'),
+          databases: $checkedConvert(
+              'databases',
+              (v) =>
+                  (v as Map?)?.map(
+                    (k, e) => MapEntry(k as String, e as String),
+                  ) ??
+                  {}),
         );
         return val;
       },
@@ -136,7 +150,9 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'fatalWarnings': 'fatal_warnings',
         'hasDriftAnalyzer': 'has_separate_analyzer',
         'assumeCorrectReference': 'assume_correct_reference',
-        'dialect': 'sql'
+        'dialect': 'sql',
+        'schemaDir': 'schema_dir',
+        'testDir': 'test_dir'
       },
     );
 
@@ -175,6 +191,9 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'has_separate_analyzer': instance.hasDriftAnalyzer,
       'preamble': instance.preamble,
       'fatal_warnings': instance.fatalWarnings,
+      'schema_dir': instance.schemaDir,
+      'test_dir': instance.testDir,
+      'databases': instance.databases,
     };
 
 const _$SqlModuleEnumMap = {

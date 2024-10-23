@@ -1,7 +1,8 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
-import 'package:sqlparser/sqlparser.dart' show GeneratedAs, ReferenceAction;
+import 'package:sqlparser/sqlparser.dart'
+    show Default, GeneratedAs, ReferenceAction;
 import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../../utils/string_escaper.dart';
@@ -130,6 +131,15 @@ class DriftColumn implements HasType {
   @override
   String toString() {
     return 'Column $nameInSql in $owner';
+  }
+
+  static AnnotatedDartCode defaultFromParser(Default constraint) {
+    return AnnotatedDartCode.build((b) => b
+      ..addText('const ')
+      ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
+      ..addText('(')
+      ..addText(asDartLiteral(constraint.expression.toSql()))
+      ..addText(')'));
   }
 }
 

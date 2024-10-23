@@ -3,6 +3,7 @@ import 'package:drift_devtools_extension/src/schema_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'clear_button.dart';
 import 'db_viewer/viewer.dart';
 import 'list.dart';
 import 'remote_database.dart';
@@ -64,6 +65,14 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
                 const Padding(
                   padding: EdgeInsets.all(8),
                   child: DatabaseSchemaCheck(),
+                ),
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Row(
+                    children: [
+                      ClearDatabaseButton(),
+                    ],
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),

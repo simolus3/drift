@@ -1,8 +1,8 @@
-import 'package:db_viewer/db_viewer.dart';
+import 'package:drift/drift.dart';
+import 'package:drift_db_viewer/drift_db_viewer.dart';
 import 'package:flutter/material.dart';
 
 import '../remote_database.dart';
-import 'database.dart';
 
 class DatabaseViewer extends StatefulWidget {
   final RemoteDatabase database;
@@ -14,14 +14,16 @@ class DatabaseViewer extends StatefulWidget {
 }
 
 class _DatabaseViewerState extends State<DatabaseViewer> {
+  late final GeneratedDatabase wrapper;
+
   @override
   void initState() {
-    DbViewerDatabase.initDb(ViewerDatabase(database: widget.database));
+    wrapper = RemoteDatabaseAsDatabase(widget.database);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const DbViewerNavigator();
+    return DriftDbViewer(wrapper);
   }
 }

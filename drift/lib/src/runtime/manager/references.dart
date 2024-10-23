@@ -279,11 +279,11 @@ base class BaseReferences<$Database extends GeneratedDatabase,
 /// Type definition for a function that transforms the state of a manager
 typedef StateTransformer = T Function<
     T extends TableManagerState<dynamic, dynamic, dynamic, dynamic, dynamic,
-        dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state);
+        dynamic, dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state);
 
 T _defaultStateTransformer<
     T extends TableManagerState<dynamic, dynamic, dynamic, dynamic, dynamic,
-        dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state) {
+        dynamic, dynamic, dynamic, dynamic, dynamic, dynamic>>(T $state) {
   return $state;
 }
 
@@ -487,6 +487,7 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
                 dynamic,
                 dynamic,
                 dynamic,
+                dynamic,
                 $ReferencedDataclass,
                 dynamic>
             Function(TypedResult)
@@ -503,9 +504,14 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
     final managers = typedResults.map(managerFromTypedResult);
     // Combine all the referenced managers into 1 large query which will return all the
     // referenced items in one go.
-    final manager = managers.reduce((value, element) => value._filter(
-        (_) => ComposableFilter._(element.$state.filter, {}),
-        _BooleanOperator.or));
+    final manager = managers.reduce((value, element) {
+      if (element.$state.filter != null) {
+        return value._filter(
+            (_) => element.$state.filter!, _BooleanOperator.or);
+      } else {
+        return value;
+      }
+    });
 
     return manager.get(distinct: true).then(
       (value) {

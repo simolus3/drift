@@ -13,10 +13,12 @@ import 'package:drift/src/remote/communication.dart';
 import 'package:mockito/mockito.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
+import 'package:path/path.dart' as p;
 
 import 'generated/todos.dart';
 import 'test_utils/database_vm.dart';
 import 'test_utils/test_utils.dart';
+import 'test_utils/independent_isolate.dart' as fake_isolate;
 
 void main() {
   preferLocalSqlite3();
@@ -61,8 +63,10 @@ void main() {
     test('shutdownAll closes other connections', () async {
       final isolate = await spawnBackground(false);
 
-      final channel = await connectToServer(isolate.connectPort, false, null);
-      final communication = DriftCommunication(channel, serialize: false);
+      final (channel, serialize) =
+          await connectToServer(isolate.connectPort, false, null);
+      expect(serialize, isFalse);
+      final communication = DriftCommunication(channel, serialize: serialize);
 
       await isolate.shutdownAll();
       expect(communication.closed, completes);
@@ -303,6 +307,81 @@ void main() {
     }
 
     expect(didShutdown.future, completes);
+  });
+
+  group('infers whether serialization is required', () {
+    test("when it's not", () async {
+      final receivePort = ReceivePort();
+      await Isolate.spawn((port) {
+        fake_isolate.spawnIsolate(port);
+      }, receivePort.sendPort);
+
+      final connectPort = await receivePort.first as SendPort;
+      final db = TodoDb(await DriftIsolate.fromConnectPort(connectPort)
+          .connect(singleClientMode: true));
+      // Being able to send a _RegularInstance() implies that serialization is
+      // disabled.
+      final row = await db.customSelect('SELECT ? AS a',
+          variables: [Variable(_RegularInstance())]).getSingle();
+      expect(row.data, {'a': isA<_RegularInstance>()});
+      await db.close();
+    });
+
+    test('when it is', () async {
+      final receivePort = ReceivePort();
+
+      await Isolate.spawnUri(
+        Uri.file(p.absolute('test/test_utils/independent_isolate.dart')),
+        [],
+        receivePort.sendPort,
+      );
+
+      TodoDb? db;
+      final completer = Completer<void>.sync();
+      var errorCount = 0;
+      runZonedGuarded(
+        () async {
+          final connectPort = await receivePort.first as SendPort;
+          db = TodoDb(await DriftIsolate.fromConnectPort(connectPort)
+              .connect(singleClientMode: true));
+
+          await db!.customSelect('SELECT ? AS a',
+              variables: [Variable(_RegularInstance())]).getSingle();
+        },
+        expectAsync2(
+          (error, _) {
+            if (errorCount == 0) {
+              completer.complete();
+              expect(
+                error,
+                isA<ArgumentError>().having(
+                  (e) => e.toString(),
+                  'message',
+                  allOf(
+                    // We can't send the _RegularInstance(), but we can detect that
+                    // serialiazion mode was enabled for other message because this
+                    // one got encapsulated into a List and because the other messages
+                    // work.
+                    contains('is a regular instance reachable via'),
+                    contains('List'),
+                  ),
+                ),
+              );
+            } else {
+              // Second error due to the connection closing without receiving a
+              // response.
+              expect(error, isA<ConnectionClosedException>());
+            }
+
+            errorCount++;
+          },
+          max: 2,
+        ),
+      );
+
+      await completer.future;
+      await db?.close();
+    });
   });
 }
 
@@ -610,4 +689,10 @@ void _createBackground(SendPort send) {
       () => DatabaseConnection(NativeDatabase.memory()),
       killIsolateWhenDone: true);
   send.send(drift);
+}
+
+class _RegularInstance {
+  // Used to test whether serialization is enabled - objects of this class can't
+  // be sent across some isolates.
+  const _RegularInstance();
 }

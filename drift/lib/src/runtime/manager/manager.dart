@@ -9,14 +9,15 @@ import 'package:meta/meta.dart';
 
 part 'composer.dart';
 part 'filter.dart';
-part 'composable.dart';
+part 'join_builder.dart';
 part 'ordering.dart';
 part 'references.dart';
+part 'computed_fields.dart';
 
 /// Defines a class that holds the state for a [BaseTableManager]
 ///
 /// It holds the state for manager of [$Table] table in [$Database] database.
-/// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings for the manager.
+/// It holds the [$FilterComposer] Filters and [$OrderingComposer] Orderings and [$ComputedFieldComposer] ComputedFields for the manager.
 ///
 /// There are 3 Dataclass generics:
 ///   - [$Dataclass] is the dataclass that is used to interact with the table
@@ -38,8 +39,9 @@ class TableManagerState<
     $Database extends GeneratedDatabase,
     $Table extends Table,
     $Dataclass,
-    $FilterComposer extends FilterComposer<$Database, $Table>,
-    $OrderingComposer extends OrderingComposer<$Database, $Table>,
+    $FilterComposer extends Composer<$Database, $Table>,
+    $OrderingComposer extends Composer<$Database, $Table>,
+    $ComputedFieldComposer extends Composer<$Database, $Table>,
     $CreateCompanionCallback extends Function,
     $UpdateCompanionCallback extends Function,
     $DataclassWithReferences,
@@ -74,12 +76,16 @@ class TableManagerState<
   /// The [FilterComposer] for this [TableManagerState]
   /// This class will be used to create filtering [Expression]s
   /// which will be applied to the statement when its eventually created
-  final $FilterComposer filteringComposer;
+  final $FilterComposer Function() createFilteringComposer;
 
   /// The [OrderingComposer] for this [TableManagerState]
   /// This class will be used to create [OrderingTerm]s
   /// which will be applied to the statement when its eventually created
-  final $OrderingComposer orderingComposer;
+  final $OrderingComposer Function() createOrderingComposer;
+
+  /// The callback that will be used to create the composer which
+  /// will be used to create computed fields for the query
+  final $ComputedFieldComposer Function() createComputedFieldComposer;
 
   /// This function is passed to the user to create a companion
   /// for inserting data into the table
@@ -93,6 +99,9 @@ class TableManagerState<
   /// This is used internally by [toActiveDataclass] and should not be used outside of this class.
   final List<$DataclassWithReferences> Function(List<TypedResult>)
       _withReferenceMapper;
+
+  /// Additional columns/expression that will be added to the query with computed fields
+  final Set<Expression> addedColumns;
 
   /// This function is used to ensure that the correct dataclass type is returned by the manager.
   ///
@@ -150,8 +159,9 @@ class TableManagerState<
   TableManagerState(
       {required this.db,
       required this.table,
-      required this.filteringComposer,
-      required this.orderingComposer,
+      required this.createFilteringComposer,
+      required this.createOrderingComposer,
+      required this.createComputedFieldComposer,
       required $CreateCompanionCallback createCompanionCallback,
       required $UpdateCompanionCallback updateCompanionCallback,
       required List<$DataclassWithReferences> Function(List<TypedResult>)
@@ -163,6 +173,7 @@ class TableManagerState<
       this.distinct,
       this.limit,
       this.offset,
+      this.addedColumns = const {},
       this.orderingBuilders = const {},
       this.joinBuilders = const {}})
       : prefetchHooks = prefetchHooks ?? PrefetchHooks(db: db),
@@ -179,6 +190,7 @@ class TableManagerState<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -192,6 +204,7 @@ class TableManagerState<
     Set<JoinBuilder>? joinBuilders,
     List<$Dataclass>? prefetchedData,
     PrefetchHooks? prefetchHooks,
+    Set<Expression>? addedColumns,
   }) {
     /// When we import prefetchedData, it's already in its Row Class,
     /// we need to place it into a TypedResult for the manager to work with it
@@ -202,12 +215,14 @@ class TableManagerState<
     return TableManagerState(
       db: db,
       table: table,
-      filteringComposer: filteringComposer,
-      orderingComposer: orderingComposer,
+      createFilteringComposer: createFilteringComposer,
+      createOrderingComposer: createOrderingComposer,
+      createComputedFieldComposer: createComputedFieldComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
       prefetchHooksCallback: _prefetchHooksCallback,
+      addedColumns: addedColumns ?? this.addedColumns,
       prefetchedData: prefetchedDataAsTypedResult ?? this._prefetchedData,
       prefetchHooks: prefetchHooks ?? this.prefetchHooks,
       filter: filter ?? this.filter,
@@ -229,6 +244,7 @@ class TableManagerState<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -237,8 +253,9 @@ class TableManagerState<
     return TableManagerState(
       db: db,
       table: table,
-      filteringComposer: filteringComposer,
-      orderingComposer: orderingComposer,
+      createFilteringComposer: createFilteringComposer,
+      createOrderingComposer: createOrderingComposer,
+      createComputedFieldComposer: createComputedFieldComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -250,6 +267,7 @@ class TableManagerState<
       offset: offset,
       prefetchHooksCallback: _prefetchHooksCallback,
       prefetchedData: _prefetchedData,
+      addedColumns: addedColumns,
     );
   }
 
@@ -262,6 +280,7 @@ class TableManagerState<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -289,8 +308,9 @@ class TableManagerState<
     return TableManagerState(
       db: db,
       table: table,
-      filteringComposer: filteringComposer,
-      orderingComposer: orderingComposer,
+      createFilteringComposer: createFilteringComposer,
+      createOrderingComposer: createOrderingComposer,
+      createComputedFieldComposer: createComputedFieldComposer,
       createCompanionCallback: _createCompanionCallback,
       updateCompanionCallback: _updateCompanionCallback,
       withReferenceMapper: _withReferenceMapper,
@@ -302,6 +322,7 @@ class TableManagerState<
       offset: offset,
       prefetchHooksCallback: _prefetchHooksCallback,
       prefetchedData: _prefetchedData,
+      addedColumns: addedColumns,
     );
   }
 
@@ -329,8 +350,16 @@ class TableManagerState<
           .select(_tableAsTableInfo, distinct: distinct ?? false)
           .join(joins) as JoinedSelectStatement<$Table, $Dataclass>;
     }
-    // Apply the expression to the statement
-    if (filter != null) {
+
+    // Add any additional columns/expression that were added
+    joinedStatement.addColumns(addedColumns);
+
+    // If there are any added column, then group by primary key and apply filter to it
+    // other wise add the filter to the select directly
+    if (addedColumns.isNotEmpty) {
+      // ignore: invalid_use_of_visible_for_overriding_member
+      joinedStatement.groupBy(table.primaryKey!, having: filter);
+    } else if (filter != null) {
       joinedStatement.where(filter!);
     }
 
@@ -419,8 +448,9 @@ abstract class BaseTableManager<
         $Database extends GeneratedDatabase,
         $Table extends Table,
         $Dataclass,
-        $FilterComposer extends FilterComposer<$Database, $Table>,
-        $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $FilterComposer extends Composer<$Database, $Table>,
+        $OrderingComposer extends Composer<$Database, $Table>,
+        $ComputedFieldComposer extends Composer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -434,6 +464,7 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -478,6 +509,7 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
@@ -498,6 +530,32 @@ abstract class BaseTableManager<
         .copyWith(prefetchHooks: prefetchHooks));
   }
 
+  /// Add computed fields to the statement which will be used to add additional columns to the query
+  /// These columns will be returned in the result set and can be used in filters/orderings
+  ///
+  /// {@macro computed_field_example}
+  ProcessedTableManager<
+          $Database,
+          $Table,
+          $Dataclass,
+          $FilterComposer,
+          $OrderingComposer,
+          $ComputedFieldComposer,
+          $CreateCompanionCallback,
+          $UpdateCompanionCallback,
+          $DataclassWithReferences,
+          $DataclassWithReferences,
+          $CreatePrefetchHooksCallback>
+      withFields(Iterable<BaseComputedField<Object, $Table>> computedFields) {
+    final joinBuilders =
+        computedFields.map((e) => e._joinBuilders).expand((e) => e).toSet();
+    final addedColumns = computedFields.map((e) => e._expression).toSet();
+    return ProcessedTableManager($state.copyWith(
+            addedColumns: $state.addedColumns.union(addedColumns),
+            joinBuilders: $state.joinBuilders.union(joinBuilders)))
+        .withReferences();
+  }
+
   /// Add a limit to the statement
   ProcessedTableManager<
       $Database,
@@ -505,6 +563,7 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
@@ -520,17 +579,21 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
           $ActiveDataclass,
           $CreatePrefetchHooksCallback>
       orderBy(ComposableOrdering Function($OrderingComposer o) o) {
-    final orderings = o($state.orderingComposer);
+    final composer = $state.createOrderingComposer();
+
+    final orderings = o(composer);
     return ProcessedTableManager($state.copyWith(
         orderingBuilders:
             $state.orderingBuilders.union(orderings.orderingBuilders),
-        joinBuilders: $state.joinBuilders.union(orderings.joinBuilders)));
+        joinBuilders:
+            $state.joinBuilders.union(composer.$joinBuilders.toSet())));
   }
 
   /// Add a filter to the statement
@@ -542,12 +605,13 @@ abstract class BaseTableManager<
       $Dataclass,
       $FilterComposer,
       $OrderingComposer,
+      $ComputedFieldComposer,
       $CreateCompanionCallback,
       $UpdateCompanionCallback,
       $DataclassWithReferences,
       $ActiveDataclass,
       $CreatePrefetchHooksCallback> filter(
-    ComposableFilter Function($FilterComposer f) f,
+    Expression<bool> Function($FilterComposer f) f,
   ) {
     return _filter(f, _BooleanOperator.and);
   }
@@ -561,25 +625,26 @@ abstract class BaseTableManager<
           $Dataclass,
           $FilterComposer,
           $OrderingComposer,
+          $ComputedFieldComposer,
           $CreateCompanionCallback,
           $UpdateCompanionCallback,
           $DataclassWithReferences,
           $ActiveDataclass,
           $CreatePrefetchHooksCallback>
-      _filter(ComposableFilter Function($FilterComposer f) f,
+      _filter(Expression<bool> Function($FilterComposer f) f,
           _BooleanOperator combineWith) {
-    final filter = f($state.filteringComposer);
-    final combinedFilter = switch (($state.filter, filter.expression)) {
-      (null, null) => null,
+    final composer = $state.createFilteringComposer();
+    final filter = f(composer);
+    final combinedFilter = switch (($state.filter, filter)) {
       (null, var filter) => filter,
-      (var filter, null) => filter,
       (var filter1, var filter2) => combineWith == _BooleanOperator.and
-          ? (filter1!) & (filter2!)
-          : (filter1!) | (filter2!)
+          ? (filter1!) & (filter2)
+          : (filter1!) | (filter2)
     };
     return ProcessedTableManager($state.copyWith(
         filter: combinedFilter,
-        joinBuilders: $state.joinBuilders.union(filter.joinBuilders)));
+        joinBuilders:
+            $state.joinBuilders.union(composer.$joinBuilders.toSet())));
   }
 
   /// Writes all non-null fields from the entity into the columns of all rows
@@ -747,13 +812,16 @@ abstract class BaseTableManager<
 ///
 // As of now this is identical to [BaseTableManager] but it's kept separate for
 // future extensibility.
+///
+/// {@macro manager_internal_use_only}
 @immutable
 class ProcessedTableManager<
         $Database extends GeneratedDatabase,
         $Table extends Table,
         $Dataclass,
-        $FilterComposer extends FilterComposer<$Database, $Table>,
-        $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $FilterComposer extends Composer<$Database, $Table>,
+        $OrderingComposer extends Composer<$Database, $Table>,
+        $ComputedFieldComposer extends Composer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -765,13 +833,15 @@ class ProcessedTableManager<
         $Dataclass,
         $FilterComposer,
         $OrderingComposer,
+        $ComputedFieldComposer,
         $CreateCompanionCallback,
         $UpdateCompanionCallback,
         $DataclassWithReferences,
         $ActiveDataclass,
         $CreatePrefetchHooksCallback> {
   /// Create a new [ProcessedTableManager] instance
-  @internal
+  ///
+  /// {@macro manager_internal_use_only}
   ProcessedTableManager(super.$state);
 
   /// Prefetched data, if references with prefetching enabled were added to this manager
@@ -793,8 +863,9 @@ abstract class RootTableManager<
         $Database extends GeneratedDatabase,
         $Table extends Table,
         $Dataclass,
-        $FilterComposer extends FilterComposer<$Database, $Table>,
-        $OrderingComposer extends OrderingComposer<$Database, $Table>,
+        $FilterComposer extends Composer<$Database, $Table>,
+        $OrderingComposer extends Composer<$Database, $Table>,
+        $ComputedFieldComposer extends Composer<$Database, $Table>,
         $CreateCompanionCallback extends Function,
         $UpdateCompanionCallback extends Function,
         $DataclassWithReferences,
@@ -806,6 +877,7 @@ abstract class RootTableManager<
         $Dataclass,
         $FilterComposer,
         $OrderingComposer,
+        $ComputedFieldComposer,
         $CreateCompanionCallback,
         $UpdateCompanionCallback,
         $DataclassWithReferences,
@@ -930,5 +1002,56 @@ abstract class RootTableManager<
   Future<void> bulkReplace(Iterable<Insertable<$Dataclass>> entities) {
     return $state.db
         .batch((b) => b.replaceAll($state._tableAsTableInfo, entities));
+  }
+
+  /// Create an computed field for adding additional columns to the query
+  ///
+  /// The `computed field` and `computed fieldWithConverter` methods allow you to create computed fields that add additional columns to a query. These columns are computed directly by the database. This approach has significant performance benefits compared to querying all the data and performing the calculations yourself in your Dart code.
+  ///
+  /// ### Example
+  ///
+  /// Consider the following example where we use the `computed field` method to filter users who are in an admin group and to aggregate the number of users in each group:
+  /// {@template computed_field_example}
+  /// ```dart
+  /// /// Filter users who are in an admin group
+  /// final inAdminGroup = db.managers.users.computed field((a) => a.group.isAdmin);
+  /// final users = db.managers.users.withComputedFields([inAdminGroup]).filter(inAdminGroup.filter(true)).get();
+  ///
+  /// /// Aggregate the number of users in each group
+  /// final userCount = db.managers.group.computed field((a) => a.users((a) => a.id.count()));
+  /// final groups = db.managers.group.withComputedFields([userCount]).get();
+  /// for (final (group, refs) in groups) {
+  ///   final count = userCount.read(refs);
+  /// }
+  /// ```
+  /// In this example:
+  /// - The `inAdminGroup` computed field filters users directly in the database, ensuring that only users in the admin group are retrieved.
+  /// - The `userCount` computed field aggregates the number of users in each group within the database, providing the count directly without needing to load all user data into your application.
+  /// {@endtemplate}
+  ///
+  /// By leveraging these database calculations, you can achieve faster query performance and more efficient resource usage in your application.
+  ///
+  /// See also: [computed fieldWithConverter] for computed fields on columns with type converters
+  ComputedField<T, $Table> computedField<T extends Object>(
+    Expression<T> Function($ComputedFieldComposer a) a,
+  ) {
+    final composer = $state.createComputedFieldComposer();
+    final expression = a(composer);
+    return ComputedField(expression, composer.$joinBuilders.toSet());
+  }
+
+  /// Create an [computed field] with type converter support
+  ///
+  /// See the documentation for [computed field] for more information
+  ComputedFieldWithConverter<DartType, SqlType, $Table>
+      computedfieldWithConverter<DartType, SqlType extends Object>(
+    GeneratedColumnWithTypeConverter<DartType, SqlType> Function(
+            $ComputedFieldComposer a)
+        a,
+  ) {
+    final composer = $state.createComputedFieldComposer();
+    final expression = a(composer);
+    return ComputedFieldWithConverter(
+        expression, composer.$joinBuilders.toSet());
   }
 }

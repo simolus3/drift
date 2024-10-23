@@ -11,7 +11,7 @@ void main() {
 
   test('throws when seeing an invalid token', () {
     expect(
-      Scanner('!').scanTokens,
+      () => SqlEngine().tokenize('!'),
       throwsA(isA<CumulatedTokenizerException>()),
     );
   });
@@ -45,7 +45,7 @@ void main() {
   group('reports error message', () {
     test(r'for missing identifier after `$`', () {
       expect(
-        Scanner(r'$ order').scanTokens,
+        () => SqlEngine().tokenize(r'$ order'),
         throwsA(
           isA<CumulatedTokenizerException>().having(
             (e) => e.errors,
@@ -63,7 +63,7 @@ void main() {
 
     test('for missing identifier after `@`', () {
       expect(
-        Scanner(r'@ order').scanTokens,
+        () => SqlEngine().tokenize('@ order'),
         throwsA(
           isA<CumulatedTokenizerException>().having(
             (e) => e.errors,

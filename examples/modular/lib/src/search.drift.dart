@@ -1,8 +1,138 @@
+// dart format width=80
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/search.drift.dart' as i1;
 import 'package:drift/internal/modular.dart' as i2;
 import 'package:modular/src/posts.drift.dart' as i3;
+
+typedef $SearchInPostsCreateCompanionBuilder = i1.SearchInPostsCompanion
+    Function({
+  required String author,
+  required String content,
+  i0.Value<int> rowid,
+});
+typedef $SearchInPostsUpdateCompanionBuilder = i1.SearchInPostsCompanion
+    Function({
+  i0.Value<String> author,
+  i0.Value<String> content,
+  i0.Value<int> rowid,
+});
+
+class $SearchInPostsFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
+  $SearchInPostsFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnFilters<String> get author => $composableBuilder(
+      column: $table.author, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => i0.ColumnFilters(column));
+}
+
+class $SearchInPostsOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
+  $SearchInPostsOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnOrderings<String> get author => $composableBuilder(
+      column: $table.author, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => i0.ColumnOrderings(column));
+}
+
+class $SearchInPostsAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
+  $SearchInPostsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<String> get author =>
+      $composableBuilder(column: $table.author, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+}
+
+class $SearchInPostsTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i1.SearchInPosts,
+    i1.SearchInPost,
+    i1.$SearchInPostsFilterComposer,
+    i1.$SearchInPostsOrderingComposer,
+    i1.$SearchInPostsAnnotationComposer,
+    $SearchInPostsCreateCompanionBuilder,
+    $SearchInPostsUpdateCompanionBuilder,
+    (
+      i1.SearchInPost,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts, i1.SearchInPost>
+    ),
+    i1.SearchInPost,
+    i0.PrefetchHooks Function()> {
+  $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              i1.$SearchInPostsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i1.$SearchInPostsOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              i1.$SearchInPostsAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            i0.Value<String> author = const i0.Value.absent(),
+            i0.Value<String> content = const i0.Value.absent(),
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.SearchInPostsCompanion(
+            author: author,
+            content: content,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String author,
+            required String content,
+            i0.Value<int> rowid = const i0.Value.absent(),
+          }) =>
+              i1.SearchInPostsCompanion.insert(
+            author: author,
+            content: content,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.SearchInPosts,
+    i1.SearchInPost,
+    i1.$SearchInPostsFilterComposer,
+    i1.$SearchInPostsOrderingComposer,
+    i1.$SearchInPostsAnnotationComposer,
+    $SearchInPostsCreateCompanionBuilder,
+    $SearchInPostsUpdateCompanionBuilder,
+    (
+      i1.SearchInPost,
+      i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts, i1.SearchInPost>
+    ),
+    i1.SearchInPost,
+    i0.PrefetchHooks Function()>;
 
 class SearchInPosts extends i0.Table
     with
@@ -211,110 +341,6 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
   }
 }
 
-typedef $SearchInPostsCreateCompanionBuilder = i1.SearchInPostsCompanion
-    Function({
-  required String author,
-  required String content,
-  i0.Value<int> rowid,
-});
-typedef $SearchInPostsUpdateCompanionBuilder = i1.SearchInPostsCompanion
-    Function({
-  i0.Value<String> author,
-  i0.Value<String> content,
-  i0.Value<int> rowid,
-});
-
-class $SearchInPostsFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsFilterComposer(super.$state);
-  i0.ColumnFilters<String> get author => $state.composableBuilder(
-      column: $state.table.author,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnFilters<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $SearchInPostsOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsOrderingComposer(super.$state);
-  i0.ColumnOrderings<String> get author => $state.composableBuilder(
-      column: $state.table.author,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<String> get content => $state.composableBuilder(
-      column: $state.table.content,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $SearchInPostsTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.SearchInPosts,
-    i1.SearchInPost,
-    i1.$SearchInPostsFilterComposer,
-    i1.$SearchInPostsOrderingComposer,
-    $SearchInPostsCreateCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder,
-    (
-      i1.SearchInPost,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts, i1.SearchInPost>
-    ),
-    i1.SearchInPost,
-    i0.PrefetchHooks Function()> {
-  $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              i1.$SearchInPostsFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer:
-              i1.$SearchInPostsOrderingComposer(i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<String> author = const i0.Value.absent(),
-            i0.Value<String> content = const i0.Value.absent(),
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.SearchInPostsCompanion(
-            author: author,
-            content: content,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String author,
-            required String content,
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.SearchInPostsCompanion.insert(
-            author: author,
-            content: content,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.SearchInPosts,
-    i1.SearchInPost,
-    i1.$SearchInPostsFilterComposer,
-    i1.$SearchInPostsOrderingComposer,
-    $SearchInPostsCreateCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder,
-    (
-      i1.SearchInPost,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts, i1.SearchInPost>
-    ),
-    i1.SearchInPost,
-    i0.PrefetchHooks Function()>;
 i0.Trigger get postsInsert => i0.Trigger(
     'CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END',
     'posts_insert');

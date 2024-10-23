@@ -1,0 +1,47 @@
+.syntaxHighlight-1 { color: #09885a; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-1 { color: #b5cea8; } }
+
+.syntaxHighlight-2 { color: #000000; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-2 { color: #d4d4d4; } }
+
+.syntaxHighlight-3 { color: #5caeef; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-3 { color: #5caeef; } }
+
+.syntaxHighlight-4 { color: #4fb1bc; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-4 { color: #4fb1bc; } }
+
+.syntaxHighlight-5 { color: #a31515; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-5 { color: #ce9178; } }
+
+.syntaxHighlight-6 { color: #abb2c0; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-6 { color: #abb2c0; } }
+
+.syntaxHighlight-7 { color: #008000; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-7 { color: #608b4e; } }
+
+.syntaxHighlight-8 { color: #dfb976; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-8 { color: #dfb976; } }
+
+.syntaxHighlight-9 { color: #795e26; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-9 { color: #dcdcaa; } }
+
+.syntaxHighlight-10 { color: #97c26c; }
+@media (prefers-color-scheme: dark) { .syntaxHighlight-10 { color: #97c26c; } }
+
+.SyntaxHighlight-11 {  }
+@media (prefers-color-scheme: dark) { .SyntaxHighlight-11 { color: #d4d4d4; } }
+
+.SyntaxHighlight-12 { color: #0000ff; }
+@media (prefers-color-scheme: dark) { .SyntaxHighlight-12 { color: #569cd6; } }
+
+.SyntaxHighlight-13 { color: #267f99; }
+@media (prefers-color-scheme: dark) { .SyntaxHighlight-13 { color: #4ec9b0; } }
+
+.SyntaxHighlight-14 { color: #af00db; }
+@media (prefers-color-scheme: dark) { .SyntaxHighlight-14 { color: #c586c0; } }
+
+.SyntaxHighlight-15 { color: #c172d9; }
+@media (prefers-color-scheme: dark) { .SyntaxHighlight-15 { color: #c172d9; } }
+
+.SyntaxHighlight-16 { color: #000088; }
+@media (prefers-color-scheme: dark) { .SyntaxHighlight-16 { color: #b9eeff; } }

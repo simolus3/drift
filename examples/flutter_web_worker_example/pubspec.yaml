@@ -9,6 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
   path_provider: ^2.0.5
+  path: ^1.9.1
   drift:
 
 dev_dependencies:

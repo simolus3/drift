@@ -13,7 +13,8 @@ dependencies:
 
   devtools_extensions: ^0.2.1
   devtools_app_shared: ^0.2.1
-  db_viewer: ^1.0.3
+  db_viewer:
+  drift_db_viewer:
   rxdart: ^0.28.0
   flutter_riverpod: ^3.0.0-dev.0
   vm_service: ^14.0.0
@@ -31,6 +32,16 @@ dev_dependencies:
 
 dependency_overrides:
   web: ^0.5.0
+  db_viewer:
+    git:
+      url: https://github.com/simolus3/db_viewer.git
+      path: db_viewer
+      ref: b1da96fc17f54e393d2781fef046d364f45220f0
+  drift_db_viewer:
+    git:
+      url: https://github.com/simolus3/db_viewer.git
+      path: drift_db_viewer
+      ref: b1da96fc17f54e393d2781fef046d364f45220f0
 
 flutter:
   uses-material-design: true

@@ -1,0 +1,163 @@
+site_name: Drift
+site_description: Drift — A modern database library for Dart & Flutter
+site_author: Simon Binder
+site_url: https://drift.simonbinder.eu/
+repo_url: https://github.com/simolus3/drift
+
+# TODO: Change to develop
+edit_uri: edit/develop/docs/docs
+theme:
+  name: material
+  language: en
+  custom_dir: overrides
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+    #     icon: empty
+    #     name: ""
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+    #     icon: empty
+    #     name: ""
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+
+  # TODO: Add logo & favicon
+  logo: images/icon.png
+  favicon: images/icon.png
+  features:
+    - content.tooltips
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.path
+    - toc.follow
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+
+extra:
+  social:
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:oss@simonbinder.eu
+      name: Contact me via e-mail
+    - icon: fontawesome/brands/github
+      link: https://github.com/simolus3/drift
+      name: Project on GitHub
+
+  # TODO: Add Google Analytics
+  # analytics:
+  #     provider: google
+  #     property: G-XXXXXXXXXX
+
+plugins:
+  - search
+  - privacy
+  - macros
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - footnotes
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - tables
+  - pymdownx.highlight:
+      auto_title: false
+      anchor_linenums: true
+      use_pygments: true
+  - pymdownx.betterem
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.critic
+  - md_in_html
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        custom_icons:
+          - overrides/.icons
+
+nav:
+  - index.md
+  - Documentation:
+      - Getting Started: setup.md
+      - Dart API:
+          - dart_api/manager.md
+          - dart_api/tables.md
+          - dart_api/select.md
+          - dart_api/writes.md
+          - dart_api/transactions.md
+          - dart_api/expressions.md
+          - dart_api/schema_inspection.md
+          - dart_api/views.md
+          - dart_api/daos.md
+      - SQL API:
+          - Getting Started: sql_api/index.md
+          - sql_api/drift_files.md
+          - sql_api/types.md
+          - sql_api/extensions.md
+          - sql_api/custom_queries.md
+          # - sql_api/sql_ide.md
+      - Migrations:
+          - Getting Started: Migrations/index.md
+          - Migrations/exports.md
+          - Migrations/step_by_step.md
+          - Migrations/tests.md
+          - Migrations/api.md
+      - type_converters.md
+      - custom_row_classes.md
+      - Generation options:
+          - Getting Started: generation_options/index.md
+          - generation_options/modular.md
+          - generation_options/in_other_builders.md
+      - Platforms:
+          - Getting Started: Platforms/index.md
+          - Platforms/vm.md
+          - Platforms/web.md
+          - Platforms/postgres.md
+          - Platforms/encryption.md
+          - Platforms/libsql.md
+      - isolates.md
+      - testing.md
+      - faq.md
+      - community_tools.md
+      - Internals: Internals/index.md
+      - migrating_to_drift.md
+      - upgrading.md
+  - Examples:
+      - Examples/index.md
+      - Examples/flutter.md
+      - Examples/relationships.md
+      - Examples/tracing.md
+      - Examples/server_sync.md
+      - Examples/existing_databases.md
+  - Tools:
+      - Tools/index.md
+      - Tools/devtools.md
+  - Pub: https://pub.dev/packages/drift
+
+docs_dir: "../docs"
+
+extra_javascript:
+  - path: compatibility.dart.js
+    defer: true
+extra_css:
+  - css/syntax_highlight.css
+watch:
+  - "../lib"

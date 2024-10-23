@@ -1,3 +1,26 @@
+## 2.21.1-dev
+
+- Pass language version to dart formatter when generating code.
+
+## 2.21.0
+
+- Fix Dart-defined `check` constraints not being considered in exported
+  schemas.
+- Columns can now be defined with `late final` fields. Defining columns with getters `=>` is still supported too.
+  ```dart
+  class MyTable extends Table {
+    // Before:
+    IntColumn get id => integer().autoIncrement()();
+
+    // After:
+    late final id = integer().nullable()();
+  }
+  ```
+- Make `build.yaml` definitions pass `build_runner doctor`.
+- Fix `generate_manager` option not consistently being applied to modular builds.
+- Add the `make-migrations` command which combines the existing schema commands
+  into a single tool.
+
 ## 2.20.3
 
 - Fix internal serialization-related errors for triggers targeting views.

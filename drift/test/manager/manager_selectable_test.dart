@@ -56,7 +56,7 @@ void main() {
 
     Future testManager<T, M>(
         BaseTableManager<dynamic, dynamic, T, dynamic, dynamic, dynamic,
-                dynamic, M, T, dynamic>
+                dynamic, dynamic, M, T, dynamic>
             selectable) async {
       expect(await selectable.get(), hasLength(3));
       expect(await selectable.get(limit: 1), hasLength(1));

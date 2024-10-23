@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:drift/internal/versioned_schema.dart';
 import 'package:drift_dev/api/migrations.dart';
+import 'package:migrations_example/database.steps.dart';
 
 import 'tables.dart';
-import 'src/versions.dart';
 
 part 'database.g.dart';
 
@@ -16,10 +16,8 @@ const kDebugMode = true;
   include: {'tables.drift'},
 )
 class Database extends _$Database {
-  static const latestSchemaVersion = 10;
-
   @override
-  int get schemaVersion => latestSchemaVersion;
+  int get schemaVersion => 11;
 
   Database(super.connection);
 
@@ -27,7 +25,7 @@ class Database extends _$Database {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onUpgrade: (m, from, to) async {
-        // Following the advice from https://drift.simonbinder.eu/docs/advanced-features/migrations/#tips
+        // Following the advice from https://drift.simonbinder.eu/Migrations/api/#general-tips
         await customStatement('PRAGMA foreign_keys = OFF');
 
         await transaction(
@@ -50,7 +48,7 @@ class Database extends _$Database {
       },
       beforeOpen: (details) async {
         // For Flutter apps, this should be wrapped in an if (kDebugMode) as
-        // suggested here: https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-a-database-schema-at-runtime
+        // suggested here: https://drift.simonbinder.eu/Migrations/tests/#verifying-a-database-schema-at-runtime
         await validateDatabaseSchema();
       },
     );
@@ -103,6 +101,14 @@ class Database extends _$Database {
     from9To10: (m, schema) async {
       // Added an index to the users table
       await m.create(schema.userName);
+    },
+    from10To11: (m, schema) async {
+      // Added another check to the users table
+      await m.alterTable(TableMigration(schema.users));
+
+      // This is also the first version generated with drift >= 2.15.0, so we
+      // have to apply a workaround for this change: https://github.com/simolus3/drift/releases/tag/drift-2.15.0
+      await m.alterTable(TableMigration(schema.groups));
     },
   );
 }

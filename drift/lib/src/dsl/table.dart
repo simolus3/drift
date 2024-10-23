@@ -241,7 +241,7 @@ abstract class View extends HasResultSet {
   /// }
   /// ```
   @protected
-  SimpleSelectStatement from(Table table) => _isGenerated();
+  JoinedSelectStatement from(Table table) => _isGenerated();
 
   /// This method is overridden by Dart-defined views to declare the right
   /// query to run.

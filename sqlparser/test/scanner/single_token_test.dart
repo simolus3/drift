@@ -75,9 +75,7 @@ void main() {
   });
 
   test('issues error for unterminated string literals', () {
-    final scanner = Scanner("'unterminated");
-
-    expect(scanner.scanTokens, throwsA(isA<CumulatedTokenizerException>()));
+    final scanner = Scanner("'unterminated")..scanTokens();
 
     expect(
       scanner.errors,

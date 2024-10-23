@@ -6,6 +6,17 @@ part of '../../../analysis/results/dart.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+TaggedDartLexeme _$TaggedDartLexemeFromJson(Map json) => TaggedDartLexeme(
+      json['lexeme'] as String,
+      json['tag'] as String,
+    );
+
+Map<String, dynamic> _$TaggedDartLexemeToJson(TaggedDartLexeme instance) =>
+    <String, dynamic>{
+      'lexeme': instance.lexeme,
+      'tag': instance.tag,
+    };
+
 DartTopLevelSymbol _$DartTopLevelSymbolFromJson(Map json) => DartTopLevelSymbol(
       json['lexeme'] as String,
       json['import_uri'] == null

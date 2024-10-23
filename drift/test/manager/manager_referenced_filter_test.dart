@@ -59,34 +59,34 @@ void main() {
 
   test('manager - filter related with regualar id', () async {
     // Filter on related table's reference id - Does not require a join
-    ComposableFilter? filter;
+    Composer? composer;
     expect(
         await db.managers.product.filter((f) {
-          filter = f.department.id(departments[0].id);
-          return filter!;
+          composer = f;
+          return f.department.id(departments[0].id);
         }).count(),
         3);
-    expect(filter?.joinBuilders.length, 0);
+    expect(composer?.$joinBuilders.length, 0);
 
     // Filter on a unrelated column on a related table - Requires a join
     expect(
         await db.managers.product.filter((f) {
-          filter = f.department.name("Electronics");
-          return filter!;
+          composer = f;
+          return f.department.name("Electronics");
         }).count(),
         3);
-    expect(filter?.joinBuilders.length, 1);
+    expect(composer?.$joinBuilders.length, 1);
 
     // Filter on a unrelated column on a related table & on
     // a related table's reference id - Requires a join
     expect(
         await db.managers.product.filter((f) {
-          filter = f.department.name("Electronics") |
+          composer = f;
+          return f.department.name("Electronics") |
               f.department.id(departments[1].id);
-          return filter!;
         }).count(),
         5);
-    expect(filter?.joinBuilders.length, 1);
+    expect(composer?.$joinBuilders.length, 1);
 
     // Ordering on current table & Filtering on related table
     expect(
@@ -143,33 +143,33 @@ void main() {
     // Filter on reverse related column and then a related column
     expect(
         await db.managers.product.filter((f) {
-          filter = f.listings((f) => f.store.name("Target"));
-          return filter!;
+          composer = f;
+          return f.listings((f) => f.store.name("Target"));
         }).count(),
         6);
-    expect(filter?.joinBuilders.length, 2);
+    expect(composer?.$joinBuilders.length, 2);
     expect(
         await db.managers.product.filter((f) {
-          filter = f.listings((f) => f.store.name("Target")) | f.name("TV");
-          return filter!;
+          composer = f;
+          return f.listings((f) => f.store.name("Target")) | f.name("TV");
         }).count(),
         7);
-    expect(filter?.joinBuilders.length, 2);
+    expect(composer?.$joinBuilders.length, 2);
 
     // Filter on a related column and then a related column
     expect(
         await db.managers.listing.filter((f) {
           // Listings of products in the electronics department
-          filter = f.product.department.name("Electronics");
-          return filter!;
+          composer = f;
+          return f.product.department.name("Electronics");
         }).count(),
         8);
     expect(
         await db.managers.listing.filter((f) {
           // Listings of products in the electronics department
-          filter = f.product.department.name("Electronics") |
+          composer = f;
+          return f.product.department.name("Electronics") |
               f.price.isBiggerThan(150.0);
-          return filter!;
         }).count(),
         9);
 
@@ -177,17 +177,17 @@ void main() {
     expect(
         await db.managers.department.filter((f) {
           // Departments that have products listed for more than $10
-          filter = f.productRefs(
+          composer = f;
+          return f.productRefs(
               (f) => f.listings((f) => f.price.isBiggerThan(100.0)));
-          return filter!;
         }).count(),
         2);
     expect(
         await db.managers.department.filter((f) {
           // Departments that have products listed for more than $10 or is available at Walmart
-          filter = f.productRefs((f) => f.listings(
+          composer = f;
+          return f.productRefs((f) => f.listings(
               (f) => f.price.isBiggerThan(100.0) | f.store.name("Walmart")));
-          return filter!;
         }).count(),
         3);
 
@@ -195,17 +195,17 @@ void main() {
     expect(
         await db.managers.store.filter((f) {
           // Products that are sold in a store that sells clothing
-          filter = f.listings((f) => f.product.department.name("Clothing"));
-          return filter!;
+          composer = f;
+          return f.listings((f) => f.product.department.name("Clothing"));
         }).count(),
         2);
 
     // Any product that is sold in a store that sells clothing
     expect(
         await db.managers.product.filter((f) {
-          filter = f.listings((f) =>
+          composer = f;
+          return f.listings((f) =>
               f.store.listings((f) => f.product.department.name("Clothing")));
-          return filter!;
         }).count(distinct: true),
         9);
   });
@@ -277,46 +277,46 @@ void main() {
 
   test('manager - filter related with regualar id with references', () async {
     // Filter on related table's reference id - Does not require a join
-    ComposableFilter? filter;
+    Composer? composer;
     expect(
         await db.managers.product
             .filter((f) {
-              filter = f.department.id(departments[0].id);
-              return filter!;
+              composer = f;
+              return f.department.id(departments[0].id);
             })
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
         3);
-    expect(filter?.joinBuilders.length, 0);
+    expect(composer?.$joinBuilders.length, 0);
 
     // Filter on a unrelated column on a related table - Requires a join
     expect(
         await db.managers.product
             .filter((f) {
-              filter = f.department.name("Electronics");
-              return filter!;
+              composer = f;
+              return f.department.name("Electronics");
             })
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
         3);
-    expect(filter?.joinBuilders.length, 1);
+    expect(composer?.$joinBuilders.length, 1);
 
     // Filter on a unrelated column on a related table & on
     // a related table's reference id - Requires a join
     expect(
         await db.managers.product
             .filter((f) {
-              filter = f.department.name("Electronics") |
+              composer = f;
+              return f.department.name("Electronics") |
                   f.department.id(departments[1].id);
-              return filter!;
             })
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
         5);
-    expect(filter?.joinBuilders.length, 1);
+    expect(composer?.$joinBuilders.length, 1);
 
     // Ordering on current table & Filtering on related table
     expect(
@@ -382,33 +382,33 @@ void main() {
     expect(
         await db.managers.product
             .filter((f) {
-              filter = f.listings((f) => f.store.name("Target"));
-              return filter!;
+              composer = f;
+              return f.listings((f) => f.store.name("Target"));
             })
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
         6);
-    expect(filter?.joinBuilders.length, 2);
+    expect(composer?.$joinBuilders.length, 2);
     expect(
         await db.managers.product
             .filter((f) {
-              filter = f.listings((f) => f.store.name("Target")) | f.name("TV");
-              return filter!;
+              composer = f;
+              return f.listings((f) => f.store.name("Target")) | f.name("TV");
             })
             .withReferences()
             .get(distinct: true)
             .then((value) => value.length),
         7);
-    expect(filter?.joinBuilders.length, 2);
+    expect(composer?.$joinBuilders.length, 2);
 
     // Filter on a related column and then a related column
     expect(
         await db.managers.listing
             .filter((f) {
               // Listings of products in the electronics department
-              filter = f.product.department.name("Electronics");
-              return filter!;
+              composer = f;
+              return f.product.department.name("Electronics");
             })
             .withReferences()
             .get(distinct: true)
@@ -418,9 +418,9 @@ void main() {
         await db.managers.listing
             .filter((f) {
               // Listings of products in the electronics department
-              filter = f.product.department.name("Electronics") |
+              composer = f;
+              return f.product.department.name("Electronics") |
                   f.price.isBiggerThan(150.0);
-              return filter!;
             })
             .withReferences()
             .get(distinct: true)
@@ -432,9 +432,9 @@ void main() {
         await db.managers.department
             .filter((f) {
               // Departments that have products listed for more than $10
-              filter = f.productRefs(
+              composer = f;
+              return f.productRefs(
                   (f) => f.listings((f) => f.price.isBiggerThan(100.0)));
-              return filter!;
             })
             .withReferences()
             .get(distinct: true)
@@ -444,9 +444,9 @@ void main() {
         await db.managers.department
             .filter((f) {
               // Departments that have products listed for more than $10 or is available at Walmart
-              filter = f.productRefs((f) => f.listings((f) =>
+              composer = f;
+              return f.productRefs((f) => f.listings((f) =>
                   f.price.isBiggerThan(100.0) | f.store.name("Walmart")));
-              return filter!;
             })
             .withReferences()
             .get(distinct: true)
@@ -458,8 +458,8 @@ void main() {
         await db.managers.store
             .filter((f) {
               // Products that are sold in a store that sells clothing
-              filter = f.listings((f) => f.product.department.name("Clothing"));
-              return filter!;
+              composer = f;
+              return f.listings((f) => f.product.department.name("Clothing"));
             })
             .withReferences()
             .get(distinct: true)
@@ -470,9 +470,9 @@ void main() {
     expect(
         await db.managers.product
             .filter((f) {
-              filter = f.listings((f) => f.store
+              composer = f;
+              return f.listings((f) => f.store
                   .listings((f) => f.product.department.name("Clothing")));
-              return filter!;
             })
             .withReferences()
             .get(distinct: true)

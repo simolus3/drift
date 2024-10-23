@@ -23,8 +23,11 @@ extension MyStringUtils on String {
     Future<void> checkTransformation(String sourceExpression,
         String expectedResult, Map<String, String> expectedImports) async {
       final testUri = Uri.parse('package:a/test_${testCount++}.dart');
-      final expression = await tester.resolveExpression(
-          testUri, sourceExpression, const ['package:a/definitions.dart']);
+      final expression =
+          await tester.resolveExpression(testUri, sourceExpression, const [
+        'package:a/definitions.dart',
+        'package:drift/drift.dart',
+      ]);
       final annotated = AnnotatedDartCode.ast(expression);
 
       final imports = TestImportManager();
@@ -71,6 +74,17 @@ extension MyStringUtils on String {
         "'hello world'?.reverse<void>(1, 2, 3)",
         "i0.MyStringUtils('hello world')?.reverse<void>(1,2,3)",
         {'i0': 'package:a/definitions.dart'},
+      );
+    });
+
+    test('explicit type arguments on extension', () async {
+      await checkTransformation(
+        "CustomExpression<DateTime>('creation_time')",
+        "i0.CustomExpression<i1.DateTime>('creation_time')",
+        {
+          'i0': 'package:drift/src/runtime/query_builder/query_builder.dart',
+          'i1': 'dart:core',
+        },
       );
     });
   });

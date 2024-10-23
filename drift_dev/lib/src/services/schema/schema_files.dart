@@ -196,6 +196,8 @@ class SchemaWriter {
           'max': feature.maxLength,
         },
       };
+    } else if (feature is DartCheckExpression) {
+      return <String, Object?>{'check': feature.toJson()};
     }
     return 'unknown';
   }
@@ -491,8 +493,9 @@ class SchemaReader {
       nullable: nullable,
       nameInSql: name,
       nameInDart: getterName ?? ReCase(name).camelCase,
-      defaultArgument:
-          defaultDart != null ? AnnotatedDartCode([defaultDart]) : null,
+      defaultArgument: defaultDart != null
+          ? AnnotatedDartCode([DartLexeme(defaultDart)])
+          : null,
       declaration: _declaration,
       customConstraints: customConstraints,
       constraints: dslFeatures,
@@ -504,11 +507,17 @@ class SchemaReader {
     if (data == 'primary-key') return PrimaryKeyColumn(false);
 
     if (data is Map<String, dynamic>) {
-      final allowedLengths = data['allowed-lengths'] as Map<String, dynamic>;
-      return LimitingTextLength(
-        minLength: allowedLengths['min'] as int?,
-        maxLength: allowedLengths['max'] as int?,
-      );
+      final allowedLengths = data['allowed-lengths'] as Map<String, dynamic>?;
+      final check = data['check'] as Map<String, dynamic>?;
+
+      if (allowedLengths != null) {
+        return LimitingTextLength(
+          minLength: allowedLengths['min'] as int?,
+          maxLength: allowedLengths['max'] as int?,
+        );
+      } else if (check != null) {
+        return DartCheckExpression.fromJson(check);
+      }
     }
 
     return null;

@@ -210,31 +210,51 @@ typedef $$_SomeTableTableUpdateCompanionBuilder = _SomeTableCompanion Function({
 });
 
 class $$_SomeTableTableFilterComposer
-    extends FilterComposer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
+    extends Composer<_$_SomeDb, $_SomeTableTable> {
+  $$_SomeTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
 }
 
 class $$_SomeTableTableOrderingComposer
-    extends OrderingComposer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
+    extends Composer<_$_SomeDb, $_SomeTableTable> {
+  $$_SomeTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+}
+
+class $$_SomeTableTableAnnotationComposer
+    extends Composer<_$_SomeDb, $_SomeTableTable> {
+  $$_SomeTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
 }
 
 class $$_SomeTableTableTableManager extends RootTableManager<
@@ -243,6 +263,7 @@ class $$_SomeTableTableTableManager extends RootTableManager<
     _SomeTableData,
     $$_SomeTableTableFilterComposer,
     $$_SomeTableTableOrderingComposer,
+    $$_SomeTableTableAnnotationComposer,
     $$_SomeTableTableCreateCompanionBuilder,
     $$_SomeTableTableUpdateCompanionBuilder,
     (
@@ -255,10 +276,12 @@ class $$_SomeTableTableTableManager extends RootTableManager<
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$_SomeTableTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$_SomeTableTableOrderingComposer(ComposerState(db, table)),
+          createFilteringComposer: () =>
+              $$_SomeTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$_SomeTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$_SomeTableTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> name = const Value.absent(),
@@ -288,6 +311,7 @@ typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
     _SomeTableData,
     $$_SomeTableTableFilterComposer,
     $$_SomeTableTableOrderingComposer,
+    $$_SomeTableTableAnnotationComposer,
     $$_SomeTableTableCreateCompanionBuilder,
     $$_SomeTableTableUpdateCompanionBuilder,
     (

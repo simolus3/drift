@@ -1,3 +1,4 @@
+// #docregion setup
 import 'package:drift/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:postgres/postgres.dart';
@@ -7,7 +8,7 @@ part 'postgres.g.dart';
 class Users extends Table {
   UuidColumn get id => customType(PgTypes.uuid).withDefault(genRandomUuid())();
   TextColumn get name => text()();
-  DateTimeColumn get birthDate => dateTime().nullable()();
+  Column<PgDate> get birthDate => customType(PgTypes.date).nullable()();
 }
 
 @DriftDatabase(tables: [Users])
@@ -43,3 +44,20 @@ void main() async {
 
   await driftDatabase.close();
 }
+// #enddocregion setup
+
+List<Endpoint> get yourListOfEndpoints => throw 'stub';
+
+// #docregion pool
+Future<void> openWithPool() async {
+  final pool = Pool.withEndpoints(yourListOfEndpoints);
+
+  final driftDatabase = MyDatabase(PgDatabase.opened(pool));
+  await driftDatabase.users.select().get();
+
+  // Note that PgDatabase.opened() doesn't close the underlying connection when
+  // the drift database is closed.
+  await driftDatabase.close();
+  await pool.close();
+}
+// #enddocregion pool

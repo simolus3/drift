@@ -1,6 +1,6 @@
 name: app
 description: A cross-platform todo tracker built with drift.
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 

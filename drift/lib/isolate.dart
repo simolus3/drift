@@ -54,7 +54,10 @@ class DriftIsolate {
 
   /// The flag indicating whether messages between this [DriftIsolate]
   /// and the [DriftServer] should be serialized.
-  final bool serialize;
+  ///
+  /// When null, drift will try to send a test message to infer whether the
+  /// connection to [connectPort] requires serialization.
+  final bool? serialize;
 
   /// Creates a [DriftIsolate] talking to another isolate by using the
   /// [connectPort].
@@ -67,31 +70,17 @@ class DriftIsolate {
   /// across send types. In particular, isolates across different Flutter
   /// engines (such as the ones spawned by the `workmanager` package) are
   /// unable to handle most objects.
-  /// To support those setups, drift can serialize its iground isolate doing
-  /// all the work. Any other isolate can use the [connect] method to obtain an
-  /// instance of a [GeneratedDatabase] class that will delegate its work onto a
-  /// background isolate. Auto-updating queries, and transactions work across
-  /// isolates, and the user facing api is exactly the same.
+  /// To support these setups, drift can serialize the objects sent to the
+  /// background isolates into simple lists. This is adds considerable overhead,
+  /// but is necessary to make two independent isolates talk to each other.
   ///
-  /// Please note that, while running drift in a background isolate can reduce
-  /// lags in foreground isolates (thus removing UI jank), the overall database
-  /// performance will be worse. This is because result data is not available
-  /// directly and instead needs to be copied from the database isolate. Thanks
-  /// to recent improvements like isolate groups in the Dart VM, this overhead is
-  /// fairly small and using isolates to run drift queries is recommended where
-  /// possible.
-  ///
-  /// The easiest way to use drift isolates is to use
-  /// `NativeDatabase.createInBackground`, which is a dropternal communication
-  /// channel to only send simple types across isolates. The [serialize]
-  /// parameter, which is enabled by default, controls this behavior.
-  ///
-  /// In most scenarios, [serialize] can be disabled for a considerable
-  /// performance improvement.
+  /// The [serialize] parameter can be used to explicitly enable or disable this
+  /// behavior. By default, drift will attempt to send a test message to infer
+  /// whether serialization is necessary or not.
   /// {@endtemplate}
-  DriftIsolate.fromConnectPort(this.connectPort, {this.serialize = true});
+  DriftIsolate.fromConnectPort(this.connectPort, {this.serialize});
 
-  Future<StreamChannel> _open(Duration? timeout) {
+  Future<(StreamChannel, bool)> _open(Duration? timeout) {
     return connectToServer(connectPort, serialize, timeout);
   }
 
@@ -115,8 +104,9 @@ class DriftIsolate {
     bool singleClientMode = false,
     Duration? connectTimeout,
   }) async {
+    final (channel, serialize) = await _open(connectTimeout);
     final connection = await connectToRemoteAndInitialize(
-      await _open(connectTimeout),
+      channel,
       debugLog: isolateDebugLog,
       serialize: serialize,
       singleClientMode: singleClientMode,
@@ -131,7 +121,8 @@ class DriftIsolate {
   /// If you only want to disconnect a database connection created via
   /// [connect], use [GeneratedDatabase.close] instead.
   Future<void> shutdownAll() async {
-    return await shutdown(await _open(null), serialize: serialize);
+    final (channel, serialize) = await _open(null);
+    return await shutdown(channel, serialize: serialize);
   }
 
   /// Creates a new [DriftIsolate] on a background thread.

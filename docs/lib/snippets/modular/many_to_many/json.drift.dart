@@ -1,9 +1,140 @@
+// dart format width=80
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:drift_docs/snippets/modular/many_to_many/shared.drift.dart'
     as i1;
 import 'package:drift_docs/snippets/modular/many_to_many/json.drift.dart' as i2;
 import 'package:drift_docs/snippets/modular/many_to_many/json.dart' as i3;
+
+typedef $$ShoppingCartsTableCreateCompanionBuilder = i2.ShoppingCartsCompanion
+    Function({
+  i0.Value<int> id,
+  required i3.ShoppingCartEntries entries,
+});
+typedef $$ShoppingCartsTableUpdateCompanionBuilder = i2.ShoppingCartsCompanion
+    Function({
+  i0.Value<int> id,
+  i0.Value<i3.ShoppingCartEntries> entries,
+});
+
+class $$ShoppingCartsTableFilterComposer
+    extends i0.Composer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
+  $$ShoppingCartsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnWithTypeConverterFilters<i3.ShoppingCartEntries,
+          i3.ShoppingCartEntries, String>
+      get entries => $composableBuilder(
+          column: $table.entries,
+          builder: (column) => i0.ColumnWithTypeConverterFilters(column));
+}
+
+class $$ShoppingCartsTableOrderingComposer
+    extends i0.Composer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
+  $$ShoppingCartsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get entries => $composableBuilder(
+      column: $table.entries, builder: (column) => i0.ColumnOrderings(column));
+}
+
+class $$ShoppingCartsTableAnnotationComposer
+    extends i0.Composer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
+  $$ShoppingCartsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  i0.GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  i0.GeneratedColumnWithTypeConverter<i3.ShoppingCartEntries, String>
+      get entries => $composableBuilder(
+          column: $table.entries, builder: (column) => column);
+}
+
+class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
+    i0.GeneratedDatabase,
+    i2.$ShoppingCartsTable,
+    i2.ShoppingCart,
+    i2.$$ShoppingCartsTableFilterComposer,
+    i2.$$ShoppingCartsTableOrderingComposer,
+    i2.$$ShoppingCartsTableAnnotationComposer,
+    $$ShoppingCartsTableCreateCompanionBuilder,
+    $$ShoppingCartsTableUpdateCompanionBuilder,
+    (
+      i2.ShoppingCart,
+      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartsTable,
+          i2.ShoppingCart>
+    ),
+    i2.ShoppingCart,
+    i0.PrefetchHooks Function()> {
+  $$ShoppingCartsTableTableManager(
+      i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
+      : super(i0.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              i2.$$ShoppingCartsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              i2.$$ShoppingCartsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              i2.$$ShoppingCartsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),
+          }) =>
+              i2.ShoppingCartsCompanion(
+            id: id,
+            entries: entries,
+          ),
+          createCompanionCallback: ({
+            i0.Value<int> id = const i0.Value.absent(),
+            required i3.ShoppingCartEntries entries,
+          }) =>
+              i2.ShoppingCartsCompanion.insert(
+            id: id,
+            entries: entries,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i2.$ShoppingCartsTable,
+    i2.ShoppingCart,
+    i2.$$ShoppingCartsTableFilterComposer,
+    i2.$$ShoppingCartsTableOrderingComposer,
+    i2.$$ShoppingCartsTableAnnotationComposer,
+    $$ShoppingCartsTableCreateCompanionBuilder,
+    $$ShoppingCartsTableUpdateCompanionBuilder,
+    (
+      i2.ShoppingCart,
+      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartsTable,
+          i2.ShoppingCart>
+    ),
+    i2.ShoppingCart,
+    i0.PrefetchHooks Function()>;
 
 abstract class $JsonBasedDatabase extends i0.GeneratedDatabase {
   $JsonBasedDatabase(i0.QueryExecutor e) : super(e);
@@ -218,108 +349,3 @@ class ShoppingCartsCompanion extends i0.UpdateCompanion<i2.ShoppingCart> {
         .toString();
   }
 }
-
-typedef $$ShoppingCartsTableCreateCompanionBuilder = i2.ShoppingCartsCompanion
-    Function({
-  i0.Value<int> id,
-  required i3.ShoppingCartEntries entries,
-});
-typedef $$ShoppingCartsTableUpdateCompanionBuilder = i2.ShoppingCartsCompanion
-    Function({
-  i0.Value<int> id,
-  i0.Value<i3.ShoppingCartEntries> entries,
-});
-
-class $$ShoppingCartsTableFilterComposer
-    extends i0.FilterComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableFilterComposer(super.$state);
-  i0.ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnFilters(column, joinBuilders: joinBuilders));
-
-  i0.ColumnWithTypeConverterFilters<i3.ShoppingCartEntries,
-          i3.ShoppingCartEntries, String>
-      get entries => $state.composableBuilder(
-          column: $state.table.entries,
-          builder: (column, joinBuilders) => i0.ColumnWithTypeConverterFilters(
-              column,
-              joinBuilders: joinBuilders));
-}
-
-class $$ShoppingCartsTableOrderingComposer
-    extends i0.OrderingComposer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
-  $$ShoppingCartsTableOrderingComposer(super.$state);
-  i0.ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  i0.ColumnOrderings<String> get entries => $state.composableBuilder(
-      column: $state.table.entries,
-      builder: (column, joinBuilders) =>
-          i0.ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i2.$ShoppingCartsTable,
-    i2.ShoppingCart,
-    i2.$$ShoppingCartsTableFilterComposer,
-    i2.$$ShoppingCartsTableOrderingComposer,
-    $$ShoppingCartsTableCreateCompanionBuilder,
-    $$ShoppingCartsTableUpdateCompanionBuilder,
-    (
-      i2.ShoppingCart,
-      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartsTable,
-          i2.ShoppingCart>
-    ),
-    i2.ShoppingCart,
-    i0.PrefetchHooks Function()> {
-  $$ShoppingCartsTableTableManager(
-      i0.GeneratedDatabase db, i2.$ShoppingCartsTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: i2
-              .$$ShoppingCartsTableFilterComposer(i0.ComposerState(db, table)),
-          orderingComposer: i2.$$ShoppingCartsTableOrderingComposer(
-              i0.ComposerState(db, table)),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<i3.ShoppingCartEntries> entries = const i0.Value.absent(),
-          }) =>
-              i2.ShoppingCartsCompanion(
-            id: id,
-            entries: entries,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required i3.ShoppingCartEntries entries,
-          }) =>
-              i2.ShoppingCartsCompanion.insert(
-            id: id,
-            entries: entries,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i2.$ShoppingCartsTable,
-    i2.ShoppingCart,
-    i2.$$ShoppingCartsTableFilterComposer,
-    i2.$$ShoppingCartsTableOrderingComposer,
-    $$ShoppingCartsTableCreateCompanionBuilder,
-    $$ShoppingCartsTableUpdateCompanionBuilder,
-    (
-      i2.ShoppingCart,
-      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartsTable,
-          i2.ShoppingCart>
-    ),
-    i2.ShoppingCart,
-    i0.PrefetchHooks Function()>;

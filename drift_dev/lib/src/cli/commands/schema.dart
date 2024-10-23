@@ -15,7 +15,7 @@ import 'schema/steps.dart';
 
 class SchemaCommand extends Command {
   @override
-  String get description => 'Inspect or manage the schema of a moor database';
+  String get description => 'Inspect or manage the schema of a drift database';
 
   @override
   String get name => 'schema';
@@ -28,7 +28,11 @@ class SchemaCommand extends Command {
   }
 }
 
-typedef AnalyzedDatabase = ({List<DriftElement> elements, int? schemaVersion});
+typedef AnalyzedDatabase = ({
+  List<DriftElement> elements,
+  int? schemaVersion,
+  DriftDatabase? db
+});
 
 extension ExportSchema on DriftDevCli {
   /// Extracts available drift elements from a [dart] source file defining a
@@ -52,10 +56,10 @@ extension ExportSchema on DriftDevCli {
     final result = input.fileAnalysis!;
     final databaseElement = databases.single;
     final db = result.resolvedDatabases[databaseElement.id]!;
-
     return (
       elements: db.availableElements,
       schemaVersion: databaseElement.schemaVersion,
+      db: databaseElement,
     );
   }
 }

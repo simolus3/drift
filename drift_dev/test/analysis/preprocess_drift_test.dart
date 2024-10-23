@@ -106,15 +106,13 @@ import 'c.drift';
     );
   });
 
-  test('throws if entrypoint is invalid', () async {
+  test('handles invalid entrypoint files', () async {
     final backend = await TestBackend.inTest({
       'a|lib/main.drift': '! this not a valid drift file !',
     });
+    final result = await DriftPreprocessor.analyze(
+        backend, Uri.parse('package:a/main.drift'));
 
-    expect(
-      () =>
-          DriftPreprocessor.analyze(backend, Uri.parse('package:a/main.drift')),
-      throwsA(anything),
-    );
+    expect(result.temporaryDartFile, isEmpty);
   });
 }

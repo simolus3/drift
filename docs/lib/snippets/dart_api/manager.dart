@@ -1,4 +1,4 @@
-// ignore_for_file: invalid_use_of_internal_member, unused_local_variable
+// ignore_for_file: invalid_use_of_internal_member, unused_local_variable, unused_element
 
 import 'package:drift/drift.dart';
 
@@ -279,11 +279,11 @@ extension ManagerExamples on AppDatabase {
 // or by creating a new filter from scratch
 extension After2000Filter on ColumnFilters<DateTime> {
   // Create a new filter by combining existing filters
-  ComposableFilter after2000orBefore1900() =>
+  Expression<bool> after2000orBefore1900() =>
       isAfter(DateTime(2000)) | isBefore(DateTime(1900));
 
   // Create a new filter from scratch using the `column` property
-  ComposableFilter filterOnUnixEpoch(int value) =>
+  Expression<bool> filterOnUnixEpoch(int value) =>
       $composableFilter(column.unixepoch.equals(value));
 }
 
@@ -311,7 +311,7 @@ Future<void> orderingWithExtension(AppDatabase db) async {
 // #docregion manager_custom_filter
 // Extend the generated table filter composer to add a custom filter
 extension NoContentOrBefore2000FilterX on $$TodoItemsTableFilterComposer {
-  ComposableFilter noContentOrBefore2000() =>
+  Expression<bool> noContentOrBefore2000() =>
       (content.isNull() | createdAt.isBefore(DateTime(2000)));
 }
 
@@ -332,3 +332,63 @@ Future<void> customOrdering(AppDatabase db) async {
   db.managers.todoItems.orderBy((f) => f.contentThenCreatedAt());
 }
 // #enddocregion manager_custom_ordering
+
+void _managerAnnotations(AppDatabase db) async {
+  // #docregion manager_annotations
+  // First create an computed field with an expression you want to use
+  final titleLengthField =
+      db.managers.todoItems.computedField((o) => o.title.length);
+
+  /// Create a copy of the manager with the computed fields you want to use
+  final manager = db.managers.todoItems.withFields([titleLengthField]);
+
+  // Then use the computed field in a filter
+  // This will filter all items whose title has exactly 10 characters
+  manager.filter((f) => titleLengthField.filter(10));
+
+  // You can also use the computed field in an ordering
+  // This will order all items by the length of their title in ascending order
+  manager.orderBy((o) => titleLengthField.order.asc());
+
+  /// You can read the result of the computed field too
+  for (final (item, refs) in await manager.get()) {
+    final titleLength = titleLengthField.read(refs);
+    print('Item ${item.id} has a title length of $titleLength');
+  }
+// #enddocregion manager_annotations
+}
+
+void _managerReferencedAnnotations(AppDatabase db) async {
+  // #docregion referenced_annotations
+  // This computed field will get the name of the user of this todo
+  final todoUserName =
+      db.managers.todoItems.computedField((o) => o.category.user.name);
+
+  /// Create a copy of the manager with the computed fields you want to use
+  final manager = db.managers.todoItems.withFields([todoUserName]);
+
+  /// You can read the result of the computed field too
+  for (final (item, refs) in await manager.get()) {
+    final userName = todoUserName.read(refs);
+    print('Item ${item.id} has a user with the name $userName');
+  }
+  // #enddocregion referenced_annotations
+}
+
+void _managerAggregatedAnnotations(AppDatabase db) async {
+  // #docregion aggregated_annotations
+  // You can aggregate over multiple rows in a related table
+  // to perform calculations on them
+  final todoCountcomputedField = db.managers.todoCategory
+      .computedField((o) => o.todoItemsRefs((o) => o.id).count());
+
+  /// Create a copy of the manager with the computed fields you want to use
+  final manager = db.managers.todoCategory.withFields([todoCountcomputedField]);
+
+  /// Read the result of the computed field
+  for (final (category, refs) in await manager.get()) {
+    final todoCount = todoCountcomputedField.read(refs);
+    print('Category ${category.id} has $todoCount todos');
+  }
+  // #enddocregion aggregated_annotations
+}

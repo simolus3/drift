@@ -20,9 +20,9 @@ flutter run --debug
 Once the example app launches, it will print out something like:
 
 ```console
-A Dart VM Service on Linux is available at: http://127.0.0.1:42439/XZyfqXFUYlg=/  
-The Flutter DevTools debugger and profiler on Linux is available at:  
-http://127.0.0.1:9102?uri=http://127.0.0.1:42439/XZyfqXFUYlg=/  
+A Dart VM Service on Linux is available at: http://127.0.0.1:42439/XZyfqXFUYlg=/
+The Flutter DevTools debugger and profiler on Linux is available at:
+http://127.0.0.1:9102?uri=http://127.0.0.1:42439/XZyfqXFUYlg=/
 ```
 
 You can simply copy the first url it shows inside the `Dart VM Service Connection` that appears

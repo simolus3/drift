@@ -24,3 +24,15 @@ drift/extension/devtools/build
 
 # FVM Version Cache
 .fvm/
+.vscode/
+.fvmrc
+
+# Documentation
+docs/dist
+docs/deploy
+docs/lib/**/**.json
+docs/.cache
+docs/docs/*.js
+docs/docs/*.wasm
+docs/docs/examples/**
+docs/web/robots.txt

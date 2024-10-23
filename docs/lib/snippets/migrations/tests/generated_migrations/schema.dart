@@ -18,7 +18,9 @@ class GeneratedHelper implements SchemaInstantiationHelper {
       case 3:
         return v3.DatabaseAtV3(db);
       default:
-        throw MissingSchemaException(version, const {1, 2, 3});
+        throw MissingSchemaException(version, versions);
     }
   }
+
+  static const versions = const [1, 2, 3];
 }

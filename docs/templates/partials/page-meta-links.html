@@ -1,9 +1,0 @@
-{% assign branch = site.github_branch | default: 'develop' %}
-{% assign subdir = site.github_subdir | default: '' %}
-{% assign edit_url = site.github_repo | append: '/edit/', branch, '/', subdir, page.source %}
-{% assign issues_url = site.github_repo | append: '/issues/new?template=docs.md&title=Documentation issue: ', page.title %}
-
-<div class="td-page-meta ms-2 pb-1 pt-2 mb-0">
-    <a href="{{ issues_url }}" class="td-page-meta--issue" target="_blank" rel="noopener"></i class="fa-solid fa-list-check fa-fw"> {{ "post_create_issue" | i18n }}</a>
-    <a href="{{ edit_url }}" class="td-page-meta--edit" target="_blank" rel="noopener"><i class="fa-solid fa-pen-to-square fa-fw"></i> {{ "post_edit_this" | i18n }}</a>
-</div>

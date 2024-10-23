@@ -73,6 +73,28 @@ class DriftServiceExtension {
         });
 
         return executor.statements;
+      case 'clear':
+        final database = tracked.database;
+        await database.exclusively(() async {
+          // https://stackoverflow.com/a/65743498/25690041
+          await database.customStatement('PRAGMA writable_schema = 1;');
+          await database.customStatement('DELETE FROM sqlite_master;');
+          await database.customStatement('VACUUM;');
+          await database.customStatement('PRAGMA writable_schema = 0;');
+          await database.customStatement('PRAGMA integrity_check');
+
+          await database.customStatement('PRAGMA user_version = 0');
+          await database.beforeOpen(database.resolvedEngine.executor,
+              OpeningDetails(null, database.schemaVersion));
+          await database.customStatement(
+              'PRAGMA user_version = ${database.schemaVersion}');
+
+          // Refresh all stream queries
+          database.notifyUpdates({
+            for (final table in database.allTables) TableUpdate.onTable(table)
+          });
+        });
+        return true;
       default:
         throw UnsupportedError('Method $action');
     }

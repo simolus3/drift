@@ -199,6 +199,15 @@ class VersionedTable extends Table with TableInfo<Table, QueryRow> {
   VersionedTable createAlias(String alias) {
     return VersionedTable.aliased(source: this, alias: alias);
   }
+
+  /// Generates an expression referencing a column in the same table with the
+  /// given [name].
+  ///
+  /// Intended for generated code.
+  static Expression<T> col<T extends Object>(String name) {
+    return CustomExpression(SqlDialect.sqlite.escape(name),
+        precedence: Precedence.primary);
+  }
 }
 
 /// The version of [VersionedTable] for virtual tables.
