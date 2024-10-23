@@ -284,7 +284,10 @@ jobs:
     strategy:
       matrix:
         # We want to support the two latest stable Flutter versions
-        flutter: ["3.22", "3.24"]
+        # Unfortunately, we currently can't support Flutter 3.22 because it's
+        # incompatible with `dart_style: ^2.3.7` that `drift_dev` has to use:
+        # https://github.com/simolus3/drift/issues/3302
+        flutter: ["3.24"]
 
     steps:
       - uses: actions/checkout@v4
