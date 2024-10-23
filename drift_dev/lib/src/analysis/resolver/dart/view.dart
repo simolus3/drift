@@ -58,7 +58,9 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     final typeSystem = field.library.typeSystem;
 
     if (type is! InterfaceType ||
-        !typeSystem.isAssignableTo(type, knownTypes.tableType)) return null;
+        !typeSystem.isAssignableTo(type, knownTypes.tableType)) {
+      return null;
+    }
 
     if (field.getter != null) {
       try {

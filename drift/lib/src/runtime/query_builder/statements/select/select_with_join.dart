@@ -109,7 +109,9 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
 
     for (final join in _joins) {
       if (onlyResults &&
-          !(join.includeInResult ?? _includeJoinedTablesInResult)) continue;
+          !(join.includeInResult ?? _includeJoinedTablesInResult)) {
+        continue;
+      }
 
       yield join.table as ResultSetImplementation;
     }
