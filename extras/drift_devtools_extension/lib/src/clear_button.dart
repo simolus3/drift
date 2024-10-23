@@ -13,7 +13,7 @@ class ClearDatabaseButton extends ConsumerStatefulWidget {
 }
 
 class _ClearDatabaseButtonState extends ConsumerState<ClearDatabaseButton> {
-  Future<void>? _pendingClear = null;
+  Future<void>? _pendingClear;
 
   @override
   Widget build(BuildContext context) {
