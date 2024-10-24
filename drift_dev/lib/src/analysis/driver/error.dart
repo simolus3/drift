@@ -4,31 +4,37 @@ import 'package:source_gen/source_gen.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
+enum DriftAnalysisErrorLevel { warning, error }
+
 class DriftAnalysisError {
   final SourceSpan? span;
   final String message;
+  final DriftAnalysisErrorLevel level;
 
-  DriftAnalysisError(this.span, this.message);
+  DriftAnalysisError(this.span, this.message,
+      {this.level = DriftAnalysisErrorLevel.error});
 
   factory DriftAnalysisError.forDartElement(
-      dart.Element element, String message) {
-    return DriftAnalysisError(
-      spanForElement(element),
-      message,
-    );
+      dart.Element element, String message,
+      {DriftAnalysisErrorLevel level = DriftAnalysisErrorLevel.error}) {
+    return DriftAnalysisError(spanForElement(element), message, level: level);
   }
 
   factory DriftAnalysisError.inDartAst(
-      dart.Element element, dart.SyntacticEntity entity, String message) {
-    return DriftAnalysisError(dartAstSpan(element, entity), message);
+      dart.Element element, dart.SyntacticEntity entity, String message,
+      {DriftAnalysisErrorLevel level = DriftAnalysisErrorLevel.error}) {
+    return DriftAnalysisError(dartAstSpan(element, entity), message,
+        level: level);
   }
 
   factory DriftAnalysisError.inDriftFile(
-      sql.SyntacticEntity sql, String message) {
-    return DriftAnalysisError(sql.span, message);
+      sql.SyntacticEntity sql, String message,
+      {DriftAnalysisErrorLevel level = DriftAnalysisErrorLevel.error}) {
+    return DriftAnalysisError(sql.span, message, level: level);
   }
 
-  factory DriftAnalysisError.fromSqlError(sql.AnalysisError error) {
+  factory DriftAnalysisError.fromSqlError(sql.AnalysisError error,
+      {DriftAnalysisErrorLevel level = DriftAnalysisErrorLevel.error}) {
     var message = error.message ?? '';
     if (error.type == sql.AnalysisErrorType.notSupportedInDesiredVersion) {
       message =
@@ -36,7 +42,7 @@ class DriftAnalysisError {
           'options. See https://drift.simonbinder.eu/options/#assumed-sql-environment for details!';
     }
 
-    return DriftAnalysisError(error.span, message);
+    return DriftAnalysisError(error.span, message, level: level);
   }
 
   @override

@@ -509,6 +509,7 @@ class ColumnParser {
         customConstraints: foundCustomConstraint,
         referenceName: _readReferenceName(element),
       ),
+      element: element,
       referencesColumnInSameTable: referencesColumnInSameTable,
     );
   }
@@ -670,5 +671,8 @@ class PendingColumnInformation {
   /// this column in that case.
   final String? referencesColumnInSameTable;
 
-  PendingColumnInformation(this.column, {this.referencesColumnInSameTable});
+  final Element element;
+
+  PendingColumnInformation(this.column,
+      {this.referencesColumnInSameTable, required this.element});
 }

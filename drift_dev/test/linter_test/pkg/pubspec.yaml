@@ -1,0 +1,23 @@
+name: linter_test
+version: 1.0.0
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  drift:
+  build_runner: ^2.4.13
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.24.0
+  drift_dev:
+  custom_lint: ^0.6.7
+
+dependency_overrides:
+  drift:
+    path: ../../../../drift
+  drift_dev:
+    path: ../../../../drift_dev
+  sqlparser:
+    path: ../../../../sqlparser
