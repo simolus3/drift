@@ -134,12 +134,12 @@ CREATE TABLE tasks (
 );
 ```
 
-More information on storing enums is available [in the page on type converters](../type_converters.md#using-converters-in-drift).
+More information on storing enums is available [in the page on type converters](../type_converters.md#using-converters-in-drift-files).
 Instead of using an integer mapping enums by their index, you can also store them
 by their name. For this, use `ENUMNAME(...)` instead of `ENUM(...)`.
 
 For details on all supported types, and information on how to switch between the
-datetime modes, see [this section](../dart_api/tables.md#supported-column-types).
+datetime modes, see [this section](../dart_api/tables.md#column-types).
 
 The additional drift-specific types (`BOOLEAN`, `DATETIME`, `ENUM` and `ENUMNAME`) are also supported in `CAST`
 expressions, which is helpful for views:
@@ -343,18 +343,24 @@ SELECT
 FROM users;
 ```
 
-More details on type converts in drift files are available
-[here](../type_converters.md#using-converters-in-drift).
-
 When using type converters, we recommend the [`apply_converters_on_variables`](../generation_options/index.md)
 build option. This will also apply the converter from Dart to SQL, for instance if used on variables: `SELECT * FROM users WHERE preferences = ?`.
 With that option, the variable will be inferred to `Preferences` instead of `String`.
 
+Drift files also have special support for implicit enum converters:
+
+```sql
+import 'status.dart';
+
+CREATE TABLE tasks (
+  id INTEGER NOT NULL PRIMARY KEY,
+  status ENUM(Status)
+);
+```
+
+Of course, the [warning](../type_converters.md#implicit-enum-converters) about automatic enum converters also applies to drift files.
 
 ### Existing row classes
-
-
-
 
 You can use custom row classes instead of having drift generate one for you.
 For instance, let's say you had a Dart class defined as
@@ -367,7 +373,7 @@ Then, you can instruct drift to use that class as a row class as follows:
 
 When using custom row classes defined in another Dart file, you also need to import that file into the file where you define
 the database.
-For more general information on this feature, please check [this page](../custom_row_classes.md).
+For more general information on this feature, please check [this page](../dart_api/dataclass.md#custom-dataclass).
 
 Custom row classes can be applied to `SELECT` queries defined a `.drift` file. To use a custom row class, the `WITH` syntax
 can be added after the name of the query.
@@ -387,7 +393,7 @@ Internally, drift will then generate query code to map the row to an instance of
 `UserWithFriends` class.
 
 For a more complete overview of using custom row classes for queries, see
-[the section for queries](../custom_row_classes.md#existing-row-classes-for-queries).
+[the section for queries](../dart_api/dataclass.md#custom-dataclass-for-queries).
 
 ### Dart documentation comments
 

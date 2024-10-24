@@ -75,7 +75,7 @@ At the moment, drift supports these options:
 - `case_from_dart_to_sql` (defaults to `snake_case`): Controls how the table and column names are re-cased from the Dart identifiers.
   The possible values are `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).
 - `write_to_columns_mixins`: Whether the `toColumns` method should be written as a mixin instead of being added directly to the data class.
-  This is useful when using [existing row classes](../custom_row_classes.md), as the mixin is generated for those as well.
+  This is useful when using [existing row classes](../dart_api/dataclass.md#custom-dataclass), as the mixin is generated for those as well.
 - `has_separate_analyzer`: This option is only relevant when using the `drift_dev:not_shared` builder, which needs to use a less efficient
   analysis implementation than the other builders by default. After also applying `drift_dev:analyzer` to the same build target, this option
   can be enabled to speed up builds. This option has no effect with the default or the modular builder.

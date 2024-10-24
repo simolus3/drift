@@ -1,23 +1,112 @@
 ---
 
-title: Custom row classes
-description: Use your own classes as data classes for drift tables
+title: Dataclass
+description: Dataclass for reading and writing data to the database.
 
 ---
 
-For each table declared in Dart or in a drift file, `drift_dev` generates a row class (sometimes also referred to as _data class_)
-to hold a full row and a companion class for updates and inserts.
-This works well for most cases: Drift knows  what columns your table has, and it can generate a simple class for all of that.
-In some cases, you might want to customize the generated classes though.
-For instance, you might want to add a mixin, let it extend another class or interface, or use other builders like
-`json_serializable` to customize how it gets serialized to json.
 
-As a solution, drift allows you to use your own classes as data classes for the database.
 
-## Using custom classes
+# Generated Dataclass
+
+Drift generates a dataclass for each table in your database. These dataclasses represent query results and come with built-in equality, hashing, and serialization support. They also include a `copyWith` method for easy modification.
+
+**Example:**
+
+For a `Users` table, Drift automatically generates a `User` dataclass. This dataclass is used for all read operations from the `Users` table, ensuring type-safe and structured data retrieval.
+
+{{ load_snippet('generated-dataclass','lib/snippets/dart_api/dataclass.dart.excerpt.json') }}
+
+## Dataclass Name
+
+The dataclass name is derived from the table name.
+
+- If the name ends in `s`, the dataclass name will be the name with `s` removed.
+    - Example: `Users` -> `User`
+- Otherwise, the dataclass name will be the name with `Data` appended.
+    - Example: `UserInfo` -> `UserInfoData`
+
+
+To use a custom name use the `@DataClassName` annotation.
+
+**Example:**
+
+{{ load_snippet('data-class-name','lib/snippets/dart_api/dataclass.dart.excerpt.json') }}
+
+## Json serialization
+
+### Key names
+
+When serializing to json, the generated dataclass will use the column name in `snake_case` for the json keys.
+
+**Example:**
+
+{{ load_snippet('default-json-keys','lib/snippets/dart_api/dataclass.dart.excerpt.json') }}
+
+```json
+{
+  "id": 1,
+  "title": "Todo 1",
+  "created_at": "2024-02-29T12:00:00Z"
+}
+```
+
+### Custom json keys
+
+To use a custom name for JSON serialization, use the `@JsonKey` annotation.
+
+**Example:**
+
+{{ load_snippet('custom-json-keys','lib/snippets/dart_api/dataclass.dart.excerpt.json') }}
+
+```json
+{
+  "id": 1,
+  "title": "Todo 1",
+  "created": "2024-02-29T12:00:00Z"
+}
+```
+
+If you prefer to use the actual column name in SQL as the JSON key, set `use_sql_column_name_as_json_key` to `true` in the `build.yaml` file.
+
+```yaml title="build.yaml"
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          use_sql_column_name_as_json_key : true
+```
+For more details on customizing column names in SQL, refer to the [column name](tables.md#column-names) documentation.
+
+## Companions
+
+In addition to the generated dataclass representing a complete row, Drift also generates a companion object for each table, which represents a partial row and can be used to update existing rows.
+
+<div class="annotate" markdown>
+
+{{ load_snippet('generated-companion','lib/snippets/dart_api/dataclass.dart.excerpt.json') }}
+
+</div>
+1. `o()` is just a helper function that creates a `UsersCompanion`.
+
+### Value object
+When using the companion object to update a row, optional fields must be wrapped in a `Value` object. This is used by Drift to distinguish between `null` and not present values.
+
+{{ load_snippet('generated-value','lib/snippets/dart_api/dataclass.dart.excerpt.json') }}
+
+## Custom dataclass
+
+The generated dataclass works well for most cases, but you might want to use your own class as a dataclass for a table.
+
+For instance, you might want to add a mixin, let it extend another class or interface, or use other builders like `json_serializable` to customize how it gets serialized to json.
+
+!!! note "Row Class"
+
+    In the documentation, we use the terms _row class_ and _dataclass_ interchangeably.
+    Both refer to a class that represents a row of a database table.
 
 To use a custom row class, simply annotate your table definition with `@UseRowClass`.
-
 
 {{ load_snippet('start','lib/snippets/custom_row_classes/default.dart.excerpt.json','lib/snippets/custom_row_classes/named.dart.excerpt.json') }}
 
@@ -46,6 +135,32 @@ If you want to use another constructor, set the `constructor` parameter on the
 
 {{ load_snippet('named','lib/snippets/custom_row_classes/default.dart.excerpt.json','lib/snippets/custom_row_classes/named.dart.excerpt.json') }}
 
+### Custom companions
+
+In most cases, generated companion classes are the right tool for updates and inserts.
+If you prefer to use your custom row class for inserts, just make it implement `Insertable<T>`, where
+`T` is the tye of your row class itself.
+For instance, the previous class could be changed like this:
+
+```dart
+class User implements Insertable<User> {
+  final int id;
+  final String name;
+  final DateTime birthDate;
+
+  User({required this.id, required this.name, required this.birthDate});
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    return UsersCompanion(
+      id: Value(id),
+      name: Value(name),
+      birthDate: Value(birthDate),
+    ).toColumns(nullToAbsent);
+  }
+}
+```
+
 ### Static and asynchronous factories
 
 Starting with drift 2.0, the custom constructor set with the `constructor`
@@ -65,7 +180,7 @@ class User {
 }
 ```
 
-### Existing row classes in drift files
+### Custom dataclass in drift files
 
 To use existing row classes in drift files, use the `WITH` keyword at the end of the
 table declaration. Also, don't forget to import the Dart file declaring the row
@@ -98,33 +213,7 @@ CREATE TABLE users(
 ) WITH User.myNamedConstructor;
 ```
 
-## Inserts and updates with custom classes
-
-In most cases, generated companion classes are the right tool for updates and inserts.
-If you prefer to use your custom row class for inserts, just make it implement `Insertable<T>`, where
-`T` is the name of your row class itself.
-For instance, the previous class could be changed like this:
-
-```dart
-class User implements Insertable<User> {
-  final int id;
-  final String name;
-  final DateTime birthDate;
-
-  User({required this.id, required this.name, required this.birthDate});
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    return UsersCompanion(
-      id: Value(id),
-      name: Value(name),
-      birthDate: Value(birthDate),
-    ).toColumns(nullToAbsent);
-  }
-}
-```
-
-## Existing row classes for queries 
+#### Custom dataclass for queries
 
 Existing row classes may also be applied to named queries defined in a `.drift` file.
 They have a similar syntax, adding the `WITH` keyword after the name of the query:
@@ -165,10 +254,10 @@ For your convenience, drift is using different generation strategies even for qu
 an existing row class. It is helpful to enumerate them because they affect the allowed type for
 fields in existing types as well.
 
-1. Nested tables: When the [`SELECT table.**` syntax](sql_api/drift_files.md#nested-results)
+1. Nested tables: When the [`SELECT table.**` syntax](../sql_api/drift_files.md#nested-results)
    is used in a query, drift will pack columns  from `table` into a nested object instead of generating fields
    for every column.
-2. Nested list results: The [`LIST()` macro](sql_api/drift_files.md#list-subqueries)
+2. Nested list results: The [`LIST()` macro](../sql_api/drift_files.md#list-subqueries)
    can be used to expose results of a subquery as a list.
 3. Single-table results: When a select statement reads all columns from a table (and no additional columns),
    like in `SELECT * FROM table`, drift will use the data class of the table instead of generating a new one.
@@ -256,26 +345,4 @@ design the result classes the way you like.
 If you have questions about existing result classes, or think you have found an edge-case not
 properly handled, please [start a discussion](https://github.com/simolus3/drift/discussions/new) in
 the drift repository, thanks!
-
-## When custom classes make sense
-
-The default drift-generated classes are a good default for most applications.
-In some advanced use-cases, custom classes can be a better alternative though:
-
-- Reduce generated code size: Due to historical reasons and backwards-compatibility, drift's classes
-  contain a number of methods for json serialization and `copyWith` that might not be necessary
-  for all users.
-  Custom row classes can reduce bloat here.
-- Custom superclasses: A custom row class can extend and class and implement or mix-in other classes
-  as desired.
-- Other code generators: Since you control the row class, you can make better use of other builders like
-  `json_serializable` or `built_value`.
-
-## Limitations
-
-These restrictions will be gradually lifted in upcoming drift versions. Follow [#1134](https://github.com/simolus3/drift/issues/1134) for details.
-
-For now, this feature is subject to the following limitations:
-
-- In drift files, you can only use the default unnamed constructor
 

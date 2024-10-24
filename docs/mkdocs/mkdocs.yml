@@ -14,20 +14,14 @@ theme:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
       toggle:
-    #     icon: empty
-    #     name: ""
 
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      toggle:
-    #     icon: empty
-    #     name: ""
 
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      toggle:
 
   # TODO: Add logo & favicon
   logo: images/icon.png
@@ -65,6 +59,8 @@ plugins:
   - macros
 
 markdown_extensions:
+  - def_list
+  - pymdownx.tilde
   - admonition
   - pymdownx.details
   - attr_list
@@ -97,12 +93,13 @@ nav:
   - index.md
   - Documentation:
       - Getting Started: setup.md
-      - Dart API:
-          - dart_api/manager.md
-          - dart_api/tables.md
+      - dart_api/tables.md
+      - dart_api/dataclass.md
+      - dart_api/manager.md
+      - dart_api/transactions.md
+      - Core API:
           - dart_api/select.md
           - dart_api/writes.md
-          - dart_api/transactions.md
           - dart_api/expressions.md
           - dart_api/schema_inspection.md
           - dart_api/views.md
@@ -113,7 +110,8 @@ nav:
           - sql_api/types.md
           - sql_api/extensions.md
           - sql_api/custom_queries.md
-          # - sql_api/sql_ide.md
+          - sql_api/custom_types.md
+          - sql_api/sql_ide.md
       - Migrations:
           - Getting Started: Migrations/index.md
           - Migrations/exports.md
@@ -121,8 +119,7 @@ nav:
           - Migrations/tests.md
           - Migrations/api.md
       - type_converters.md
-      - custom_row_classes.md
-      - Generation options:
+      - Code Generation:
           - Getting Started: generation_options/index.md
           - generation_options/modular.md
           - generation_options/in_other_builders.md
@@ -137,9 +134,6 @@ nav:
       - testing.md
       - faq.md
       - community_tools.md
-      - Internals: Internals/index.md
-      - migrating_to_drift.md
-      - upgrading.md
   - Examples:
       - Examples/index.md
       - Examples/flutter.md
@@ -150,6 +144,11 @@ nav:
   - Tools:
       - Tools/index.md
       - Tools/devtools.md
+  - Guides:
+      - guides/datetime-migrations.md
+      - upgrading.md
+      - migrating_to_drift.md
+      - Internals/index.md
   - Pub: https://pub.dev/packages/drift
 
 docs_dir: "../docs"

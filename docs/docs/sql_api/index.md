@@ -5,7 +5,7 @@ description: Define your database and queries in SQL without giving up on type-s
 
 ---
 
-Drift provides a [dart_api](../Dart%20API/tables.md) to define tables and
+Drift provides a [dart_api](../dart_api/tables.md) to define tables and
 to write SQL queries.
 Especially when you are already familiar with SQL, it might be easier to define your
 tables directly in SQL, with `CREATE TABLE` statements.
@@ -29,14 +29,14 @@ database class named `tables.drift`:
 
 !!! note "On that AS Category"
 
-    
+
     Drift will generate Dart classes for your tables, and the name of those
     classes is based on the table name. By default, drift just strips away
     the trailing `s` from your table. That works for most cases, but in some
     (like the `categories` table above), it doesn't. We'd like to have a
     `Category` class (and not `Categorie`) generated, so we tell drift to
     generate a different name with the `AS <name>` declaration at the end.
-    
+
 
 
 

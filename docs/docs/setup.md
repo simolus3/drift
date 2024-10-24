@@ -20,14 +20,11 @@ please share that with the community by [starting a discussion on GitHub](https:
 If you want to look at an example app for inspiration, a cross-platform Flutter app using drift is available
 [as part of the drift repository](https://github.com/simolus3/drift/tree/develop/examples/app).
 
-## The dependencies 
+## The dependencies
 
 First, let's add drift to your project's `pubspec.yaml`.
 In addition to the core drift dependencies (`drift` and `drift_dev` to generate code), we're also
 adding a package to open database on the respective platform.
-
-
-
 
 ===  "Flutter (sqlite3)"
 
@@ -57,7 +54,7 @@ adding a package to open database on the respective platform.
     supported.
     In Flutter's current native build system, drift unfortunately can't do that for you.
 
-===  "Flutter (sqlite3)"
+===  "Dart (sqlite3)"
 
     ```yaml
     dependencies:
@@ -109,9 +106,6 @@ adding a package to open database on the respective platform.
                   # Uncomment if you need to support both
     #              - sqlite
     ```
-
-
-
 
 
 ## Database class
