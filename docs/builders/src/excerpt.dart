@@ -78,10 +78,15 @@ class _Excerpt {
         final file = span.file;
 
         // First line, cut of `start column - stripIndent` chars at the start
-        buffer.write(file.getText(
-          span.start.offset + max(0, stripIndent - span.start.column),
-          min(file.getOffset(span.start.line + 1) - 1, span.end.offset),
-        ));
+        try {
+          buffer.write(file.getText(
+            span.start.offset + max(0, stripIndent - span.start.column),
+            min(file.getOffset(span.start.line + 1) - 1, span.end.offset),
+          ));
+        } catch (e) {
+          print("Failed to parse span: $name");
+          rethrow;
+        }
 
         for (var line = span.start.line + 1; line <= span.end.line; line++) {
           buffer.writeln();

@@ -21,23 +21,26 @@ part 'database.g.dart';
 
 // #docregion table
 class TodoItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 32)();
-  TextColumn get content => text().named('body')();
-  IntColumn get category =>
+  late final id = integer().autoIncrement()();
+  late final title = text().withLength(min: 6, max: 32)();
+  late final content = text().named('body')();
+  @ReferenceName("mainCategory")
+  late final category = integer().nullable().references(TodoCategory, #id)();
+  @ReferenceName("secondaryCategory")
+  late final secondaryCategory =
       integer().nullable().references(TodoCategory, #id)();
-  DateTimeColumn get createdAt => dateTime().nullable()();
+  late final createdAt = dateTime().nullable()();
 }
 
 class TodoCategory extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get description => text()();
+  late final id = integer().autoIncrement()();
+  late final description = text()();
 }
 
+// #enddocregion before_generation
 // #enddocregion table
 @DriftDatabase(tables: [TodoItems, TodoCategory])
 class AppDatabase extends _$AppDatabase {
-// #enddocregion before_generation
   // After generating code, this class needs to define a `schemaVersion` getter
   // and a constructor telling drift where the database should be stored.
   // These are described in the getting started guide: https://drift.simonbinder.eu/getting-started/#open
@@ -50,10 +53,7 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _openConnection() {
     throw 'should not show as snippet';
   }
-
-// #docregion before_generation
 }
-// #enddocregion before_generation
 
 class OpenFlutter {
 // #docregion flutter

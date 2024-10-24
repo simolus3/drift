@@ -47,7 +47,9 @@ def define_env(env):
     env.variables["versions"] = versions
 
     @env.macro
-    def load_snippet(snippet_name: str, *args: str, indent: int = 0) -> str:
+    def load_snippet(
+        snippet_name: str, *args: str, indent: int = 0, title: None | str = None
+    ) -> str:
         """
         This macro allows to load a snippets from source files and display them in the documentation.
 
@@ -74,21 +76,22 @@ def define_env(env):
         result: str
 
         if snippet.is_html:
-            result = html_codeblock(snippet.code)
+            result = html_codeblock(snippet.code, title)
         elif is_drift:
-            result = markdown_codeblock(snippet.code, "sql")
+            result = markdown_codeblock(snippet.code, "sql", title)
         else:
-            result = markdown_codeblock(snippet.code)
+            result = markdown_codeblock(snippet.code, title=title)
 
         # Add the indent to the snippet, besides for the first line which is already indented.
         return indent_text(result, indent * " ").lstrip()
 
 
-def markdown_codeblock(content: str, lang: str = "") -> str:
-    return f"```{lang}\n{content}\n```"
+def markdown_codeblock(content: str, lang: str = "", title: None | str = None) -> str:
+    title_tag = "" if title is None else f' title="{title}"'
+    return f"```{lang}{title_tag}\n{content}\n```"
 
 
-def html_codeblock(content: str) -> str:
+def html_codeblock(content: str, title: None | str = None) -> str:
     """
     Create the html for this code block.
     """
@@ -102,4 +105,7 @@ def html_codeblock(content: str) -> str:
     content = "\n".join(lines)
 
     result = f"""<pre id="{random_id}"><code>{content}</code></pre>"""
+    if title:
+        result = f"""<div class="highlight"><span class="filename">{title}</span>{result}</div>"""
+
     return result
