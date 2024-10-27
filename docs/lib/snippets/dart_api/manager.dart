@@ -230,22 +230,22 @@ extension ManagerExamples on AppDatabase {
 // #docregion manager_prefetch_references
   Future<void> referencesPrefetch() async {
     /// Get each todo, along with a its categories
-    final categoriesWithReferences = await managers.todoItems
+    final todosWithRefs = await managers.todoItems
         .withReferences(
           (prefetch) => prefetch(category: true),
         )
         .get();
-    for (final (todo, refs) in categoriesWithReferences) {
+    for (final (todo, refs) in todosWithRefs) {
       final category = refs.category?.prefetchedData?.firstOrNull;
       // No longer needed
       // final category = await refs.category?.getSingle();
     }
 
     /// This also works in the reverse
-    final todosWithRefs = await managers.todoCategory
+    final categoriesWithRefs = await managers.todoCategory
         .withReferences((prefetch) => prefetch(todoItemsRefs: true))
         .get();
-    for (final (category, refs) in todosWithRefs) {
+    for (final (category, refs) in categoriesWithRefs) {
       final todos = refs.todoItemsRefs.prefetchedData;
       // No longer needed
       //final todos = await refs.todoItemsRefs.get();
