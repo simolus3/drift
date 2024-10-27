@@ -642,7 +642,7 @@ class _ManagerCodeTemplates {
           return """
         $aliasedTableMethod
 
-        ${processedTableManagerTypedefName(relation.referencedTable)}? get ${relation.fieldName} {
+        ${processedTableManagerTypedefName(relation.referencedTable)}${relation.currentColumn.nullable ? "?" : ""} get ${relation.fieldName} {
           if (\$_item.${relation.currentColumn.nameInDart} == null) return null;
           final manager = ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(\$_db, \$_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}(\$_item.${relation.currentColumn.nameInDart}!));
           final item = \$_typedResult.readTableOrNull(_${relation.fieldName}Table(\$_db));

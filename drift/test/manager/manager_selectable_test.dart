@@ -36,9 +36,7 @@ void main() {
 
     final listings = await _listingsData.mapAsyncAndAwait(
       (p0) => db.managers.listing.createReturning((o) => o(
-          product: Value(p0.product),
-          store: Value(p0.store),
-          price: Value(p0.price))),
+          product: p0.product, store: Value(p0.store), price: Value(p0.price))),
     );
 
     final getAllStores = db.managers.store;

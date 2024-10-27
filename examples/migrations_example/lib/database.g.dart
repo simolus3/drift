@@ -1264,7 +1264,7 @@ final class $GroupsReferences
   static $UsersTable _ownerTable(_$Database db) =>
       db.users.createAlias($_aliasNameGenerator(db.groups.owner, db.users.id));
 
-  $$UsersTableProcessedTableManager? get owner {
+  $$UsersTableProcessedTableManager get owner {
     if ($_item.owner == null) return null;
     final manager = $$UsersTableTableManager($_db, $_db.users)
         .filter((f) => f.id($_item.owner!));

@@ -33,9 +33,7 @@ void main() {
 
     listings = await _listingsData.mapAsyncAndAwait(
       (p0) => db.managers.listing.createReturning((o) => o(
-          product: Value(p0.product),
-          store: Value(p0.store),
-          price: Value(p0.price))),
+          product: p0.product, store: Value(p0.store), price: Value(p0.price))),
     );
 
     final categories =
@@ -582,13 +580,12 @@ void main() {
     final listingsWithProducts = <ProductData, List<ListingData>>{};
     for (final i
         in await db.managers.listing.withReferences().get(distinct: true)) {
-      final product = await i.$2.product?.getSingle();
-      if (product != null) {
-        if (!listingsWithProducts.containsKey(product)) {
-          listingsWithProducts[product] = [i.$1];
-        } else {
-          listingsWithProducts[product]!.add(i.$1);
-        }
+      final product = await i.$2.product.getSingle();
+
+      if (!listingsWithProducts.containsKey(product)) {
+        listingsWithProducts[product] = [i.$1];
+      } else {
+        listingsWithProducts[product]!.add(i.$1);
       }
     }
     expect(listingsWithProducts.length, 9);
