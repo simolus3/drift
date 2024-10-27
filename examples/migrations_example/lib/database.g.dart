@@ -953,7 +953,6 @@ final class $$UsersTableReferences
       .createAlias($_aliasNameGenerator(db.users.nextUser, db.users.id));
 
   $$UsersTableProcessedTableManager? get nextUser {
-    if ($_item.nextUser == null) return null;
     final manager = $$UsersTableTableManager($_db, $_db.users)
         .filter((f) => f.id($_item.nextUser!));
     final item = $_typedResult.readTableOrNull(_nextUserTable($_db));
