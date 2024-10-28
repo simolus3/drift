@@ -3711,6 +3711,7 @@ final class $$TodosTableTableReferences
           $_aliasNameGenerator(db.todosTable.category, db.categories.id));
 
   $$CategoriesTableProcessedTableManager? get category {
+    if ($_item.category == null) return null;
     final manager = $$CategoriesTableTableManager($_db, $_db.categories)
         .filter((f) => f.id($_item.category!));
     final item = $_typedResult.readTableOrNull(_categoryTable($_db));
@@ -5115,6 +5116,7 @@ final class $$ProductTableReferences
           $_aliasNameGenerator(db.product.department, db.department.id));
 
   $$DepartmentTableProcessedTableManager? get department {
+    if ($_item.department == null) return null;
     final manager = $$DepartmentTableTableManager($_db, $_db.department)
         .filter((f) => f.id($_item.department!));
     final item = $_typedResult.readTableOrNull(_departmentTable($_db));
@@ -5613,7 +5615,6 @@ final class $$ListingTableReferences
       .createAlias($_aliasNameGenerator(db.listing.product, db.product.sku));
 
   $$ProductTableProcessedTableManager get product {
-    if ($_item.product == null) return null;
     final manager = $$ProductTableTableManager($_db, $_db.product)
         .filter((f) => f.sku($_item.product!));
     final item = $_typedResult.readTableOrNull(_productTable($_db));
@@ -5626,6 +5627,7 @@ final class $$ListingTableReferences
       db.store.createAlias($_aliasNameGenerator(db.listing.store, db.store.id));
 
   $$StoreTableProcessedTableManager? get store {
+    if ($_item.store == null) return null;
     final manager = $$StoreTableTableManager($_db, $_db.store)
         .filter((f) => f.id($_item.store!));
     final item = $_typedResult.readTableOrNull(_storeTable($_db));

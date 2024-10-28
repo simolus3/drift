@@ -986,6 +986,7 @@ final class $$TodoEntriesTableReferences
           $_aliasNameGenerator(db.todoEntries.category, db.categories.id));
 
   $$CategoriesTableProcessedTableManager? get category {
+    if ($_item.category == null) return null;
     final manager = $$CategoriesTableTableManager($_db, $_db.categories)
         .filter((f) => f.id($_item.category!));
     final item = $_typedResult.readTableOrNull(_categoryTable($_db));

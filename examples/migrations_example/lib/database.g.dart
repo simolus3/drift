@@ -953,6 +953,7 @@ final class $$UsersTableReferences
       .createAlias($_aliasNameGenerator(db.users.nextUser, db.users.id));
 
   $$UsersTableProcessedTableManager? get nextUser {
+    if ($_item.nextUser == null) return null;
     final manager = $$UsersTableTableManager($_db, $_db.users)
         .filter((f) => f.id($_item.nextUser!));
     final item = $_typedResult.readTableOrNull(_nextUserTable($_db));
@@ -1264,7 +1265,6 @@ final class $GroupsReferences
       db.users.createAlias($_aliasNameGenerator(db.groups.owner, db.users.id));
 
   $$UsersTableProcessedTableManager get owner {
-    if ($_item.owner == null) return null;
     final manager = $$UsersTableTableManager($_db, $_db.users)
         .filter((f) => f.id($_item.owner!));
     final item = $_typedResult.readTableOrNull(_ownerTable($_db));
