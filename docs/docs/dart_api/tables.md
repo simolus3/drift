@@ -381,7 +381,9 @@ By default, Drift translates Dart getter names to `snake_case` to determine the
 name of a column to use in SQL.
 For example, a column named `createdAt` in Dart would be named `created_at` in the
 `CREATE TABLE` statement issued by drift.
-By using `named()`, you can set the name of the column explicitly.
+By using `named()`, you can set the name of the column explicitly:
+
+{{ load_snippet('named_column','lib/snippets/dart_api/tables.dart.excerpt.json') }}
 
 ??? note "Only need alternative casing?"
     If you're only using `named()` to change the casing of the column used by
