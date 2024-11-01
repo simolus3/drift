@@ -1,6 +1,6 @@
 ---
 
-title: Queries
+title: Manager
 description: Use easier bindings for common queries.
 
 ---
