@@ -212,8 +212,8 @@ This short snippet shows how the database can be opened and how to run inserts a
 But drift can do so much more! These pages provide more information useful when getting
 started with drift:
 
-- [Dart tables](dart_api/tables.md): This page describes how to write your own
-  Dart tables and which classes drift generates for them.
+- [Dart tables](dart_api/tables.md): This page describes how to define your own tables in Dart.
+  For an overview of the classes drift generates for tables, check out [row classes](dart_api/rows.md).
 - For new drift users or users not familiar with SQL, the [manager](dart_api/manager.md) APIs
   for tables allows writing most queries with a syntax you're likely familiar with from ORMs or other
   packages.

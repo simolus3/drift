@@ -10,6 +10,9 @@ As drift is a library built for relational databases, tables are the fundamental
 building blocks for organizing your database.
 They encapsulate a specific entry or concept, defining the structure of your
 stored data.
+For each table, drift generates a type-safe [row class](rows.md), allowing queries
+and updates to be written as high-level Dart.
+This page lists options available when declaring tables and columns.
 
 ## Defining tables
 
@@ -17,7 +20,7 @@ All tables defined with Drift share a common structure to define columns:
 
 - Each table is defined as a Dart class that extends `Table`.
 - In table classes, columns are defined as `late final` fields.
-- The start of each field (like `integer()`) determines [the type](#column-types) of the table.
+- The start of each field (like `integer()`) determines [the type](#column-types) of the column.
 
 Let's take another look at the tables defined in the [getting started]('getting-started.md')
 example:

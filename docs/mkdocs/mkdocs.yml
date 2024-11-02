@@ -94,7 +94,7 @@ nav:
   - Documentation:
       - Getting Started: setup.md
       - dart_api/tables.md
-      - dart_api/dataclass.md
+      - dart_api/rows.md
       - dart_api/manager.md
       - dart_api/transactions.md
       - Core API:

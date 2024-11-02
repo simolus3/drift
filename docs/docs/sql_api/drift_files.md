@@ -373,7 +373,7 @@ Then, you can instruct drift to use that class as a row class as follows:
 
 When using custom row classes defined in another Dart file, you also need to import that file into the file where you define
 the database.
-For more general information on this feature, please check [this page](../dart_api/dataclass.md#custom-dataclass).
+For more general information on this feature, please check [this page](../dart_api/rows.md#custom-dataclass).
 
 Custom row classes can be applied to `SELECT` queries defined a `.drift` file. To use a custom row class, the `WITH` syntax
 can be added after the name of the query.
@@ -393,7 +393,7 @@ Internally, drift will then generate query code to map the row to an instance of
 `UserWithFriends` class.
 
 For a more complete overview of using custom row classes for queries, see
-[the section for queries](../dart_api/dataclass.md#custom-dataclass-for-queries).
+[the section for queries](../dart_api/rows.md#custom-dataclass-for-queries).
 
 ### Dart documentation comments
 
