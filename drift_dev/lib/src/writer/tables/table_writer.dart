@@ -40,6 +40,10 @@ abstract class TableOrViewWriter {
   }
 
   void writeConvertersAsStaticFields() {
+    if (emitter.writer.generationOptions.avoidUserCode) {
+      return;
+    }
+
     for (final converter in tableOrView.appliedConverters) {
       if (converter.owningColumn?.owner != tableOrView) continue;
 
@@ -257,7 +261,8 @@ abstract class TableOrViewWriter {
           emitter.dartCode(column.defaultArgument!);
     }
 
-    if (column.clientDefaultCode != null) {
+    if (column.clientDefaultCode != null &&
+        !emitter.writer.generationOptions.avoidUserCode) {
       additionalParams['clientDefault'] =
           emitter.dartCode(column.clientDefaultCode!);
     }
@@ -287,7 +292,7 @@ abstract class TableOrViewWriter {
     expressionBuffer.write(')');
 
     final converter = column.typeConverter;
-    if (converter != null) {
+    if (converter != null && !emitter.writer.generationOptions.avoidUserCode) {
       // Generate a GeneratedColumnWithTypeConverter instance, as it has
       // additional methods to check for equality against a mapped value.
       final mappedType = emitter.dartCode(emitter.writer.dartType(column));

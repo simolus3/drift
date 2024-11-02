@@ -104,14 +104,14 @@ class DatabaseWriter {
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
-          returnType: 'Trigger',
+          returnType: dbScope.drift('Trigger'),
           code: createTrigger(dbScope, entity),
         );
       } else if (entity is DriftIndex) {
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
-          returnType: 'Index',
+          returnType: dbScope.drift('Index'),
           code: createIndex(scope, entity),
         );
       } else if (entity is DriftView) {

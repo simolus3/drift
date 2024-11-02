@@ -139,6 +139,14 @@ enum MissingBrowserFeature {
   /// To enable this feature in most browsers, you need to serve your app with
   /// two [special headers](https://web.dev/coop-coep/).
   sharedArrayBuffers,
+
+  /// An error occurred when trying to connect to a shared or dedicated drift
+  /// worker.
+  ///
+  /// This either indicates a bug in drift (with the worker crashing) or an
+  /// issue in your setup (for instance, this could occur when the drift worker
+  /// file is missing from your `web/` folder).
+  workerError,
 }
 
 /// Information about an existing web database, consisting of its

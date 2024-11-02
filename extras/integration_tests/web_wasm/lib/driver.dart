@@ -112,9 +112,12 @@ class DriftWebDriver {
         Set<WasmStorageImplementation> storages,
         Set<MissingBrowserFeature> missingFeatures,
         List<ExistingDatabase> existing,
-      })> probeImplementations() async {
-    final rawResult = await driver
-        .executeAsync('detectImplementations("", arguments[0])', []);
+      })> probeImplementations({bool withWrongWorkerUri = false}) async {
+    final method = withWrongWorkerUri
+        ? 'detectImplementationsWrongUri'
+        : 'detectImplementations';
+    final rawResult =
+        await driver.executeAsync('$method("", arguments[0])', []);
     final result = json.decode(rawResult);
 
     return (

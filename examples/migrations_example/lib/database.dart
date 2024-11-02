@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift/internal/versioned_schema.dart';
-import 'package:drift_dev/api/migrations.dart';
+import 'package:drift_dev/api/migrations_native.dart';
 import 'package:migrations_example/database.steps.dart';
 
 import 'tables.dart';

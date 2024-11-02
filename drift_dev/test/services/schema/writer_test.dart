@@ -105,11 +105,12 @@ class Database {}
     final db = file.fileAnalysis!.resolvedDatabases.values.single;
 
     final schemaJson =
-        SchemaWriter(db.availableElements, options: options).createSchemaJson();
+        await SchemaWriter(db.availableElements, options: options)
+            .createSchemaJson();
 
     expect(schemaJson, json.decode(expected));
 
-    final schemaWithOptions = SchemaWriter(
+    final schemaWithOptions = await SchemaWriter(
       db.availableElements,
       options: const DriftOptions.defaults(storeDateTimeValuesAsText: true),
     ).createSchemaJson();
@@ -150,6 +151,54 @@ class Database {}
     DatabaseWriter(input, writer.child()).write();
     final generated = writer.writeGenerated();
     expect(generated, contains('settings.length() > 10'));
+  });
+
+  test('can export Dart-defined views', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class MyTable extends Table {
+  IntColumn get id => integer()();
+}
+
+class MyView extends View {
+  MyTable get a;
+  MyTable get b;
+  MyTable get c;
+
+  @override
+  Query as() => select([
+    a.id,
+    b.id,
+    c.id,
+  ]).from(a).join([
+    innerJoin(b, b.id.equalsExp(a.id)),
+    innerJoin(c, c.id.equalsExp(a.id)),
+  ]);
+}
+
+@DriftDatabase(tables: [MyTable], views: [MyView])
+class Database {}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
+
+    final schemaJson =
+        await SchemaWriter(db.availableElements).createSchemaJson();
+    final serializedView = (schemaJson['entities'] as List)[1];
+
+    expect(serializedView['data'], {
+      'name': 'my_view',
+      'sql':
+          'CREATE VIEW IF NOT EXISTS "my_view" ("id", "id1", "id2") AS SELECT "t0"."id" AS "id", "t1"."id" AS "id1", "t2"."id" AS "id2" FROM "my_table" "t0" INNER JOIN "my_table" "t1" ON "t1"."id" = "t0"."id" INNER JOIN "my_table" "t2" ON "t2"."id" = "t0"."id"',
+      'dart_info_name': r'$MyViewView',
+      'columns': anything,
+    });
   });
 }
 

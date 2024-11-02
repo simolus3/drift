@@ -66,8 +66,12 @@ abstract class _NodeOrWriter {
   }
 
   AnnotatedDartCode generatedElement(DriftElement element, String dartName) {
-    return AnnotatedDartCode.build(
-        (b) => b.addGeneratedElement(element, dartName));
+    if (writer.generationOptions.isModular) {
+      return AnnotatedDartCode.build(
+          (b) => b.addGeneratedElement(element, dartName));
+    } else {
+      return AnnotatedDartCode([DartLexeme(dartName)]);
+    }
   }
 
   AnnotatedDartCode modularAccessor(Uri driftFile) {
@@ -518,6 +522,12 @@ class GenerationOptions {
   /// for each database.
   final bool isModular;
 
+  /// Avoid pulling in user-code like type converters or `clientDefault`s.
+  ///
+  /// This is used internally when generating a `SchemaIsolate` used to export
+  /// DDL statements.
+  final bool avoidUserCode;
+
   final ImportManager imports;
 
   const GenerationOptions({
@@ -526,6 +536,7 @@ class GenerationOptions {
     this.writeDataClasses = true,
     this.writeCompanions = true,
     this.isModular = false,
+    this.avoidUserCode = false,
   });
 
   /// Whether, instead of generating the full database code, we're only

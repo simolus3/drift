@@ -4,7 +4,7 @@ library;
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/internal/versioned_schema.dart';
 import 'package:drift/native.dart';
-import 'package:drift_dev/api/migrations.dart';
+import 'package:drift_dev/api/migrations_native.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 

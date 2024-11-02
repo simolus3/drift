@@ -8,6 +8,7 @@ import '../../analysis/options.dart';
 import '../../analysis/resolver/shared/data_class.dart';
 import '../../analysis/results/results.dart';
 import '../../writer/utils/column_constraints.dart';
+import 'schema_isolate.dart';
 
 class _ExportedSchemaVersion {
   static final Version current = _supportDialectSpecificConstraints;
@@ -35,7 +36,38 @@ class SchemaWriter {
     return _entityIds.putIfAbsent(entity, () => _maxId++);
   }
 
-  Map<String, Object?> createSchemaJson() {
+  /// Exports analyzed drift elements into a serialized format that can be used
+  /// to re-construct the current database schema later.
+  ///
+  /// Some drift elements, in particular Dart-defined views, are partially
+  /// defined at runtime and require running code. To infer the schema of these
+  /// elements, this method runs drift's code generator and spawns up a short-
+  /// lived isolate to collect the actual `CREATE` statements generated at
+  /// runtime.
+  Future<Map<String, Object?>> createSchemaJson() async {
+    final requiresRuntimeInformation = <DriftSchemaElement>[];
+    for (final element in elements) {
+      if (element is DriftView) {
+        if (element.source is! SqlViewSource) {
+          requiresRuntimeInformation.add(element);
+        }
+      }
+    }
+
+    final knownStatements = <String, List<(SqlDialect, String)>>{};
+    if (requiresRuntimeInformation.isNotEmpty) {
+      final statements = await SchemaIsolate.collectStatements(
+        allElements: elements,
+        elementFilter: requiresRuntimeInformation,
+      );
+
+      for (final statement in statements) {
+        knownStatements
+            .putIfAbsent(statement.elementName, () => [])
+            .add((statement.dialect, statement.createStatement));
+      }
+    }
+
     return {
       '_meta': {
         'description': 'This file contains a serialized version of schema '
@@ -43,7 +75,10 @@ class SchemaWriter {
         'version': _ExportedSchemaVersion.current.toString(),
       },
       'options': _serializeOptions(),
-      'entities': elements.map(_entityToJson).whereType<Map>().toList(),
+      'entities': elements
+          .map((e) => _entityToJson(e, knownStatements))
+          .whereType<Map>()
+          .toList(),
     };
   }
 
@@ -55,7 +90,8 @@ class SchemaWriter {
     return asJson;
   }
 
-  Map<String, Object?>? _entityToJson(DriftElement entity) {
+  Map<String, Object?>? _entityToJson(DriftElement entity,
+      Map<String, List<(SqlDialect, String)>> knownStatements) {
     String? type;
     Map<String, Object?>? data;
 
@@ -85,17 +121,24 @@ class SchemaWriter {
         ],
       };
     } else if (entity is DriftView) {
-      final source = entity.source;
-      if (source is! SqlViewSource) {
-        throw UnsupportedError(
-            'Exporting Dart-defined views into a schema is not '
-            'currently supported');
+      String? sql;
+      if (knownStatements[entity.schemaName] case final known?) {
+        sql = known.firstWhere((e) => e.$1 == SqlDialect.sqlite).$2;
+      } else {
+        final source = entity.source;
+        if (source is! SqlViewSource) {
+          throw UnsupportedError(
+              'Exporting Dart-defined views into a schema is not '
+              'currently supported');
+        }
+
+        sql = source.sqlCreateViewStmt;
       }
 
       type = 'view';
       data = {
         'name': entity.schemaName,
-        'sql': source.sqlCreateViewStmt,
+        'sql': sql,
         'dart_info_name': entity.entityInfoName,
         'columns': [for (final column in entity.columns) _columnData(column)],
       };

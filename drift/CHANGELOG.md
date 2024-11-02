@@ -2,6 +2,7 @@
 
 - Add `sqliteAny()` method to tables to declare `ANY` columns.
 - Add missing parentheses around adjacent expressions of the same precedence.
+- WASM: Report worker failures to make them easier to diagnose.
 
 ## 2.21.0
 

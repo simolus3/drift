@@ -56,6 +56,13 @@ extension ExportSchema on DriftDevCli {
     final result = input.fileAnalysis!;
     final databaseElement = databases.single;
     final db = result.resolvedDatabases[databaseElement.id]!;
+
+    final otherSources =
+        db.availableElements.map((e) => e.id.libraryUri).toSet();
+    for (final other in otherSources) {
+      await driver.driver.fullyAnalyze(other);
+    }
+
     return (
       elements: db.availableElements,
       schemaVersion: databaseElement.schemaVersion,

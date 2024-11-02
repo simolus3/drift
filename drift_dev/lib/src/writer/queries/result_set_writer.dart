@@ -80,8 +80,9 @@ class ResultSetWriter {
       into.write('$resultClassName({');
     }
 
+    final allRequired = scope.options.rowClassConstructorAllRequired;
     for (final column in fields) {
-      if (nonNullableFields.contains(column.lexeme)) {
+      if (allRequired || nonNullableFields.contains(column.lexeme)) {
         into.write('required ');
       }
       into.write('this.${column.lexeme},');

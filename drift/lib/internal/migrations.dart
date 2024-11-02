@@ -12,8 +12,8 @@ import 'package:drift/drift.dart';
 /// The implementation of this class is generated through the `drift_dev`
 /// CLI tool.
 /// Typically, you don't use this class directly but rather through the
-/// `SchemaVerifier` class  part of `package:drift_dev/api/migrations.dart`
-/// library.
+/// `SchemaVerifier` class  part of `package:drift_dev/api/migrations_native.dart`
+/// (or it's web pendant) library.
 abstract class SchemaInstantiationHelper {
   /// Creates a database with the state of an old schema [version] and using the
   /// given underlying [db] connection.

@@ -60,6 +60,9 @@ At the moment, drift supports these options:
   data classes.
 - `mutable_classes` (defaults to `false`): The fields generated in generated data, companion and result set classes are final
   by default. You can make them mutable by setting `mutable_classes: true`.
+- `row_class_constructor_all_required` (defaults to `false`): All parameters for generated row classes
+  (both for tables and custom queries) are `required`, regardless of whether they are nullable.
+  Since these classes always represent a full row, the parameters can be made `required` to reflect that.
 - `raw_result_set_data`: The generator will expose the underlying `QueryRow` for generated result set classes
 - `apply_converters_on_variables` (defaults to `true`): Applies type converters to variables in compiled statements.
 - `generate_values_in_copy_with` (defaults to `true`): Generates a `Value<T?>` instead of `T?` for nullable columns in `copyWith`. This allows to set

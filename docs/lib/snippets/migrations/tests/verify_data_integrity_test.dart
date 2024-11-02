@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:drift_dev/api/migrations.dart';
+import 'package:drift_dev/api/migrations_native.dart';
 
 import '../migrations.dart';
 import 'generated_migrations/schema.dart';

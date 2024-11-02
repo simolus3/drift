@@ -1,6 +1,6 @@
 // #docregion setup
 import 'package:test/test.dart';
-import 'package:drift_dev/api/migrations.dart';
+import 'package:drift_dev/api/migrations_native.dart';
 
 // The generated directory from before.
 import 'generated_migrations/schema.dart';

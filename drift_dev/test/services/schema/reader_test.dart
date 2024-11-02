@@ -99,7 +99,7 @@ Future<List<DriftElement>> _analyzeAndSerialize(String source) async {
   final file = await state.analyze('package:a/a.drift');
 
   final writer = SchemaWriter(file.analyzedElements.toList());
-  final schemaJson = json.decode(json.encode(writer.createSchemaJson()));
+  final schemaJson = json.decode(json.encode(await writer.createSchemaJson()));
 
   final deserialized =
       SchemaReader.readJson(schemaJson as Map<String, Object?>);

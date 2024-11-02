@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:drift_dev/api/migrations.dart';
-import 'package:drift_dev/src/services/schema/verifier_impl.dart';
+import 'package:drift_dev/api/migrations_native.dart';
+import 'package:drift_dev/src/services/schema/verifier_common.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -177,9 +177,10 @@ class FileAnalyzer {
               typeMapping: typeMapping,
               requiredVariables: options.variables);
 
-          result.resolvedQueries[element.id] =
+          final analyzed = result.resolvedQueries[element.id] =
               await analyzer.analyze(element, sourceForCustomName: stmt.as)
                 ..declaredInDriftFile = true;
+          element.resolved = analyzed;
 
           for (final error in analyzer.lints) {
             result.analysisErrors.add(DriftAnalysisError.fromSqlError(error));

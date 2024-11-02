@@ -62,12 +62,11 @@ If it sees anything unexpected, it will throw a `SchemaMismatch` exception to fa
 
 !!! note "Writing testable migrations"
 
-    
     To test migrations _towards_ an old schema version (e.g. from `v1` to `v2` if your current version is `v3`),
     your `onUpgrade` handler must be capable of upgrading to a version older than the current `schemaVersion`.
     For this, check the `to` parameter of the `onUpgrade` callback to run a different migration if necessary.
     Or, use [step-by-step migrations](step_by_step.md) which do this automatically.
-    
+
 
 ## Verifying data integrity
 
@@ -96,9 +95,21 @@ This can then be used to manually create and verify data at a specific version:
 ## Verifying a database schema at runtime
 
 Instead (or in addition to) [writing tests](#verifying-a-database-schema-at-runtime) to ensure your migrations work as they should,
-you can use a new API from `drift_dev` 1.5.0 to verify the current schema without any additional setup.
+`drift_dev` provides an API  to verify the current schema at runtime without any additional setup on native platforms.
 
-{{ load_snippet('(full)','lib/snippets/migrations/runtime_verification.dart.excerpt.json') }}
+
+=== "Native"
+
+    {{ load_snippet('native','lib/snippets/migrations/runtime_verification.dart.excerpt.json', indent=4) }}
+
+
+=== "Web (since drift 2.22)"
+
+    Starting from drift version 2.22, this functionality is also available on the web. Since the method internally
+    opens another database to create the expected schema, the web variant needs to be configured explicitly:
+
+    {{ load_snippet('web','lib/snippets/migrations/runtime_verification_web.dart.excerpt.json', indent=4) }}
+
 
 When you use `validateDatabaseSchema`, drift will transparently:
 
@@ -110,3 +121,9 @@ When you use `validateDatabaseSchema`, drift will transparently:
 When a mismatch is found, an exception with a message explaining exactly where another value was expected will
 be thrown.
 This allows you to find issues with your schema migrations quickly.
+
+!!! tip "Also available in DevTools"
+
+    Ensuring that the current schema matches the expected state is also a feature available in Drift's
+    [DevTools extension]({ '../Tools/devtools.md' }).
+    The extensions also allow resetting a database, which might be useful when working on or debugging migrations.

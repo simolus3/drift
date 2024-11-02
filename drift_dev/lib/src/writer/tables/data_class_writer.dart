@@ -95,6 +95,7 @@ class DataClassWriter {
         customParent?.isConst != false) {
       _buffer.write('const ');
     }
+    final allRequired = scope.options.rowClassConstructorAllRequired;
     _emitter
       ..write(table.nameOfRowClass)
       ..write('({')
@@ -103,7 +104,7 @@ class DataClassWriter {
             ? column.typeConverter!.mapsToNullableDart(column.nullable)
             : column.nullable;
 
-        if (nullableDartType) {
+        if (nullableDartType && !allRequired) {
           return 'this.${column.nameInDart}';
         } else {
           return 'required this.${column.nameInDart}';

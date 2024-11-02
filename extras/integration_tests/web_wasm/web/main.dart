@@ -12,7 +12,7 @@ import 'package:sqlite3/wasm.dart';
 
 const dbName = 'drift_test';
 final sqlite3WasmUri = Uri.parse('sqlite3.wasm');
-final driftWorkerUri = Uri.parse('worker.dart.js');
+var driftWorkerUri = Uri.parse('worker.dart.js');
 
 TestDatabase? openedDatabase;
 StreamQueue<void>? tableUpdates;
@@ -22,6 +22,10 @@ int schemaVersion = 1;
 
 void main() {
   _addCallbackForWebDriver('detectImplementations', _detectImplementations);
+  _addCallbackForWebDriver('detectImplementationsWrongUri', (arg) async {
+    driftWorkerUri = Uri.parse('wrong.js');
+    return _detectImplementations(arg);
+  });
   _addCallbackForWebDriver('open', _open);
   _addCallbackForWebDriver('close', (arg) async {
     await openedDatabase?.close();

@@ -81,6 +81,9 @@ class DriftOptions {
   @JsonKey(name: 'mutable_classes', defaultValue: false)
   final bool generateMutableClasses;
 
+  @JsonKey(name: 'row_class_constructor_all_required', defaultValue: false)
+  final bool rowClassConstructorAllRequired;
+
   /// Whether generated query classes should inherit from the `CustomResultSet`
   /// and expose their underlying raw `row`.
   @JsonKey(name: 'raw_result_set_data', defaultValue: false)
@@ -144,6 +147,7 @@ class DriftOptions {
     this.generateManager = true,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
+    this.rowClassConstructorAllRequired = false,
     this.rawResultSetData = false,
     this.applyConvertersOnVariables = true,
     this.generateValuesInCopyWith = true,
@@ -176,6 +180,7 @@ class DriftOptions {
     required this.generateManager,
     required this.dataClassToCompanions,
     required this.generateMutableClasses,
+    required this.rowClassConstructorAllRequired,
     required this.rawResultSetData,
     required this.applyConvertersOnVariables,
     required this.generateValuesInCopyWith,

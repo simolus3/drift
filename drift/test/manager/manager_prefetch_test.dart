@@ -126,9 +126,7 @@ void main() {
     await db.managers.listing.bulkCreate(
       (o) {
         return listingsData.map((e) => o(
-            product: Value(e.product),
-            store: Value(e.store),
-            price: Value(e.price)));
+            product: e.product, store: Value(e.store), price: Value(e.price)));
       },
     );
 
@@ -163,9 +161,7 @@ void main() {
     await db.managers.listing.bulkCreate(
       (o) {
         return listingsData.map((e) => o(
-            product: Value(e.product),
-            store: Value(e.store),
-            price: Value(e.price)));
+            product: e.product, store: Value(e.store), price: Value(e.price)));
       },
     );
 

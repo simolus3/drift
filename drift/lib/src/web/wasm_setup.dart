@@ -93,12 +93,14 @@ class WasmDatabaseOpener {
     } on Object {
       _sharedWorker?.close();
       _sharedWorker = null;
+      missingFeatures.add(MissingBrowserFeature.workerError);
     }
     try {
       await _probeDedicated();
     } on Object {
       _dedicatedWorker?.close();
       _dedicatedWorker = null;
+      missingFeatures.add(MissingBrowserFeature.workerError);
     }
 
     return _ProbeResult(availableImplementations, existingDatabases.toList(),

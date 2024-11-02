@@ -33,7 +33,12 @@ drift_dev () {
 run_webdev(){
     echo "Running webdev..."
     # The below command will compile the dart code in `/web` to js & run build_runner
-    dart run webdev build -o web:build/web -- --delete-conflicting-outputs --release
+    if [ $1 -eq 1 ]; then
+        echo "Running dev build"
+        dart run webdev build -o web:build/web -- --delete-conflicting-outputs
+    else
+        dart run webdev build -o web:build/web -- --delete-conflicting-outputs --release
+    fi
     if [ $? -ne 0 ]; then
         echo "Failed to build the project"
         exit 1
@@ -131,15 +136,7 @@ elif [ $arg1 == "serve" ]; then
     echo "Serving the project..."
 
     drift_dev
-
-    dart run build_runner build --delete-conflicting-outputs
-    if [ $? -ne 0 ]; then
-        echo "Failed to build the project"
-        exit 1
-    fi
-
-    run_webdev
-
+    run_webdev 1
     build_container
 
     serve_mkdocs &
@@ -155,6 +152,3 @@ else
     echo "Invalid argument. Please use 'build' or 'serve'"
     exit 1
 fi
-
-
-

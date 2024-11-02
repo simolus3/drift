@@ -100,6 +100,14 @@ void main() {
         expect(result.storages, expectedImplementations);
       });
 
+      test('reports worker error for wrong URI', () async {
+        final result =
+            await driver.probeImplementations(withWrongWorkerUri: true);
+
+        expect(result.missingFeatures,
+            contains(MissingBrowserFeature.workerError));
+      });
+
       test('via regular open', () async {
         await driver.openDatabase();
         expect(await driver.amountOfRows, 0);

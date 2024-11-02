@@ -1,5 +1,6 @@
+// dart format width=80
 // GENERATED CODE, DO NOT EDIT BY HAND.
-//@dart=2.12
+// ignore_for_file: type=lint
 import 'package:drift/drift.dart';
 
 class Categories extends Table with TableInfo {
@@ -23,9 +24,10 @@ class Categories extends Table with TableInfo {
   @override
   List<GeneratedColumn> get $columns => [id, name, color];
   @override
-  String get aliasedName => _alias ?? 'categories';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'categories';
+  String get actualTableName => $name;
+  static const String $name = 'categories';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -66,9 +68,10 @@ class TodoEntries extends Table with TableInfo {
   @override
   List<GeneratedColumn> get $columns => [id, description, category, dueDate];
   @override
-  String get aliasedName => _alias ?? 'todo_entries';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'todo_entries';
+  String get actualTableName => $name;
+  static const String $name = 'todo_entries';
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -95,9 +98,10 @@ class TextEntries extends Table with TableInfo, VirtualTableInfo {
   @override
   List<GeneratedColumn> get $columns => [description];
   @override
-  String get aliasedName => _alias ?? 'text_entries';
+  String get aliasedName => _alias ?? actualTableName;
   @override
-  String get actualTableName => 'text_entries';
+  String get actualTableName => $name;
+  static const String $name = 'text_entries';
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
   @override
@@ -117,7 +121,6 @@ class TextEntries extends Table with TableInfo, VirtualTableInfo {
 
 class DatabaseAtV3 extends GeneratedDatabase {
   DatabaseAtV3(QueryExecutor e) : super(e);
-  DatabaseAtV3.connect(DatabaseConnection c) : super.connect(c);
   late final Categories categories = Categories(this);
   late final TodoEntries todoEntries = TodoEntries(this);
   late final TextEntries textEntries = TextEntries(this);

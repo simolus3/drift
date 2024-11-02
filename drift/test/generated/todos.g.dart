@@ -2871,9 +2871,9 @@ class $ListingTable extends Listing with TableInfo<$ListingTable, ListingData> {
       const VerificationMeta('product');
   @override
   late final GeneratedColumn<String> product = GeneratedColumn<String>(
-      'product', aliasedName, true,
+      'product', aliasedName, false,
       type: DriftSqlType.string,
-      requiredDuringInsert: false,
+      requiredDuringInsert: true,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES product (sku)'));
   static const VerificationMeta _storeMeta = const VerificationMeta('store');
@@ -2907,6 +2907,8 @@ class $ListingTable extends Listing with TableInfo<$ListingTable, ListingData> {
     if (data.containsKey('product')) {
       context.handle(_productMeta,
           product.isAcceptableOrUnknown(data['product']!, _productMeta));
+    } else if (isInserting) {
+      context.missing(_productMeta);
     }
     if (data.containsKey('store')) {
       context.handle(
@@ -2928,7 +2930,7 @@ class $ListingTable extends Listing with TableInfo<$ListingTable, ListingData> {
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       product: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}product']),
+          .read(DriftSqlType.string, data['${effectivePrefix}product'])!,
       store: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}store']),
       price: attachedDatabase.typeMapping
@@ -2944,17 +2946,16 @@ class $ListingTable extends Listing with TableInfo<$ListingTable, ListingData> {
 
 class ListingData extends DataClass implements Insertable<ListingData> {
   final int id;
-  final String? product;
+  final String product;
   final int? store;
   final double? price;
-  const ListingData({required this.id, this.product, this.store, this.price});
+  const ListingData(
+      {required this.id, required this.product, this.store, this.price});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    if (!nullToAbsent || product != null) {
-      map['product'] = Variable<String>(product);
-    }
+    map['product'] = Variable<String>(product);
     if (!nullToAbsent || store != null) {
       map['store'] = Variable<int>(store);
     }
@@ -2967,9 +2968,7 @@ class ListingData extends DataClass implements Insertable<ListingData> {
   ListingCompanion toCompanion(bool nullToAbsent) {
     return ListingCompanion(
       id: Value(id),
-      product: product == null && nullToAbsent
-          ? const Value.absent()
-          : Value(product),
+      product: Value(product),
       store:
           store == null && nullToAbsent ? const Value.absent() : Value(store),
       price:
@@ -2982,7 +2981,7 @@ class ListingData extends DataClass implements Insertable<ListingData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ListingData(
       id: serializer.fromJson<int>(json['id']),
-      product: serializer.fromJson<String?>(json['product']),
+      product: serializer.fromJson<String>(json['product']),
       store: serializer.fromJson<int?>(json['store']),
       price: serializer.fromJson<double?>(json['price']),
     );
@@ -2997,7 +2996,7 @@ class ListingData extends DataClass implements Insertable<ListingData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'product': serializer.toJson<String?>(product),
+      'product': serializer.toJson<String>(product),
       'store': serializer.toJson<int?>(store),
       'price': serializer.toJson<double?>(price),
     };
@@ -3005,12 +3004,12 @@ class ListingData extends DataClass implements Insertable<ListingData> {
 
   ListingData copyWith(
           {int? id,
-          Value<String?> product = const Value.absent(),
+          String? product,
           Value<int?> store = const Value.absent(),
           Value<double?> price = const Value.absent()}) =>
       ListingData(
         id: id ?? this.id,
-        product: product.present ? product.value : this.product,
+        product: product ?? this.product,
         store: store.present ? store.value : this.store,
         price: price.present ? price.value : this.price,
       );
@@ -3048,7 +3047,7 @@ class ListingData extends DataClass implements Insertable<ListingData> {
 
 class ListingCompanion extends UpdateCompanion<ListingData> {
   final Value<int> id;
-  final Value<String?> product;
+  final Value<String> product;
   final Value<int?> store;
   final Value<double?> price;
   const ListingCompanion({
@@ -3059,10 +3058,10 @@ class ListingCompanion extends UpdateCompanion<ListingData> {
   });
   ListingCompanion.insert({
     this.id = const Value.absent(),
-    this.product = const Value.absent(),
+    required String product,
     this.store = const Value.absent(),
     this.price = const Value.absent(),
-  });
+  }) : product = Value(product);
   static Insertable<ListingData> custom({
     Expression<int>? id,
     Expression<String>? product,
@@ -3079,7 +3078,7 @@ class ListingCompanion extends UpdateCompanion<ListingData> {
 
   ListingCompanion copyWith(
       {Value<int>? id,
-      Value<String?>? product,
+      Value<String>? product,
       Value<int?>? store,
       Value<double?>? price}) {
     return ListingCompanion(
@@ -5597,13 +5596,13 @@ typedef $$StoreTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function({bool listings})>;
 typedef $$ListingTableCreateCompanionBuilder = ListingCompanion Function({
   Value<int> id,
-  Value<String?> product,
+  required String product,
   Value<int?> store,
   Value<double?> price,
 });
 typedef $$ListingTableUpdateCompanionBuilder = ListingCompanion Function({
   Value<int> id,
-  Value<String?> product,
+  Value<String> product,
   Value<int?> store,
   Value<double?> price,
 });
@@ -5615,8 +5614,7 @@ final class $$ListingTableReferences
   static $ProductTable _productTable(_$TodoDb db) => db.product
       .createAlias($_aliasNameGenerator(db.listing.product, db.product.sku));
 
-  $$ProductTableProcessedTableManager? get product {
-    if ($_item.product == null) return null;
+  $$ProductTableProcessedTableManager get product {
     final manager = $$ProductTableTableManager($_db, $_db.product)
         .filter((f) => f.sku($_item.product!));
     final item = $_typedResult.readTableOrNull(_productTable($_db));
@@ -5829,7 +5827,7 @@ class $$ListingTableTableManager extends RootTableManager<
               $$ListingTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
-            Value<String?> product = const Value.absent(),
+            Value<String> product = const Value.absent(),
             Value<int?> store = const Value.absent(),
             Value<double?> price = const Value.absent(),
           }) =>
@@ -5841,7 +5839,7 @@ class $$ListingTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
-            Value<String?> product = const Value.absent(),
+            required String product,
             Value<int?> store = const Value.absent(),
             Value<double?> price = const Value.absent(),
           }) =>
