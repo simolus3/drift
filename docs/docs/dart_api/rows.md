@@ -130,9 +130,9 @@ This class is introduced for two reasons:
 To solve this problem, companions represent partial rows by using Drift's `Value` class.
 `Value`s store a value (which can be nullable) or explicitly indicate that a value is _absent_:
 
-<div class="annotate" markdown>
+
 {{ load_snippet('generated-value','lib/snippets/dart_api/dataclass.dart.excerpt.json') }}
-</div>
+
 1. Since the `id` is `autoIncrement()`, the database will pick a value for us and no value
    is provided explicitly. Since `Value.absent()` is also the default, this could be omitted.
 2. To simplify the common scenarios of inserts, drift generates a `.insert()` constructor

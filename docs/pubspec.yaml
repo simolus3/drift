@@ -44,7 +44,7 @@ dev_dependencies:
   webdev: ^3.6.0
   code_snippets:
     hosted: https://pub-simonbinder-eu.fsn1.your-objectstorage.com
-    version: ^0.0.14
+    version: ^0.0.15
   sass_builder: ^2.2.1
 
 dependency_overrides:

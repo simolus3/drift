@@ -153,7 +153,7 @@ targets:
 global_options:
   ":api_index":
     options:
-      packages: ['drift', 'drift_dev', 'sqlite3', 'sqlite3_flutter_libs', 'sqlcipher_flutter_libs']
+      packages: ['drift', 'drift_dev', 'drift_flutter', 'sqlite3', 'sqlite3_flutter_libs', 'sqlcipher_flutter_libs']
 
 additional_public_assets:
   - "docs/**"

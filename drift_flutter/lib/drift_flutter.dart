@@ -1,3 +1,5 @@
+library drift_flutter;
+
 export 'src/connect.dart';
 
 import 'package:drift/drift.dart';

@@ -25,9 +25,8 @@ All tables defined with Drift share a common structure to define columns:
 Let's take another look at the tables defined in the [getting started]('getting-started.md')
 example:
 
-<div class="annotate" markdown>
 {{ load_snippet('simple_schema','lib/snippets/dart_api/tables.dart.excerpt.json') }}
-</div>
+
 1. Each column must end with an extra pair of parentheses.
     Drift will warn you if you forget them.
     ```dart
