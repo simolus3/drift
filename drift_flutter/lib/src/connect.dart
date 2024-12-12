@@ -5,6 +5,7 @@ export 'unsupported.dart'
 export 'package:drift/src/web/wasm_setup/types.dart';
 // ignore: implementation_imports
 import 'package:drift/src/web/wasm_setup/types.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Web-specific options used to open drift databases.
 ///
@@ -67,10 +68,41 @@ final class DriftNativeOptions {
   /// a custom database path in another directory.
   final Future<String> Function()? databasePath;
 
+  /// The directory where the Drift database files are stored.
+  ///
+  /// If a custom [databasePath] is provided, this option must not be used.
+  ///
+  /// If no custom [databasePath] is provided and this option is not used, the
+  /// default directory is [DriftDatabaseDirectory.applicationDocumentsDirectory].
+  final DriftDatabaseDirectory? directory;
+
   /// Create drift options effective when opening drift databases on native
   /// platforms.
   const DriftNativeOptions({
     this.shareAcrossIsolates = false,
     this.databasePath,
-  });
+    this.directory,
+  }) : assert(databasePath == null || directory == null,
+            'Cannot specify both a custom database path and a directory');
+}
+
+/// Enum representing the different directories where a Drift database can be stored.
+enum DriftDatabaseDirectory {
+  /// A directory where the application may place application-specific
+  /// cache files.
+  ///
+  /// See [getApplicationCacheDirectory] for more information.
+  applicationCacheDirectory,
+
+  /// A directory where the application may place data that is
+  /// user-generated, or that cannot otherwise be recreated by your application.
+  ///
+  /// See [getApplicationDocumentsDirectory] for more information.
+  applicationDocumentsDirectory,
+
+  /// A directory where the application may place application support
+  /// files.
+  ///
+  /// See [getApplicationSupportDirectory] for more information.
+  applicationSupportDirectory;
 }

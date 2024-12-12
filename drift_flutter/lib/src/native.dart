@@ -34,7 +34,15 @@ QueryExecutor driftDatabase({
     if (native?.databasePath case final lookupPath?) {
       return File(await lookupPath());
     } else {
-      final dbFolder = await getApplicationDocumentsDirectory();
+      final dbFolder = switch (native?.directory) {
+        DriftDatabaseDirectory.applicationCacheDirectory =>
+          await getApplicationCacheDirectory(),
+        DriftDatabaseDirectory.applicationSupportDirectory =>
+          await getApplicationSupportDirectory(),
+        DriftDatabaseDirectory.applicationDocumentsDirectory ||
+        null =>
+          await getApplicationDocumentsDirectory(),
+      };
       return File(p.join(dbFolder.path, '$name.sqlite'));
     }
   }

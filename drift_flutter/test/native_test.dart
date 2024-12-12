@@ -28,6 +28,8 @@ void main() {
     return switch (call.method) {
       'getTemporaryDirectory' => d.sandbox,
       'getApplicationDocumentsDirectory' => d.path('applications'),
+      'getApplicationCacheDirectory' => d.path('cache'),
+      'getApplicationSupportDirectory' => d.path('support'),
       _ => throw UnsupportedError('Unexpected path provider call: $call')
     };
   });
@@ -41,12 +43,40 @@ void main() {
     await database.close();
   });
 
-  test('uses correct database path', () async {
+  test('uses correct database path - default', () async {
     final database = SimpleDatabase(driftDatabase(name: 'database'));
     await database.customSelect('SELECT 1').get();
 
     expect(sqlite3.tempDirectory, d.sandbox);
     await d.dir('applications', [
+      d.FileDescriptor.binaryMatcher('database.sqlite', anything),
+    ]).validate();
+    await database.close();
+  });
+
+  test('uses correct database path - support', () async {
+    final database = SimpleDatabase(driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+            directory: DriftDatabaseDirectory.applicationSupportDirectory)));
+    await database.customSelect('SELECT 1').get();
+
+    expect(sqlite3.tempDirectory, d.sandbox);
+    await d.dir('support', [
+      d.FileDescriptor.binaryMatcher('database.sqlite', anything),
+    ]).validate();
+    await database.close();
+  });
+
+  test('uses correct database path - cache', () async {
+    final database = SimpleDatabase(driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+            directory: DriftDatabaseDirectory.applicationCacheDirectory)));
+    await database.customSelect('SELECT 1').get();
+
+    expect(sqlite3.tempDirectory, d.sandbox);
+    await d.dir('cache', [
       d.FileDescriptor.binaryMatcher('database.sqlite', anything),
     ]).validate();
     await database.close();
@@ -66,6 +96,14 @@ void main() {
       d.FileDescriptor.binaryMatcher('custom_file', anything),
     ]).validate();
     await database.close();
+  });
+
+  test('throws when passed custom dir and preset dir', () async {
+    expect(
+        () => DriftNativeOptions(
+            databasePath: () async => "",
+            directory: DriftDatabaseDirectory.applicationCacheDirectory),
+        throwsAssertionError);
   });
 
   group('shared between isolates', () {
