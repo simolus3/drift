@@ -52,6 +52,8 @@ dependencies:
   dart_style: "^2.3.7"
   source_gen: ">=0.9.4 <2.0.0"
   string_scanner: ^1.1.1
+
+  # Linting
   custom_lint_builder: ^0.6.7
 
 dev_dependencies:
