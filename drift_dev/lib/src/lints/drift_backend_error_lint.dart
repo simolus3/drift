@@ -8,6 +8,7 @@ import 'package:analyzer/error/error.dart' hide LintCode;
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 import 'package:drift_dev/src/analysis/backend.dart';
+import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:logging/logging.dart';
 
@@ -17,13 +18,17 @@ final columnBuilderChecker =
     TypeChecker.fromName('DriftDatabase', packageName: 'drift');
 
 class DriftBuildErrors extends DartLintRule {
-  DriftBuildErrors() : super(code: _code);
+  DriftBuildErrors() : super(code: _errorCode);
 
-  static const _code = LintCode(
+  static const _errorCode = LintCode(
     name: 'drift_build_errors',
     problemMessage: '{0}',
     errorSeverity: ErrorSeverity.ERROR,
   );
+  LintCode get _warningCode => LintCode(
+      name: _errorCode.name,
+      problemMessage: _errorCode.problemMessage,
+      errorSeverity: ErrorSeverity.WARNING);
 
   @override
   void run(CustomLintResolver resolver, ErrorReporter reporter,
@@ -38,8 +43,8 @@ class DriftBuildErrors extends DartLintRule {
         // ignore: deprecated_member_use
         reporter.reportErrorForSpan(
             error.level == DriftAnalysisErrorLevel.warning
-                ? _codeAsWarning
-                : _code,
+                ? _warningCode
+                : _errorCode,
             span,
             [error.message.trim()]);
       }
