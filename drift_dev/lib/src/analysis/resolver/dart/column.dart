@@ -509,6 +509,7 @@ class ColumnParser {
         customConstraints: foundCustomConstraint,
         referenceName: _readReferenceName(element),
       ),
+      element: element,
       referencesColumnInSameTable: referencesColumnInSameTable,
     );
   }
@@ -661,6 +662,7 @@ class ColumnParser {
 
 class PendingColumnInformation {
   final DriftColumn column;
+  final Element element;
 
   /// If the returned column references another column in the same table, its
   /// [ForeignKeyReference] is still unresolved when the local column resolver
@@ -670,5 +672,6 @@ class PendingColumnInformation {
   /// this column in that case.
   final String? referencesColumnInSameTable;
 
-  PendingColumnInformation(this.column, {this.referencesColumnInSameTable});
+  PendingColumnInformation(this.column,
+      {this.referencesColumnInSameTable, required this.element});
 }
