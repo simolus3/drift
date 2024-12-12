@@ -1,18 +1,7 @@
 import 'package:custom_lint_builder/custom_lint_builder.dart';
-import 'package:drift_dev/src/lints/drift_errors.dart';
-import 'package:drift_dev/src/lints/unawaited_futures_in_transaction.dart';
+import 'package:drift_dev/src/lints/custom_lint_plugin.dart';
 
-import 'src/lints/column_builder_on_table.dart';
-
+/// This function is automaticly recognized by custom_lint to include this drift_dev package as a linter
 PluginBase createPlugin() {
-  return _DriftLinter();
-}
-
-class _DriftLinter extends PluginBase {
-  @override
-  List<LintRule> getLintRules(CustomLintConfigs configs) => [
-        ColumnBuilderOnTable(),
-        UnawaitedFuturesInTransaction(),
-        DriftBuildErrors()
-      ];
+  return DriftLinter();
 }
