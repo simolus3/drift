@@ -36,6 +36,7 @@ class TestDatabase extends _$TestDatabase {
         await into(users).insert(UsersCompanion.insert(name: 'name'));
       },
     );
+    // expect_lint: non_null_insert_with_ignore
     await into(users).insertReturning(UsersCompanion.insert(name: 'name'),
         mode: InsertMode.insertOrIgnore);
     // expect_lint: non_null_insert_with_ignore
