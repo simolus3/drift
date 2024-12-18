@@ -15,19 +15,19 @@ funding:
   - https://github.com/sponsors/simolus3
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
   charcode: ^1.3.1
-  collection: ^1.14.0
+  collection: ^1.18.0
   recase: ^4.1.0
-  meta: ^1.5.0
-  path: ^1.8.0
-  json_annotation: ^4.8.0
-  stream_transform: ^2.0.0
+  meta: ^1.12.0
+  path: ^1.9.0
+  json_annotation: ^4.9.0
+  stream_transform: ^2.1.0
 
   # CLI
-  args: ^2.0.0
+  args: ^2.4.0
   logging: ^1.2.0
   cli_util: ^0.4.0
   yaml: ^3.1.0
@@ -41,26 +41,26 @@ dependencies:
   # Dart analysis
   analyzer: ">=6.10.0 <8.0.0"
   analyzer_plugin: ">=0.11.0 <0.13.0"
-  source_span: ^1.8.0
-  package_config: ^2.0.0
-  pub_semver: ^2.0.0
+  source_span: ^1.10.0
+  package_config: ^2.1.0
+  pub_semver: ^2.1.0
 
   # Build system
-  build: ^2.0.0
+  build: ^2.4.0
   build_resolvers: ^2.4.0
-  build_config: ^1.0.0
+  build_config: ^1.1.0
   dart_style: ">=2.3.7 <4.0.0"
   source_gen: ">=1.5.0 <3.0.0"
-  string_scanner: ^1.1.1
+  string_scanner: ^1.2.0
 
 dev_dependencies:
-  lints: ^5.1.0
+  lints: ^5.0.0
   checked_yaml: ^2.0.3
   test: ^1.25.0
   test_descriptor: ^2.0.1
-  build_runner: ^2.0.0
-  build_test: ^2.0.0
-  json_serializable: ^6.2.0
+  build_runner: ^2.4.0
+  build_test: ^2.2.0
+  json_serializable: ^6.8.0
   crypto: ^3.0.3
   glob: ^2.1.2
 
