@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 
 part 'manager.g.dart';
 
+// #docregion tables
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 6, max: 32)();
@@ -18,6 +19,7 @@ class TodoCategory extends Table {
   TextColumn get description => text()();
   IntColumn get user => integer().nullable().references(Users, #id)();
 }
+// #enddocregion tables
 
 // #docregion user_group_tables
 class Users extends Table {

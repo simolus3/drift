@@ -5,23 +5,15 @@ import 'package:drift/drift.dart';
 part 'tables.g.dart';
 
 // #docregion simple_schema
-class TodoCategories extends Table {
-  IntColumn get id => integer().autoIncrement()(); // (1)!
-  TextColumn get description => text()();
-}
-
 class TodoItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer().autoIncrement()(); // (1)!
   TextColumn get title => text()();
   DateTimeColumn get createdAt => dateTime().nullable()(); // (2)!
-
-  @ReferenceName('categories')
-  IntColumn get category => integer().references(TodoCategories, #id)();
 }
 // #enddocregion simple_schema
 
 // #docregion simple_schema_db
-@DriftDatabase(tables: [TodoItems, TodoCategories])
+@DriftDatabase(tables: [TodoItems])
 class Database extends _$Database {
   Database(super.e);
 
@@ -87,9 +79,6 @@ class Boxes extends Table {
   late final area = integer().generatedAs(length * width, stored: true)();
 }
 // #enddocregion generated_column_stored
-
-// #docregion pk-example
-// #enddocregion pk-example
 
 // #docregion custom_table_name
 class Products extends Table {

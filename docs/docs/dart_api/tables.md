@@ -22,7 +22,7 @@ All tables defined with Drift share a common structure to define columns:
 - In table classes, columns are defined as `late final` fields.
 - The start of each field (like `integer()`) determines [the type](#column-types) of the column.
 
-Let's take another look at the tables defined in the [getting started]('getting-started.md')
+Let's take another look at the table defined in the [getting started]('getting-started.md')
 example:
 
 {{ load_snippet('simple_schema','lib/snippets/dart_api/tables.dart.excerpt.json') }}
@@ -35,20 +35,14 @@ example:
     ```
 2. Columns are non-nullable by default. Using `nullable()` allows storing `null` values.
 
-This defines two tables: `todo_items` with columns `id`, `title`, `category`, and `created_at`; and `todo_category` with columns `id` and `description`. 
+This defines two tables: `todo_items` with columns `id`, `title`, `category`, and `created_at`; and `todo_category` with columns `id` and `description`.
 
-The SQL equivalent of these tables would be:
+The SQL equivalent of this table would be:
 
 ```sql
-CREATE TABLE todo_categories (
-  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  description TEXT NOT NULL
-);
-
 CREATE TABLE todo_items (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   title TEXT,
-  category INTEGER NOT NULL REFERENCES todo_category(id),
   created_at INTEGER -- (1)!
 );
 ```
@@ -58,7 +52,7 @@ CREATE TABLE todo_items (
 
 Some technical notes:
 
-- The name of the table, `todo_items` is automatically derived from the class name. This can be customized by overriding the `tableName` getter. See [Table Names](#table-name) for more information.
+- The name of the table, `todo_items` is automatically derived from the class name. This can be customized by overriding the `tableName` getter. See [Table Names](#changing-sql-names) for more information.
 - The `id` column is automatically set as the primary key because it is an auto-incrementing integer. See [Primary Keys](#primary-keys) for more information.
 
 ## Add to database

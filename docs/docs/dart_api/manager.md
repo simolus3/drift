@@ -5,15 +5,22 @@ description: Use easier bindings for common queries.
 
 ---
 
+Drift provides two ways to write queries in Dart: A [query builder](select.md) that
+closely mirrors SQL in Dart, and a new generated manager interface, described on this page.
+The manager interfaces are designed to make the most common queries much easier to write.
+In particular, they should be helpful if you're coming from another persistence library to drift or
+don't have much SQL experience.
 
-The examples on this page use the database from the [setup](../setup.md)
-instructions.
+The examples on this page use a database schema similar to the one from the [setup](../setup.md) instructions:
 
-When manager generation is enabled (default), drift will generate a manager for each table in the database.  
-A collection of these managers are accessed by a getter `managers` on the database class.
-Each table will have a manager generated for it unless it uses a custom row class.
+{{ load_snippet('tables','lib/snippets/dart_api/manager.dart.excerpt.json') }}
 
 ## Select
+
+When manager generation is enabled (which it is by default), drift will generate a manager
+for each table in the database.
+A collection of these managers are accessed by a getter `managers` on the database class.
+Each table will have a manager generated for it unless it uses a custom row class.
 
 The manager simplifies the process of retrieving rows from a table. Use it to read rows from the table or watch
 for changes.

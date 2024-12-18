@@ -24,18 +24,11 @@ class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 6, max: 32)();
   TextColumn get content => text().named('body')();
-  IntColumn get category =>
-      integer().nullable().references(TodoCategory, #id)();
   DateTimeColumn get createdAt => dateTime().nullable()();
 }
 
-class TodoCategory extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get description => text()();
-}
-
 // #enddocregion table
-@DriftDatabase(tables: [TodoItems, TodoCategory])
+@DriftDatabase(tables: [TodoItems])
 class AppDatabase extends _$AppDatabase {
 // #enddocregion before_generation
   // After generating code, this class needs to define a `schemaVersion` getter

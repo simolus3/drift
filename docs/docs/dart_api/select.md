@@ -41,8 +41,8 @@ queries, but also explains how to use joins and subqueries for advanced queries.
 You can create `select` statements by starting them with `select(tableName)`, where the
 table name
 is a field generated for you by drift. Each table used in a database will have a matching field
-to run queries against. Any query can be run once with `get()` or be turned into an auto-updating
-stream using `watch()`.
+to run queries against. Any query can be run once with `get()`
+[or be turned into an auto-updating stream using `watch()`](streams.md).
 
 ### Where
 You can apply filters to a query by calling `where()`. The where method takes a function that

@@ -115,8 +115,8 @@ somewhere under `lib/`. Of course, you can put this class in any Dart file you l
 
 To make the database useful, we'll also add a simple table to it. This table, `TodoItems`, can be used
 to store todo items for a todo list app.
-Everything there is to know about defining tables in Dart is described on the [Dart tables]('dart_api/tables.md') page.
-If you prefer using SQL to define your tables, drift supports that too! You can read all about the [sql_api](sql_api/index.md) here.
+Everything there is to know about defining tables in Dart is described on the [Dart tables](dart_api/tables.md) page.
+If you prefer using SQL to define your tables, drift supports that too! You can read all about that [here](sql_api/index.md).
 
 For now, populate the contents of `database.dart` with these tables which could form the persistence
 layer of a simple todolist application:
