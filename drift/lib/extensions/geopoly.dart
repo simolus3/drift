@@ -1,7 +1,6 @@
 /// https://www.sqlite.org/geopoly.html
 /// The Geopoly Interface To The SQLite R*Tree Module
-
-library geopoly;
+library;
 
 import 'dart:typed_data';
 

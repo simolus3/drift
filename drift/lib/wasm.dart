@@ -4,7 +4,7 @@
 /// them, see https://drift.simonbinder.eu/web/.
 /// Be aware that additional setup is necessary to use drift on the web, this
 /// is explained in the documentation.
-library drift.wasm;
+library;
 
 import 'dart:async';
 import 'dart:js_interop';

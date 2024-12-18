@@ -1,7 +1,7 @@
 /// Contains utils to run drift databases in a background isolate.
 ///
 /// Please note that this API is not supported on the web.
-library isolate;
+library;
 
 import 'dart:async';
 import 'dart:isolate';

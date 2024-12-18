@@ -9,7 +9,7 @@
   '`package:drift/wasm.dart` and is in a deprecated bugfix-only mode. '
   'Please consider migrating to the new web APIS: https://drift.simonbinder.eu/web',
 )
-library drift.web.workers;
+library;
 
 import 'dart:async';
 import 'dart:js_interop';
@@ -124,9 +124,9 @@ void driftWorkerMain(QueryExecutor Function() openConnection) {
   final self = globalContext;
   _RunningDriftWorker worker;
 
-  if (self is SharedWorkerGlobalScope) {
+  if (self.isA<SharedWorkerGlobalScope>()) {
     worker = _RunningDriftWorker(true, openConnection);
-  } else if (self is DedicatedWorkerGlobalScope) {
+  } else if (self.isA<DedicatedWorkerGlobalScope>()) {
     worker = _RunningDriftWorker(false, openConnection);
   } else {
     throw StateError('This worker is neither a shared nor a dedicated worker');
@@ -307,14 +307,14 @@ class _RunningDriftWorker {
   }
 
   /// Handle an incoming message for a dedicated worker.
-  void _handleMessage(Object? message) async {
+  void _handleMessage(JSAny? message) async {
     assert(!isShared);
     assert(_knownMode != DriftWorkerMode.shared);
 
-    if (message is MessagePort) {
+    if (message.isA<MessagePort>()) {
       final server = _startedServer ??
           _establishModeAndLaunchServer(DriftWorkerMode.dedicated);
-      server.serve(message.channel());
+      server.serve((message as MessagePort).channel());
     } else {
       throw StateError('Received unknown message $message, expected a port');
     }

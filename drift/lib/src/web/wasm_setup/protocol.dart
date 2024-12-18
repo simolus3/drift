@@ -176,7 +176,7 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
       existingDatabases = EncodeLocations.readFromJs(asList[5] as JSArray);
 
       if (asList.length > 6) {
-        version = ProtocolVersion.negotiate(asList[6] as int);
+        version = ProtocolVersion.negotiate((asList[6] as JSNumber).toDartInt);
       }
     } else {
       existingDatabases = const [];
@@ -227,6 +227,7 @@ final class WorkerError extends WasmInitializationMessage implements Exception {
   WorkerError(this.error);
 
   factory WorkerError.fromJsPayload(JSObject payload) {
+    // ignore: invalid_runtime_check_with_js_interop_types
     return WorkerError((payload as JSString).toDart);
   }
 

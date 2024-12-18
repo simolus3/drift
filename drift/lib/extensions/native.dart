@@ -1,6 +1,6 @@
 /// High-level bindings to mathematical functions that are only available in
 /// a `NativeDatabase`.
-library drift.ffi.functions;
+library;
 
 import 'dart:math';
 

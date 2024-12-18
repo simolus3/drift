@@ -2,7 +2,7 @@
 /// and can thus be part of the core drift package.
 ///
 /// [verifying migrations](https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-migrations)
-library drift.internal.migrations;
+library;
 
 import 'package:drift/drift.dart';
 

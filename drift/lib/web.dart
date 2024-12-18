@@ -7,7 +7,7 @@
   '`package:drift/wasm.dart` and is in a deprecated bugfix-only mode. '
   'Please consider migrating to the new web APIS: https://drift.simonbinder.eu/web',
 )
-library drift.web;
+library;
 
 export 'src/web/sql_js.dart';
 export 'src/web/storage.dart' hide CustomSchemaVersionSave;

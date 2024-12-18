@@ -73,7 +73,7 @@ Future<void> _downloadAndCompile(String name, SqliteVersion version,
     await response.stream.pipe(File(sqlite3Zip).openWrite());
 
     final inputStream = InputFileStream(sqlite3Zip);
-    final archive = ZipDecoder().decodeBuffer(inputStream);
+    final archive = ZipDecoder().decodeStream(inputStream);
 
     for (final file in archive.files) {
       if (file.isFile && file.name == 'sqlite3.dll') {

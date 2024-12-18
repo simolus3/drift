@@ -1,6 +1,6 @@
 /// Utility classes to implement custom database backends that work together
 /// with drift.
-library backends;
+library;
 
 export 'src/runtime/executor/executor.dart';
 export 'src/runtime/executor/helpers/delegates.dart';

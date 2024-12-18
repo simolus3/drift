@@ -48,7 +48,7 @@
 /// contains another implementation based on web workers that might be of
 /// interest.
 @experimental
-library drift.remote;
+library;
 
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';

@@ -434,14 +434,14 @@ class MultiTypedResultEntry<T> {
   const MultiTypedResultEntry({required this.key, required this.value});
 }
 
-/// This function is used to fetch referenced data for a List<TypedResults>>.
+/// This function is used to fetch referenced data for a `List<TypedResults>`.
 ///
 /// Here is an example.
 /// Let's say we wanted to get all the groups, with their users.
 /// We would need to:
 ///   1) Then run a 2nd query to get all the users who are in the groups. (Users who arent any groups will be ignored)
 ///   2) Split the users into groups
-///   3) Return these users as a List<List<User>> (The first list is the groups, the 2nd list is the users in the group), along with the referenced table
+///   3) Return these users as a `List<List<User>>` (The first list is the groups, the 2nd list is the users in the group), along with the referenced table
 ///
 /// Manually this would look like:
 ///

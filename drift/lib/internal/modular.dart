@@ -3,7 +3,7 @@
 ///
 /// This library is not part of drift's public API and should not be imported
 /// manually.
-library drift.internal.modules;
+library;
 
 import 'package:drift/drift.dart';
 

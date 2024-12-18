@@ -5,7 +5,7 @@
 /// When using this library, it is recommended to use a `NativeDatabase` with
 /// a dependency on `sqlite3_flutter_libs`.
 @experimental
-library json1;
+library;
 
 import 'package:meta/meta.dart';
 import '../drift.dart';

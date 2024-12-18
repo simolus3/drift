@@ -1,4 +1,4 @@
-library drift;
+library;
 
 import 'package:collection/collection.dart';
 

@@ -109,8 +109,8 @@ mixin TableInfo<TableDsl extends Table, D> on Table
 /// an `CREATE VIRTUAL TABLE STATEMENT`.
 mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
   /// Returns the module name and the arguments that were used in the statement
-  /// that created this table. In that sense, `CREATE VIRTUAL TABLE <name>
-  /// USING <moduleAndArgs>;` can be used to create this table in sql.
+  /// that created this table. In that sense, `CREATE VIRTUAL TABLE <name> USING <moduleAndArgs>;`
+  /// can be used to create this table in sql.
   String get moduleAndArgs;
 }
 
