@@ -228,9 +228,11 @@ class TestBackend extends DriftBackend {
         content: fileContents.toString(), modificationStamp: 1);
 
     try {
-      final result = await analysisContext.currentSession.getUnitElement(path);
+      final result =
+          await analysisContext.currentSession.getResolvedLibrary(path);
 
-      if (result is UnitElementResult) {
+      if (result is ResolvedLibraryResult) {
+        // ignore: deprecated_member_use
         final lookup = result.element.scope.lookup(reference);
         return lookup.getter;
       }
