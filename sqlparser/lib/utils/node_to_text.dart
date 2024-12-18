@@ -1,7 +1,7 @@
 /// Library to convert AST nodes back to text.
 ///
 /// See the [NodeToText] extension for details.
-library utils.node_to_text;
+library;
 
 import 'package:charcode/charcode.dart';
 import 'package:sqlparser/sqlparser.dart';

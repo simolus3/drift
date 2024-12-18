@@ -71,26 +71,6 @@ used to construct common queries.
 
 ## Workflows
 
-### Debugging the analyzer plugin
-
-We have an analyzer plugin to support IDE features like auto-complete, navigation, syntax
-highlighting, outline and folding to users. Normally, analyzer plugins are discovered and
-loaded by the analysis server, which makes them very annoying to debug.
-
-However, we found a way to run the plugin in isolation, which makes debugging much easier.
-Note: Port 9999 has to be free for this to work, but you can change the
-port defined in the two files below.
-
-To debug the plugin, do the following:
-1. In `drift/tools/analyzer_plugin/bin/plugin.dart`, set `useDebuggingVariant` to true.
-2. Run `drift_dev/tool/debug_plugin.dart` as a regular Dart VM app
-   (this can be debugged when started from an IDE).
-3. (optional) Make sure the analysis server picks up the updated version of the analysis
-   plugin by deleting the `~/.dartServer/.plugin_manager` folder.
-4. Open a project that uses the plugin, for instance via `code extras/plugin_example`.
-
-More details are available under `extras/plugin_example/README.md`.
-
 ### Debugging the builder
 
 To debug the builder, run `pub run build_runner generate-build-script` in the `drift`

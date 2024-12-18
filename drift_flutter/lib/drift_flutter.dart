@@ -1,4 +1,6 @@
-library drift_flutter;
+/// This library provides [driftDatabase], a function suitable for opening
+/// drift databases on Flutter apps.
+library;
 
 export 'src/connect.dart';
 

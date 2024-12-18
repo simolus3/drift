@@ -2,7 +2,7 @@
 ///
 /// For more information on how to use this package, see
 /// https://drift.simonbinder.eu/docs/platforms/postgres/.
-library drift.postgres;
+library;
 
 import 'package:drift/drift.dart';
 import 'package:postgres/postgres.dart' as pg;

@@ -1,5 +1,3 @@
-library utils.find_referenced_tables;
-
 import 'package:sqlparser/sqlparser.dart';
 
 import 'node_to_text.dart';

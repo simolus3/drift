@@ -495,7 +495,7 @@ class Parser {
     return _or();
   }
 
-  /// Parses an expression of the form a <T> b, where <T> is in [types] and
+  /// Parses an expression of the form `a <T> b`, where `<T>` is in [types] and
   /// both a and b are expressions with a higher precedence parsed from
   /// [higherPrecedence].
   Expression _parseSimpleBinary(
@@ -2234,8 +2234,8 @@ class Parser {
       ..strict = strict;
   }
 
-  /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE
-  /// <name>` tokens have already been read.
+  /// Parses a `CREATE VIRTUAL TABLE` statement, after the `CREATE VIRTUAL TABLE <name>`
+  /// tokens have already been read.
   CreateVirtualTableStatement _virtualTable(
       Token first, bool ifNotExists, IdentifierToken nameToken) {
     _consume(TokenType.using, 'Expected USING for virtual table declaration');

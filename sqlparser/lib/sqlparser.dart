@@ -1,5 +1,5 @@
 /// An sql parser and analyzer for Dart.
-library sqlparser;
+library;
 
 export 'src/analysis/analysis.dart';
 export 'src/analysis/types/join_analysis.dart';
