@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:build/build.dart' as build;
+import 'package:build/build.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';
 import 'package:drift_dev/src/analysis/results/element.dart';
 import 'package:logging/logging.dart';
-import 'package:build/build.dart';
-import 'package:build/build.dart' as build;
 
 import '../../analysis/backend.dart';
 import '../../analysis/driver/driver.dart';
@@ -109,9 +109,10 @@ class DriftBuildBackend extends DriftBackend {
     final tempDart = original.changeExtension('.expr.temp.dart');
 
     if (await _buildStep.canRead(tempDart)) {
-      final library = await _buildStep.resolver.libraryFor(tempDart);
-      // ignore: deprecated_member_use
-      return library.scope.lookup(reference).getter;
+      final compilationUnit =
+          await _buildStep.resolver.compilationUnitFor(tempDart);
+
+      return compilationUnit.declaredElement?.scope.lookup(reference).getter;
     } else {
       // If there's no temporary file whose imports we can use, then that means
       // that there aren't any Dart imports in [context] at all. So we just need

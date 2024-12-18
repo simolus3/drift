@@ -142,9 +142,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
   Future<Set<DriftColumn>?> _readPrimaryKey(
       ClassElement element, List<DriftColumn> columns) async {
-    final primaryKeyGetter =
-        // ignore: deprecated_member_use
-        element.lookUpGetter('primaryKey', element.library);
+    final primaryKeyGetter = element.augmented
+        .lookUpGetter(name: 'primaryKey', library: element.library);
 
     if (primaryKeyGetter == null || primaryKeyGetter.isFromDefaultTable) {
       // resolved primaryKey is from the Table dsl superclass. That means there
@@ -190,8 +189,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
   Future<List<Set<DriftColumn>>?> _readUniqueKeys(
       ClassElement element, List<DriftColumn> columns) async {
-    // ignore: deprecated_member_use
-    final uniqueKeyGetter = element.lookUpGetter('uniqueKeys', element.library);
+    final uniqueKeyGetter = element.augmented
+        .lookUpGetter(name: 'uniqueKeys', library: element.library);
 
     if (uniqueKeyGetter == null || uniqueKeyGetter.isFromDefaultTable) {
       // resolved uniqueKeys is from the Table dsl superclass. That means there
@@ -248,8 +247,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   }
 
   Future<bool?> _booleanGetter(ClassElement element, String name) async {
-    // ignore: deprecated_member_use
-    final getter = element.lookUpGetter(name, element.library);
+    final getter =
+        element.augmented.lookUpGetter(name: name, library: element.library);
 
     // Was the getter overridden at all?
     if (getter == null || getter.isFromDefaultTable) return null;
@@ -326,8 +325,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     final fields = columnNames.map((name) {
       final getter = element.getGetter(name) ??
           element.lookUpInheritedConcreteGetter(name, element.library);
-      // ignore: deprecated_member_use
-      return getter!.variable;
+
+      return getter!.variable2!;
     }).toList();
     final all = {for (final entry in fields) entry.getter ?? entry: entry.name};
 
@@ -366,9 +365,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
   Future<List<String>> _readCustomConstraints(Set<DriftElement> references,
       List<DriftColumn> localColumns, ClassElement element) async {
-    final customConstraints =
-        // ignore: deprecated_member_use
-        element.lookUpGetter('customConstraints', element.library);
+    final customConstraints = element.augmented
+        .lookUpGetter(name: 'customConstraints', library: element.library);
 
     if (customConstraints == null || customConstraints.isFromDefaultTable) {
       // Does not define custom constraints

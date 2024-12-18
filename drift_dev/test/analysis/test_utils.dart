@@ -14,8 +14,8 @@ import 'package:drift_dev/src/analysis/backend.dart';
 import 'package:drift_dev/src/analysis/driver/driver.dart';
 import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';
-import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analysis/options.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:logging/logging.dart';
 import 'package:package_config/package_config.dart';
@@ -228,11 +228,9 @@ class TestBackend extends DriftBackend {
         content: fileContents.toString(), modificationStamp: 1);
 
     try {
-      final result =
-          await analysisContext.currentSession.getResolvedLibrary(path);
+      final result = await analysisContext.currentSession.getUnitElement(path);
 
-      if (result is ResolvedLibraryResult) {
-        // ignore: deprecated_member_use
+      if (result is UnitElementResult) {
         final lookup = result.element.scope.lookup(reference);
         return lookup.getter;
       }

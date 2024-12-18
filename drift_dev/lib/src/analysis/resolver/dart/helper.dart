@@ -191,8 +191,7 @@ bool isFromDrift(DartType type) {
 
 extension IsFromDrift on Element {
   bool get isFromDefaultTable {
-    // ignore: deprecated_member_use
-    final parent = enclosingElement;
+    final parent = enclosingElement3;
 
     return parent is ClassElement &&
         parent.name == 'Table' &&

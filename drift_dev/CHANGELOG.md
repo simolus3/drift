@@ -2,6 +2,7 @@
 
 - Fix custom companion names on `@DataClassName` not being recognized.
 - Improve schema exports to resolve default values instead of embedding their source.
+- Update dependencies to support latest `dart_style` version.
 
 ## 2.22.1
 

@@ -188,8 +188,7 @@ class DartAccessorResolver
 
   Future<int?> _readSchemaVersion() async {
     final element =
-        // ignore: deprecated_member_use
-        discovered.dartElement.thisType.getGetter('schemaVersion')?.variable;
+        discovered.dartElement.thisType.getGetter('schemaVersion')?.variable2;
     if (element == null) return null;
 
     try {

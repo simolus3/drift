@@ -13,8 +13,7 @@ class ImportManagerForPartFiles implements ImportManager {
   final Map<String, Map<String, Element>> _namedImports = {};
 
   ImportManagerForPartFiles(this.mainLibrary) {
-    // ignore: deprecated_member_use
-    for (final import in mainLibrary.libraryImports) {
+    for (final import in mainLibrary.definingCompilationUnit.libraryImports) {
       if (import.prefix case ImportElementPrefix prefix) {
         // Not using import.namespace here because that contains the prefix
         // everywhere. We want to look up the prefix from the raw name.
