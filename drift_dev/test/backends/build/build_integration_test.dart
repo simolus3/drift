@@ -28,9 +28,11 @@ CREATE INDEX b_idx /* comment should be stripped */ ON b (foo, upper(foo));
     });
 
     checkOutputs({
-      'a|lib/main.drift.dart': decodedMatches(contains(
-          'late final Index bIdx =\n'
-          "      Index('b_idx', 'CREATE INDEX b_idx ON b (foo, upper(foo))')")),
+      'a|lib/main.drift.dart':
+          decodedMatches(contains('late final Index bIdx = Index(\n'
+              "    'b_idx',\n"
+              "    'CREATE INDEX b_idx ON b (foo, upper(foo))',\n"
+              "  );")),
     }, result.dartOutputs, result.writer);
   });
 

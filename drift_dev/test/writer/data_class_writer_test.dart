@@ -75,14 +75,20 @@ class Database extends _$Database {}
       checkOutputs({
         'a|lib/main.drift.dart': decodedMatches(contains(r'''
   @override
-  Future<MyCustomClass> map(Map<String, dynamic> data,
-      {String? tablePrefix}) async {
+  Future<MyCustomClass> map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) async {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return await MyCustomClass.load(
-      attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}foo'])!,
-      attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}bar'])!,
+      attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}foo'],
+      )!,
+      attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bar'],
+      )!,
     );
   }
 ''')),
@@ -318,8 +324,10 @@ class Database extends _$Database {}
 
       checkOutputs({
         'a|lib/main.drift.dart': decodedMatches(contains(r'''
-  factory MyTableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory MyTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MyTableData(
       myFirstColumn: serializer.fromJson<String>(json['my_first_column']),
@@ -334,7 +342,6 @@ class Database extends _$Database {}
       'my_second_column': serializer.toJson<int>(mySecondColumn),
     };
   }
-
 ''')),
       }, writer.dartOutputs, writer.writer);
     },
