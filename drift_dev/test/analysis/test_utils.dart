@@ -43,9 +43,9 @@ class TestBackend extends DriftBackend {
     DriftOptions options = const DriftOptions.defaults(),
     this.analyzerExperiments = const Iterable.empty(),
   }) : sourceContents = {
-          for (final entry in sourceContents.entries)
-            AssetId.parse(entry.key).uri.toString(): entry.value,
-        };
+         for (final entry in sourceContents.entries)
+           AssetId.parse(entry.key).uri.toString(): entry.value,
+       };
 
   static Future<TestBackend> init(
     Map<String, String> sourceContents, {

@@ -145,7 +145,9 @@ ExistingRowClass? validateExistingClass(
 
     for (final column in columns) {
       final matchingField = dartClass.classElement.augmented.lookUpGetter(
-          name: column.nameInDart, library: dartClass.classElement.library);
+        name: column.nameInDart,
+        library: dartClass.classElement.library,
+      );
 
       if (matchingField == null) {
         missingGetters.add(column.nameInDart);

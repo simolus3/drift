@@ -68,7 +68,10 @@ class DriftBuildBackend extends DriftBackend {
 
   @override
   Future<Expression> resolveExpression(
-      Uri context, String dartExpression, Iterable<String> imports) async {
+    Uri context,
+    String dartExpression,
+    Iterable<String> imports,
+  ) async {
     final original = AssetId.resolve(context);
     final tempDart = original.changeExtension('.expr.temp.dart');
     final prepJson = original.changeExtension('.drift_prep.json');

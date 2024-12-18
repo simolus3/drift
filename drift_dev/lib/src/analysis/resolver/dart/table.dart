@@ -141,9 +141,13 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   }
 
   Future<Set<DriftColumn>?> _readPrimaryKey(
-      ClassElement element, List<DriftColumn> columns) async {
-    final primaryKeyGetter = element.augmented
-        .lookUpGetter(name: 'primaryKey', library: element.library);
+    ClassElement element,
+    List<DriftColumn> columns,
+  ) async {
+    final primaryKeyGetter = element.augmented.lookUpGetter(
+      name: 'primaryKey',
+      library: element.library,
+    );
 
     if (primaryKeyGetter == null || primaryKeyGetter.isFromDefaultTable) {
       // resolved primaryKey is from the Table dsl superclass. That means there
@@ -181,16 +185,22 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       }
     } else {
       reportError(DriftAnalysisError.forDartElement(
-          primaryKeyGetter, 'This must return a set literal!'));
+        primaryKeyGetter,
+        'This must return a set literal!',
+      ));
     }
 
     return parsedPrimaryKey;
   }
 
   Future<List<Set<DriftColumn>>?> _readUniqueKeys(
-      ClassElement element, List<DriftColumn> columns) async {
-    final uniqueKeyGetter = element.augmented
-        .lookUpGetter(name: 'uniqueKeys', library: element.library);
+    ClassElement element,
+    List<DriftColumn> columns,
+  ) async {
+    final uniqueKeyGetter = element.augmented.lookUpGetter(
+      name: 'uniqueKeys',
+      library: element.library,
+    );
 
     if (uniqueKeyGetter == null || uniqueKeyGetter.isFromDefaultTable) {
       // resolved uniqueKeys is from the Table dsl superclass. That means there
@@ -235,20 +245,26 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           parsedUniqueKeys.add(uniqueKey);
         } else {
           reportError(DriftAnalysisError.forDartElement(
-              uniqueKeyGetter, 'This must return a set list literal!'));
+            uniqueKeyGetter,
+            'This must return a set list literal!',
+          ));
         }
       }
     } else {
       reportError(DriftAnalysisError.forDartElement(
-          uniqueKeyGetter, 'This must return a set list literal!'));
+        uniqueKeyGetter,
+        'This must return a set list literal!',
+      ));
     }
 
     return parsedUniqueKeys;
   }
 
   Future<bool?> _booleanGetter(ClassElement element, String name) async {
-    final getter =
-        element.augmented.lookUpGetter(name: name, library: element.library);
+    final getter = element.augmented.lookUpGetter(
+      name: name,
+      library: element.library,
+    );
 
     // Was the getter overridden at all?
     if (getter == null || getter.isFromDefaultTable) return null;
@@ -358,27 +374,38 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return results.whereType();
   }
 
-  Future<PendingColumnInformation?> _parseColumn(ColumnDeclaration declaration,
-      Element element, Map<Element, String> allColumns) async {
+  Future<PendingColumnInformation?> _parseColumn(
+    ColumnDeclaration declaration,
+    Element element,
+    Map<Element, String> allColumns,
+  ) async {
     return ColumnParser(this, allColumns).parse(declaration, element);
   }
 
-  Future<List<String>> _readCustomConstraints(Set<DriftElement> references,
-      List<DriftColumn> localColumns, ClassElement element) async {
-    final customConstraints = element.augmented
-        .lookUpGetter(name: 'customConstraints', library: element.library);
+  Future<List<String>> _readCustomConstraints(
+    Set<DriftElement> references,
+    List<DriftColumn> localColumns,
+    ClassElement element,
+  ) async {
+    final customConstraints = element.augmented.lookUpGetter(
+      name: 'customConstraints',
+      library: element.library,
+    );
 
     if (customConstraints == null || customConstraints.isFromDefaultTable) {
       // Does not define custom constraints
       return const [];
     }
 
-    final ast = await resolver.driver.backend
-        .loadElementDeclaration(customConstraints) as MethodDeclaration;
+    final ast = await resolver.driver.backend.loadElementDeclaration(
+      customConstraints,
+    ) as MethodDeclaration;
     final body = ast.body;
     if (body is! ExpressionFunctionBody) {
-      reportError(DriftAnalysisError.forDartElement(customConstraints,
-          'This must return a list literal with the => syntax'));
+      reportError(DriftAnalysisError.forDartElement(
+        customConstraints,
+        'This must return a list literal with the => syntax',
+      ));
       return const [];
     }
     final expression = body.expression;

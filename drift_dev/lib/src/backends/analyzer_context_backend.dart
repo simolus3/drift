@@ -111,12 +111,17 @@ class AnalysisContextBackend extends DriftBackend {
 
   @override
   Future<Expression> resolveExpression(
-      Uri context, String dartExpression, Iterable<String> imports) async {
+    Uri context,
+    String dartExpression,
+    Iterable<String> imports,
+  ) async {
     // Create a fake file next to the content
     final path = _pathOfUri(context)!;
     final pathContext = provider.pathContext;
     final pathForTemp = pathContext.join(
-        pathContext.dirname(path), 'moor_temp_${dartExpression.hashCode}.dart');
+      pathContext.dirname(path),
+      'moor_temp_${dartExpression.hashCode}.dart',
+    );
 
     final content = StringBuffer();
     for (final import in imports) {
