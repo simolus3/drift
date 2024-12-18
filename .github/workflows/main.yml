@@ -283,7 +283,10 @@ jobs:
     needs: [setup]
     strategy:
       matrix:
-        flutter: ["3.24", "3.27"]
+        # Ideally, we want to support the latest two stable Flutter versions. That's not
+        # always possible though, e.g. when there are incompatible analyzer changes.
+        flutter: ["3.27"]
+#        flutter: ["3.24", "3.27"]
 
     steps:
       - uses: actions/checkout@v4
