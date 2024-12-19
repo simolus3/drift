@@ -27,7 +27,7 @@ dependencies:
   stream_transform: ^2.1.0
 
   # CLI
-  args: ^2.0.0
+  args: ^2.4.0
   logging: ^1.2.0
   cli_util: ^0.4.0
   yaml: ^3.1.0
