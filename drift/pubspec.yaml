@@ -27,7 +27,7 @@ dependencies:
   web: ^1.0.0
 
 dev_dependencies:
-  archive: ^4.0.1
+  archive: ^4.0.2
   analyzer: ^6.4.1
   build_test: ^2.2.2
   build_runner_core: ^8.0.0
@@ -41,7 +41,8 @@ dev_dependencies:
   uuid: ^4.5.1
   build_runner: ^2.4.14
   test: ^1.25.0
-  mockito: ^5.4.5
+  # Version 5.4.5 has broken formatting, we need to wait for https://github.com/dart-lang/mockito/pull/792
+  mockito: 5.4.4
   shelf: ^1.4.0
   test_descriptor: ^2.0.1
   vm_service: ^15.0.0

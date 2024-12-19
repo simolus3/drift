@@ -470,6 +470,12 @@ class TableWriter extends TableOrViewWriter {
   void _writeValidityCheckMethod() {
     if (_skipVerification) return;
 
+    // dont't verify custom columns, we assume that the user knows what they're
+    // doing
+    if (table.columns.every((c) => c.typeConverter != null)) {
+      return;
+    }
+
     final innerType = emitter.dartCode(emitter.writer.rowType(table));
     emitter
       ..writeln('@override')

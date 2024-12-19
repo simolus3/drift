@@ -126,4 +126,32 @@ class Tags extends Table {
       ),
     }, result.dartOutputs, result.writer);
   });
+
+  test(
+    'does not generate integrity check method when every column has a type converter',
+    () async {
+      final result = await emulateDriftBuild(
+        inputs: {
+          'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+enum Fruit {
+  apple,
+  pear,
+}
+class Foo extends Table {
+  Column<String> get fruit => textEnum<Fruit>()
+    .withDefault(const Variable('apple'))();
+}
+''',
+        },
+        modularBuild: true,
+      );
+
+      checkOutputs({
+        'a|lib/a.drift.dart':
+            decodedMatches(isNot(contains('instance.toColumns(true);'))),
+      }, result.dartOutputs, result.writer);
+    },
+  );
 }

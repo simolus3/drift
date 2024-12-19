@@ -6,6 +6,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift/src/sqlite3/database.dart';
@@ -83,9 +84,8 @@ void main() {
         ),
       );
 
-      var remaining = 100;
-      final done = Completer<void>();
-      while (remaining > 0) {
+      final group = FutureGroup<void>();
+      for (var i = 0; i < 100; i++) {
         final future = db
             .customSelect('SELECT inc_counter() AS r;')
             .getSingle()
@@ -95,12 +95,11 @@ void main() {
               reason: 'should distribute somewhat evenly, counter is $counter');
         });
 
-        if (--remaining == 0) {
-          done.complete(future);
-        }
+        group.add(future);
       }
 
-      await done.future;
+      group.close();
+      await group.future;
       await db.close();
     });
   });
