@@ -8,11 +8,8 @@ void main() {
   test('linter', () async {
     final workingDir = p.join(p.current, 'test/lint/test_pkg');
     expect(
-        await Process.run('dart', ['pub', 'get'], workingDirectory: workingDir)
-            .then((v) => v.exitCode),
-        0);
-    expect(
-        await Process.run('custom_lint', ['--fatal-infos', '--fatal-warnings'],
+        await Process.run('dart',
+                ['run', 'custom_lint', '--fatal-infos', '--fatal-warnings'],
                 workingDirectory: workingDir)
             .then((v) => v.exitCode),
         0);
