@@ -1,3 +1,9 @@
+## 2.23.1-dev
+
+- Generate typed reference-resolving queries through the manager API when
+  modular code-generation is enabled. Previously, this feature was only enabled
+  for monolithic generation modes.
+
 ## 2.23.0
 
 - Fix custom companion names on `@DataClassName` not being recognized.
