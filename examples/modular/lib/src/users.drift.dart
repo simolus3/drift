@@ -21,6 +21,53 @@ typedef $UsersUpdateCompanionBuilder = i1.UsersCompanion Function({
   i0.Value<i3.Uint8List?> profilePicture,
 });
 
+final class $UsersReferences
+    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Users, i1.User> {
+  $UsersReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i0.MultiTypedResultKey<i1.Follows, List<i1.Follow>> _followsRefsTable(
+          i0.GeneratedDatabase db) =>
+      i0.MultiTypedResultKey.fromTable(
+          i4.ReadDatabaseContainer(db).resultSet<i1.Follows>('follows'),
+          aliasName: i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').id,
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i1.Follows>('follows')
+                  .followed));
+
+  i1.$FollowsProcessedTableManager get followsRefs {
+    final manager = i1
+        .$FollowsTableManager($_db,
+            i4.ReadDatabaseContainer($_db).resultSet<i1.Follows>('follows'))
+        .filter((f) => f.followed.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_followsRefsTable($_db));
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static i0.MultiTypedResultKey<i1.Follows, List<i1.Follow>> _followsRefsTable(
+          i0.GeneratedDatabase db) =>
+      i0.MultiTypedResultKey.fromTable(
+          i4.ReadDatabaseContainer(db).resultSet<i1.Follows>('follows'),
+          aliasName: i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').id,
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i1.Follows>('follows')
+                  .follower));
+
+  i1.$FollowsProcessedTableManager get followsRefs {
+    final manager = i1
+        .$FollowsTableManager($_db,
+            i4.ReadDatabaseContainer($_db).resultSet<i1.Follows>('follows'))
+        .filter((f) => f.follower.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_followsRefsTable($_db));
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
 class $UsersFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Users> {
   $UsersFilterComposer({
     required super.$db,
@@ -46,6 +93,52 @@ class $UsersFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Users> {
   i0.ColumnFilters<i3.Uint8List> get profilePicture => $composableBuilder(
       column: $table.profilePicture,
       builder: (column) => i0.ColumnFilters(column));
+
+  i0.Expression<bool> followsRefs(
+      i0.Expression<bool> Function(i1.$FollowsFilterComposer f) f) {
+    final i1.$FollowsFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable:
+            i4.ReadDatabaseContainer($db).resultSet<i1.Follows>('follows'),
+        getReferencedColumn: (t) => t.followed,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$FollowsFilterComposer(
+              $db: $db,
+              $table: i4.ReadDatabaseContainer($db)
+                  .resultSet<i1.Follows>('follows'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  i0.Expression<bool> followsRefs(
+      i0.Expression<bool> Function(i1.$FollowsFilterComposer f) f) {
+    final i1.$FollowsFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable:
+            i4.ReadDatabaseContainer($db).resultSet<i1.Follows>('follows'),
+        getReferencedColumn: (t) => t.follower,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$FollowsFilterComposer(
+              $db: $db,
+              $table: i4.ReadDatabaseContainer($db)
+                  .resultSet<i1.Follows>('follows'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $UsersOrderingComposer
@@ -100,6 +193,52 @@ class $UsersAnnotationComposer
 
   i0.GeneratedColumn<i3.Uint8List> get profilePicture => $composableBuilder(
       column: $table.profilePicture, builder: (column) => column);
+
+  i0.Expression<T> followsRefs<T extends Object>(
+      i0.Expression<T> Function(i1.$FollowsAnnotationComposer a) f) {
+    final i1.$FollowsAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable:
+            i4.ReadDatabaseContainer($db).resultSet<i1.Follows>('follows'),
+        getReferencedColumn: (t) => t.followed,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$FollowsAnnotationComposer(
+              $db: $db,
+              $table: i4.ReadDatabaseContainer($db)
+                  .resultSet<i1.Follows>('follows'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  i0.Expression<T> followsRefs<T extends Object>(
+      i0.Expression<T> Function(i1.$FollowsAnnotationComposer a) f) {
+    final i1.$FollowsAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable:
+            i4.ReadDatabaseContainer($db).resultSet<i1.Follows>('follows'),
+        getReferencedColumn: (t) => t.follower,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i1.$FollowsAnnotationComposer(
+              $db: $db,
+              $table: i4.ReadDatabaseContainer($db)
+                  .resultSet<i1.Follows>('follows'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $UsersTableManager extends i0.RootTableManager<
@@ -111,9 +250,9 @@ class $UsersTableManager extends i0.RootTableManager<
     i1.$UsersAnnotationComposer,
     $UsersCreateCompanionBuilder,
     $UsersUpdateCompanionBuilder,
-    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.Users, i1.User>),
+    (i1.User, i1.$UsersReferences),
     i1.User,
-    i0.PrefetchHooks Function()> {
+    i0.PrefetchHooks Function({bool followsRefs, bool followsRefs})> {
   $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
       : super(i0.TableManagerState(
           db: db,
@@ -153,7 +292,8 @@ class $UsersTableManager extends i0.RootTableManager<
             profilePicture: profilePicture,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), i1.$UsersReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -168,9 +308,9 @@ typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
     i1.$UsersAnnotationComposer,
     $UsersCreateCompanionBuilder,
     $UsersUpdateCompanionBuilder,
-    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.Users, i1.User>),
+    (i1.User, i1.$UsersReferences),
     i1.User,
-    i0.PrefetchHooks Function()>;
+    i0.PrefetchHooks Function({bool followsRefs, bool followsRefs})>;
 typedef $FollowsCreateCompanionBuilder = i1.FollowsCompanion Function({
   required int followed,
   required int follower,
@@ -181,6 +321,49 @@ typedef $FollowsUpdateCompanionBuilder = i1.FollowsCompanion Function({
   i0.Value<int> follower,
   i0.Value<int> rowid,
 });
+
+final class $FollowsReferences
+    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Follows, i1.Follow> {
+  $FollowsReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i1.Users _followedTable(i0.GeneratedDatabase db) =>
+      i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').createAlias(
+          i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i1.Follows>('follows')
+                  .followed,
+              i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').id));
+
+  i1.$UsersProcessedTableManager get followed {
+    final manager = i1
+        .$UsersTableManager(
+            $_db, i4.ReadDatabaseContainer($_db).resultSet<i1.Users>('users'))
+        .filter((f) => f.id($_item.followed));
+    final item = $_typedResult.readTableOrNull(_followedTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static i1.Users _followerTable(i0.GeneratedDatabase db) =>
+      i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').createAlias(
+          i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i1.Follows>('follows')
+                  .follower,
+              i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').id));
+
+  i1.$UsersProcessedTableManager get follower {
+    final manager = i1
+        .$UsersTableManager(
+            $_db, i4.ReadDatabaseContainer($_db).resultSet<i1.Users>('users'))
+        .filter((f) => f.id($_item.follower));
+    final item = $_typedResult.readTableOrNull(_followerTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
 
 class $FollowsFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.Follows> {
@@ -353,7 +536,7 @@ class $FollowsTableManager extends i0.RootTableManager<
     i1.$FollowsAnnotationComposer,
     $FollowsCreateCompanionBuilder,
     $FollowsUpdateCompanionBuilder,
-    (i1.Follow, i0.BaseReferences<i0.GeneratedDatabase, i1.Follows, i1.Follow>),
+    (i1.Follow, i1.$FollowsReferences),
     i1.Follow,
     i0.PrefetchHooks Function({bool followed, bool follower})> {
   $FollowsTableManager(i0.GeneratedDatabase db, i1.Follows table)
@@ -387,7 +570,8 @@ class $FollowsTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), i1.$FollowsReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -402,7 +586,7 @@ typedef $FollowsProcessedTableManager = i0.ProcessedTableManager<
     i1.$FollowsAnnotationComposer,
     $FollowsCreateCompanionBuilder,
     $FollowsUpdateCompanionBuilder,
-    (i1.Follow, i0.BaseReferences<i0.GeneratedDatabase, i1.Follows, i1.Follow>),
+    (i1.Follow, i1.$FollowsReferences),
     i1.Follow,
     i0.PrefetchHooks Function({bool followed, bool follower})>;
 

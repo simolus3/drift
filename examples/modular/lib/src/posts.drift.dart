@@ -16,6 +16,47 @@ typedef $PostsUpdateCompanionBuilder = i1.PostsCompanion Function({
   i0.Value<String?> content,
 });
 
+final class $PostsReferences
+    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post> {
+  $PostsReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i2.Users _authorTable(i0.GeneratedDatabase db) =>
+      i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').createAlias(
+          i0.$_aliasNameGenerator(
+              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').author,
+              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id));
+
+  i2.$UsersProcessedTableManager get author {
+    final manager = i2
+        .$UsersTableManager(
+            $_db, i3.ReadDatabaseContainer($_db).resultSet<i2.Users>('users'))
+        .filter((f) => f.id($_item.author));
+    final item = $_typedResult.readTableOrNull(_authorTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static i0.MultiTypedResultKey<i1.Likes, List<i1.Like>> _likesRefsTable(
+          i0.GeneratedDatabase db) =>
+      i0.MultiTypedResultKey.fromTable(
+          i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes'),
+          aliasName: i0.$_aliasNameGenerator(
+              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').id,
+              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').post));
+
+  i1.$LikesProcessedTableManager get likesRefs {
+    final manager = i1
+        .$LikesTableManager(
+            $_db, i3.ReadDatabaseContainer($_db).resultSet<i1.Likes>('likes'))
+        .filter((f) => f.post.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_likesRefsTable($_db));
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
 class $PostsFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Posts> {
   $PostsFilterComposer({
     required super.$db,
@@ -184,7 +225,7 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.$PostsAnnotationComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
-    (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
+    (i1.Post, i1.$PostsReferences),
     i1.Post,
     i0.PrefetchHooks Function({bool author, bool likesRefs})> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
@@ -218,7 +259,8 @@ class $PostsTableManager extends i0.RootTableManager<
             content: content,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), i1.$PostsReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -233,7 +275,7 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     i1.$PostsAnnotationComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
-    (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
+    (i1.Post, i1.$PostsReferences),
     i1.Post,
     i0.PrefetchHooks Function({bool author, bool likesRefs})>;
 typedef $LikesCreateCompanionBuilder = i1.LikesCompanion Function({
@@ -246,6 +288,45 @@ typedef $LikesUpdateCompanionBuilder = i1.LikesCompanion Function({
   i0.Value<int> likedBy,
   i0.Value<int> rowid,
 });
+
+final class $LikesReferences
+    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Likes, i1.Like> {
+  $LikesReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i1.Posts _postTable(i0.GeneratedDatabase db) =>
+      i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').createAlias(
+          i0.$_aliasNameGenerator(
+              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').post,
+              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').id));
+
+  i1.$PostsProcessedTableManager get post {
+    final manager = i1
+        .$PostsTableManager(
+            $_db, i3.ReadDatabaseContainer($_db).resultSet<i1.Posts>('posts'))
+        .filter((f) => f.id($_item.post));
+    final item = $_typedResult.readTableOrNull(_postTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static i2.Users _likedByTable(i0.GeneratedDatabase db) =>
+      i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').createAlias(
+          i0.$_aliasNameGenerator(
+              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').likedBy,
+              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id));
+
+  i2.$UsersProcessedTableManager get likedBy {
+    final manager = i2
+        .$UsersTableManager(
+            $_db, i3.ReadDatabaseContainer($_db).resultSet<i2.Users>('users'))
+        .filter((f) => f.id($_item.likedBy));
+    final item = $_typedResult.readTableOrNull(_likedByTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
 
 class $LikesFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Likes> {
   $LikesFilterComposer({
@@ -417,7 +498,7 @@ class $LikesTableManager extends i0.RootTableManager<
     i1.$LikesAnnotationComposer,
     $LikesCreateCompanionBuilder,
     $LikesUpdateCompanionBuilder,
-    (i1.Like, i0.BaseReferences<i0.GeneratedDatabase, i1.Likes, i1.Like>),
+    (i1.Like, i1.$LikesReferences),
     i1.Like,
     i0.PrefetchHooks Function({bool post, bool likedBy})> {
   $LikesTableManager(i0.GeneratedDatabase db, i1.Likes table)
@@ -451,7 +532,8 @@ class $LikesTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), i1.$LikesReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -466,7 +548,7 @@ typedef $LikesProcessedTableManager = i0.ProcessedTableManager<
     i1.$LikesAnnotationComposer,
     $LikesCreateCompanionBuilder,
     $LikesUpdateCompanionBuilder,
-    (i1.Like, i0.BaseReferences<i0.GeneratedDatabase, i1.Likes, i1.Like>),
+    (i1.Like, i1.$LikesReferences),
     i1.Like,
     i0.PrefetchHooks Function({bool post, bool likedBy})>;
 

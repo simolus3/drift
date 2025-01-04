@@ -87,7 +87,7 @@ class _TableManagerWriter {
       final fieldNameCount = allFieldNames
           .where((fieldName) => fieldName == relation.fieldName)
           .length;
-      if (fieldNameCount != 1) {
+      if (fieldNameCount != 1 && table.id.isDefinedInDart) {
         print(
             "Duplicate orderings/filters detected for field \"${relation.fieldName}\" on table \"${table.entityInfoName}\"."
             " Filter and orderings for this field wont be generated."
@@ -170,7 +170,7 @@ class _TableManagerWriter {
           .add(_templates.relatedAnnotations(leaf: leaf, relation: relation));
     }
 
-    if (!scope.generationOptions.isModular && relations.isNotEmpty) {
+    if (relations.isNotEmpty) {
       leaf.write(_templates.rowReferencesClass(
           table: table,
           relations: relations,

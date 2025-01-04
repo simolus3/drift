@@ -251,7 +251,9 @@ class _ManagerCodeTemplates {
             db: db,
             explicitlyWatchedTables: [
              ${reverseRelations.map((relation) {
-                return "if (${relation.fieldName}) db.${relation.referencedTable.dbGetterName}";
+                final table =
+                    leaf.referenceElement(relation.referencedTable, 'db');
+                return "if (${relation.fieldName}) ${leaf.dartCode(table)}";
               }).join(',')}
             ],
             addJoins: ${forwardRelations.isEmpty ? 'null' : """
@@ -436,7 +438,7 @@ class _ManagerCodeTemplates {
 
     return """${leaf.drift("ColumnFilters")}<$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,
-      builder: (column) => 
+      builder: (column) =>
       ${leaf.drift("ColumnFilters")}(column));
       """;
   }
@@ -453,7 +455,7 @@ class _ManagerCodeTemplates {
     return """
           ${leaf.drift("ColumnWithTypeConverterFilters")}<$converterType,$nonNullableConverterType,$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,
-      builder: (column) => 
+      builder: (column) =>
       ${leaf.drift("ColumnWithTypeConverterFilters")}(column));
       """;
   }
@@ -489,7 +491,7 @@ class _ManagerCodeTemplates {
 
     return """${leaf.drift("ColumnOrderings")}<$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,
-      builder: (column) => 
+      builder: (column) =>
       ${leaf.drift("ColumnOrderings")}(column));
       """;
   }
@@ -517,7 +519,7 @@ class _ManagerCodeTemplates {
       getCurrentColumn: (t) => t.${relation.currentColumn.nameInDart},
       referencedTable: ${_referenceTableFromComposer(relation.referencedTable, leaf)},
       getReferencedColumn: (t) => t.${relation.referencedColumn.nameInDart},
-      builder: (joinBuilder,{\$addJoinBuilderToRootComposer,\$removeJoinBuilderFromRootComposer }) => 
+      builder: (joinBuilder,{\$addJoinBuilderToRootComposer,\$removeJoinBuilderFromRootComposer }) =>
       $composerName(
               \$db: \$db,
               \$table: ${_referenceTableFromComposer(relation.referencedTable, leaf)},
@@ -534,8 +536,12 @@ class _ManagerCodeTemplates {
   /// as the table manager and is not used outside of the file
   ///
   /// E.g. `$UserTableProcessedTableManager`
-  String processedTableManagerTypedefName(DriftTable table) {
-    return '\$${table.entityInfoName}ProcessedTableManager';
+  String processedTableManagerTypedefName(DriftTable table, TextEmitter leaf,
+      {bool forDefinition = false}) {
+    final name = '\$${table.entityInfoName}ProcessedTableManager';
+    return forDefinition
+        ? name
+        : leaf.dartCode(leaf.generatedElement(table, name));
   }
 
   /// Code for a processed table manager typedef
@@ -545,20 +551,28 @@ class _ManagerCodeTemplates {
     required TextEmitter leaf,
     required List<_Relation> relations,
   }) {
-    return """typedef ${processedTableManagerTypedefName(table)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)};""";
+    return """typedef ${processedTableManagerTypedefName(table, leaf, forDefinition: true)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)};""";
   }
 
   /// Name of the class which is used to represent a rows references
   ///
   /// If there are no relations, or if generation is modular, we will generate a base class instead.
-  String rowReferencesClassName(
-      {required DriftTable table,
-      required List<_Relation> relations,
-      required String dbClassName,
-      required TextEmitter leaf,
-      required bool withTypeArgs}) {
-    if (!_scope.generationOptions.isModular && relations.isNotEmpty) {
-      return '\$${table.entityInfoName}References';
+  String rowReferencesClassName({
+    required DriftTable table,
+    required List<_Relation> relations,
+    required String dbClassName,
+    required TextEmitter leaf,
+    required bool withTypeArgs,
+    bool forDefinition = false,
+  }) {
+    if (relations.isNotEmpty) {
+      final basename = '\$${table.entityInfoName}References';
+
+      if (forDefinition) {
+        return basename;
+      } else {
+        return leaf.dartCode(leaf.generatedElement(table, basename));
+      }
     } else {
       if (withTypeArgs) {
         return "${leaf.drift('BaseReferences')}<${databaseType(leaf, dbClassName)},${tableClassWithPrefix(table, leaf)},${rowClassWithPrefix(table, leaf)}>";
@@ -590,11 +604,16 @@ class _ManagerCodeTemplates {
         relations: relations,
         dbClassName: dbClassName,
         leaf: leaf,
-        withTypeArgs: false);
+        withTypeArgs: false,
+        forDefinition: true);
 
     final body = relations.map(
       (relation) {
         final dbName = databaseType(leaf, dbClassName);
+        final referencedTable = leaf
+            .dartCode(leaf.referenceElement(relation.referencedTable, 'db'));
+        final currentTable =
+            leaf.dartCode(leaf.referenceElement(relation.currentTable, 'db'));
 
         if (relation.isReverse) {
           final aliasedTableMethod = """
@@ -603,19 +622,18 @@ class _ManagerCodeTemplates {
           List<${rowClassWithPrefix(relation.referencedTable, leaf)}>
         > _${relation.fieldName}Table($dbName db) =>
           ${leaf.drift("MultiTypedResultKey")}.fromTable(
-          db.${relation.referencedTable.dbGetterName}, 
+          $referencedTable,
           aliasName: ${leaf.drift("\$_aliasNameGenerator")}(
-            db.${relation.currentTable.dbGetterName}.${relation.currentColumn.nameInDart},
-            db.${relation.referencedTable.dbGetterName}.${relation.referencedColumn.nameInDart})
+            $currentTable.${relation.currentColumn.nameInDart},
+            $referencedTable.${relation.referencedColumn.nameInDart})
         );""";
 
           return """
-          
           $aliasedTableMethod
 
-          ${processedTableManagerTypedefName(relation.referencedTable)} get ${relation.fieldName} {
+          ${processedTableManagerTypedefName(relation.referencedTable, leaf)} get ${relation.fieldName} {
         final manager = ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(
-            \$_db, \$_db.${relation.referencedTable.dbGetterName}
+            \$_db, ${leaf.dartCode(leaf.referenceElement(relation.referencedTable, r'$_db'))}
             ).filter(
               (f) => f.${relation.referencedColumn.nameInDart}.${relation.currentColumn.nameInDart}(
               \$_item.${relation.currentColumn.nameInDart}
@@ -623,9 +641,7 @@ class _ManagerCodeTemplates {
           );
 
           final cache = \$_typedResult.readTableOrNull(_${relation.fieldName}Table(\$_db));
-          return ProcessedTableManager(manager.\$state.copyWith(prefetchedData: cache));
-
-
+          return ${leaf.drift("ProcessedTableManager")}(manager.\$state.copyWith(prefetchedData: cache));
         }
         """;
         } else {
@@ -633,21 +649,27 @@ class _ManagerCodeTemplates {
               tableClassWithPrefix(relation.referencedTable, leaf);
 
           final aliasedTableMethod = """
-          static $referenceTableType _${relation.fieldName}Table($dbName db) => 
-            db.${relation.referencedTable.dbGetterName}.createAlias(${leaf.drift("\$_aliasNameGenerator")}(
-            db.${relation.currentTable.dbGetterName}.${relation.currentColumn.nameInDart},
-            db.${relation.referencedTable.dbGetterName}.${relation.referencedColumn.nameInDart}));
+          static $referenceTableType _${relation.fieldName}Table($dbName db) =>
+            $referencedTable.createAlias(${leaf.drift("\$_aliasNameGenerator")}(
+            $currentTable.${relation.currentColumn.nameInDart},
+            $referencedTable.${relation.referencedColumn.nameInDart}));
           """;
+
+          var currentColumnOnItem =
+              '\$_item.${relation.currentColumn.nameInDart}';
+          if (relation.currentColumn.nullableInDart) {
+            currentColumnOnItem += '!';
+          }
 
           return """
         $aliasedTableMethod
 
-        ${processedTableManagerTypedefName(relation.referencedTable)}${relation.currentColumn.nullable ? "?" : ""} get ${relation.fieldName} {
+        ${processedTableManagerTypedefName(relation.referencedTable, leaf)}${relation.currentColumn.nullable ? "?" : ""} get ${relation.fieldName} {
         ${relation.currentColumn.nullable ? "if (\$_item.${relation.currentColumn.nameInDart} == null) return null;" : ""}
-          final manager = ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(\$_db, \$_db.${relation.referencedTable.dbGetterName}).filter((f) => f.${relation.referencedColumn.nameInDart}(\$_item.${relation.currentColumn.nameInDart}!));
+          final manager = ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(\$_db, ${leaf.dartCode(leaf.referenceElement(relation.referencedTable, r'$_db'))}).filter((f) => f.${relation.referencedColumn.nameInDart}($currentColumnOnItem));
           final item = \$_typedResult.readTableOrNull(_${relation.fieldName}Table(\$_db));
           if (item == null) return manager;
-          return ProcessedTableManager(manager.\$state.copyWith(prefetchedData: [item]));
+          return ${leaf.drift("ProcessedTableManager")}(manager.\$state.copyWith(prefetchedData: [item]));
         }
 """;
         }
@@ -660,7 +682,7 @@ class _ManagerCodeTemplates {
         ${tableClassWithPrefix(table, leaf)},
         ${rowClassWithPrefix(table, leaf)}> {
         $rowClassWithReferencesName(super.\$_db, super.\$_table, super.\$_typedResult);
-        
+
         $body
 
       }""";
