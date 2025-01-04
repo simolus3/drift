@@ -22,6 +22,36 @@ typedef $$TodoItemsTableUpdateCompanionBuilder = i1.TodoItemsCompanion
   i0.Value<DateTime?> dueDate,
 });
 
+final class $$TodoItemsTableReferences extends i0
+    .BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem> {
+  $$TodoItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i1.$CategoriesTable _categoryTable(i0.GeneratedDatabase db) =>
+      i3.ReadDatabaseContainer(db)
+          .resultSet<i1.$CategoriesTable>('categories')
+          .createAlias(i0.$_aliasNameGenerator(
+              i3.ReadDatabaseContainer(db)
+                  .resultSet<i1.$TodoItemsTable>('todo_items')
+                  .category,
+              i3.ReadDatabaseContainer(db)
+                  .resultSet<i1.$CategoriesTable>('categories')
+                  .id));
+
+  i1.$$CategoriesTableProcessedTableManager? get category {
+    if ($_item.category == null) return null;
+    final manager = i1
+        .$$CategoriesTableTableManager(
+            $_db,
+            i3.ReadDatabaseContainer($_db)
+                .resultSet<i1.$CategoriesTable>('categories'))
+        .filter((f) => f.id($_item.category!));
+    final item = $_typedResult.readTableOrNull(_categoryTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
 class $$TodoItemsTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.$TodoItemsTable> {
   $$TodoItemsTableFilterComposer({
@@ -163,10 +193,7 @@ class $$TodoItemsTableTableManager extends i0.RootTableManager<
     i1.$$TodoItemsTableAnnotationComposer,
     $$TodoItemsTableCreateCompanionBuilder,
     $$TodoItemsTableUpdateCompanionBuilder,
-    (
-      i1.TodoItem,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem>
-    ),
+    (i1.TodoItem, i1.$$TodoItemsTableReferences),
     i1.TodoItem,
     i0.PrefetchHooks Function({bool category})> {
   $$TodoItemsTableTableManager(
@@ -209,7 +236,10 @@ class $$TodoItemsTableTableManager extends i0.RootTableManager<
             dueDate: dueDate,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    i1.$$TodoItemsTableReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -224,10 +254,7 @@ typedef $$TodoItemsTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$TodoItemsTableAnnotationComposer,
     $$TodoItemsTableCreateCompanionBuilder,
     $$TodoItemsTableUpdateCompanionBuilder,
-    (
-      i1.TodoItem,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$TodoItemsTable, i1.TodoItem>
-    ),
+    (i1.TodoItem, i1.$$TodoItemsTableReferences),
     i1.TodoItem,
     i0.PrefetchHooks Function({bool category})>;
 typedef $$CategoriesTableCreateCompanionBuilder = i1.CategoriesCompanion
@@ -240,6 +267,37 @@ typedef $$CategoriesTableUpdateCompanionBuilder = i1.CategoriesCompanion
   i0.Value<int> id,
   i0.Value<String> name,
 });
+
+final class $$CategoriesTableReferences extends i0
+    .BaseReferences<i0.GeneratedDatabase, i1.$CategoriesTable, i1.Category> {
+  $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i0.MultiTypedResultKey<i1.$TodoItemsTable, List<i1.TodoItem>>
+      _todoItemsRefsTable(i0.GeneratedDatabase db) =>
+          i0.MultiTypedResultKey.fromTable(
+              i3.ReadDatabaseContainer(db)
+                  .resultSet<i1.$TodoItemsTable>('todo_items'),
+              aliasName: i0.$_aliasNameGenerator(
+                  i3.ReadDatabaseContainer(db)
+                      .resultSet<i1.$CategoriesTable>('categories')
+                      .id,
+                  i3.ReadDatabaseContainer(db)
+                      .resultSet<i1.$TodoItemsTable>('todo_items')
+                      .category));
+
+  i1.$$TodoItemsTableProcessedTableManager get todoItemsRefs {
+    final manager = i1
+        .$$TodoItemsTableTableManager(
+            $_db,
+            i3.ReadDatabaseContainer($_db)
+                .resultSet<i1.$TodoItemsTable>('todo_items'))
+        .filter((f) => f.category.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_todoItemsRefsTable($_db));
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
 
 class $$CategoriesTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.$CategoriesTable> {
@@ -344,10 +402,7 @@ class $$CategoriesTableTableManager extends i0.RootTableManager<
     i1.$$CategoriesTableAnnotationComposer,
     $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder,
-    (
-      i1.Category,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$CategoriesTable, i1.Category>
-    ),
+    (i1.Category, i1.$$CategoriesTableReferences),
     i1.Category,
     i0.PrefetchHooks Function({bool todoItemsRefs})> {
   $$CategoriesTableTableManager(
@@ -378,7 +433,10 @@ class $$CategoriesTableTableManager extends i0.RootTableManager<
             name: name,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    i1.$$CategoriesTableReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -393,10 +451,7 @@ typedef $$CategoriesTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$CategoriesTableAnnotationComposer,
     $$CategoriesTableCreateCompanionBuilder,
     $$CategoriesTableUpdateCompanionBuilder,
-    (
-      i1.Category,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$CategoriesTable, i1.Category>
-    ),
+    (i1.Category, i1.$$CategoriesTableReferences),
     i1.Category,
     i0.PrefetchHooks Function({bool todoItemsRefs})>;
 typedef $$UsersTableCreateCompanionBuilder = i1.UsersCompanion Function({

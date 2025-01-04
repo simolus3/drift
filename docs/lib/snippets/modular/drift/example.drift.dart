@@ -17,6 +17,36 @@ typedef $TodosUpdateCompanionBuilder = i1.TodosCompanion Function({
   i0.Value<int?> category,
 });
 
+final class $TodosReferences
+    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Todos, i1.Todo> {
+  $TodosReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i1.Categories _categoryTable(i0.GeneratedDatabase db) =>
+      i2.ReadDatabaseContainer(db)
+          .resultSet<i1.Categories>('categories')
+          .createAlias(i0.$_aliasNameGenerator(
+              i2.ReadDatabaseContainer(db)
+                  .resultSet<i1.Todos>('todos')
+                  .category,
+              i2.ReadDatabaseContainer(db)
+                  .resultSet<i1.Categories>('categories')
+                  .id));
+
+  i1.$CategoriesProcessedTableManager? get category {
+    if ($_item.category == null) return null;
+    final manager = i1
+        .$CategoriesTableManager(
+            $_db,
+            i2.ReadDatabaseContainer($_db)
+                .resultSet<i1.Categories>('categories'))
+        .filter((f) => f.id($_item.category!));
+    final item = $_typedResult.readTableOrNull(_categoryTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
 class $TodosFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Todos> {
   $TodosFilterComposer({
     required super.$db,
@@ -148,7 +178,7 @@ class $TodosTableManager extends i0.RootTableManager<
     i1.$TodosAnnotationComposer,
     $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder,
-    (i1.Todo, i0.BaseReferences<i0.GeneratedDatabase, i1.Todos, i1.Todo>),
+    (i1.Todo, i1.$TodosReferences),
     i1.Todo,
     i0.PrefetchHooks Function({bool category})> {
   $TodosTableManager(i0.GeneratedDatabase db, i1.Todos table)
@@ -186,7 +216,8 @@ class $TodosTableManager extends i0.RootTableManager<
             category: category,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), i1.$TodosReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -201,7 +232,7 @@ typedef $TodosProcessedTableManager = i0.ProcessedTableManager<
     i1.$TodosAnnotationComposer,
     $TodosCreateCompanionBuilder,
     $TodosUpdateCompanionBuilder,
-    (i1.Todo, i0.BaseReferences<i0.GeneratedDatabase, i1.Todos, i1.Todo>),
+    (i1.Todo, i1.$TodosReferences),
     i1.Todo,
     i0.PrefetchHooks Function({bool category})>;
 typedef $CategoriesCreateCompanionBuilder = i1.CategoriesCompanion Function({
@@ -212,6 +243,34 @@ typedef $CategoriesUpdateCompanionBuilder = i1.CategoriesCompanion Function({
   i0.Value<int> id,
   i0.Value<String> description,
 });
+
+final class $CategoriesReferences extends i0
+    .BaseReferences<i0.GeneratedDatabase, i1.Categories, i1.Category> {
+  $CategoriesReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i0.MultiTypedResultKey<i1.Todos, List<i1.Todo>> _todosRefsTable(
+          i0.GeneratedDatabase db) =>
+      i0.MultiTypedResultKey.fromTable(
+          i2.ReadDatabaseContainer(db).resultSet<i1.Todos>('todos'),
+          aliasName: i0.$_aliasNameGenerator(
+              i2.ReadDatabaseContainer(db)
+                  .resultSet<i1.Categories>('categories')
+                  .id,
+              i2.ReadDatabaseContainer(db)
+                  .resultSet<i1.Todos>('todos')
+                  .category));
+
+  i1.$TodosProcessedTableManager get todosRefs {
+    final manager = i1
+        .$TodosTableManager(
+            $_db, i2.ReadDatabaseContainer($_db).resultSet<i1.Todos>('todos'))
+        .filter((f) => f.category.id($_item.id));
+
+    final cache = $_typedResult.readTableOrNull(_todosRefsTable($_db));
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
 
 class $CategoriesFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.Categories> {
@@ -318,10 +377,7 @@ class $CategoriesTableManager extends i0.RootTableManager<
     i1.$CategoriesAnnotationComposer,
     $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder,
-    (
-      i1.Category,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.Categories, i1.Category>
-    ),
+    (i1.Category, i1.$CategoriesReferences),
     i1.Category,
     i0.PrefetchHooks Function({bool todosRefs})> {
   $CategoriesTableManager(i0.GeneratedDatabase db, i1.Categories table)
@@ -351,7 +407,8 @@ class $CategoriesTableManager extends i0.RootTableManager<
             description: description,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), i1.$CategoriesReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -366,10 +423,7 @@ typedef $CategoriesProcessedTableManager = i0.ProcessedTableManager<
     i1.$CategoriesAnnotationComposer,
     $CategoriesCreateCompanionBuilder,
     $CategoriesUpdateCompanionBuilder,
-    (
-      i1.Category,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.Categories, i1.Category>
-    ),
+    (i1.Category, i1.$CategoriesReferences),
     i1.Category,
     i0.PrefetchHooks Function({bool todosRefs})>;
 

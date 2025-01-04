@@ -17,6 +17,42 @@ typedef $$ShoppingCartsTableUpdateCompanionBuilder = i2.ShoppingCartsCompanion
   i0.Value<int> id,
 });
 
+final class $$ShoppingCartsTableReferences extends i0.BaseReferences<
+    i0.GeneratedDatabase, i2.$ShoppingCartsTable, i2.ShoppingCart> {
+  $$ShoppingCartsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static i0
+      .MultiTypedResultKey<i2.$ShoppingCartEntriesTable, List<i2.ShoppingCartEntry>>
+      _shoppingCartEntriesRefsTable(i0.GeneratedDatabase db) =>
+          i0.MultiTypedResultKey.fromTable(
+              i4.ReadDatabaseContainer(db).resultSet<i2.$ShoppingCartEntriesTable>(
+                  'shopping_cart_entries'),
+              aliasName: i0.$_aliasNameGenerator(
+                  i4.ReadDatabaseContainer(db)
+                      .resultSet<i2.$ShoppingCartsTable>('shopping_carts')
+                      .id,
+                  i4.ReadDatabaseContainer(db)
+                      .resultSet<i2.$ShoppingCartEntriesTable>('shopping_cart_entries')
+                      .shoppingCart));
+
+  i2.$$ShoppingCartEntriesTableProcessedTableManager
+      get shoppingCartEntriesRefs {
+    final manager = i2
+        .$$ShoppingCartEntriesTableTableManager(
+            $_db,
+            i4.ReadDatabaseContainer($_db)
+                .resultSet<i2.$ShoppingCartEntriesTable>(
+                    'shopping_cart_entries'))
+        .filter((f) => f.shoppingCart.id($_item.id));
+
+    final cache =
+        $_typedResult.readTableOrNull(_shoppingCartEntriesRefsTable($_db));
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
 class $$ShoppingCartsTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i2.$ShoppingCartsTable> {
   $$ShoppingCartsTableFilterComposer({
@@ -121,11 +157,7 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
     i2.$$ShoppingCartsTableAnnotationComposer,
     $$ShoppingCartsTableCreateCompanionBuilder,
     $$ShoppingCartsTableUpdateCompanionBuilder,
-    (
-      i2.ShoppingCart,
-      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartsTable,
-          i2.ShoppingCart>
-    ),
+    (i2.ShoppingCart, i2.$$ShoppingCartsTableReferences),
     i2.ShoppingCart,
     i0.PrefetchHooks Function({bool shoppingCartEntriesRefs})> {
   $$ShoppingCartsTableTableManager(
@@ -152,7 +184,10 @@ class $$ShoppingCartsTableTableManager extends i0.RootTableManager<
             id: id,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    i2.$$ShoppingCartsTableReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -167,11 +202,7 @@ typedef $$ShoppingCartsTableProcessedTableManager = i0.ProcessedTableManager<
     i2.$$ShoppingCartsTableAnnotationComposer,
     $$ShoppingCartsTableCreateCompanionBuilder,
     $$ShoppingCartsTableUpdateCompanionBuilder,
-    (
-      i2.ShoppingCart,
-      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartsTable,
-          i2.ShoppingCart>
-    ),
+    (i2.ShoppingCart, i2.$$ShoppingCartsTableReferences),
     i2.ShoppingCart,
     i0.PrefetchHooks Function({bool shoppingCartEntriesRefs})>;
 typedef $$ShoppingCartEntriesTableCreateCompanionBuilder
@@ -186,6 +217,62 @@ typedef $$ShoppingCartEntriesTableUpdateCompanionBuilder
   i0.Value<int> item,
   i0.Value<int> rowid,
 });
+
+final class $$ShoppingCartEntriesTableReferences extends i0.BaseReferences<
+    i0.GeneratedDatabase, i2.$ShoppingCartEntriesTable, i2.ShoppingCartEntry> {
+  $$ShoppingCartEntriesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static i2.$ShoppingCartsTable _shoppingCartTable(i0.GeneratedDatabase db) =>
+      i4.ReadDatabaseContainer(db)
+          .resultSet<i2.$ShoppingCartsTable>('shopping_carts')
+          .createAlias(i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i2.$ShoppingCartEntriesTable>(
+                      'shopping_cart_entries')
+                  .shoppingCart,
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i2.$ShoppingCartsTable>('shopping_carts')
+                  .id));
+
+  i2.$$ShoppingCartsTableProcessedTableManager get shoppingCart {
+    final manager = i2
+        .$$ShoppingCartsTableTableManager(
+            $_db,
+            i4.ReadDatabaseContainer($_db)
+                .resultSet<i2.$ShoppingCartsTable>('shopping_carts'))
+        .filter((f) => f.id($_item.shoppingCart));
+    final item = $_typedResult.readTableOrNull(_shoppingCartTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static i1.$BuyableItemsTable _itemTable(i0.GeneratedDatabase db) =>
+      i4.ReadDatabaseContainer(db)
+          .resultSet<i1.$BuyableItemsTable>('buyable_items')
+          .createAlias(i0.$_aliasNameGenerator(
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i2.$ShoppingCartEntriesTable>(
+                      'shopping_cart_entries')
+                  .item,
+              i4.ReadDatabaseContainer(db)
+                  .resultSet<i1.$BuyableItemsTable>('buyable_items')
+                  .id));
+
+  i1.$$BuyableItemsTableProcessedTableManager get item {
+    final manager = i1
+        .$$BuyableItemsTableTableManager(
+            $_db,
+            i4.ReadDatabaseContainer($_db)
+                .resultSet<i1.$BuyableItemsTable>('buyable_items'))
+        .filter((f) => f.id($_item.item));
+    final item = $_typedResult.readTableOrNull(_itemTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
 
 class $$ShoppingCartEntriesTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i2.$ShoppingCartEntriesTable> {
@@ -358,11 +445,7 @@ class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
     i2.$$ShoppingCartEntriesTableAnnotationComposer,
     $$ShoppingCartEntriesTableCreateCompanionBuilder,
     $$ShoppingCartEntriesTableUpdateCompanionBuilder,
-    (
-      i2.ShoppingCartEntry,
-      i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartEntriesTable,
-          i2.ShoppingCartEntry>
-    ),
+    (i2.ShoppingCartEntry, i2.$$ShoppingCartEntriesTableReferences),
     i2.ShoppingCartEntry,
     i0.PrefetchHooks Function({bool shoppingCart, bool item})> {
   $$ShoppingCartEntriesTableTableManager(
@@ -399,7 +482,10 @@ class $$ShoppingCartEntriesTableTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    i2.$$ShoppingCartEntriesTableReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -415,11 +501,7 @@ typedef $$ShoppingCartEntriesTableProcessedTableManager
         i2.$$ShoppingCartEntriesTableAnnotationComposer,
         $$ShoppingCartEntriesTableCreateCompanionBuilder,
         $$ShoppingCartEntriesTableUpdateCompanionBuilder,
-        (
-          i2.ShoppingCartEntry,
-          i0.BaseReferences<i0.GeneratedDatabase, i2.$ShoppingCartEntriesTable,
-              i2.ShoppingCartEntry>
-        ),
+        (i2.ShoppingCartEntry, i2.$$ShoppingCartEntriesTableReferences),
         i2.ShoppingCartEntry,
         i0.PrefetchHooks Function({bool shoppingCart, bool item})>;
 

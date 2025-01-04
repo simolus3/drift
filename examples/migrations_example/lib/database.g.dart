@@ -1266,7 +1266,7 @@ final class $GroupsReferences
 
   $$UsersTableProcessedTableManager get owner {
     final manager = $$UsersTableTableManager($_db, $_db.users)
-        .filter((f) => f.id($_item.owner!));
+        .filter((f) => f.id($_item.owner));
     final item = $_typedResult.readTableOrNull(_ownerTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(

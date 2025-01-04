@@ -130,6 +130,49 @@ typedef $FriendsUpdateCompanionBuilder = i2.FriendsCompanion Function({
   i0.Value<int> rowid,
 });
 
+final class $FriendsReferences
+    extends i0.BaseReferences<i0.GeneratedDatabase, i2.Friends, i2.Friend> {
+  $FriendsReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i2.Users _userATable(i0.GeneratedDatabase db) =>
+      i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').createAlias(
+          i0.$_aliasNameGenerator(
+              i3.ReadDatabaseContainer(db)
+                  .resultSet<i2.Friends>('friends')
+                  .userA,
+              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id));
+
+  i2.$UsersProcessedTableManager get userA {
+    final manager = i2
+        .$UsersTableManager(
+            $_db, i3.ReadDatabaseContainer($_db).resultSet<i2.Users>('users'))
+        .filter((f) => f.id($_item.userA));
+    final item = $_typedResult.readTableOrNull(_userATable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static i2.Users _userBTable(i0.GeneratedDatabase db) =>
+      i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').createAlias(
+          i0.$_aliasNameGenerator(
+              i3.ReadDatabaseContainer(db)
+                  .resultSet<i2.Friends>('friends')
+                  .userB,
+              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id));
+
+  i2.$UsersProcessedTableManager get userB {
+    final manager = i2
+        .$UsersTableManager(
+            $_db, i3.ReadDatabaseContainer($_db).resultSet<i2.Users>('users'))
+        .filter((f) => f.id($_item.userB));
+    final item = $_typedResult.readTableOrNull(_userBTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
 class $FriendsFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i2.Friends> {
   $FriendsFilterComposer({
@@ -301,7 +344,7 @@ class $FriendsTableManager extends i0.RootTableManager<
     i2.$FriendsAnnotationComposer,
     $FriendsCreateCompanionBuilder,
     $FriendsUpdateCompanionBuilder,
-    (i2.Friend, i0.BaseReferences<i0.GeneratedDatabase, i2.Friends, i2.Friend>),
+    (i2.Friend, i2.$FriendsReferences),
     i2.Friend,
     i0.PrefetchHooks Function({bool userA, bool userB})> {
   $FriendsTableManager(i0.GeneratedDatabase db, i2.Friends table)
@@ -335,7 +378,8 @@ class $FriendsTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), i2.$FriendsReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -350,7 +394,7 @@ typedef $FriendsProcessedTableManager = i0.ProcessedTableManager<
     i2.$FriendsAnnotationComposer,
     $FriendsCreateCompanionBuilder,
     $FriendsUpdateCompanionBuilder,
-    (i2.Friend, i0.BaseReferences<i0.GeneratedDatabase, i2.Friends, i2.Friend>),
+    (i2.Friend, i2.$FriendsReferences),
     i2.Friend,
     i0.PrefetchHooks Function({bool userA, bool userB})>;
 

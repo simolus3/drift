@@ -21,6 +21,34 @@ typedef $$ActiveSessionsTableUpdateCompanionBuilder = i3.ActiveSessionsCompanion
   i0.Value<int> rowid,
 });
 
+final class $$ActiveSessionsTableReferences extends i0.BaseReferences<
+    i0.GeneratedDatabase, i3.$ActiveSessionsTable, i3.ActiveSession> {
+  $$ActiveSessionsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static i1.$UsersTable _userTable(i0.GeneratedDatabase db) =>
+      i5.ReadDatabaseContainer(db)
+          .resultSet<i1.$UsersTable>('users')
+          .createAlias(i0.$_aliasNameGenerator(
+              i5.ReadDatabaseContainer(db)
+                  .resultSet<i3.$ActiveSessionsTable>('active_sessions')
+                  .user,
+              i5.ReadDatabaseContainer(db)
+                  .resultSet<i1.$UsersTable>('users')
+                  .id));
+
+  i1.$$UsersTableProcessedTableManager get user {
+    final manager = i1
+        .$$UsersTableTableManager($_db,
+            i5.ReadDatabaseContainer($_db).resultSet<i1.$UsersTable>('users'))
+        .filter((f) => f.id($_item.user));
+    final item = $_typedResult.readTableOrNull(_userTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
 class $$ActiveSessionsTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i3.$ActiveSessionsTable> {
   $$ActiveSessionsTableFilterComposer({
@@ -137,11 +165,7 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
     i3.$$ActiveSessionsTableAnnotationComposer,
     $$ActiveSessionsTableCreateCompanionBuilder,
     $$ActiveSessionsTableUpdateCompanionBuilder,
-    (
-      i3.ActiveSession,
-      i0.BaseReferences<i0.GeneratedDatabase, i3.$ActiveSessionsTable,
-          i3.ActiveSession>
-    ),
+    (i3.ActiveSession, i3.$$ActiveSessionsTableReferences),
     i3.ActiveSession,
     i0.PrefetchHooks Function({bool user})> {
   $$ActiveSessionsTableTableManager(
@@ -176,7 +200,10 @@ class $$ActiveSessionsTableTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    i3.$$ActiveSessionsTableReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -191,11 +218,7 @@ typedef $$ActiveSessionsTableProcessedTableManager = i0.ProcessedTableManager<
     i3.$$ActiveSessionsTableAnnotationComposer,
     $$ActiveSessionsTableCreateCompanionBuilder,
     $$ActiveSessionsTableUpdateCompanionBuilder,
-    (
-      i3.ActiveSession,
-      i0.BaseReferences<i0.GeneratedDatabase, i3.$ActiveSessionsTable,
-          i3.ActiveSession>
-    ),
+    (i3.ActiveSession, i3.$$ActiveSessionsTableReferences),
     i3.ActiveSession,
     i0.PrefetchHooks Function({bool user})>;
 

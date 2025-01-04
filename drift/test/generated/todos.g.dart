@@ -5607,7 +5607,7 @@ final class $$ListingTableReferences
 
   $$ProductTableProcessedTableManager get product {
     final manager = $$ProductTableTableManager($_db, $_db.product)
-        .filter((f) => f.sku($_item.product!));
+        .filter((f) => f.sku($_item.product));
     final item = $_typedResult.readTableOrNull(_productTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(

@@ -941,7 +941,7 @@ final class $$TodoItemsTableReferences
 
   $$TodoCategoriesTableProcessedTableManager get categoryId {
     final manager = $$TodoCategoriesTableTableManager($_db, $_db.todoCategories)
-        .filter((f) => f.id($_item.categoryId!));
+        .filter((f) => f.id($_item.categoryId));
     final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(

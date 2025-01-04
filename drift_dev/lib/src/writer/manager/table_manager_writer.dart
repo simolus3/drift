@@ -87,12 +87,15 @@ class _TableManagerWriter {
       final fieldNameCount = allFieldNames
           .where((fieldName) => fieldName == relation.fieldName)
           .length;
-      if (fieldNameCount != 1 && table.id.isDefinedInDart) {
-        print(
-            "Duplicate orderings/filters detected for field \"${relation.fieldName}\" on table \"${table.entityInfoName}\"."
-            " Filter and orderings for this field wont be generated."
-            " Use the @ReferenceName() annotation to resolve this issue."
-            " See https://drift.simonbinder.eu/docs/manager/#name-clashes for more information");
+      if (fieldNameCount != 1) {
+        if (table.id.isDefinedInDart) {
+          print(
+              "Duplicate orderings/filters detected for field \"${relation.fieldName}\" on table \"${table.entityInfoName}\"."
+              " Filter and orderings for this field wont be generated."
+              " Use the @ReferenceName() annotation to resolve this issue."
+              " See https://drift.simonbinder.eu/docs/manager/#name-clashes for more information");
+        }
+
         return false;
       }
       return true;

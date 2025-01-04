@@ -16,6 +16,31 @@ typedef $PostsUpdateCompanionBuilder = i1.PostsCompanion Function({
   i0.Value<int> rowid,
 });
 
+final class $PostsReferences
+    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post> {
+  $PostsReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static i2.$UsersTable _authorTable(i0.GeneratedDatabase db) =>
+      i3.ReadDatabaseContainer(db)
+          .resultSet<i2.$UsersTable>('users')
+          .createAlias(i0.$_aliasNameGenerator(
+              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').author,
+              i3.ReadDatabaseContainer(db)
+                  .resultSet<i2.$UsersTable>('users')
+                  .id));
+
+  i2.$$UsersTableProcessedTableManager get author {
+    final manager = i2
+        .$$UsersTableTableManager($_db,
+            i3.ReadDatabaseContainer($_db).resultSet<i2.$UsersTable>('users'))
+        .filter((f) => f.id($_item.author));
+    final item = $_typedResult.readTableOrNull(_authorTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
 class $PostsFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Posts> {
   $PostsFilterComposer({
     required super.$db,
@@ -129,7 +154,7 @@ class $PostsTableManager extends i0.RootTableManager<
     i1.$PostsAnnotationComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
-    (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
+    (i1.Post, i1.$PostsReferences),
     i1.Post,
     i0.PrefetchHooks Function({bool author})> {
   $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
@@ -163,7 +188,8 @@ class $PostsTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) =>
+                  (e.readTable(table), i1.$PostsReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -178,7 +204,7 @@ typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
     i1.$PostsAnnotationComposer,
     $PostsCreateCompanionBuilder,
     $PostsUpdateCompanionBuilder,
-    (i1.Post, i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post>),
+    (i1.Post, i1.$PostsReferences),
     i1.Post,
     i0.PrefetchHooks Function({bool author})>;
 
