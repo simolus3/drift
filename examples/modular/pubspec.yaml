@@ -12,4 +12,4 @@ dev_dependencies:
   build_runner: ^2.3.2
   drift_dev:
   lints: ^4.0.0
-  test: ^1.16.0
+  test: ^1.25.14

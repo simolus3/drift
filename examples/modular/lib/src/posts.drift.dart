@@ -262,7 +262,54 @@ class $PostsTableManager extends i0.RootTableManager<
               .map((e) =>
                   (e.readTable(table), i1.$PostsReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({author = false, likesRefs = false}) {
+            return i0.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (likesRefs)
+                  i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes')
+              ],
+              addJoins: <
+                  T extends i0.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (author) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.author,
+                    referencedTable: i1.$PostsReferences._authorTable(db),
+                    referencedColumn: i1.$PostsReferences._authorTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (likesRefs)
+                    await i0.$_getPrefetchedData(
+                        currentTable: table,
+                        referencedTable:
+                            i1.$PostsReferences._likesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            i1.$PostsReferences(db, table, p0).likesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) =>
+                                referencedItems.where((e) => e.post == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
         ));
 }
 
@@ -535,7 +582,47 @@ class $LikesTableManager extends i0.RootTableManager<
               .map((e) =>
                   (e.readTable(table), i1.$LikesReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({post = false, likedBy = false}) {
+            return i0.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends i0.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (post) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.post,
+                    referencedTable: i1.$LikesReferences._postTable(db),
+                    referencedColumn: i1.$LikesReferences._postTable(db).id,
+                  ) as T;
+                }
+                if (likedBy) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.likedBy,
+                    referencedTable: i1.$LikesReferences._likedByTable(db),
+                    referencedColumn: i1.$LikesReferences._likedByTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ));
 }
 

@@ -433,7 +433,49 @@ class $FollowsTableManager extends i0.RootTableManager<
               .map((e) =>
                   (e.readTable(table), i1.$FollowsReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({followed = false, follower = false}) {
+            return i0.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends i0.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (followed) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.followed,
+                    referencedTable: i1.$FollowsReferences._followedTable(db),
+                    referencedColumn:
+                        i1.$FollowsReferences._followedTable(db).id,
+                  ) as T;
+                }
+                if (follower) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.follower,
+                    referencedTable: i1.$FollowsReferences._followerTable(db),
+                    referencedColumn:
+                        i1.$FollowsReferences._followerTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ));
 }
 

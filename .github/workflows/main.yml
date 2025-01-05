@@ -273,6 +273,7 @@ jobs:
           dart pub upgrade
           dart run build_runner build --delete-conflicting-outputs
           dart run bin/example.dart
+          dart test
       - name: Integration test for migrations example
         working-directory: examples/migrations_example
         run: |

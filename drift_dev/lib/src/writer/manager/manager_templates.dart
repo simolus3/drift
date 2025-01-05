@@ -243,7 +243,7 @@ class _ManagerCodeTemplates {
                      (e.readTable(table), ${rowReferencesClassName(table: table, relations: relations, dbClassName: dbClassName, leaf: leaf, withTypeArgs: false)}(db, table, e))
                   )
               .toList(),
-        prefetchHooksCallback: ${relations.isEmpty || _scope.generationOptions.isModular ? 'null' : """
+        prefetchHooksCallback: ${relations.isEmpty ? 'null' : """
         (${"{${relations.map(
                   (e) => "${e.fieldName} = false",
                 ).join(",")}}"}){
@@ -257,7 +257,7 @@ class _ManagerCodeTemplates {
               }).join(',')}
             ],
             addJoins: ${forwardRelations.isEmpty ? 'null' : """
-<T extends TableManagerState<dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic>>(state) {
+<T extends ${leaf.drift("TableManagerState")}<dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic>>(state) {
 
                 ${forwardRelations.map((relation) {
                     final referencesClassName = rowReferencesClassName(
