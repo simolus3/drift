@@ -32,22 +32,30 @@ class TestDatabase extends _$TestDatabase {
     transaction(
       () async {
         // expect_lint: unawaited_futures_in_transaction
-        into(users).insert(UsersCompanion.insert(name: 'name'));
-        await into(users).insert(UsersCompanion.insert(name: 'name'));
+        into(users)
+            .insert(UsersCompanion.insert(name: 'name', group: BigInt.from(1)));
+        await into(users)
+            .insert(UsersCompanion.insert(name: 'name', group: BigInt.from(1)));
       },
     );
     // expect_lint: non_null_insert_with_ignore
-    await into(users).insertReturning(UsersCompanion.insert(name: 'name'),
+    await into(users).insertReturning(
+        UsersCompanion.insert(name: 'name', group: BigInt.from(1)),
         mode: InsertMode.insertOrIgnore);
     // expect_lint: non_null_insert_with_ignore
+    await managers.users.createReturning(
+        (o) => o(name: "hi", group: BigInt.from(1)),
+        mode: InsertMode.insertOrIgnore);
+    await into(users).insertReturningOrNull(
+        UsersCompanion.insert(name: 'name', group: BigInt.from(1)),
+        mode: InsertMode.insertOrIgnore);
+    await managers.users.createReturningOrNull(
+        (o) => o(name: "hi", group: BigInt.from(1)),
+        mode: InsertMode.insertOrIgnore);
+    await into(users).insertReturning(
+        UsersCompanion.insert(name: 'name', group: BigInt.from(1)));
     await managers.users
-        .createReturning((o) => o(name: "hi"), mode: InsertMode.insertOrIgnore);
-    await into(users).insertReturningOrNull(UsersCompanion.insert(name: 'name'),
-        mode: InsertMode.insertOrIgnore);
-    await managers.users.createReturningOrNull((o) => o(name: "hi"),
-        mode: InsertMode.insertOrIgnore);
-    await into(users).insertReturning(UsersCompanion.insert(name: 'name'));
-    await managers.users.createReturning((o) => o(name: "hi"));
+        .createReturning((o) => o(name: "hi", group: BigInt.from(1)));
   }
 
   @override
