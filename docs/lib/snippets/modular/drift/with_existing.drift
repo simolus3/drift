@@ -1,0 +1,22 @@
+-- #docregion users
+import 'row_class.dart'; --import for where the row class is defined
+
+CREATE TABLE users (
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL
+) WITH User; -- This tells drift to use the existing Dart class
+-- #enddocregion users
+
+-- #docregion friends
+-- table to demonstrate a more complex select query below.
+-- also, remember to add the import for `UserWithFriends` to your drift file.
+CREATE TABLE friends (
+  user_a INTEGER NOT NULL REFERENCES users(id),
+  user_b INTEGER NOT NULL REFERENCES users(id),
+  PRIMARY KEY (user_a, user_b)
+);
+
+allFriendsOf WITH UserWithFriends: SELECT users.** AS user, LIST(
+  SELECT * FROM users a INNER JOIN friends ON user_a = a.id WHERE user_b = users.id OR user_a = users.id
+) AS friends FROM users WHERE id = :id;
+-- #enddocregion friends

@@ -1,0 +1,19 @@
+/* #docregion import */
+import 'tables.drift'; -- single quotes are required for imports
+/* #enddocregion import */
+
+/* #docregion q1 */
+myQuery(:variable AS TEXT): SELECT :variable;
+/* #enddocregion q1 */
+/* #docregion q2 */
+myNullableQuery(:variable AS TEXT OR NULL): SELECT :variable;
+/* #enddocregion q2 */
+/* #docregion q3 */
+myRequiredQuery(REQUIRED :variable AS TEXT OR NULL): SELECT :variable;
+/* #enddocregion q3 */
+/* #docregion entries */
+entriesWithId: SELECT * FROM todos WHERE id IN ?;
+/* #enddocregion entries */
+/* #docregion filter */
+_filterTodos: SELECT * FROM todos WHERE $predicate;
+/* #enddocregion filter */

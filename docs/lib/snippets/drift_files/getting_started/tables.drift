@@ -1,0 +1,26 @@
+-- this is the tables.drift file
+CREATE TABLE todos (
+    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    body TEXT,
+    category INT REFERENCES categories (id)
+);
+
+CREATE TABLE categories (
+    id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
+    description TEXT
+) AS Category; -- see the explanation on "AS Category" below
+
+/* after declaring your tables, you can put queries in here. Just
+   write the name of the query, a colon (:) and the SQL: */
+todosInCategory: SELECT * FROM todos WHERE category = ?;
+
+/* Here's a more complex query: It counts the amount of entries per
+category, including those entries which aren't in any category at all. */
+countEntries:
+  SELECT
+    c.description,
+    (SELECT COUNT(*) FROM todos WHERE category = c.id) AS amount
+  FROM categories c
+  UNION ALL
+  SELECT null, (SELECT COUNT(*) FROM todos WHERE category IS NULL);
