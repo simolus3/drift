@@ -17,7 +17,7 @@ dependencies:
   sqlite3: ^2.0.0
 
   # Used in examples
-  rxdart: ^0.27.3
+  rxdart: ^0.28.0
   yaml: ^3.1.1
   drift_dev: any
   test: ^1.18.0
