@@ -471,7 +471,7 @@ abstract class DatabaseConnectionUser {
   /// See also:
   ///  - the docs on [transactions](https://drift.simonbinder.eu/docs/transactions/)
   Future<T> transaction<T>(Future<T> Function() action,
-      {bool requireNew = false}) async {
+      {bool requireNew = false, QueryInterceptor? interceptor}) async {
     final resolved = resolvedEngine;
 
     // Are we about to start a nested transaction?
@@ -489,6 +489,9 @@ abstract class DatabaseConnectionUser {
     }
 
     return await resolved.doWhenOpened((executor) {
+      if (interceptor != null) {
+        executor = executor.interceptWith(interceptor);
+      }
       final transactionExecutor = executor.beginTransaction();
       final transaction = Transaction(this, transactionExecutor);
 
