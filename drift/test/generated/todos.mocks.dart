@@ -1479,6 +1479,57 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
       ) as _i5.Future<void>);
 
   @override
+  _i5.Future<T> runWithInterceptor<T>(
+    _i5.Future<T> Function()? action, {
+    required _i2.QueryInterceptor? interceptor,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #runWithInterceptor,
+          [action],
+          {#interceptor: interceptor},
+        ),
+        returnValue: _i6.ifNotNull(
+              _i6.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #runWithInterceptor,
+                  [action],
+                  {#interceptor: interceptor},
+                ),
+              ),
+              (T v) => _i5.Future<T>.value(v),
+            ) ??
+            _FakeFuture_26<T>(
+              this,
+              Invocation.method(
+                #runWithInterceptor,
+                [action],
+                {#interceptor: interceptor},
+              ),
+            ),
+        returnValueForMissingStub: _i6.ifNotNull(
+              _i6.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #runWithInterceptor,
+                  [action],
+                  {#interceptor: interceptor},
+                ),
+              ),
+              (T v) => _i5.Future<T>.value(v),
+            ) ??
+            _FakeFuture_26<T>(
+              this,
+              Invocation.method(
+                #runWithInterceptor,
+                [action],
+                {#interceptor: interceptor},
+              ),
+            ),
+      ) as _i5.Future<T>);
+
+  @override
   _i2.GenerationContext $write(
     _i2.Component? component, {
     bool? hasMultipleTables,
