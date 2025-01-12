@@ -5,8 +5,6 @@ description: Using the `QueryInterceptor` API to log details about database oper
 
 ---
 
-
-
 Drift provides the relatively simple `logStatements` option to print the statements it
 executes.
 The `QueryInterceptor` API can be used to extend this logging to provide more information,
@@ -18,6 +16,11 @@ Interceptors can be applied with the `interceptWith` extension on `QueryExecutor
 `DatabaseConnection`:
 
 {{ load_snippet('use','lib/snippets/log_interceptor.dart.excerpt.json') }}
+
+If you only want to apply an interceptor on a certain block instead of on the whole database,
+that's possible too:
+
+{{ load_snippet('runWithInterceptor','lib/snippets/log_interceptor.dart.excerpt.json') }}
 
 The `QueryInterceptor` class is pretty powerful, as it allows you to fully control the underlying
 database connection. You could also use it to retry some failing statements or to aggregate

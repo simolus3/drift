@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 
+import 'setup/database.dart';
+
 // #docregion class
 class LogInterceptor extends QueryInterceptor {
   Future<T> _run<T>(
@@ -89,4 +91,15 @@ void use() {
     myDatabaseFile,
   ).interceptWith(LogInterceptor());
   // #enddocregion use
+}
+
+void useScoped() async {
+  final database = AppDatabase();
+
+  // #docregion runWithInterceptor
+  final interceptor = LogInterceptor();
+  await database.runWithInterceptor(interceptor: interceptor, () async {
+    // Only database operations in this block will reach the interceptor.
+  });
+  // #enddocregion runWithInterceptor
 }
