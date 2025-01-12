@@ -29,6 +29,35 @@ void main() {
     await database.users.delete().go();
     expect(events, ['insert', 'update', 'delete']);
   });
+
+  test('calls interceptor methods in runWithInterceptor', () async {
+    final interceptor = EmittingInterceptor();
+    final events = <String>[];
+    interceptor.events.stream.listen(events.add);
+
+    final database = TodoDb(testInMemoryDatabase());
+    expect(await database.categories.select().get(), isEmpty);
+
+    await database.runWithInterceptor(
+      () => database.batch((batch) {
+        batch.insert(database.categories,
+            CategoriesCompanion.insert(description: 'from batch'));
+      }),
+      interceptor: interceptor,
+    );
+    expect(events, ['begin', 'batched', 'commit']);
+    events.clear();
+
+    await database.users.insertOne(
+        UsersCompanion.insert(name: 'Simon B', profilePicture: Uint8List(0)));
+    await database.runWithInterceptor(
+      () =>
+          database.users.update().write(UsersCompanion(isAwesome: Value(true))),
+      interceptor: interceptor,
+    );
+    await database.users.delete().go();
+    expect(events, ['update']);
+  });
 }
 
 class EmittingInterceptor extends QueryInterceptor {
