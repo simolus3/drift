@@ -5,6 +5,8 @@
 - Deprecate `TypeConverter.json` utility in favor of `TypeConverter.json2`. The
   new method avoids encoding values twice when mapping drift row classes to
   JSON.
+- Add `runWithInterceptor` method to databases to only apply interceptors in
+  a restricted block.
 
 ## 2.23.1
 
