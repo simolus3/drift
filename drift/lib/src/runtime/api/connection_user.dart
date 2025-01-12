@@ -468,6 +468,12 @@ abstract class DatabaseConnectionUser {
   ///   transaction can continue to run if it catched the exception thrown by
   ///   the inner transaction when it aborted.
   ///
+  /// The optional [interceptor] can be used to apply a [QueryInterceptor] on
+  /// the opened transaction. This is useful to modify the behavior of the
+  /// executor for this specific transaction only. Note that lifecycle methods
+  /// will be called starting with [QueryInterceptor.beginTransaction] for the
+  /// transaction that is about to begin.
+  ///
   /// See also:
   ///  - the docs on [transactions](https://drift.simonbinder.eu/docs/transactions/)
   Future<T> transaction<T>(Future<T> Function() action,
