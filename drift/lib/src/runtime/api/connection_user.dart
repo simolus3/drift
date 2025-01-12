@@ -468,16 +468,10 @@ abstract class DatabaseConnectionUser {
   ///   transaction can continue to run if it catched the exception thrown by
   ///   the inner transaction when it aborted.
   ///
-  /// The optional [interceptor] can be used to apply a [QueryInterceptor] on
-  /// the opened transaction. This is useful to modify the behavior of the
-  /// executor for this specific transaction only. Note that lifecycle methods
-  /// will be called starting with [QueryInterceptor.beginTransaction] for the
-  /// transaction that is about to begin.
-  ///
   /// See also:
   ///  - the docs on [transactions](https://drift.simonbinder.eu/docs/transactions/)
   Future<T> transaction<T>(Future<T> Function() action,
-      {bool requireNew = false, QueryInterceptor? interceptor}) async {
+      {bool requireNew = false}) async {
     final resolved = resolvedEngine;
 
     // Are we about to start a nested transaction?
@@ -495,9 +489,6 @@ abstract class DatabaseConnectionUser {
     }
 
     return await resolved.doWhenOpened((executor) {
-      if (interceptor != null) {
-        executor = executor.interceptWith(interceptor);
-      }
       final transactionExecutor = executor.beginTransaction();
       final transaction = Transaction(this, transactionExecutor);
 
@@ -620,6 +611,19 @@ abstract class DatabaseConnectionUser {
     } else {
       return batch._commit();
     }
+  }
+
+  /// Executes [action] with calls intercepted by the given [interceptor]
+  ///
+  /// This can be used to, for instance, write a custom statement logger or to
+  /// retry failing statements automatically.
+  Future<T> runWithInterceptor<T>(Future<T> Function() action,
+      {required QueryInterceptor interceptor}) async {
+    return await resolvedEngine.doWhenOpened((executor) {
+      final inner = _ExclusiveExecutor(this,
+          executor: executor.interceptWith(interceptor));
+      return _runConnectionZoned(inner, action);
+    });
   }
 
   /// Runs [calculation] in a forked [Zone] that has its [resolvedEngine] set
