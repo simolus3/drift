@@ -40,7 +40,7 @@ database class named `tables.drift`:
 
 
 
-Integrating drift files into the database simple, they just need to be added to the
+Integrating drift files into the database is simple, they just need to be added to the
 `include` parameter of the `@DriftDatabase` annotation. The `tables` parameter can
 be omitted here, since there are no Dart-defined tables to be added to the database.
 
