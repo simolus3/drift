@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 
-import 'setup/database.dart';
+import 'dart_api/manager.dart';
 
 // #docregion class
 class LogInterceptor extends QueryInterceptor {
@@ -94,7 +94,7 @@ void use() {
 }
 
 void useScoped() async {
-  final database = AppDatabase();
+  final database = AppDatabase(NativeDatabase.memory());
 
   // #docregion runWithInterceptor
   final interceptor = LogInterceptor();
