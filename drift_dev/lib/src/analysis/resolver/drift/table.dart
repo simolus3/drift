@@ -360,7 +360,7 @@ extension on ColumnDefinition {
     final tokens = <CommentToken>[];
 
     while (lastBefore is CommentToken) {
-      tokens.add(lastBefore);
+      tokens.insert(0, lastBefore);
       lastBefore = lastBefore.previous;
     }
 

@@ -269,6 +269,34 @@ CREATE TABLE IF NOT EXISTS currencies (
     );
   });
 
+  test('preserves the order of comments for columns', () async {
+    final state = await TestBackend.inTest({
+      'a|lib/a.drift': '''
+CREATE TABLE todos (
+  -- This is the first comment.
+  -- This is the second comment.
+  title TEXT NOT NULL
+);
+''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    final column = table.columnBySqlName['title'];
+
+    expect(
+      column,
+      isA<DriftColumn>().having(
+        (c) => c.documentationComment,
+        'documentationComment',
+        '''/// This is the first comment.
+/// This is the second comment.''',
+      ),
+    );
+  });
+
   test('can use custom types', () async {
     final state = await TestBackend.inTest({
       'a|lib/a.drift': '''
