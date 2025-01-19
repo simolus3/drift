@@ -52,6 +52,9 @@ dependencies:
   source_gen: ">=1.5.0 <3.0.0"
   string_scanner: ^1.2.0
 
+  # Linting
+  custom_lint_builder: ^0.6.7
+
 dev_dependencies:
   lints: ^5.1.0
   checked_yaml: ^2.0.3

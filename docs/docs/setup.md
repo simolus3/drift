@@ -34,12 +34,13 @@ adding a package to open database on the respective platform.
     dev_dependencies:
       drift_dev: ^{{ versions.drift_dev }}
       build_runner: ^{{ versions.build_runner }}
+      custom_lint: ^{{ versions.custom_lint }} 
     ```
 
     Alternatively, you can achieve the same result using the following command:
 
     ```
-    dart pub add drift drift_flutter dev:drift_dev dev:build_runner
+    dart pub add drift drift_flutter dev:drift_dev dev:build_runner dev:custom_lint
     ```
 
     Please note that `drift_flutter` depends on `sqlite3_flutter_libs`, which includes a compiled
@@ -62,12 +63,13 @@ adding a package to open database on the respective platform.
     dev_dependencies:
       drift_dev: ^{{ versions.drift_dev }}
       build_runner: ^{{ versions.build_runner }}
+      custom_lint: ^{{ versions.custom_lint }} 
     ```
 
     Alternatively, you can achieve the same result using the following command:
 
     ```
-    dart pub add drift sqlite3 dev:drift_dev dev:build_runner
+    dart pub add drift sqlite3 dev:drift_dev dev:build_runner dev:custom_lint
     ```
 
 ===  "Dart (Postgres)"
@@ -81,12 +83,13 @@ adding a package to open database on the respective platform.
     dev_dependencies:
       drift_dev: ^{{ versions.drift_dev }}
       build_runner: ^{{ versions.build_runner }}
+      custom_lint: ^{{ versions.custom_lint }}
     ```
 
     Alternatively, you can achieve the same result using the following command:
 
     ```
-    dart pub add drift postgres drift_postgres dev:drift_dev dev:build_runner
+    dart pub add drift postgres drift_postgres dev:drift_dev dev:build_runner dev:custom_lint
     ```
 
     Drift only generates code for sqlite3 by default. So, also create a `build.yaml`
@@ -105,6 +108,16 @@ adding a package to open database on the respective platform.
     #              - sqlite
     ```
 
+## Linter setup
+
+Drift comes with a built-in linter that helps you write better code. It checks for common mistakes
+and enforces best practices. To enable it, add the following configuration to your `analysis_options.yaml`:
+
+```yaml title="analysis_options.yaml"
+analyzer:
+  plugins:
+    - custom_lint
+```
 
 ## Database class
 
