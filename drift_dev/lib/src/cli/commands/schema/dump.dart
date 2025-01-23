@@ -29,7 +29,7 @@ class DumpSchemaCommand extends Command {
 
   DumpSchemaCommand(this.cli) {
     argParser.registerExportSchemaStartupCodeOption();
-    argParser.addSeparator("It's recommended to run this commend from the "
+    argParser.addSeparator("It's recommended to run this command from the "
         'directory containing your pubspec.yaml so that compiler options '
         'are respected.');
   }
