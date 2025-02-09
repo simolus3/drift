@@ -1,3 +1,4 @@
+import '../../connections/result_set.dart';
 import '../compiler.dart';
 import '../expressions/expression.dart';
 import '../results.dart';

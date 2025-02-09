@@ -1,5 +1,3 @@
-part of 'runtime_api.dart';
-
 /// Collects a set of [UpdateRule]s which can be used to express how a set of
 /// direct updates to a table affects other updates.
 ///

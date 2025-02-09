@@ -4,6 +4,7 @@ import 'expressions/variable.dart';
 import 'results.dart';
 import 'schema/column.dart';
 import 'statements/select.dart';
+import 'statements/transactions.dart';
 import 'types.dart';
 
 final class CompiledStatement {
@@ -18,10 +19,6 @@ final class CompiledStatement {
   ResultSetStructure? resultSetStructure;
 
   CompiledStatement(this.dialect);
-
-  Iterable<Object?> get sqlVariables => variables.map((value) {
-        return value.$1.sqlParameter(dialect, value);
-      });
 
   void space() => buffer.write(' ');
 }
@@ -104,5 +101,26 @@ abstract base class StatementCompiler {
     }
 
     addReference(column.name);
+  }
+
+  /// Write a [BeginStatement] statement.
+  void addBegin(BeginStatement stmt) {
+    statement.buffer
+        .write(stmt.depth == 0 ? 'BEGIN;' : 'SAVEPOINT s${stmt.depth};');
+  }
+
+  /// Write a [CommitStatement] statement.
+  void addCommit(CommitStatement stmt) {
+    statement.buffer
+        .write(stmt.depth == 0 ? 'COMMIT;' : 'RELEASE s${stmt.depth};');
+  }
+
+  /// Write a [RollbackStatement] statement.
+  void addRollback(RollbackStatement stmt) {
+    statement.buffer.write('ROLLBACK');
+    if (stmt.depth > 0) {
+      statement.buffer.write(' TO ${stmt.depth}');
+    }
+    statement.buffer.write(';');
   }
 }

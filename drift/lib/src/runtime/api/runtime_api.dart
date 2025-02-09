@@ -14,7 +14,6 @@ part 'connection.dart';
 part 'connection_user.dart';
 part 'dao_base.dart';
 part 'db_base.dart';
-part 'stream_updates.dart';
 
 /// Defines additional runtime behavior for drift. Changing the fields of this
 /// class is rarely necessary.

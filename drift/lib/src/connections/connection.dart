@@ -1,11 +1,28 @@
 import '../query_builder/compiler.dart';
+import '../query_builder/dialect.dart';
+import '../query_builder/types.dart';
 import 'result_set.dart';
 
-/// An opened database connection used by drift to send generated queries.
-abstract interface class OpenedDriftConnection implements DriftSession {}
+final class DriftDatabaseImplementation {
+  final DriftDialect dialect;
+  final Future<DriftSession> Function() _openConnection;
+
+  DriftDatabaseImplementation(
+      {required this.dialect,
+      required Future<DriftSession> Function() openConnection})
+      : _openConnection = openConnection;
+
+  Future<DriftSession> open() {
+    return _openConnection();
+  }
+}
 
 abstract interface class DriftTransactionParent implements DriftSession {
   Future<DriftTransactionSession> begin(TransactionOptions options);
+}
+
+abstract interface class DriftSessionWithInternalLocks implements DriftSession {
+  Future<DriftSession> exclusive();
 }
 
 abstract interface class DriftTransactionSession implements DriftSession {
@@ -14,19 +31,41 @@ abstract interface class DriftTransactionSession implements DriftSession {
 }
 
 abstract interface class DriftSession {
-  Future<QueryResult> execute(CompiledStatement statement);
-  Future<List<QueryResult>> executeBatch(StatementBatch batch);
-
-  Future<DriftSession> exclusive();
+  Future<QueryResult> execute(SqlStatement statement);
+  Future<List<QueryResult>> executeBatch(List<StatementBatch> batch);
 
   Future<void> close();
 }
 
 final class StatementBatch {
   final String sql;
-  final List<CompiledStatement> statements;
+  final List<SqlStatement> statements;
 
   StatementBatch({required this.sql, required this.statements});
+}
+
+final class SqlStatement {
+  final CompiledStatement? generated;
+
+  final String sql;
+  final bool needsResultSet;
+  final List<TypedNullableValue> variables;
+
+  SqlStatement(CompiledStatement this.generated)
+      : sql = generated.buffer.toString(),
+        needsResultSet = generated.resultSetStructure != null,
+        variables = generated.variables;
+
+  SqlStatement.fromText(
+    this.sql, {
+    this.variables = const [],
+    this.needsResultSet = false,
+  }) : generated = null;
+
+  Iterable<Object?> sqlVariables(DriftDialect dialect) =>
+      variables.map((value) {
+        return value.$1.sqlParameter(dialect, value);
+      });
 }
 
 final class TransactionOptions {}

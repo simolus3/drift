@@ -1,27 +1,53 @@
-import 'package:drift/core.dart';
 import 'package:sqlite3/common.dart' as sqlite;
 
-import '../../core/connection.dart';
+import '../connection.dart';
+import '../result_set.dart';
 
-final class SqliteConnection implements DriftConnection {
+final class SqliteConnection implements DriftSession {
   final sqlite.CommonDatabase database;
 
   SqliteConnection(this.database);
 
   @override
-  Future<RawResultSet> execute(CompiledStatement statement) async {
-    final result = database.select(
-        statement.buffer.toString(), statement.sqlVariables.toList());
+  Future<QueryResult> execute(SqlStatement statement) async {
+    final sql = statement.sql;
+    final variables = statement.sqlVariables.toList();
+    RawResultSet? resultSet;
 
-    return _SqliteResultSet(
-        resultSet: result, affectedRows: database.updatedRows);
+    if (statement.needsResultSet) {
+      resultSet = _SqliteResultSet(resultSet: database.select(sql, variables));
+    } else {
+      database.execute(sql, variables);
+    }
+
+    return QueryResult(
+      affectedRows: database.updatedRows,
+      resultSet: resultSet,
+    );
+  }
+
+  @override
+  Future<List<QueryResult>> executeBatch(List<StatementBatch> batch) async {
+    final results = <QueryResult>[];
+    for (final stmt in batch) {
+      for (final instantiation in stmt.statements) {
+        results.add(await execute(instantiation));
+      }
+    }
+
+    return results;
+  }
+
+  @override
+  Future<void> close() async {
+    database.dispose();
   }
 }
 
 final class _SqliteResultSet extends RawResultSet {
   final sqlite.ResultSet resultSet;
 
-  _SqliteResultSet({required this.resultSet, required super.affectedRows});
+  _SqliteResultSet({required this.resultSet});
 
   @override
   RawRow operator [](int index) {

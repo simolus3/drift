@@ -1,7 +1,7 @@
 import 'dart:async';
 
 /// A single asynchronous lock implemented by future-chaining.
-class Lock {
+final class Lock {
   Future<void>? _last;
 
   /// Waits for previous [synchronized]-calls on this [Lock] to complete, and
@@ -44,5 +44,86 @@ class Lock {
     } else {
       return callBlockAndComplete();
     }
+  }
+}
+
+final class SharedOrExclusiveLock {
+  int _shared = 0;
+  bool _hasExclusiveLock = false;
+
+  final List<void Function()> _exclusiveWaiters = [];
+
+  Future<void> _scheduleExclusive(void Function() action) {
+    final completer = Completer<void>();
+    _exclusiveWaiters.add(() {
+      assert(_shared == 0 && !_hasExclusiveLock);
+      action();
+      assert(_shared > 0 || _hasExclusiveLock);
+
+      completer.complete();
+    });
+
+    return completer.future;
+  }
+
+  Future<void> _obtainShared() {
+    if (!_hasExclusiveLock && _exclusiveWaiters.isEmpty) {
+      _shared++;
+      return Future.value();
+    } else {
+      return _scheduleExclusive(() {
+        _shared++;
+      });
+    }
+  }
+
+  Future<void> _obtainExclusive() {
+    if (_shared == 0 && !_hasExclusiveLock) {
+      _hasExclusiveLock = true;
+      return Future.value();
+    } else {
+      return _scheduleExclusive(() {
+        _hasExclusiveLock = true;
+      });
+    }
+  }
+
+  void _releaseShared() {
+    assert(_shared > 0);
+    _shared--;
+    if (_shared == 0 && _exclusiveWaiters.isNotEmpty) {
+      final waiter = _exclusiveWaiters.removeAt(0);
+      waiter();
+    }
+  }
+
+  void _releaseExclusive() {
+    assert(_hasExclusiveLock);
+    _hasExclusiveLock = false;
+    if (_exclusiveWaiters.isNotEmpty) {
+      final waiter = _exclusiveWaiters.removeAt(0);
+      waiter();
+    }
+  }
+
+  Future<T> _run<T>(bool exclusive, FutureOr<T> Function() block) async {
+    await (exclusive ? _obtainExclusive() : _obtainShared());
+    try {
+      return await block();
+    } finally {
+      if (exclusive) {
+        _releaseExclusive();
+      } else {
+        _releaseShared();
+      }
+    }
+  }
+
+  Future<T> shared<T>(FutureOr<T> Function() block) {
+    return _run(false, block);
+  }
+
+  Future<T> exclusive<T>(FutureOr<T> Function() block) {
+    return _run(true, block);
   }
 }
