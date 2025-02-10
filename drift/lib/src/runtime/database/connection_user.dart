@@ -3,15 +3,20 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
+import '../../query_builder/dialect.dart';
 import '../exceptions.dart';
 import 'db_base.dart';
 
 const _zoneRootUserKey = #DatabaseConnectionUser;
 
+/// The shared base class for drift databases and database accessors.
 abstract base class DatabaseConnectionUser {
   /// The database class that this user is attached to.
   @visibleForOverriding
   GeneratedDatabase get attachedDatabase;
+
+  /// The [DriftDialect] implementation for this opened database.
+  DriftDialect get dialect => attachedDatabase.implementation.dialect;
 
   /// The current [DriftSession] that this database will use to run statements.
   Future<DriftSession> currentSession() {

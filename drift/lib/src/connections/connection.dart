@@ -31,7 +31,7 @@ abstract interface class DriftTransactionSession implements DriftSession {
 }
 
 abstract interface class DriftSession {
-  Future<QueryResult> execute(SqlStatement statement);
+  Future<QueryResult> execute(StatementInfo statement);
   Future<List<QueryResult>> executeBatch(List<StatementBatch> batch);
 
   Future<void> close();
@@ -39,24 +39,24 @@ abstract interface class DriftSession {
 
 final class StatementBatch {
   final String sql;
-  final List<SqlStatement> statements;
+  final List<StatementInfo> statements;
 
   StatementBatch({required this.sql, required this.statements});
 }
 
-final class SqlStatement {
+final class StatementInfo {
   final CompiledStatement? generated;
 
   final String sql;
   final bool needsResultSet;
   final List<TypedNullableValue> variables;
 
-  SqlStatement(CompiledStatement this.generated)
+  StatementInfo(CompiledStatement this.generated)
       : sql = generated.buffer.toString(),
         needsResultSet = generated.resultSetStructure != null,
         variables = generated.variables;
 
-  SqlStatement.fromText(
+  StatementInfo.fromText(
     this.sql, {
     this.variables = const [],
     this.needsResultSet = false,

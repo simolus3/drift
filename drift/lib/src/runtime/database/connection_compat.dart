@@ -96,7 +96,7 @@ without awaiting every statement in it.''');
           await transaction.begin(options), _dialect, _transactionDepth + 1);
     } else {
       return _startNested(() async {
-        await _inner.execute(SqlStatement(
+        await _inner.execute(StatementInfo(
             _dialect.compile(BeginStatement(depth: _transactionDepth))));
         return DriftCompatibilityTransaction._(
             false, _inner, _dialect, _transactionDepth + 1);
@@ -134,7 +134,7 @@ without awaiting every statement in it.''');
   }
 
   @override
-  Future<QueryResult> execute(SqlStatement statement) async {
+  Future<QueryResult> execute(StatementInfo statement) async {
     return await _synchronized(() async {
       _checkOpen();
       return _inner.execute(statement);
@@ -177,7 +177,7 @@ final class DriftCompatibilityTransaction extends DriftCompatibilitySession
     if (_isUsingUnderlyingTransaction) {
       await (_inner as DriftTransactionSession).commit();
     } else {
-      await _inner.execute(SqlStatement(
+      await _inner.execute(StatementInfo(
           _dialect.compile(CommitStatement(depth: _transactionDepth))));
     }
   }
@@ -187,7 +187,7 @@ final class DriftCompatibilityTransaction extends DriftCompatibilitySession
     if (_isUsingUnderlyingTransaction) {
       await (_inner as DriftTransactionSession).rollback();
     } else {
-      await _inner.execute(SqlStatement(
+      await _inner.execute(StatementInfo(
           _dialect.compile(CommitStatement(depth: _transactionDepth))));
     }
   }

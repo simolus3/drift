@@ -1,3 +1,5 @@
 import '../compiler.dart';
 
-abstract base class SqlStatement extends SqlComponent {}
+abstract base class SqlStatement
+    with DialectSpecificComponent
+    implements SqlComponent {}

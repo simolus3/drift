@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:drift/core.dart';
 import 'package:sqlite3/common.dart' show jsonb;
+
+import '../query_builder/compiler.dart';
+import '../query_builder/dialect.dart';
+import '../query_builder/types.dart';
 
 final class SqliteOptions {
   final bool strictTablesByDefault;

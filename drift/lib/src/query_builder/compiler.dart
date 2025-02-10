@@ -1,6 +1,8 @@
+import 'clauses/where.dart';
 import 'dialect.dart';
 import 'expressions/expression.dart';
-import 'expressions/variable.dart';
+import 'expressions/operators.dart';
+import 'expressions/variables.dart';
 import 'results.dart';
 import 'schema/column.dart';
 import 'statements/select.dart';
@@ -21,16 +23,22 @@ final class CompiledStatement {
   CompiledStatement(this.dialect);
 
   void space() => buffer.write(' ');
+
+  void comma() => buffer.write(',');
 }
 
-abstract class SqlComponent {
-  final Map<Symbol, Object?> dialectSpecificOptions = {};
-
+/// Base class for anything that can be compiled to SQL.
+abstract interface class SqlComponent {
   void compileWith(StatementCompiler compiler);
+}
+
+abstract mixin class DialectSpecificComponent implements SqlComponent {
+  final Map<Symbol, Object?> dialectSpecificOptions = {};
 }
 
 abstract base class StatementCompiler {
   late final CompiledStatement statement = CompiledStatement(dialect);
+  Precedence? _expressionPrecedence;
 
   DriftDialect get dialect;
 
@@ -61,7 +69,7 @@ abstract base class StatementCompiler {
   }
 
   void addTableReference(TableReference reference) {
-    addReference(reference.resultSet.name);
+    addReference(reference.resultSet.entityName);
     if (reference.resultSet.alias case final alias?) {
       statement.buffer.write(' AS ');
       addReference(alias);
@@ -71,15 +79,18 @@ abstract base class StatementCompiler {
   void addSelectStatement(BaseSelectStatement select) {
     statement.buffer.write('SELECT ');
 
-    if (select is SingleTableSelectStatement) {
-      statement.buffer.write('*');
-    } else {
-      select.structure.expressions.forEach((expr, position) {
-        expr.compileWith(this);
-        statement.buffer.write(' AS ');
-        addReference(position.name);
-      });
-    }
+    var first = true;
+    select.structure.expressions.forEach((expr, position) {
+      if (!first) {
+        statement.comma();
+      }
+      first = false;
+
+      expr.compileWith(this);
+      statement.buffer.write(' AS ');
+      addReference(position.name);
+    });
+    statement.resultSetStructure = select.structure;
 
     if (select.from case [final first, ...final rest]) {
       statement.buffer.write(' FROM ');
@@ -96,11 +107,75 @@ abstract base class StatementCompiler {
   void addColumnReference(SchemaColumn column) {
     if (statement.hasMultipleTables) {
       final resultSet = column.owningResultSet;
-      addReference(resultSet.alias ?? resultSet.name);
+      addReference(resultSet.aliasOrName);
       statement.buffer.write('.');
     }
 
     addReference(column.name);
+  }
+
+  void addWhereClause(WhereClause where) {
+    statement.buffer.write('WHERE ');
+    where.condition.compileWith(this);
+  }
+
+  void writeExpression(Expression expression, void Function() write) {
+    final savedPrecedence = _expressionPrecedence;
+    final needsParentheses =
+        savedPrecedence != null && expression.precedence <= savedPrecedence;
+    _expressionPrecedence = expression.precedence;
+    if (needsParentheses) statement.buffer.write('(');
+    write();
+    if (needsParentheses) statement.buffer.write(')');
+    _expressionPrecedence = savedPrecedence;
+  }
+
+  void addBinaryExpression(BinaryExpression expr) {
+    writeExpression(expr, () {
+      expr.left.compileWith(this);
+      statement.space();
+      addBinaryOperator(expr.operator);
+      statement.space();
+      expr.right.compileWith(this);
+    });
+  }
+
+  void addUnaryExpression(UnaryExpression expr) {
+    writeExpression(expr, () {
+      if (expr.operator.isPrefix) {
+        addUnaryOperator(expr.operator);
+        statement.space();
+        expr.compileWith(this);
+      } else {
+        expr.compileWith(this);
+        statement.space();
+        addUnaryOperator(expr.operator);
+      }
+    });
+  }
+
+  void addBinaryOperator(BinaryOperator operator) {
+    statement.buffer.write(switch (operator) {
+      BinaryOperator.or => 'OR',
+      BinaryOperator.and => 'AND',
+    });
+  }
+
+  void addUnaryOperator(UnaryOperator operator) {
+    statement.buffer.write(switch (operator) {
+      UnaryOperator.not => 'NOT',
+      UnaryOperator.bitwiseNot => '~',
+      UnaryOperator.minus => '-',
+    });
+  }
+
+  void addLiteral(Literal literal) {
+    if (literal.value case final value?) {
+      final type = literal.resolveType(dialect);
+      statement.buffer.write(type.sqlLiteral(dialect, value));
+    } else {
+      statement.buffer.write('NULL');
+    }
   }
 
   /// Write a [BeginStatement] statement.

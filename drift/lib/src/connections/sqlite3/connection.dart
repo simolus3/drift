@@ -1,17 +1,29 @@
 import 'package:sqlite3/common.dart' as sqlite;
 
+import '../../dialect/sqlite.dart';
 import '../connection.dart';
 import '../result_set.dart';
 
 final class SqliteConnection implements DriftSession {
   final sqlite.CommonDatabase database;
+  final SqliteDialect dialect;
 
-  SqliteConnection(this.database);
+  SqliteConnection(this.dialect, this.database);
+
+  static DriftDatabaseImplementation synchronous(
+      {required sqlite.CommonDatabase Function() open}) {
+    final dialect = SqliteDialect();
+
+    return DriftDatabaseImplementation(
+      dialect: dialect,
+      openConnection: () async => SqliteConnection(dialect, open()),
+    );
+  }
 
   @override
   Future<QueryResult> execute(SqlStatement statement) async {
     final sql = statement.sql;
-    final variables = statement.sqlVariables.toList();
+    final variables = statement.sqlVariables(dialect).toList();
     RawResultSet? resultSet;
 
     if (statement.needsResultSet) {

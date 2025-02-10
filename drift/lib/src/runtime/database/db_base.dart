@@ -29,6 +29,12 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   StreamQueryUpdateRules get streamUpdateRules =>
       const StreamQueryUpdateRules.none();
 
+  /// A list of all [DatabaseSchemaEntity] that are specified in this database.
+  ///
+  /// This contains [allTables], but also advanced entities like triggers.
+  // return allTables for backwards compatibility
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities;
+
   // TODO: Migrations
 
   @override
