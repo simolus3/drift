@@ -2,7 +2,9 @@
 /// state management.
 library;
 
-import 'package:drift/drift.dart';
-import 'package:riverpod/riverpod.dart';
+// ignore: unused_import
+import 'package:riverpod/riverpod.dart' as riverpod show ProviderListenable;
+// ignore: unused_import
+import 'package:drift/drift.dart' as drift show DatabaseConnectionUser;
 
-extension Magic<T extends GeneratedDatabase> on ProviderListenable<T> {}
+export 'src/annotation.dart';

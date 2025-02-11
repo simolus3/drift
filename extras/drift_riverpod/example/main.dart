@@ -19,13 +19,14 @@ final database = StateProvider((ref) {
   return Database(NativeDatabase.memory());
 });
 
-final Provider<AsyncValue<int>> users =
-    database.magicQuery('SELECT COUNT(*) FROM users;');
+@queryProvider
+final users = database.magicQuery('SELECT COUNT(*) FROM users;');
 
 // meh
 final userById = database.users('SELECT * FROM user WHERE id = ?;');
 
 // better? no sql injection, query is rewritten by drift
+@queryProvider
 final userById2 =
     database.users2((int id) => 'SELECT * FROM user WHERE id = $id;');
 

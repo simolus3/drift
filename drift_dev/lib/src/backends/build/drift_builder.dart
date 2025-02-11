@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:drift_dev/src/writer/manager/database_manager_writer.dart';
@@ -86,21 +88,18 @@ class DriftBuilder extends Builder {
 
   @override
   Map<String, List<String>> get buildExtensions {
-    switch (generationMode) {
-      case DriftGenerationMode.monolithicSharedPart:
-        return {
-          '.dart': ['.drift.g.part']
-        };
-      case DriftGenerationMode.monolithicPart:
-        return {
-          '.dart': ['.drift.dart']
-        };
-      case DriftGenerationMode.modular:
-        return {
-          '.dart': ['.drift.dart'],
-          '.drift': ['.drift.dart'],
-        };
-    }
+    return switch (generationMode) {
+      DriftGenerationMode.monolithicSharedPart => const {
+          '.dart': ['.drift.g.part', '.dart$_serializedDatabaseExtension']
+        },
+      DriftGenerationMode.monolithicPart => const {
+          '.dart': ['.drift.dart', '.dart$_serializedDatabaseExtension']
+        },
+      DriftGenerationMode.modular => const {
+          '.dart': ['.drift.dart', '.dart$_serializedDatabaseExtension'],
+          '.drift': ['.drift.dart', '.drift$_serializedDatabaseExtension'],
+        }
+    };
   }
 
   @override
@@ -109,6 +108,8 @@ class DriftBuilder extends Builder {
     await run.run();
   }
 }
+
+const _serializedDatabaseExtension = '.drift_databases.json';
 
 extension on Version {
   String get majorMinor => '$major.$minor';
@@ -140,6 +141,11 @@ class _DriftBuildRun {
 
   @visibleForTesting
   _DriftBuildRun(this.options, this.mode, this.buildStep, this.driver);
+
+  AssetId get dartOutput =>
+      buildStep.allowedOutputs.singleWhere((id) => id.extension != '.json');
+  AssetId get jsonOutput =>
+      buildStep.allowedOutputs.singleWhere((id) => id.extension == '.json');
 
   static Future<_DriftBuildRun> init(
     DriftOptions options,
@@ -186,6 +192,7 @@ class _DriftBuildRun {
       await _generateModular(fileResult);
     }
     await _emitCode();
+    await _emitSerializedDatabaseInfo(fileResult);
 
     if (_didPrintWarning && options.fatalWarnings) {
       throw const FatalWarningException();
@@ -471,7 +478,7 @@ class _DriftBuildRun {
       );
       writer = Writer(options, generationOptions: generationOptions);
     } else {
-      final imports = LibraryImportManager(buildStep.allowedOutputs.single.uri);
+      final imports = LibraryImportManager(dartOutput.uri);
       final generationOptions = GenerationOptions(
         imports: imports,
         isModular: true,
@@ -520,7 +527,30 @@ class _DriftBuildRun {
           'probably invalid, and this is most likely a bug in drift_dev.');
     }
 
-    return buildStep.writeAsString(buildStep.allowedOutputs.single, code);
+    return buildStep.writeAsString(dartOutput, code);
+  }
+
+  Future<void> _emitSerializedDatabaseInfo(FileState entrypointState) async {
+    if (!entrypointState.containsDatabaseAccessor) {
+      return;
+    }
+
+    await buildStep.writeAsString(
+      jsonOutput,
+      json.encode({
+        'resolved_databases': [
+          for (final MapEntry(:key, :value)
+              in entrypointState.fileAnalysis!.resolvedDatabases.entries)
+            {
+              'id': key.toJson(),
+              'schema_elements': [
+                for (final element in value.availableElements)
+                  if (element is DriftSchemaElement) element.id.toJson(),
+              ],
+            }
+        ],
+      }),
+    );
   }
 
   static final Version _minimalDartLanguageVersion = Version(3, 0, 0);

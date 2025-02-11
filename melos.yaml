@@ -14,6 +14,7 @@ packages:
   - extras/drift_devtools_extension
   - extras/drift_mariadb
   - extras/drift_postgres
+  - extras/drift_riverpod
   - extras/encryption
   - extras/integration_tests/*
   - extras/plugin_example
