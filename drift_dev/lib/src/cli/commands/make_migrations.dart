@@ -510,7 +510,7 @@ class _MigrationTestWriter {
   /// It will also import the validation models to test data integrity
   String testStepByStepMigrationCode(String dbName, String dbClassName) {
     return """
-test("migration from v$from to v$to does not corrupt data",
+test('migration from v$from to v$to does not corrupt data',
       () async {
   // Add data to insert into the old database, and the expected rows after the
   // migration.
