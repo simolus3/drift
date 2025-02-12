@@ -424,7 +424,7 @@ void main() {
   // (e.g. by alterating their type or constraints). Migrations that only add
   // tables or columns typically don't need these advanced tests. For more
   // information, see https://drift.simonbinder.eu/migrations/tests/#verifying-data-integrity
-  // TODO: This generated template shows how these tests could be written. Adopt
+  // TODO(User): This generated template shows how these tests could be written. Adopt
   // it to your own needs when testing migrations with data integrity.
   ${firstMigration.testStepByStepMigrationCode(dbName, dbClassName)}
 }
@@ -514,7 +514,7 @@ test("migration from v$from to v$to does not corrupt data",
       () async {
   // Add data to insert into the old database, and the expected rows after the
   // migration.
-  // TODO: Fill these lists
+  // TODO(User): Fill these lists
     ${tables.map((table) {
       return """
 final old${table.dbGetterName.pascalCase}Data = <v$from.${table.nameOfRowClass}>[];
