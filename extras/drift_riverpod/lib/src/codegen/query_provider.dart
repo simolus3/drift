@@ -1,7 +1,10 @@
+// ignore_for_file: implementation_imports
+
 import 'dart:convert';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
@@ -12,33 +15,47 @@ import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:drift_dev/src/analysis/resolver/queries/query_analyzer.dart';
+import 'package:drift_dev/src/writer/writer.dart';
+import 'package:drift_dev/src/writer/queries/query_writer.dart';
+import 'package:drift_riverpod/drift_riverpod.dart';
+import 'package:source_gen/source_gen.dart';
 
 import 'utils.dart';
 
+final annotationChecker = TypeChecker.fromUrl(
+    'package:drift_riverpod/src/annotation.dart#QueryProvider');
+
 final class QueryProviderDefinition implements DriftQueryDeclaration {
+  final QueryProvider annotation;
   final TopLevelVariableElement element;
   final String methodName;
   final Expression databaseProvider;
   final DriftElementId database;
   final List<QueryParameterDefinition> parameters;
+  final FormalParameterList? parameterDeclarations;
   final List<StatementPart> statement;
 
   QueryProviderDefinition({
+    required this.annotation,
     required this.element,
     required this.methodName,
     required this.databaseProvider,
     required this.database,
     required this.parameters,
     required this.statement,
+    required this.parameterDeclarations,
   });
 
   @override
   String get name => element.name;
 
   static Future<(QueryProviderDefinition?, List<DriftAnalysisError>)> parse(
-      Element element, AstNode declaration) async {
+      Element element, AstNode declaration,
+      [DartObject? annotation]) async {
+    annotation ??= annotationChecker.firstAnnotationOf(element)!;
+
     final parser = _QueryProviderParser(
-        await KnownElements.read(element), element, declaration);
+        await KnownElements.read(element), element, declaration, annotation);
     return (parser.parseInner(), parser.errors);
   }
 
@@ -48,10 +65,8 @@ final class QueryProviderDefinition implements DriftQueryDeclaration {
       switch (part) {
         case StringPart():
           buffer.write(part.lexeme);
-        case ParameterReference():
-          throw UnimplementedError();
-        case ConstantReference():
-          throw UnimplementedError();
+        case DartExpression(:final variableIndex):
+          buffer.write('?$variableIndex');
       }
     }
 
@@ -63,12 +78,18 @@ final class _QueryProviderParser {
   final KnownElements knownElements;
   final Element element;
   final AstNode declaration;
+  final DartObject annotation;
 
   late final typeSystem = element.library!.typeSystem;
   final errors = <DriftAnalysisError>[];
   final parts = <StatementPart>[];
+  int _variableIndex = 1;
 
-  _QueryProviderParser(this.knownElements, this.element, this.declaration);
+  final Map<ParameterElement, QueryParameterDefinition> _parametersToQuery = {};
+  final List<QueryParameterDefinition> _parameters = [];
+
+  _QueryProviderParser(
+      this.knownElements, this.element, this.declaration, this.annotation);
 
   void error(String message, [SyntacticEntity? on]) {
     if (on != null) {
@@ -98,6 +119,8 @@ final class _QueryProviderParser {
   }
 
   QueryProviderDefinition? parseInner() {
+    final parsed = annotation.readQueryProvider();
+
     if (element is! TopLevelVariableElement) {
       error('Query providers must be top-level variables.');
       return null;
@@ -136,9 +159,19 @@ final class _QueryProviderParser {
     }
 
     final argument = arguments[0];
+    FormalParameterList? rawParameters;
     Expression? sqlStatement;
     if (argument is FunctionExpression) {
-      // TODO: Parse things like (String id) => 'SELECT * FROM users WHERE id = $id';
+      if (argument.parameters case final params?) {
+        rawParameters = params;
+        _parseArguments(params);
+      }
+
+      if (argument.body case ExpressionFunctionBody(:final expression)) {
+        sqlStatement = expression;
+      } else {
+        error('This must be an expression function body', argument.body);
+      }
     } else {
       sqlStatement = argument;
     }
@@ -149,13 +182,27 @@ final class _QueryProviderParser {
     addStatement(sqlStatement);
 
     return QueryProviderDefinition(
+      annotation: parsed,
       element: element as TopLevelVariableElement,
       methodName: initializer.methodName.name,
       databaseProvider: providerExpr,
       database: databaseType,
-      parameters: [],
+      parameters: _parameters,
+      parameterDeclarations: rawParameters,
       statement: parts,
     );
+  }
+
+  void _parseArguments(FormalParameterList parameters) {
+    var positionalParameters = 0;
+    for (final parameter in parameters.parameterElements) {
+      if (parameter != null && parameter.name != 'ref') {
+        final queryParameter = QueryParameterDefinition(
+            parameter, parameter.isPositional ? positionalParameters++ : -1);
+        _parameters.add(queryParameter);
+        _parametersToQuery[parameter] = queryParameter;
+      }
+    }
   }
 
   void addStatement(Expression statement) {
@@ -164,7 +211,22 @@ final class _QueryProviderParser {
     }
 
     void addInterpolation(Expression expression) {
-      throw 'todo: parameter';
+      QueryParameterDefinition? param;
+      int? index;
+
+      if (expression is SimpleIdentifier) {
+        if (_parametersToQuery[expression.staticElement]
+            case final parameter?) {
+          param = parameter;
+          if (parameter.sqlIndex case final existingIndex?) {
+            index = existingIndex;
+          } else {
+            index = parameter.sqlIndex = _variableIndex++;
+          }
+        }
+      }
+
+      parts.add(DartExpression(expression, param, index ?? _variableIndex++));
     }
 
     if (statement is SimpleStringLiteral) {
@@ -188,10 +250,21 @@ final class _QueryProviderParser {
 
 final class QueryParameterDefinition {
   final ParameterElement dart;
+  final int dartIndex;
+  int? sqlIndex;
+  FoundVariable? boundVariable;
 
-  QueryParameterDefinition(this.dart);
+  QueryParameterDefinition(this.dart, this.dartIndex);
 
   String get name => dart.name;
+
+  AnnotatedDartCode get typeCode {
+    if (boundVariable case final bound?) {
+      return AnnotatedDartCode.build((b) => b.addDriftType(bound));
+    } else {
+      return AnnotatedDartCode.type(dart.type);
+    }
+  }
 }
 
 sealed class StatementPart {}
@@ -202,32 +275,39 @@ final class StringPart extends StatementPart {
   StringPart({required this.lexeme});
 }
 
-final class ParameterReference extends StatementPart {
-  final QueryParameterDefinition parameter;
-
-  ParameterReference(this.parameter);
-}
-
-final class ConstantReference extends StatementPart {
+final class DartExpression extends StatementPart {
   final Expression expression;
 
-  ConstantReference(this.expression);
+  /// If this expression is a direct reference of a query parameter, this
+  /// holds that parameter.
+  final QueryParameterDefinition? parameter;
+  FoundVariable? queryVariable;
+  final int variableIndex;
+
+  DartExpression(this.expression, this.parameter, this.variableIndex);
 }
 
 final class ResolvedQueryProvider {
   final QueryProviderDefinition definition;
   final SqlQuery? query;
+  final Map<FoundVariable, DartExpression> variableBinding;
   final DriftOptions? databaseOptions;
   final List<DriftAnalysisError> errors;
 
   ResolvedQueryProvider(
-      this.definition, this.databaseOptions, this.query, this.errors);
+    this.definition,
+    this.databaseOptions,
+    this.query,
+    this.errors,
+    this.variableBinding,
+  );
 
   static Future<ResolvedQueryProvider> analyze(
     QueryProviderDefinition definition,
     BuildStep buildStep,
   ) async {
     final errors = <DriftAnalysisError>[];
+    final variableBinding = <FoundVariable, DartExpression>{};
     SqlQuery? query;
     DriftOptions? options;
 
@@ -239,7 +319,8 @@ final class ResolvedQueryProvider {
     final resolvedDatabase =
         await _ResolvedDriftDatabase.resolve(buildStep, definition.database);
     if (resolvedDatabase == null) {
-      error('Drift did not generate code for the referenced database.');
+      error(
+          'Drift did not generate code for the referenced database ${definition.database}.');
     } else {
       final driver = DriftAnalysisDriver(
           DriftBuildBackend(buildStep), DriftOptions.fromJson({}));
@@ -267,12 +348,26 @@ final class ResolvedQueryProvider {
 
       try {
         query = await analyzer.analyze(definition);
+
+        for (final variable in query.variables) {
+          final expression = definition.statement
+              .whereType<DartExpression>()
+              .singleWhere((e) => e.variableIndex == variable.originalIndex);
+          variableBinding[variable] = expression;
+          expression.queryVariable = variable;
+          expression.parameter?.boundVariable = variable;
+        }
       } catch (e) {
         error('Could not analyze statement: $e');
       }
+
+      for (final lint in analyzer.lints) {
+        errors.add(DriftAnalysisError.fromSqlError(lint));
+      }
     }
 
-    return ResolvedQueryProvider(definition, options, query, errors);
+    return ResolvedQueryProvider(
+        definition, options, query, errors, variableBinding);
   }
 }
 
@@ -308,5 +403,149 @@ final class _ResolvedDriftDatabase {
     }
 
     return null;
+  }
+}
+
+final class QueryProviderWriter {
+  final Scope databaseScope;
+  final Scope providerScope;
+  final ResolvedQueryProvider query;
+
+  QueryProviderWriter(this.databaseScope, this.providerScope, this.query);
+
+  bool get isProviderFamily => query.definition.parameters.isNotEmpty;
+
+  /// Generates code for [query] as an extension member in [databaseScope].
+  void _writeInnerQuery() {
+    // Write the inner query method as a local function
+    QueryWriter(databaseScope).write(query.query!);
+  }
+
+  void write() {
+    _writeInnerQuery();
+
+    final emitter = providerScope.leaf();
+
+    if (isProviderFamily) {
+      // Signature: SelectableProviderFamily<Row, (int, String)> query(Object args)
+      emitter.writeDriftRiverpod('SelectableProviderFamily');
+      emitter
+        ..write('<')
+        ..writeDart(AnnotatedDartCode.importedSymbol(
+            AnnotatedDartCode.dartCore, 'List'))
+        ..write('<')
+        ..writeDart(AnnotatedDartCode.build(
+            (b) => b.addQueryResultRowType(query.query!)))
+        ..write('>, (');
+
+      var hadNamed = false;
+      for (final parameter in query.definition.parameters) {
+        final element = parameter.dart;
+        if (element.isPositional) {
+          emitter
+            ..writeDart(parameter.typeCode)
+            ..write(' ')
+            ..write(element.name)
+            ..write(',');
+        } else {
+          if (!hadNamed) {
+            hadNamed = true;
+            emitter.write('{');
+          }
+
+          emitter
+            ..writeDart(parameter.typeCode)
+            ..write(' ')
+            ..write(element.name)
+            ..write(',');
+        }
+      }
+
+      if (hadNamed) {
+        emitter.write('}');
+      }
+
+      emitter
+        ..write(')> ')
+        ..write(query.definition.methodName);
+    } else {
+      // Signature: SelectableProvider<Row> query(String sql)
+      emitter.writeDriftRiverpod('SelectableProvider');
+      emitter
+        ..write('<')
+        ..writeDart(AnnotatedDartCode.importedSymbol(
+            AnnotatedDartCode.dartCore, 'List'))
+        ..write('<')
+        ..writeDart(AnnotatedDartCode.build(
+            (b) => b.addQueryResultRowType(query.query!)))
+        ..write('>> ')
+        ..write(query.definition.methodName);
+    }
+
+    emitter.write('(');
+    if (query.definition.parameterDeclarations != null) {
+      // TODO: Generate function type matching the actual function expr passed
+      emitter
+        ..writeDart(AnnotatedDartCode.importedSymbol(
+            AnnotatedDartCode.dartCore, 'Object'))
+        ..write(' _');
+    } else {
+      emitter
+        ..writeDart(AnnotatedDartCode.importedSymbol(
+            AnnotatedDartCode.dartCore, 'String'))
+        ..write(' _');
+    }
+
+    emitter
+      ..writeln(') {')
+      ..write('return ');
+
+    if (isProviderFamily) {
+      emitter
+        ..writeDriftRiverpod('queryProviderFamilyImpl')
+        ..write('((ref, args) => ');
+    } else {
+      emitter
+        ..writeDriftRiverpod('queryProviderImpl')
+        ..write('((ref) => ');
+    }
+
+    emitter
+      ..write('ref.watch(')
+      ..writeDart(AnnotatedDartCode.ast(query.definition.databaseProvider))
+      ..write(').')
+      ..write(query.definition.name)
+      ..writeln('(');
+
+    for (final variable in query.query!.variables) {
+      final dartExpr = query.definition.statement
+          .whereType<DartExpression>()
+          .singleWhere((e) => e.queryVariable == variable);
+
+      if (dartExpr.parameter case final parameter?) {
+        final element = parameter.dart;
+        if (element.isNamed) {
+          emitter.write('args.${element.name}');
+        } else {
+          emitter.write('args.\$${parameter.dartIndex + 1}');
+        }
+      } else {
+        emitter.writeDart(AnnotatedDartCode.ast(dartExpr.expression));
+      }
+      emitter.write(',');
+    }
+
+    emitter
+      ..writeln('));')
+      ..writeln('}');
+  }
+}
+
+final Uri _driftRiverpod =
+    Uri.parse('package:drift_riverpod/drift_riverpod.dart');
+
+extension WriteDriftRiverpodRef on TextEmitter {
+  void writeDriftRiverpod(String symbol) {
+    writeUriRef(_driftRiverpod, symbol);
   }
 }

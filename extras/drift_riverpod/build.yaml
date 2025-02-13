@@ -1,0 +1,19 @@
+builders:
+  drift_riverpod:
+    build_extensions:
+      ".dart": [".drift_riverpod.g.part"]
+    build_to: cache
+    import: "package:drift_riverpod/codegen.dart"
+    builder_factories:
+      - "driftRiverpodBuilder"
+    auto_apply: dependents
+    required_inputs:
+      - ".drift_elements.json"
+      - ".drift_databases.json"
+    applies_builders: ["source_gen:combining_builder"]
+
+targets:
+  $default:
+    builders:
+      drift_riverpod:
+        enabled: true

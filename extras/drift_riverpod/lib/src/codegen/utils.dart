@@ -1,16 +1,14 @@
 import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:drift_riverpod/drift_riverpod.dart';
 
 final class KnownElements {
   /// The `ProviderListenable` type from riverpod.
   final InterfaceElement providerListenable;
 
-  /// The `DatabaseConnectionUser` type from drift.
-  final InterfaceElement databaseConnectionUser;
-
   KnownElements({
     required this.providerListenable,
-    required this.databaseConnectionUser,
   });
 
   /// [element] must be defined in a library that imports `drift_riverpod`.
@@ -32,8 +30,14 @@ final class KnownElements {
     return KnownElements(
       providerListenable:
           get('riverpod', 'ProviderListenable') as InterfaceElement,
-      databaseConnectionUser:
-          get('drift', 'DatabaseConnectionUser') as InterfaceElement,
+    );
+  }
+}
+
+extension ParseConstant on DartObject {
+  QueryProvider readQueryProvider() {
+    return QueryProvider(
+      singleRow: getField('singleRow')!.toBoolValue()!,
     );
   }
 }

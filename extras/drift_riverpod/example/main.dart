@@ -20,15 +20,12 @@ final database = StateProvider((ref) {
 });
 
 @queryProvider
-final users = database.magicQuery('SELECT COUNT(*) FROM users;');
-
-// meh
-final userById = database.users('SELECT * FROM user WHERE id = ?;');
+final countUsers = database.magicQuery('SELECT COUNT(*), 1 FROM users;');
 
 // better? no sql injection, query is rewritten by drift
 @queryProvider
 final userById2 =
-    database.users2((int id) => 'SELECT * FROM user WHERE id = $id;');
+    database.users2((int id) => 'SELECT * FROM users WHERE id = $id;');
 
 void main() {}
 
@@ -42,20 +39,4 @@ class Database extends _$Database {
 
   @override
   int get schemaVersion => 1;
-}
-
-// This is what we should generate
-extension on ProviderListenable<Database> {
-  Provider<AsyncValue<int>> magicQuery(String sql) {
-    throw 'unsupported';
-  }
-
-  ProviderFamily<AsyncValue<User>, int> users(String sql) {
-    throw 'unsupported';
-  }
-
-  ProviderFamily<AsyncValue<User>, ({int id})> users2(
-      String Function(int id) sql) {
-    throw 'unsupported';
-  }
 }

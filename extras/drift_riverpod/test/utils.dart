@@ -116,6 +116,12 @@ extension type BuildResult(InMemoryAssetWriter writer)
     });
   }
 
+  Iterable<AssetId> get driftRiverpodOutputs {
+    return writer.assets.keys.where((e) {
+      return e.path.endsWith('.drift_riverpod.g.part');
+    });
+  }
+
   void checkDartOutputs(Map<String, Object> outputs) {
     checkOutputs(outputs, dartOutputs, writer);
   }

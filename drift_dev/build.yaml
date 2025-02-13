@@ -30,6 +30,7 @@ builders:
         - ".dart.drift_module.json"
         - ".dart.types.temp.dart"
         - ".dart.drift_elements.json"
+        - ".dart.drift_databases.json"
       ".drift":
         - ".drift.drift_module.json"
         - ".drift.types.temp.dart"
@@ -44,7 +45,8 @@ builders:
   not_shared:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["driftBuilderNotShared"]
-    build_extensions: {".dart": [".drift.dart"]}
+    build_extensions:
+      ".dart": [".drift.dart", ".dart.drift_databases.json"]
     build_to: source
     auto_apply: none
     required_inputs: [".drift_prep.json"]
@@ -54,7 +56,9 @@ builders:
   modular:
     import: "package:drift_dev/integrations/build.dart"
     builder_factories: ["modular"]
-    build_extensions: {".dart": [".drift.dart"], ".drift": [".drift.dart"]}
+    build_extensions:
+      ".dart": [".drift.dart", ".dart.drift_databases.json"]
+      ".drift": [".drift.dart", ".drift.drift_databases.json"]
     build_to: source
     auto_apply: none
     required_inputs: [".drift.drift_module.json"]

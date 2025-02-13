@@ -277,6 +277,52 @@ class $DatabaseManager {
 }
 
 // **************************************************************************
+// DriftRiverpodGenerator
+// **************************************************************************
+
+extension on Database {
+  Selectable<CountUsersResult> countUsers() {
+    return customSelect('SELECT COUNT(*) AS _c0, 1 AS _c1 FROM users',
+        variables: [],
+        readsFrom: {
+          users,
+        }).map((QueryRow row) => CountUsersResult(
+          count: row.read<int>('_c0'),
+          empty: row.read<int>('_c1'),
+        ));
+  }
+
+  Selectable<User> userById2(int var1) {
+    return customSelect('SELECT * FROM users WHERE id = ?1', variables: [
+      Variable<int>(var1)
+    ], readsFrom: {
+      users,
+    }).asyncMap(users.mapFromRow);
+  }
+}
+
+extension on DatabaseProvider<Database> {
+  SelectableProvider<List<CountUsersResult>> magicQuery(String _) {
+    return queryProviderImpl((ref) => ref.watch(database).countUsers());
+  }
+
+  SelectableProviderFamily<List<User>, (int id,)> users2(Object _) {
+    return queryProviderFamilyImpl((ref, args) => ref.watch(database).userById2(
+          args.$1,
+        ));
+  }
+}
+
+class CountUsersResult {
+  final int count;
+  final int empty;
+  CountUsersResult({
+    required this.count,
+    required this.empty,
+  });
+}
+
+// **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 

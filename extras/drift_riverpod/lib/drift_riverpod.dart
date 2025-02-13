@@ -2,9 +2,10 @@
 /// state management.
 library;
 
-// ignore: unused_import
 import 'package:riverpod/riverpod.dart' as riverpod show ProviderListenable;
-// ignore: unused_import
-import 'package:drift/drift.dart' as drift show DatabaseConnectionUser;
 
 export 'src/annotation.dart';
+export 'src/selectable_provider.dart';
+
+/// Used as a target for generated extensions.
+typedef DatabaseProvider<T> = riverpod.ProviderListenable<T>;

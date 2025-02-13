@@ -18,7 +18,27 @@ final users = database.magicQuery('SELECT COUNT(*) FROM users;');
 ''');
 
       expect(resolved.methodName, 'magicQuery');
+      expect(resolved.parameterDeclarations, isNull);
       expect(resolved.buildSql(), 'SELECT COUNT(*) FROM users;');
+    });
+
+    test('definition with parameters', () async {
+      final resolved = await _resolveExpectNoErrors('''
+$commonDeclaration
+@queryProvider
+final users = database.magicQuery((id, suffix) => 'SELECT name || \$suffix FROM users WHERE id = \$id;');
+''');
+
+      expect(resolved.methodName, 'magicQuery');
+      expect(resolved.parameterDeclarations, isNotNull);
+      expect(
+          resolved.buildSql(), 'SELECT name || ?1 FROM users WHERE id = ?2;');
+      expect(resolved.parameters[0].name, 'id');
+      expect(resolved.parameters[0].sqlIndex, 2);
+      expect(resolved.parameters[0].dartIndex, 0);
+      expect(resolved.parameters[1].name, 'suffix');
+      expect(resolved.parameters[1].sqlIndex, 1);
+      expect(resolved.parameters[1].dartIndex, 1);
     });
   });
 
@@ -36,8 +56,76 @@ final users = database.magicQuery('SELECT COUNT(*) FROM users;');
       );
 
       checkOutputs({
-        'a|lib/a.g.dart': decodedMatches(contains('extension on Database {')),
-      }, outputs.dartOutputs, outputs);
+        'a|lib/a.drift_riverpod.g.part': decodedMatches(contains('''
+extension on DatabaseProvider<Database> {
+  SelectableProvider<List<int>> magicQuery(String _) {
+    return queryProviderImpl((ref) => ref.watch(database).users());
+  }
+}''')),
+      }, outputs.driftRiverpodOutputs, outputs);
+    });
+
+    test('with parameters', () async {
+      final outputs = await emulateDriftBuild(
+        inputs: {
+          'a|lib/a.dart': '''
+$commonDeclaration
+@queryProvider
+final users = database.magicQuery((id, suffix) => 'SELECT name || \$suffix FROM users WHERE id = \$id;');
+''',
+        },
+        logger: loggerThat(neverEmits(anything)),
+      );
+
+      checkOutputs({
+        'a|lib/a.drift_riverpod.g.part': decodedMatches(allOf(
+          contains(r'''
+extension on Database {
+  Selectable<String> users(String var1, int var2) {
+    return customSelect(
+      'SELECT name || ?1 AS _c0 FROM users WHERE id = ?2',
+      variables: [Variable<String>(var1), Variable<int>(var2)],
+      readsFrom: {users},
+    ).map((QueryRow row) => row.read<String>('_c0'));
+  }
+}'''),
+          contains(r'''
+extension on DatabaseProvider<Database> {
+  SelectableProviderFamily<List<String>, (int id, String suffix)> magicQuery(
+    Object _,
+  ) {
+    return queryProviderFamilyImpl(
+      (ref, args) => ref.watch(database).users(args.$2, args.$1),
+    );
+  }
+}
+'''),
+        )),
+      }, outputs.driftRiverpodOutputs, outputs);
+    });
+
+    test('referencing other providers', () async {
+      final outputs = await emulateDriftBuild(
+        inputs: {
+          'a|lib/a.dart': '''
+$commonDeclaration
+
+final Provider<int> currentId = Provider((ref) => 1);
+
+@queryProvider
+final users = database.magicQuery((ref) => 'SELECT * FROM users WHERE id = \${ref.watch(currentId)};');
+''',
+        },
+        logger: loggerThat(neverEmits(anything)),
+      );
+
+      checkOutputs({
+        'a|lib/a.drift_riverpod.g.part': decodedMatches(contains(r'''
+    return queryProviderImpl(
+      (ref) => ref.watch(database).users(ref.watch(currentId)),
+    );
+''')),
+      }, outputs.driftRiverpodOutputs, outputs);
     });
   });
 }
@@ -52,6 +140,7 @@ part 'a.g.dart';
 
 class Users extends Table {
   IntColumn get id => integer()();
+  TextColumn get name => text()();
 }
 
 @DriftDatabase(tables: [Users])
