@@ -1,7 +1,7 @@
-final class QueryProvider {
+final class QueryProvider<Row> {
   final bool singleRow;
 
   const QueryProvider({this.singleRow = false});
 }
 
-const queryProvider = QueryProvider();
+const queryProvider = QueryProvider<dynamic>();

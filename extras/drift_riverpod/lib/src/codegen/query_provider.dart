@@ -25,7 +25,7 @@ import 'utils.dart';
 final annotationChecker = TypeChecker.fromUrl(
     'package:drift_riverpod/src/annotation.dart#QueryProvider');
 
-final class QueryProviderDefinition implements DriftQueryDeclaration {
+final class QueryProviderDefinition {
   final QueryProvider annotation;
   final TopLevelVariableElement element;
   final String methodName;
@@ -34,6 +34,7 @@ final class QueryProviderDefinition implements DriftQueryDeclaration {
   final List<QueryParameterDefinition> parameters;
   final FormalParameterList? parameterDeclarations;
   final List<StatementPart> statement;
+  final DartType? fixedResultType;
 
   QueryProviderDefinition({
     required this.annotation,
@@ -44,9 +45,9 @@ final class QueryProviderDefinition implements DriftQueryDeclaration {
     required this.parameters,
     required this.statement,
     required this.parameterDeclarations,
+    required this.fixedResultType,
   });
 
-  @override
   String get name => element.name;
 
   static Future<(QueryProviderDefinition?, List<DriftAnalysisError>)> parse(
@@ -120,6 +121,7 @@ final class _QueryProviderParser {
 
   QueryProviderDefinition? parseInner() {
     final parsed = annotation.readQueryProvider();
+    final rowTypeArg = (annotation.type as InterfaceType).typeArguments[0];
 
     if (element is! TopLevelVariableElement) {
       error('Query providers must be top-level variables.');
@@ -190,6 +192,7 @@ final class _QueryProviderParser {
       parameters: _parameters,
       parameterDeclarations: rawParameters,
       statement: parts,
+      fixedResultType: rowTypeArg is DynamicType ? null : rowTypeArg,
     );
   }
 
@@ -347,7 +350,17 @@ final class ResolvedQueryProvider {
           references: elements);
 
       try {
-        query = await analyzer.analyze(definition);
+        query = await analyzer.analyze(DefinedSqlQuery(
+          DriftElementId(_driftRiverpod, definition.name),
+          DriftDeclaration(_driftRiverpod, 0, definition.name),
+          references: const [],
+          existingDartType: switch (definition.fixedResultType) {
+            null => null,
+            final rowType => RequestedQueryResultType(rowType, null),
+          },
+          sql: sql,
+          sqlOffset: 0,
+        ));
 
         for (final variable in query.variables) {
           final expression = definition.statement
