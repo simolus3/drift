@@ -4,6 +4,8 @@ library;
 
 import 'package:riverpod/riverpod.dart' as riverpod show ProviderListenable;
 
+export 'package:drift/drift.dart'
+    show TableInfoUtils, Variable, Selectable, QueryRow;
 export 'src/annotation.dart';
 export 'src/selectable_provider.dart';
 
