@@ -1,3 +1,7 @@
+import '../../query_builder/schema/result_set.dart';
+import '../../query_builder/schema/table.dart';
+import '../../query_builder/schema/view.dart';
+
 /// Collects a set of [UpdateRule]s which can be used to express how a set of
 /// direct updates to a table affects other updates.
 ///
@@ -94,10 +98,10 @@ class TableUpdate {
   /// Default constant constructor.
   const TableUpdate(this.table, {this.kind});
 
-  /// Creates a [TableUpdate] instance based on a [TableInfo] instead of the raw
-  /// name.
-  factory TableUpdate.onTable(TableInfo table, {UpdateKind? kind}) {
-    return TableUpdate(table.actualTableName, kind: kind);
+  /// Creates a [TableUpdate] instance based on a [GeneratedTable] instead of
+  /// the raw name.
+  factory TableUpdate.onTable(GeneratedTable table, {UpdateKind? kind}) {
+    return TableUpdate(table.entityName, kind: kind);
   }
 
   @override
@@ -117,34 +121,34 @@ class TableUpdate {
 /// A table update query describes information to listen for [TableUpdate]s.
 ///
 /// Users should not extend implement this class.
-abstract class TableUpdateQuery {
+sealed class TableUpdateQuery {
   /// Default const constructor so that subclasses can have constant
   /// constructors.
   const TableUpdateQuery();
 
   /// A query that listens for all table updates in a database.
-  const factory TableUpdateQuery.any() = AnyUpdateQuery;
+  const factory TableUpdateQuery.any() = _AnyUpdateQuery;
 
   /// A query that listens for all updates that match any query in [queries].
   const factory TableUpdateQuery.allOf(List<TableUpdateQuery> queries) =
-      MultipleUpdateQuery;
+      _MultipleUpdateQuery;
 
   /// A query that listens for all updates on a specific [table] by its name.
   ///
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
   const factory TableUpdateQuery.onTableName(String table,
-      {UpdateKind? limitUpdateKind}) = SpecificUpdateQuery;
+      {UpdateKind? limitUpdateKind}) = _SpecificUpdateQuery;
 
   /// A query that listens for all updates on a specific [table].
   ///
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
-  factory TableUpdateQuery.onTable(ResultSetImplementation table,
+  factory TableUpdateQuery.onTable(ResultSet table,
       {UpdateKind? limitUpdateKind}) {
-    if (table is ViewInfo) {
+    if (table is GeneratedView) {
       return TableUpdateQuery.allOf([
-        for (final table in table.readTables)
+        for (final table in /*table.readTables*/ const <String>[])
           TableUpdateQuery.onTableName(table)
       ]);
     }
@@ -156,13 +160,12 @@ abstract class TableUpdateQuery {
   }
 
   /// A query that listens for any change on any table in [tables].
-  factory TableUpdateQuery.onAllTables(
-      Iterable<ResultSetImplementation> tables) {
+  factory TableUpdateQuery.onAllTables(Iterable<ResultSet> tables) {
     return TableUpdateQuery.allOf(
       [
         for (final table in tables)
-          if (table is ViewInfo)
-            for (final table in table.readTables)
+          if (table is TableUpdateQuery)
+            for (final table in /* table.readTables */ const <String>[])
               TableUpdateQuery.onTableName(table)
           else
             TableUpdateQuery.onTable(table),
@@ -172,4 +175,46 @@ abstract class TableUpdateQuery {
 
   /// Determines whether the [update] would be picked up by this query.
   bool matches(TableUpdate update);
+}
+
+final class _AnyUpdateQuery extends TableUpdateQuery {
+  const _AnyUpdateQuery();
+
+  @override
+  bool matches(TableUpdate update) => true;
+}
+
+final class _MultipleUpdateQuery extends TableUpdateQuery {
+  final List<TableUpdateQuery> queries;
+
+  const _MultipleUpdateQuery(this.queries);
+
+  @override
+  bool matches(TableUpdate update) => queries.any((q) => q.matches(update));
+}
+
+final class _SpecificUpdateQuery extends TableUpdateQuery {
+  final UpdateKind? limitUpdateKind;
+  final String table;
+
+  const _SpecificUpdateQuery(this.table, {this.limitUpdateKind});
+
+  @override
+  bool matches(TableUpdate update) {
+    if (update.table != table) return false;
+
+    return update.kind == null ||
+        limitUpdateKind == null ||
+        update.kind == limitUpdateKind;
+  }
+
+  @override
+  int get hashCode => Object.hash(limitUpdateKind, table);
+
+  @override
+  bool operator ==(Object other) {
+    return other is _SpecificUpdateQuery &&
+        other.limitUpdateKind == limitUpdateKind &&
+        other.table == table;
+  }
 }

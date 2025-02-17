@@ -24,6 +24,8 @@ final class DriftResultSet
   final RawResultSet resultSet;
   final DriftDialect dialect;
 
+  Map<ResultSet, Object? Function(DriftRow)> _createdMappers = {};
+
   DriftResultSet(this.structure, this.resultSet, this.dialect);
 
   ColumnPosition _expressionPosition(Expression<Object> expression) {
@@ -45,6 +47,18 @@ final class DriftResultSet
   @override
   DriftRow operator [](int index) {
     return DriftRow(this, resultSet[index]);
+  }
+
+  T? Function(DriftRow) bindExpression<T extends Object>(Expression<T> expr) {
+    final position = _expressionPosition(expr);
+    final resolvedType = expr.resolveType(dialect);
+
+    return (row) => row.readWithType(position, resolvedType);
+  }
+
+  Object? Function(DriftRow) _mapperFor(ResultSet resultSet) {
+    return _createdMappers.putIfAbsent(
+        resultSet, () => resultSet.createMapperToDart(this));
   }
 }
 
@@ -70,7 +84,7 @@ final class DriftRow {
 
   Row? readTableOrNull<Row extends Object, RS extends ResultSet<Row, RS>>(
       RS resultSet) {
-    return resultSet.mapToDart(this);
+    return this.resultSet._mapperFor(resultSet)(this) as Row?;
   }
 
   Row readTable<Row extends Object, RS extends ResultSet<Row, RS>>(

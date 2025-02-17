@@ -1,8 +1,10 @@
 import '../results.dart';
 import 'column.dart';
+import 'entities.dart';
 
 abstract base class ResultSet<Row extends Object,
-    Self extends ResultSet<Row, Self>> {
+    Self extends ResultSet<Row, Self>> implements DatabaseSchemaEntity {
+  @override
   final String entityName;
   final String? alias;
 
@@ -16,7 +18,11 @@ abstract base class ResultSet<Row extends Object,
 
   ResultSet({required this.entityName, required this.alias});
 
-  Row? mapToDart(DriftRow row);
+  Row? Function(DriftRow) createMapperToDart(DriftResultSet resultSet);
+
+  Row? mapToDart(DriftRow row) {
+    return createMapperToDart(row.resultSet)(row);
+  }
 
   Self withAlias(String alias);
 

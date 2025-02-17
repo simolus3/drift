@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
+import '../../query_builder/schema/entities.dart';
 import '../streams/update_rules.dart';
 import 'connection_compat.dart';
 import 'connection_user.dart';
@@ -31,8 +32,8 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
 
   /// A list of all [DatabaseSchemaEntity] that are specified in this database.
   ///
-  /// This contains [allTables], but also advanced entities like triggers.
-  // return allTables for backwards compatibility
+  /// This contains all tables, views, triggers, indexes and other drift-
+  /// specific entities that are also encoded as schema entities.
   Iterable<DatabaseSchemaEntity> get allSchemaEntities;
 
   // TODO: Migrations

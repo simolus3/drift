@@ -1,9 +1,7 @@
-import 'package:drift/src/connections/connection.dart';
 import 'package:drift/src/connections/sqlite3/connection.dart';
-import 'package:drift/src/dialect/sqlite.dart';
 import 'package:drift/src/query_builder/results.dart';
 import 'package:drift/src/query_builder/schema/column.dart';
-import 'package:drift/src/query_builder/schema/result_set.dart';
+import 'package:drift/src/query_builder/schema/entities.dart';
 import 'package:drift/src/query_builder/schema/table.dart';
 import 'package:drift/src/query_builder/statements/select.dart';
 import 'package:drift/src/query_builder/types.dart';
@@ -27,17 +25,31 @@ final class Items extends GeneratedTable<Item, Items> {
   late final List<SchemaColumn<Object>> columns = [id, content];
 
   @override
-  Item? mapToDart(DriftRow row) {
-    final columnPositions = row.resultSet.structure.tables[this]!;
-    if (row.raw.rawValue(columnPositions[0]) == null) {
-      return null; // id is null, table does not exist in row
-    }
+  Item? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
+    final columnPositions = resultSet.structure.tables[this]!;
+    final nullCheck = columnPositions[0];
+    final boundId = resultSet.bindExpression(id);
+    final boundContent = resultSet.bindExpression(content);
 
-    return (
-      id: row.read(id)!,
-      content: row.read(content)!,
-    );
+    return (row) {
+      if (row.raw.rawValue(nullCheck) == null) {
+        return null; // id is null, table does not exist in row
+      }
+
+      return (
+        id: boundId(row)!,
+        content: boundContent(row)!,
+      );
+    };
   }
+
+  @override
+  Item? mapToDart(DriftRow row) {
+    throw 'should use mapper';
+  }
+
+  @override
+  Items asSelfType() => this;
 
   @override
   Items withAlias(String alias) {
@@ -52,7 +64,7 @@ final class TestDatabase extends GeneratedDatabase {
   int get schemaVersion => 1;
 
   @override
-  Iterable<dynamic> get allSchemaEntities => [items];
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities => [items];
 
   late final Items items = Items(alias: null);
 }
@@ -75,14 +87,8 @@ INSERT INTO items (content) SELECT x FROM cnt;
 
   final database = TestDatabase(connection);
 
-  final select = SingleTableSelectStatement(database.items);
-  final compiled = dialect.compile(select);
-
-  final rawRows = await connection.execute(SqlStatement(compiled));
-  final mappedRows =
-      DriftResultSet(select.structure, rawRows.resultSet!, dialect);
-
-  final rows = mappedRows.map((row) => row.readTable(items)).toList();
+  final select = SingleTableSelectStatement(database, database.items);
+  final rows = await select.get();
 
   print('Selecting ${rows.length}: ${sw.elapsed}');
 }

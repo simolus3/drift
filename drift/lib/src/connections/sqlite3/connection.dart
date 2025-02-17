@@ -21,7 +21,7 @@ final class SqliteConnection implements DriftSession {
   }
 
   @override
-  Future<QueryResult> execute(SqlStatement statement) async {
+  Future<QueryResult> execute(StatementInfo statement) async {
     final sql = statement.sql;
     final variables = statement.sqlVariables(dialect).toList();
     RawResultSet? resultSet;

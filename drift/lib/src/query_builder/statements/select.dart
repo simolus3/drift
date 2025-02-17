@@ -54,17 +54,18 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
     compiler.addSelectStatement(this);
   }
 
-  Row _mapFromDb(DriftRow row);
+  Row Function(DriftRow) _createMapper(DriftResultSet resultSet);
 
   @override
   Future<List<Row>> get() async {
     final session = await _database.currentSession();
     final query = StatementInfo(_database.dialect.compile(this));
     final results = await session.execute(query);
-    final mapped =
+    final resultSet =
         DriftResultSet(structure, results.resultSet!, _database.dialect);
 
-    return mapped.map(_mapFromDb).toList();
+    final converter = _createMapper(resultSet);
+    return resultSet.map(converter).toList();
   }
 
   @override
@@ -113,5 +114,8 @@ final class SingleTableSelectStatement<Row extends Object,
   SingleTableSelectStatement<Row, RS> asSelf() => this;
 
   @override
-  Row _mapFromDb(DriftRow row) => row.readTable(resultSet);
+  Row Function(DriftRow p1) _createMapper(DriftResultSet resultSet) {
+    final inner = this.resultSet.createMapperToDart(resultSet);
+    return (row) => inner(row)!;
+  }
 }

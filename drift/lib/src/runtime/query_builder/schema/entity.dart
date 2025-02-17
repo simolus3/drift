@@ -1,44 +1,5 @@
 part of '../query_builder.dart';
 
-/// Some abstract schema entity that can be stored in a database. This includes
-/// tables, triggers, views, indexes, etc.
-abstract class DatabaseSchemaEntity {
-  /// The (unalised) name of this entity in the database.
-  String get entityName;
-}
-
-/// A sqlite trigger that's executed before, after or instead of a subset of
-/// writes on a specific tables.
-/// In drift, triggers can only be declared in `.drift` files.
-///
-/// For more information on triggers, see the [CREATE TRIGGER][sqlite-docs]
-/// documentation from sqlite, or the [entry on sqlitetutorial.net][sql-tut].
-///
-/// [sqlite-docs]: https://sqlite.org/lang_createtrigger.html
-/// [sql-tut]: https://www.sqlitetutorial.net/sqlite-trigger/
-class Trigger extends DatabaseSchemaEntity {
-  @override
-  final String entityName;
-
-  /// The `CREATE TRIGGER` sql statement that can be used to create this
-  /// trigger.
-  @Deprecated('Use createStatementsByDialect instead')
-  String get createTriggerStmt => createStatementsByDialect.values.first;
-
-  /// The `CREATE TRIGGER` SQL statements used to create this trigger, accessible
-  /// for each dialect enabled when generating code.
-  final Map<SqlDialect, String> createStatementsByDialect;
-
-  /// Creates a trigger representation by the [createTriggerStmt] and its
-  /// [entityName]. Mainly used by generated code.
-  Trigger(String createTriggerStmt, String entityName)
-      : this.byDialect(entityName, {SqlDialect.sqlite: createTriggerStmt});
-
-  /// Creates the trigger model from its [entityName] in the schema and all
-  /// [createStatementsByDialect] for the supported dialects.
-  Trigger.byDialect(this.entityName, this.createStatementsByDialect);
-}
-
 /// A sqlite index on columns or expressions.
 ///
 /// For more information on triggers, see the [CREATE TRIGGER][sqlite-docs]
@@ -169,21 +130,4 @@ class _AliasResultSet<Tbl, Row> extends ResultSetImplementation<Tbl, Row> {
   @override
   Map<String, GeneratedColumn<Object>> get columnsByName =>
       _inner.columnsByName;
-}
-
-/// Extension to generate an alias for a table or a view.
-extension NameWithAlias on ResultSetImplementation<dynamic, dynamic> {
-  /// The table name, optionally suffixed with the alias if one exists. This
-  /// can be used in select statements, as it returns something like "users u"
-  /// for a table called users that has been aliased as "u".
-  String get tableWithAlias {
-    var dialect = attachedDatabase.executor.dialect;
-    var entityNameEscaped = dialect.escape(entityName);
-    var aliasedNameEscaped = dialect.escape(aliasedName);
-    if (aliasedName == entityName) {
-      return entityNameEscaped;
-    } else {
-      return '$entityNameEscaped $aliasedNameEscaped';
-    }
-  }
 }
