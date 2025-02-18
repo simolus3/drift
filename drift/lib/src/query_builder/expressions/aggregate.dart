@@ -1,4 +1,5 @@
-part of '../query_builder.dart';
+import 'expression.dart';
+import 'variables.dart';
 
 /// Returns the amount of rows in the current group matching the optional
 /// [filter].

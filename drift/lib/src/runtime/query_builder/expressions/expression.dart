@@ -499,45 +499,6 @@ class _CastInSqlExpression<D1 extends Object, D2 extends Object>
   }
 }
 
-/// A sql expression that calls a function.
-///
-/// This class is mainly used by drift internally. If you find yourself using
-/// this class, consider [creating an issue](https://github.com/simolus3/drift/issues/new)
-/// to request native support in drift.
-class FunctionCallExpression<R extends Object> extends Expression<R> {
-  /// The name of the function to call
-  final String functionName;
-
-  /// The arguments passed to the function, as expressions.
-  final List<Expression> arguments;
-
-  @override
-  Precedence get precedence => Precedence.primary;
-
-  /// Constructs a function call expression in sql from the [functionName] and
-  /// the target [arguments].
-  const FunctionCallExpression(this.functionName, this.arguments);
-
-  @override
-  void writeInto(GenerationContext context) {
-    context.buffer
-      ..write(functionName)
-      ..write('(');
-    _writeCommaSeparated(context, arguments);
-    context.buffer.write(')');
-  }
-
-  @override
-  int get hashCode => Object.hash(functionName, _equality);
-
-  @override
-  bool operator ==(Object other) {
-    return other is FunctionCallExpression &&
-        other.functionName == functionName &&
-        _equality.equals(other.arguments, arguments);
-  }
-}
-
 void _checkSubquery(BaseSelectStatement statement) {
   final columns = statement._expandedColumns.length;
   if (columns != 1) {

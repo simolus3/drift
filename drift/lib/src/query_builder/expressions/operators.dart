@@ -40,6 +40,21 @@ final class BinaryExpression<T extends Object> extends Expression<T> {
 
 /// Binary operators supported by drift.
 enum BinaryOperator implements SqlComponent {
+  /// An `==` expression in SQL.
+  equals(Precedence.comparisonEq),
+
+  /// An `IS` expression in SQL.
+  $is(Precedence.comparisonEq),
+
+  /// An `IS NOT` expression in SQL.
+  isNot(Precedence.comparisonEq),
+
+  /// An `IN` expression in SQL.
+  $in(Precedence.comparisonEq),
+
+  /// An `NOT IN` expression in SQL.
+  notIn(Precedence.comparisonEq),
+
   /// An `OR` expression in SQL.
   or(Precedence.or),
 

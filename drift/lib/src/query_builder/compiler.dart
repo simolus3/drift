@@ -1,7 +1,11 @@
 import 'clauses/where.dart';
 import 'dialect.dart';
+import 'expressions/case_when.dart';
 import 'expressions/expression.dart';
+import 'expressions/functions.dart';
 import 'expressions/operators.dart';
+import 'expressions/subquery.dart';
+import 'expressions/tuple.dart';
 import 'expressions/variables.dart';
 import 'results.dart';
 import 'schema/column.dart';
@@ -104,6 +108,66 @@ abstract base class StatementCompiler {
     }
   }
 
+  void addCaseWhenExpression(CaseWhenExpression expr) {
+    statement.buffer.write('CASE');
+
+    if (expr.base case final base?) {
+      statement.buffer.write(' ');
+      base.compileWith(this);
+    }
+
+    for (final (when: condition, :then) in expr.orderedCases) {
+      statement.buffer.write(' WHEN ');
+      condition.compileWith(this);
+      statement.buffer.write(' THEN ');
+      then.compileWith(this);
+    }
+
+    if (expr.orElse case final orElse?) {
+      statement.buffer.write(' ELSE ');
+      orElse.compileWith(this);
+    }
+
+    statement.buffer.write(' END');
+  }
+
+  void addCastExpression(CastExpression expr) {
+    writeExpression(expr, () {
+      statement.buffer.write('CAST(');
+      expr.inner.compileWith(this);
+      statement.buffer.write(' AS ');
+      addTypeName(expr.resolveType(dialect));
+      statement.buffer.write(')');
+    });
+  }
+
+  void addTypeName(SqlType type) {
+    statement.buffer.write(type.typeName(dialect));
+  }
+
+  void addTuple(ExpressionTuple tuple) {
+    var first = true;
+    for (final value in tuple.values) {
+      if (!first) {
+        statement.comma();
+      }
+
+      first = false;
+      value.compileWith(this);
+    }
+  }
+
+  void addSubqueryExpression(SubqueryExpression e) {
+    if (e.statement.structure.expressions.length != 1) {
+      throw StateError(
+          'Error compiling subquery expression $e, inner query must have exactly one column.');
+    }
+
+    statement.buffer.write('(');
+    e.statement.compileWith(this);
+    statement.buffer.write(')');
+  }
+
   void addColumnReference(SchemaColumn column) {
     if (statement.hasMultipleTables) {
       final resultSet = column.owningResultSet;
@@ -156,8 +220,13 @@ abstract base class StatementCompiler {
 
   void addBinaryOperator(BinaryOperator operator) {
     statement.buffer.write(switch (operator) {
+      BinaryOperator.equals => '==',
+      BinaryOperator.$is => 'IS',
+      BinaryOperator.isNot => 'IS NOT',
       BinaryOperator.or => 'OR',
       BinaryOperator.and => 'AND',
+      BinaryOperator.$in => 'IN',
+      BinaryOperator.notIn => 'NOT IN',
     });
   }
 
@@ -176,6 +245,27 @@ abstract base class StatementCompiler {
     } else {
       statement.buffer.write('NULL');
     }
+  }
+
+  void addFunctionCallExpression(FunctionCallExpression expression) {
+    writeExpression(expression, () {
+      addFunctionName(expression);
+      statement.buffer.write('(');
+      var first = true;
+      for (final arg in expression.arguments) {
+        if (!first) {
+          statement.comma();
+        }
+        first = false;
+
+        arg.compileWith(this);
+      }
+      statement.buffer.write(')');
+    });
+  }
+
+  void addFunctionName(FunctionCallExpression expression) {
+    statement.buffer.write(expression.functionName);
   }
 
   /// Write a [BeginStatement] statement.
