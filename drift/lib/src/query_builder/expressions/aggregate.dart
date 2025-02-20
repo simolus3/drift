@@ -1,3 +1,7 @@
+import 'package:collection/collection.dart';
+import 'package:drift/src/query_builder/compiler.dart';
+
+import '../clauses/order_by.dart';
 import 'expression.dart';
 import 'variables.dart';
 
@@ -14,7 +18,7 @@ import 'variables.dart';
 /// This is equivalent to the `COUNT(*) FILTER (WHERE filter)` sql function. The
 /// filter will be omitted if null.
 Expression<int> countAll({Expression<bool>? filter}) {
-  return AggregateFunctionExpression('COUNT', const [_StarFunctionParameter()],
+  return AggregateFunctionExpression('COUNT', const [StarFunctionParameter()],
       filter: filter);
 }
 
@@ -171,6 +175,7 @@ extension BigIntAggregates on Expression<BigInt> {
       dartCast<int>().total(filter: filter);
 }
 
+/*
 /// Provides aggregate functions that are available on date time expressions.
 extension DateTimeAggregate on Expression<DateTime> {
   /// Return the average of all non-null values in this group.
@@ -198,6 +203,7 @@ extension DateTimeAggregate on Expression<DateTime> {
     return DateTimeExpressions.fromUnixEpoch(minTimestamp);
   }
 }
+*/
 
 /// An expression invoking an [aggregate function](https://www.sqlite.org/lang_aggfunc.html).
 ///
@@ -224,41 +230,23 @@ final class AggregateFunctionExpression<D extends Object>
 
   /// An optional filter clause only passing rows matching this condition into
   /// the function.
-  final Where? filter;
+  final Expression<bool>? filter;
 
   /// Creates an aggregate function expression from the syntactic components.
   AggregateFunctionExpression(
     this.functionName,
     this.arguments, {
-    Expression<bool>? filter,
+    this.filter,
     this.distinct = false,
     this.orderBy,
-  }) : filter = filter != null ? Where(filter) : null;
+  });
 
   @override
   final Precedence precedence = Precedence.primary;
 
   @override
-  void writeInto(GenerationContext context) {
-    context.buffer
-      ..write(functionName)
-      ..write('(');
-
-    if (distinct) {
-      context.buffer.write('DISTINCT ');
-    }
-    _writeCommaSeparated(context, arguments);
-    if (orderBy case final orderBy?) {
-      context.writeWhitespace();
-      orderBy.writeInto(context);
-    }
-    context.buffer.write(')');
-
-    if (filter != null) {
-      context.buffer.write(' FILTER (');
-      filter!.writeInto(context);
-      context.buffer.write(')');
-    }
+  void compileWith(StatementCompiler compiler) {
+    compiler.addAggregateFunctionExpression(this);
   }
 
   @override
@@ -279,14 +267,5 @@ final class AggregateFunctionExpression<D extends Object>
         const ListEquality<Object?>().equals(typedOther.arguments, arguments) &&
         typedOther.orderBy == orderBy &&
         typedOther.filter == filter;
-  }
-}
-
-class _StarFunctionParameter implements FunctionParameter {
-  const _StarFunctionParameter();
-
-  @override
-  void writeInto(GenerationContext context) {
-    context.buffer.write('*');
   }
 }

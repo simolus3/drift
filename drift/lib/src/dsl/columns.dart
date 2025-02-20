@@ -1,4 +1,9 @@
-part of 'dsl.dart';
+import 'dart:typed_data';
+
+import '../query_builder/expressions/expression.dart';
+import '../query_builder/schema/column.dart';
+import '../runtime/type_converter.dart';
+import 'internal.dart';
 
 /// A [KeyAction] can be used on a [BuildColumn.references] clause to describe
 /// how updates and deletes to a referenced table should propagate in your
@@ -30,30 +35,7 @@ enum KeyAction {
 
 /// Base class for columns in sql. Type [T] refers to the type a value of this
 /// column will have in Dart.
-abstract class Column<T extends Object> extends Expression<T> {
-  @override
-  final Precedence precedence = Precedence.primary;
-
-  /// The (unescaped) name of this column.
-  ///
-  /// Use [escapedNameFor] to access a name that's escaped in double quotes if
-  /// needed.
-  String get name;
-
-  /// [name], but wrapped in double quotes to escape it as a a same identifier.
-  ///
-  /// In the past, this getter only used to add double-quotes when that is
-  /// really needed (for instance because [name] is also a reserved keyword).
-  /// For performance reasons, we unconditionally escape names now.
-  @Deprecated('Use escapedNameFor with the current dialect')
-  String get escapedName => '"$name"';
-
-  /// [name], but wrapped in double quotes or the DBMS-specific escape
-  /// identifier.
-  String escapedNameFor(SqlDialect dialect) {
-    return dialect.escape(name);
-  }
-}
+typedef Column<T extends Object> = SchemaColumn<T>;
 
 /// A column that stores int values.
 typedef IntColumn = Column<int>;
@@ -85,25 +67,89 @@ typedef BlobColumn = Column<Uint8List>;
 /// A column that stores floating point numeric values.
 typedef RealColumn = Column<double>;
 
-/// A column storing arbitrary values using SQLite's `ANY` type.
-typedef AnyColumn = Column<DriftAny>;
+/// Common definitions shared between regular columns ([ColumnBuilder]s) and
+/// virtual columns ([VirtualColumnBuilder]).
+extension type BaseColumnBuilder<T extends Object>._(SchemaColumn<T> _never)
+    implements SchemaColumn<T> {
+  /// By default, the field name will be used as the column name, e.g.
+  /// `IntColumn get id = integer()` will have "id" as its associated name.
+  /// Columns made up of multiple words are expected to be in camelCase and will
+  /// be converted to snake_case (e.g. a getter called accountCreationDate will
+  /// result in an SQL column called account_creation_date).
+  /// To change this default behavior, use something like
+  /// `IntColumn get id = integer((c) => c.named('user_id'))`.
+  ///
+  /// Note that using [named] __does not__ have an effect on the json key of an
+  /// object. To change the json key, annotate this column getter with
+  /// [JsonKey].
+  ColumnBuilder<T> named(String name) => isGenerated();
 
-class _BaseColumnBuilder<T extends Object> {}
+  /// Marks this column as nullable. Nullable columns should not appear in a
+  /// primary key. Columns are non-null by default.
+  ColumnBuilder<T> nullable() => isGenerated();
+
+  /// Adds UNIQUE constraint to column.
+  ///
+  /// Unique constraints spanning multiple keys can be added to a table by
+  /// overriding [Table.uniqueKeys].
+  ColumnBuilder<T> unique() => isGenerated();
+
+  /// Uses a custom [converter] to store custom Dart objects in a single column
+  /// and automatically mapping them from and to sql.
+  ///
+  /// An example might look like this:
+  /// ```dart
+  ///  // this is the custom object with we want to store in a column. It
+  ///  // can be as complex as you want it to be
+  ///  class MyCustomObject {
+  ///   final String data;
+  ///   MyCustomObject(this.data);
+  /// }
+  ///
+  /// class CustomConverter extends TypeConverter<MyCustomObject, String> {
+  ///   // this class is responsible for turning a custom object into a string.
+  ///   // this is easy here, but more complex objects could be serialized using
+  ///   // json or any other method of your choice.
+  ///   const CustomConverter();
+  ///   @override
+  ///   MyCustomObject fromSql(String fromDb) {
+  ///     return fromDb == null ? null : MyCustomObject(fromDb);
+  ///   }
+  ///
+  ///   @override
+  ///   String toSql(MyCustomObject value) {
+  ///     return value?.data;
+  ///   }
+  /// }
+  ///
+  /// ```
+  ///
+  /// In that case, you could have a table with this column
+  /// ```dart
+  /// TextColumn get custom => text().map(const CustomConverter())();
+  /// ```
+  /// The generated row class will then use a `MyFancyClass` instead of a
+  /// `String`, which would usually be used for [Table.text] columns.
+  ///
+  /// The type [T] of the type converter may only be nullable if this column
+  /// was declared [nullable] too. Otherwise, `drift_dev` will emit an error.
+  ColumnBuilder<T> map<Dart>(TypeConverter<Dart, T?> converter) =>
+      isGenerated();
+
+  /// Turns this column builder into a column. This method won't actually be
+  /// called in your code. Instead, the generator will take a look at your
+  /// source code to figure out your table structure.
+  @Deprecated('No longer necessary in Drift 3')
+  Column<T> call() => _never;
+}
 
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
 /// be called at runtime. Instead, the generator will take a look at your
 /// source code (specifically, it will analyze which of the methods you use) to
 /// figure out the column structure of a table.
-class ColumnBuilder<T extends Object> extends _BaseColumnBuilder<T> {}
-
-/// A column builder for virtual, generated columns.
-///
-/// This is a different class so that some methods are not available
-class VirtualColumnBuilder<T extends Object> extends _BaseColumnBuilder<T> {}
-
-/// DSL extension to define a column inside a drift table.
-extension BuildColumn<T extends Object> on ColumnBuilder<T> {
+extension type ColumnBuilder<T extends Object>._(BaseColumnBuilder<T> _dslOnly)
+    implements BaseColumnBuilder<T> {
   /// Tells drift to write a custom constraint after this column definition when
   /// writing this column, for instance in a CREATE TABLE statement.
   ///
@@ -129,7 +175,7 @@ extension BuildColumn<T extends Object> on ColumnBuilder<T> {
   /// See also:
   /// - https://www.sqlite.org/syntax/column-constraint.html
   /// - [GeneratedColumn.$customConstraints]
-  ColumnBuilder<T> customConstraint(String constraint) => _isGenerated();
+  ColumnBuilder<T> customConstraint(String constraint) => isGenerated();
 
   /// The column will use this expression when a row is inserted and no value
   /// has been specified.
@@ -151,7 +197,7 @@ extension BuildColumn<T extends Object> on ColumnBuilder<T> {
   /// TABLE statements.
   /// - [currentDate] and [currentDateAndTime], which are useful expressions to
   /// store the current date/time as a default value.
-  ColumnBuilder<T> withDefault(Expression<T> e) => _isGenerated();
+  ColumnBuilder<T> withDefault(Expression<T> e) => isGenerated();
 
   /// Sets a dynamic default value for this column.
   ///
@@ -178,7 +224,7 @@ extension BuildColumn<T extends Object> on ColumnBuilder<T> {
   /// [withDefault] instead. [withDefault] will write the default value into the
   /// generated `CREATE TABLE` statement. The underlying sql engine will then
   /// apply the default value.
-  ColumnBuilder<T> clientDefault(T Function() onInsert) => _isGenerated();
+  ColumnBuilder<T> clientDefault(T Function() onInsert) => isGenerated();
 
   /// Adds a foreign-key reference from this column.
   ///
@@ -225,7 +271,7 @@ extension BuildColumn<T extends Object> on ColumnBuilder<T> {
     KeyAction? onDelete,
     bool initiallyDeferred = false,
   }) {
-    _isGenerated();
+    isGenerated();
   }
 
   /// Adds a `CHECK` constraint to this column.
@@ -246,7 +292,7 @@ extension BuildColumn<T extends Object> on ColumnBuilder<T> {
   /// part of a `CREATE TABLE` statement). As a consequence, changes to the
   /// [condition] need to be updated in the database schema with an explicit
   /// [schema migration](https://drift.simonbinder.eu/docs/advanced-features/migrations/).
-  ColumnBuilder<T> check(Expression<bool> condition) => _isGenerated();
+  ColumnBuilder<T> check(Expression<bool> condition) => isGenerated();
 
   /// Declare a generated column.
   ///
@@ -285,82 +331,14 @@ extension BuildColumn<T extends Object> on ColumnBuilder<T> {
   /// a problem.
   VirtualColumnBuilder<T> generatedAs(Expression<T> generatedAs,
           {bool stored = false}) =>
-      _isGenerated();
+      isGenerated();
 }
 
-/// Column builders available for both virtual and non-virtual columns.
-// ignore: library_private_types_in_public_api
-extension BuildGeneralColumn<T extends Object> on _BaseColumnBuilder<T> {
-  /// By default, the field name will be used as the column name, e.g.
-  /// `IntColumn get id = integer()` will have "id" as its associated name.
-  /// Columns made up of multiple words are expected to be in camelCase and will
-  /// be converted to snake_case (e.g. a getter called accountCreationDate will
-  /// result in an SQL column called account_creation_date).
-  /// To change this default behavior, use something like
-  /// `IntColumn get id = integer((c) => c.named('user_id'))`.
-  ///
-  /// Note that using [named] __does not__ have an effect on the json key of an
-  /// object. To change the json key, annotate this column getter with
-  /// [JsonKey].
-  ColumnBuilder<T> named(String name) => _isGenerated();
-
-  /// Marks this column as nullable. Nullable columns should not appear in a
-  /// primary key. Columns are non-null by default.
-  ColumnBuilder<T> nullable() => _isGenerated();
-
-  /// Adds UNIQUE constraint to column.
-  ///
-  /// Unique constraints spanning multiple keys can be added to a table by
-  /// overriding [Table.uniqueKeys].
-  ColumnBuilder<T> unique() => _isGenerated();
-
-  /// Uses a custom [converter] to store custom Dart objects in a single column
-  /// and automatically mapping them from and to sql.
-  ///
-  /// An example might look like this:
-  /// ```dart
-  ///  // this is the custom object with we want to store in a column. It
-  ///  // can be as complex as you want it to be
-  ///  class MyCustomObject {
-  ///   final String data;
-  ///   MyCustomObject(this.data);
-  /// }
-  ///
-  /// class CustomConverter extends TypeConverter<MyCustomObject, String> {
-  ///   // this class is responsible for turning a custom object into a string.
-  ///   // this is easy here, but more complex objects could be serialized using
-  ///   // json or any other method of your choice.
-  ///   const CustomConverter();
-  ///   @override
-  ///   MyCustomObject fromSql(String fromDb) {
-  ///     return fromDb == null ? null : MyCustomObject(fromDb);
-  ///   }
-  ///
-  ///   @override
-  ///   String toSql(MyCustomObject value) {
-  ///     return value?.data;
-  ///   }
-  /// }
-  ///
-  /// ```
-  ///
-  /// In that case, you could have a table with this column
-  /// ```dart
-  /// TextColumn get custom => text().map(const CustomConverter())();
-  /// ```
-  /// The generated row class will then use a `MyFancyClass` instead of a
-  /// `String`, which would usually be used for [Table.text] columns.
-  ///
-  /// The type [T] of the type converter may only be nullable if this column
-  /// was declared [nullable] too. Otherwise, `drift_dev` will emit an error.
-  ColumnBuilder<T> map<Dart>(TypeConverter<Dart, T?> converter) =>
-      _isGenerated();
-
-  /// Turns this column builder into a column. This method won't actually be
-  /// called in your code. Instead, the generator will take a look at your
-  /// source code to figure out your table structure.
-  Column<T> call() => _isGenerated();
-}
+/// A column builder for virtual, generated columns.
+///
+/// This is a different class so that some methods are not available
+extension type VirtualColumnBuilder<T extends Object>._(
+    BaseColumnBuilder<T> _dslOnly) implements BaseColumnBuilder<T> {}
 
 /// Tells the generator to build an [IntColumn]. See the docs at [ColumnBuilder]
 /// for details.
@@ -370,7 +348,7 @@ extension BuildIntColumn<T extends int> on ColumnBuilder<T> {
   ///
   /// For this reason, you can't use an [autoIncrement] column and also set a
   /// custom [Table.primaryKey] on the same table.
-  ColumnBuilder<T> autoIncrement() => _isGenerated();
+  ColumnBuilder<T> autoIncrement() => isGenerated();
 }
 
 /// Tells the generator to build an [Int64Column]. See the docs at [ColumnBuilder]
@@ -381,7 +359,7 @@ extension BuildInt64Column on ColumnBuilder<BigInt> {
   ///
   /// For this reason, you can't use an [autoIncrement] column and also set a
   /// custom [Table.primaryKey] on the same table.
-  ColumnBuilder<BigInt> autoIncrement() => _isGenerated();
+  ColumnBuilder<BigInt> autoIncrement() => isGenerated();
 }
 
 /// Tells the generator to build an [TextColumn]. See the docs at
@@ -395,31 +373,7 @@ extension BuildTextColumn<T extends String> on ColumnBuilder<T> {
   /// null and one tries to write a string which [String.length] is
   /// _strictly less_ than [min], an exception will be thrown. Similarly, you
   /// can't insert strings with a length _strictly greater_ than [max].
-  ColumnBuilder<T> withLength({int? min, int? max}) => _isGenerated();
-}
-
-/// Annotation to use on column getters inside of a [Table] to define the name
-/// of the column in the json used by [DataClass.toJson].
-///
-/// Example:
-/// ```dart
-/// class Users extends Table {
-///   IntColumn get id => integer().autoIncrement()();
-///   @JsonKey('user_name')
-///   TextColumn get name => text().nullable()();
-/// }
-/// ```
-/// When calling [DataClass.toJson] on a `User` object, the output will be a map
-/// with the keys "id" and "user_name". The output would be "id" and "name" if
-/// the [JsonKey] annotation was omitted.
-class JsonKey {
-  /// The key in the json map to use for this [Column]. See the documentation
-  /// for [JsonKey] for details.
-  final String key;
-
-  /// An annotation to tell drift how the name of a column should appear in
-  /// generated json. See the documentation for [JsonKey] for details.
-  const JsonKey(this.key);
+  ColumnBuilder<T> withLength({int? min, int? max}) => isGenerated();
 }
 
 /// Annotation to use on reference columns inside of a [Table] to define the name
@@ -443,7 +397,7 @@ class JsonKey {
 /// When these aren't specified, the manager will use the referenced tables name followed by `Refs`.
 /// If a reference name clashes with other fields on the table, the generator will show a warning,
 /// and filters and orderings wont be generated
-class ReferenceName {
+final class ReferenceName {
   /// The name that this reference will use when generating filters and ordering in the reverse direction
   /// for [ReferenceName] for details.
   final String name;

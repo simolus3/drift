@@ -3,9 +3,6 @@ import 'dart:convert' as convert;
 
 import 'package:sqlite3/common.dart' as sqlite3 show jsonb;
 
-import '../../dsl/dsl.dart';
-import '../data_class.dart';
-
 /// Maps a custom dart object of type [D] into a primitive type [S] understood
 /// by the sqlite backend.
 ///

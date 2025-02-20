@@ -1,7 +1,10 @@
 import 'package:drift/src/connections/sqlite3/connection.dart';
+import 'package:drift/src/dsl/columns.dart';
+import 'package:drift/src/dsl/table.dart';
 import 'package:drift/src/query_builder/results.dart';
 import 'package:drift/src/query_builder/schema/column.dart';
 import 'package:drift/src/query_builder/schema/entities.dart';
+import 'package:drift/src/query_builder/schema/result_set.dart';
 import 'package:drift/src/query_builder/schema/table.dart';
 import 'package:drift/src/query_builder/statements/select.dart';
 import 'package:drift/src/query_builder/types.dart';
@@ -10,7 +13,14 @@ import 'package:sqlite3/sqlite3.dart' show sqlite3;
 
 typedef Item = ({int id, String content});
 
-final class Items extends GeneratedTable<Item, Items> {
+abstract class Items extends Table {
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get content => text();
+}
+
+final class $Items extends Items
+    with ResultSet<Item, $Items>
+    implements GeneratedTable<Item, $Items> {
   late final SchemaColumn<int> id =
       TableColumn(name: 'id', type: BuiltinDriftType.int.resolveIn)
         ..owningResultSet = this;
@@ -19,7 +29,13 @@ final class Items extends GeneratedTable<Item, Items> {
       TableColumn(name: 'content', type: BuiltinDriftType.text.resolveIn)
         ..owningResultSet = this;
 
-  Items({required super.alias}) : super(entityName: 'items');
+  @override
+  final String? alias;
+
+  $Items({this.alias});
+
+  @override
+  String get entityName => 'items';
 
   @override
   late final List<SchemaColumn<Object>> columns = [id, content];
@@ -49,11 +65,11 @@ final class Items extends GeneratedTable<Item, Items> {
   }
 
   @override
-  Items asSelfType() => this;
+  $Items asSelfType() => this;
 
   @override
-  Items withAlias(String alias) {
-    return Items(alias: alias);
+  $Items withAlias(String alias) {
+    return $Items(alias: alias);
   }
 }
 
@@ -66,7 +82,7 @@ final class TestDatabase extends GeneratedDatabase {
   @override
   Iterable<DatabaseSchemaEntity> get allSchemaEntities => [items];
 
-  late final Items items = Items(alias: null);
+  late final $Items items = $Items(alias: null);
 }
 
 void main() async {

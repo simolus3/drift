@@ -2,11 +2,29 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
+import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' show jsonb;
 
+import '../dsl/columns.dart';
+import '../dsl/table.dart';
 import '../query_builder/compiler.dart';
 import '../query_builder/dialect.dart';
+import '../query_builder/schema/column.dart';
 import '../query_builder/types.dart';
+
+extension DriftAnyColumnBuilder on Table {
+  /// Use this as a the body of a getter to declare a column that holds
+  /// arbitrary values not modified by drift at runtime.
+  ///
+  /// The type of this column in the schema is `ANY`, which is particularly
+  /// useful for columns with an unknown type in [isStrict] tables.
+  /// This type has no direct equivalent for other database engines.
+  @protected
+  ColumnBuilder<DriftAny> sqliteAny() => throw '';
+}
+
+/// A column storing arbitrary values using SQLite's `ANY` type.
+typedef AnyColumn = SchemaColumn<DriftAny>;
 
 final class SqliteOptions {
   final bool strictTablesByDefault;
@@ -258,3 +276,5 @@ final class _StringType extends _SqliteType<String> {
     return "'$escapedChars'";
   }
 }
+
+extension type DriftAny(Object fromDb) implements Object {}

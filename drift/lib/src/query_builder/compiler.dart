@@ -1,5 +1,7 @@
+import 'clauses/order_by.dart';
 import 'clauses/where.dart';
 import 'dialect.dart';
+import 'expressions/aggregate.dart';
 import 'expressions/case_when.dart';
 import 'expressions/expression.dart';
 import 'expressions/functions.dart';
@@ -146,15 +148,9 @@ abstract base class StatementCompiler {
   }
 
   void addTuple(ExpressionTuple tuple) {
-    var first = true;
-    for (final value in tuple.values) {
-      if (!first) {
-        statement.comma();
-      }
-
-      first = false;
-      value.compileWith(this);
-    }
+    statement.buffer.write('(');
+    addCommaSeparated(tuple.values);
+    statement.buffer.write(')');
   }
 
   void addSubqueryExpression(SubqueryExpression e) {
@@ -181,6 +177,48 @@ abstract base class StatementCompiler {
   void addWhereClause(WhereClause where) {
     statement.buffer.write('WHERE ');
     where.condition.compileWith(this);
+  }
+
+  void addStarFunctionParameter(StarFunctionParameter parameter) {
+    statement.buffer.write('*');
+  }
+
+  void addCommaSeparated(Iterable<SqlComponent> components) {
+    var first = true;
+    for (final arg in components) {
+      if (!first) {
+        statement.comma();
+      }
+      first = false;
+
+      arg.compileWith(this);
+    }
+  }
+
+  void addAggregateFunctionExpression(AggregateFunctionExpression expr) {
+    writeExpression(expr, () {
+      addFunctionName(expr, expr.functionName);
+      statement.buffer.write('(');
+      if (expr.distinct) {
+        statement.buffer.write('DISTINCT ');
+      }
+      addCommaSeparated(expr.arguments);
+      if (expr.orderBy case final orderBy?) {
+        statement.space();
+        orderBy.compileWith(this);
+      }
+      statement.buffer.write(')');
+
+      if (expr.filter case final filter?) {
+        statement.buffer.write(' FILTER (');
+        filter.compileWith(this);
+        statement.buffer.write(')');
+      }
+    });
+  }
+
+  void addOrderBy(OrderBy orderBy) {
+    throw 'todo';
   }
 
   void writeExpression(Expression expression, void Function() write) {
@@ -249,23 +287,15 @@ abstract base class StatementCompiler {
 
   void addFunctionCallExpression(FunctionCallExpression expression) {
     writeExpression(expression, () {
-      addFunctionName(expression);
+      addFunctionName(expression, expression.functionName);
       statement.buffer.write('(');
-      var first = true;
-      for (final arg in expression.arguments) {
-        if (!first) {
-          statement.comma();
-        }
-        first = false;
-
-        arg.compileWith(this);
-      }
+      addCommaSeparated(expression.arguments);
       statement.buffer.write(')');
     });
   }
 
-  void addFunctionName(FunctionCallExpression expression) {
-    statement.buffer.write(expression.functionName);
+  void addFunctionName(Expression call, String name) {
+    statement.buffer.write(name);
   }
 
   /// Write a [BeginStatement] statement.

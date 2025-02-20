@@ -12,9 +12,11 @@ import 'subquery.dart';
 import 'tuple.dart';
 import 'variables.dart';
 
+sealed class FunctionParameter implements SqlComponent {}
+
 /// An SQL expression, which evaluates to a value when evaluated by a database
 /// engine.
-abstract base class Expression<T extends Object> implements SqlComponent {
+abstract base class Expression<T extends Object> implements FunctionParameter {
   /// Constant base constructor, allowing subclasses to be const.
   const Expression();
 
@@ -391,5 +393,14 @@ final class CastExpression<D1 extends Object, D2 extends Object>
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addCastExpression(this);
+  }
+}
+
+final class StarFunctionParameter implements FunctionParameter {
+  const StarFunctionParameter();
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addStarFunctionParameter(this);
   }
 }

@@ -1,12 +1,7 @@
-import 'package:drift/drift.dart';
+@internal
+library;
+
 import 'package:meta/meta.dart';
-import 'package:meta/meta_meta.dart';
-
-import '../runtime/types/mapping.dart';
-
-part 'columns.dart';
-part 'database.dart';
-part 'table.dart';
 
 /// Implementation for dsl methods that aren't called at runtime but only exist
 /// for the generator to pick up. For instance, in
@@ -31,7 +26,7 @@ part 'table.dart';
 ///   );
 /// }
 /// ```
-Never _isGenerated() {
+Never isGenerated() {
   throw UnsupportedError(
     'This method should not be called at runtime. Are you sure you re-ran the '
     'builder after changing your tables or databases?',
