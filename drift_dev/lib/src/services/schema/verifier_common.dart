@@ -7,7 +7,7 @@ import 'package:sqlite3/common.dart';
 import 'find_differences.dart';
 
 /// Attempts to recognize whether [name] is likely the name of an internal
-/// sqlite3 table (like `sqlite3_sequence`) that we should not consider when
+/// sqlite3 table (like `sqlite_sequence`) that we should not consider when
 /// comparing schemas.
 bool isInternalElement(String name, List<String> virtualTables) {
   // Skip sqlite-internal tables, https://www.sqlite.org/fileformat2.html#intschema
