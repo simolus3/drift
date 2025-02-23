@@ -1,8 +1,8 @@
-import 'package:drift/drift.dart';
 import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
+import '../analysis/dialect.dart';
 import '../analysis/options.dart';
 import '../analysis/results/results.dart';
 import '../utils/string_escaper.dart';
@@ -182,9 +182,8 @@ abstract class _NodeOrWriter {
       AnnotatedDartCode sqlDartType;
 
       switch (converter.sqlType) {
-        case ColumnDriftType():
-          sqlDartType =
-              AnnotatedDartCode([dartTypeNames[converter.sqlType.builtin]!]);
+        case ColumnDriftType(:final builtin):
+          sqlDartType = AnnotatedDartCode([dartTypeNames[builtin]!]);
         case ColumnCustomType(:final custom):
           sqlDartType = AnnotatedDartCode.type(custom.dartType);
       }
@@ -332,7 +331,7 @@ abstract class _NodeOrWriter {
     return buffer.toString();
   }
 
-  String sqlCode(sql.AstNode node, SqlDialect dialect) {
+  String sqlCode(sql.AstNode node, RegisteredDriftDialect dialect) {
     return SqlWriter(writer.options, dialect: dialect, escapeForDart: false)
         .writeSql(node);
   }
@@ -346,14 +345,14 @@ abstract class _NodeOrWriter {
   /// The boolean component in the record describes whether the code will be
   /// dialect specific.
   (String, bool) sqlByDialect(sql.AstNode node) {
-    final dialects = writer.options.supportedDialects;
+    final dialects = writer.options.dialects;
 
-    if (dialects case [SqlDialect.sqlite]) {
+    if (dialects case [final DriftSqliteDialect sqlite]) {
       // Even if we only have a single dialect enabled, we should generate a
       // dialect-specific map if that dialect is not sqlite3. The reason is that
       // APIs in drift that aren't dialect-specific all assume sqlite3.
       return (
-        SqlWriter(writer.options, dialect: dialects.single)
+        SqlWriter(writer.options, dialect: sqlite)
             .writeNodeIntoStringLiteral(node),
         false
       );
@@ -367,7 +366,7 @@ abstract class _NodeOrWriter {
   void _writeSqlByDialectMap(sql.AstNode node, StringBuffer buffer) {
     buffer.write('{');
 
-    for (final dialect in writer.options.supportedDialects) {
+    for (final dialect in writer.options.dialects.values) {
       buffer
         ..write(drift('SqlDialect'))
         ..write(".${dialect.name}: '");
@@ -492,7 +491,8 @@ class TextEmitter extends _Node {
   void writeDart(AnnotatedDartCode code) => write(dartCode(code));
 
   void writeSql(sql.AstNode node,
-      {required SqlDialect dialect, bool escapeForDartString = true}) {
+      {required RegisteredDriftDialect dialect,
+      bool escapeForDartString = true}) {
     SqlWriter(
       writer.options,
       dialect: dialect,

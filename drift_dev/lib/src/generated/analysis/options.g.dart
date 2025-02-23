@@ -21,9 +21,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'use_sql_column_name_as_json_key',
             'generate_connect_constructor',
             'generate_manager',
-            'sqlite_modules',
-            'sqlite',
-            'sql',
+            'dialects',
             'data_class_to_companions',
             'mutable_classes',
             'row_class_constructor_all_required',
@@ -33,7 +31,6 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             'named_parameters',
             'named_parameters_always_required',
             'scoped_dart_components',
-            'store_date_time_values_as_text',
             'case_from_dart_to_sql',
             'write_to_columns_mixins',
             'assume_correct_reference',
@@ -82,19 +79,11 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
               'named_parameters_always_required', (v) => v as bool? ?? false),
           scopedDartComponents: $checkedConvert(
               'scoped_dart_components', (v) => v as bool? ?? true),
-          modules: $checkedConvert(
-              'sqlite_modules',
-              (v) =>
-                  (v as List<dynamic>?)
-                      ?.map((e) => $enumDecode(_$SqlModuleEnumMap, e))
-                      .toList() ??
-                  []),
-          sqliteAnalysisOptions: $checkedConvert(
-              'sqlite',
-              (v) =>
-                  v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
-          storeDateTimeValuesAsText: $checkedConvert(
-              'store_date_time_values_as_text', (v) => v as bool? ?? false),
+          dialects: $checkedConvert(
+              'dialects',
+              (v) => _$JsonConverterFromJson<Map<String, Object?>,
+                      Map<String, RegisteredDriftDialect>>(
+                  v, const _DialectsConverter().fromJson)),
           caseFromDartToSql: $checkedConvert(
               'case_from_dart_to_sql',
               (v) =>
@@ -109,8 +98,6 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
               'has_separate_analyzer', (v) => v as bool? ?? false),
           assumeCorrectReference: $checkedConvert(
               'assume_correct_reference', (v) => v as bool? ?? false),
-          dialect: $checkedConvert('sql',
-              (v) => v == null ? null : DialectOptions.fromJson(v as Map)),
           schemaDir: $checkedConvert(
               'schema_dir', (v) => v as String? ?? 'drift_schemas'),
           testDir:
@@ -146,15 +133,11 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'generateNamedParameters': 'named_parameters',
         'namedParametersAlwaysRequired': 'named_parameters_always_required',
         'scopedDartComponents': 'scoped_dart_components',
-        'modules': 'sqlite_modules',
-        'sqliteAnalysisOptions': 'sqlite',
-        'storeDateTimeValuesAsText': 'store_date_time_values_as_text',
         'caseFromDartToSql': 'case_from_dart_to_sql',
         'writeToColumnsMixins': 'write_to_columns_mixins',
         'fatalWarnings': 'fatal_warnings',
         'hasDriftAnalyzer': 'has_separate_analyzer',
         'assumeCorrectReference': 'assume_correct_reference',
-        'dialect': 'sql',
         'schemaDir': 'schema_dir',
         'testDir': 'test_dir'
       },
@@ -174,10 +157,9 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'use_sql_column_name_as_json_key': instance.useSqlColumnNameAsJsonKey,
       'generate_connect_constructor': instance.generateConnectConstructor,
       'generate_manager': instance.generateManager,
-      'sqlite_modules':
-          instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
-      'sqlite': instance.sqliteAnalysisOptions?.toJson(),
-      'sql': instance.dialect?.toJson(),
+      'dialects': _$JsonConverterToJson<Map<String, Object?>,
+              Map<String, RegisteredDriftDialect>>(
+          instance.dialects, const _DialectsConverter().toJson),
       'data_class_to_companions': instance.dataClassToCompanions,
       'mutable_classes': instance.generateMutableClasses,
       'row_class_constructor_all_required':
@@ -189,7 +171,6 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'named_parameters_always_required':
           instance.namedParametersAlwaysRequired,
       'scoped_dart_components': instance.scopedDartComponents,
-      'store_date_time_values_as_text': instance.storeDateTimeValuesAsText,
       'case_from_dart_to_sql':
           _$CaseFromDartToSqlEnumMap[instance.caseFromDartToSql]!,
       'write_to_columns_mixins': instance.writeToColumnsMixins,
@@ -202,16 +183,11 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'databases': instance.databases,
     };
 
-const _$SqlModuleEnumMap = {
-  SqlModule.json1: 'json1',
-  SqlModule.fts5: 'fts5',
-  SqlModule.moor_ffi: 'moor_ffi',
-  SqlModule.math: 'math',
-  SqlModule.rtree: 'rtree',
-  SqlModule.spellfix1: 'spellfix1',
-  SqlModule.geopoly: 'geopoly',
-  SqlModule.dbstat: 'dbstat',
-};
+Value? _$JsonConverterFromJson<Json, Value>(
+  Object? json,
+  Value? Function(Json json) fromJson,
+) =>
+    json == null ? null : fromJson(json as Json);
 
 const _$CaseFromDartToSqlEnumMap = {
   CaseFromDartToSql.preserve: 'preserve',
@@ -222,97 +198,6 @@ const _$CaseFromDartToSqlEnumMap = {
   CaseFromDartToSql.lower: 'lowercase',
   CaseFromDartToSql.upper: 'UPPERCASE',
 };
-
-DialectOptions _$DialectOptionsFromJson(Map json) => $checkedCreate(
-      'DialectOptions',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          allowedKeys: const ['dialect', 'dialects', 'options'],
-        );
-        final val = DialectOptions(
-          $checkedConvert(
-              'dialect', (v) => $enumDecodeNullable(_$SqlDialectEnumMap, v)),
-          $checkedConvert(
-              'dialects',
-              (v) => (v as List<dynamic>?)
-                  ?.map((e) => $enumDecode(_$SqlDialectEnumMap, e))
-                  .toList()),
-          $checkedConvert(
-              'options',
-              (v) =>
-                  v == null ? null : SqliteAnalysisOptions.fromJson(v as Map)),
-        );
-        return val;
-      },
-    );
-
-Map<String, dynamic> _$DialectOptionsToJson(DialectOptions instance) =>
-    <String, dynamic>{
-      'dialect': _$SqlDialectEnumMap[instance.dialect],
-      'dialects':
-          instance.dialects?.map((e) => _$SqlDialectEnumMap[e]!).toList(),
-      'options': instance.options?.toJson(),
-    };
-
-const _$SqlDialectEnumMap = {
-  SqlDialect.sqlite: 'sqlite',
-  SqlDialect.mysql: 'mysql',
-  SqlDialect.postgres: 'postgres',
-  SqlDialect.mariadb: 'mariadb',
-};
-
-SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
-    $checkedCreate(
-      'SqliteAnalysisOptions',
-      json,
-      ($checkedConvert) {
-        $checkKeys(
-          json,
-          allowedKeys: const ['modules', 'version', 'known_functions'],
-        );
-        final val = SqliteAnalysisOptions(
-          modules: $checkedConvert(
-              'modules',
-              (v) =>
-                  (v as List<dynamic>?)
-                      ?.map((e) => $enumDecode(_$SqlModuleEnumMap, e))
-                      .toList() ??
-                  const []),
-          version: $checkedConvert(
-              'version',
-              (v) => _$JsonConverterFromJson<String, SqliteVersion>(
-                  v, const _SqliteVersionConverter().fromJson)),
-          knownFunctions: $checkedConvert(
-              'known_functions',
-              (v) =>
-                  (v as Map?)?.map(
-                    (k, e) => MapEntry(
-                        k as String, KnownSqliteFunction.fromJson(e as String)),
-                  ) ??
-                  const {}),
-        );
-        return val;
-      },
-      fieldKeyMap: const {'knownFunctions': 'known_functions'},
-    );
-
-Map<String, dynamic> _$SqliteAnalysisOptionsToJson(
-        SqliteAnalysisOptions instance) =>
-    <String, dynamic>{
-      'modules': instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
-      'version': _$JsonConverterToJson<String, SqliteVersion>(
-          instance.version, const _SqliteVersionConverter().toJson),
-      'known_functions':
-          instance.knownFunctions.map((k, e) => MapEntry(k, e.toJson())),
-    };
-
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
 
 Json? _$JsonConverterToJson<Json, Value>(
   Value? value,

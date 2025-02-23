@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:args/args.dart';
-import 'package:drift/drift.dart' show SqlDialect;
+import 'package:drift/drift3.dart' show DriftDialect;
 import 'package:path/path.dart' as p;
 
 import '../../analysis/options.dart';
@@ -174,13 +174,13 @@ class SchemaIsolate {
 
 typedef SchemaIsolateOptions = ({
   List<DriftElement> elements,
-  SqlDialect? dialect,
+  DriftDialect? dialect,
   File? dumpStartupCode,
 });
 
 typedef CreateStatement = ({
   String elementName,
-  SqlDialect dialect,
+  DriftDialect dialect,
   String createStatement,
 });
 

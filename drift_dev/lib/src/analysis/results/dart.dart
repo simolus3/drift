@@ -147,8 +147,8 @@ class AnnotatedDartCodeBuilder {
         if (nullable) addText('?');
       } else {
         switch (hasType.sqlType) {
-          case ColumnDriftType():
-            addTopLevel(dartTypeNames[hasType.sqlType.builtin]!);
+          case ColumnDriftType(:final builtin):
+            addTopLevel(dartTypeNames[builtin]!);
           case ColumnCustomType(:final custom):
             addDartType(custom.dartType);
         }

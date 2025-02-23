@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' hide DriftView;
+import 'package:drift/drift3.dart' show UpdateKind;
 import 'package:sqlparser/sqlparser.dart';
 
 import 'results.dart';

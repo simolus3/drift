@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../backend.dart';
+import '../dialect.dart';
 import '../drift_native_functions.dart';
 import '../options.dart';
 import '../resolver/dart/helper.dart';
@@ -69,25 +70,27 @@ class DriftAnalysisDriver {
   }) : _isTesting = isTesting;
 
   SqlEngine newSqlEngine() {
+    final dialect = options.sqliteDialect;
+
     return SqlEngine(
       EngineOptions(
         driftOptions: DriftSqlOptions(
-          storeDateTimesAsText: options.storeDateTimeValuesAsText,
+          storeDateTimesAsText: dialect.dateTimesAsText,
         ),
         enabledExtensions: [
           DriftOptionsExtension(options),
-          if (options.hasModule(SqlModule.dbstat)) const DbStatExtension(),
-          if (options.hasModule(SqlModule.fts5)) const Fts5Extension(),
-          if (options.hasModule(SqlModule.json1)) const Json1Extension(),
-          if (options.hasModule(SqlModule.moor_ffi))
+          if (dialect.hasModule(SqlModule.dbstat)) const DbStatExtension(),
+          if (dialect.hasModule(SqlModule.fts5)) const Fts5Extension(),
+          if (dialect.hasModule(SqlModule.json1)) const Json1Extension(),
+          if (dialect.hasModule(SqlModule.moor_ffi))
             const DriftNativeExtension(),
-          if (options.hasModule(SqlModule.math)) const BuiltInMathExtension(),
-          if (options.hasModule(SqlModule.rtree)) const RTreeExtension(),
-          if (options.hasModule(SqlModule.spellfix1))
+          if (dialect.hasModule(SqlModule.math)) const BuiltInMathExtension(),
+          if (dialect.hasModule(SqlModule.rtree)) const RTreeExtension(),
+          if (dialect.hasModule(SqlModule.spellfix1))
             const Spellfix1Extension(),
-          if (options.hasModule(SqlModule.geopoly)) const GeopolyExtension(),
+          if (dialect.hasModule(SqlModule.geopoly)) const GeopolyExtension(),
         ],
-        version: options.sqliteVersion,
+        version: dialect.version,
       ),
     );
   }

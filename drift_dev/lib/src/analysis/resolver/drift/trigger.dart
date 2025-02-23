@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' as drift;
+import 'package:drift/drift3.dart' as drift;
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
 

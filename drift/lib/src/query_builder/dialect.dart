@@ -1,7 +1,4 @@
-import 'package:meta/meta.dart';
-
 import 'compiler.dart';
-import 'statements/statement.dart';
 import 'types.dart';
 
 abstract base class DriftDialect implements TypeProvider {
@@ -10,12 +7,11 @@ abstract base class DriftDialect implements TypeProvider {
     return BuiltinDriftType.forType<T>().resolveIn(this);
   }
 
-  @protected
   StatementCompiler createCompiler();
 
-  CompiledStatement compile(SqlStatement statement) {
+  CompiledStatement compile(SqlComponent component) {
     final compiler = createCompiler();
-    statement.compileWith(compiler);
+    component.compileWith(compiler);
     return compiler.statement;
   }
 }

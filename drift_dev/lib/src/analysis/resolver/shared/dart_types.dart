@@ -10,7 +10,7 @@ import 'package:analyzer/src/dart/element/type.dart'
         RecordTypeImpl,
         RecordTypeNamedFieldImpl,
         RecordTypePositionalFieldImpl;
-import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift3.dart' show BuiltinDriftType;
 
 import '../../driver/error.dart';
 import '../../results/results.dart';
@@ -409,8 +409,8 @@ AppliedTypeConverter readEnumConverter(
         ? typeProvider.intType
         : typeProvider.stringType,
     sqlType: ColumnType.drift(columnEnumType == EnumType.intEnum
-        ? DriftSqlType.int
-        : DriftSqlType.string),
+        ? BuiltinDriftType.int
+        : BuiltinDriftType.text),
     dartTypeIsNullable: false,
     sqlTypeIsNullable: false,
     jsonTypeIsNullable: false,
@@ -505,30 +505,26 @@ DartType regularColumnType(
 
 extension on TypeProvider {
   DartType typeFor(ColumnType type, KnownDriftTypes knownTypes) {
-    if (type case ColumnCustomType(:final custom)) {
-      return custom.dartType;
-    }
-
-    switch (type.builtin) {
-      case DriftSqlType.int:
-        return intType;
-      case DriftSqlType.bigInt:
-        return intElement.library.getClass('BigInt')!.instantiate(
-            typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
-      case DriftSqlType.string:
-        return stringType;
-      case DriftSqlType.bool:
-        return boolType;
-      case DriftSqlType.dateTime:
-        return intElement.library.getClass('DateTime')!.instantiate(
-            typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
-      case DriftSqlType.blob:
-        return knownTypes.uint8List;
-      case DriftSqlType.double:
-        return doubleType;
-      case DriftSqlType.any:
-        return knownTypes.driftAny;
-    }
+    return switch (type) {
+      ColumnDriftType(builtin: BuiltinDriftType.int) => intType,
+      ColumnDriftType(builtin: BuiltinDriftType.int64) => intElement.library
+          .getClass('BigInt')!
+          .instantiate(
+              typeArguments: const [],
+              nullabilitySuffix: NullabilitySuffix.none),
+      ColumnDriftType(builtin: BuiltinDriftType.text) => stringType,
+      ColumnDriftType(builtin: BuiltinDriftType.bool) => boolType,
+      ColumnDriftType(builtin: BuiltinDriftType.dateTime) => intElement.library
+          .getClass('DateTime')!
+          .instantiate(
+              typeArguments: const [],
+              nullabilitySuffix: NullabilitySuffix.none),
+      ColumnDriftType(builtin: BuiltinDriftType.byteArray) =>
+        knownTypes.uint8List,
+      ColumnDriftType(builtin: BuiltinDriftType.json) => objectQuestionType,
+      ColumnDriftType(builtin: BuiltinDriftType.double) => doubleType,
+      ColumnCustomType(:final custom) => custom.dartType,
+    };
   }
 }
 

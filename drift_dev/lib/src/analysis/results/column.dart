@@ -1,11 +1,11 @@
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart'
     show Default, GeneratedAs, ReferenceAction;
 import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../../utils/string_escaper.dart';
+import '../dialect.dart';
 import '../options.dart';
 import 'dart.dart';
 import 'element.dart';
@@ -143,13 +143,23 @@ class DriftColumn implements HasType {
   }
 }
 
-class CustomColumnType {
+final class CustomColumnType {
   /// The Dart expression creating an instance of the `UserDefinedType`
   /// responsible for the column.
   final AnnotatedDartCode expression;
   final DartType dartType;
 
   CustomColumnType(this.expression, this.dartType);
+
+  @override
+  int get hashCode => Object.hash(expression, dartType);
+
+  @override
+  bool operator ==(Object other) {
+    return other is CustomColumnType &&
+        other.expression == expression &&
+        other.dartType == dartType;
+  }
 }
 
 class AppliedTypeConverter {
@@ -336,7 +346,7 @@ class LimitingTextLength extends DriftColumnConstraint {
 
 class DefaultConstraintsFromSchemaFile extends DriftColumnConstraint {
   final String? forAllDialects;
-  final Map<SqlDialect, String> dialectSpecific;
+  final Map<DriftSqliteDialect, String> dialectSpecific;
 
   DefaultConstraintsFromSchemaFile(
     this.forAllDialects, {

@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
+import 'package:drift/drift3.dart' show BuiltinDriftType, UpdateKind;
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 
 import 'driver/driver.dart';
@@ -771,7 +771,7 @@ class ElementDeserializer {
       ));
     } else {
       return ColumnType.drift(
-          DriftSqlType.values.byName(json['builtin'] as String));
+          BuiltinDriftType.values.byName(json['builtin'] as String));
     }
   }
 

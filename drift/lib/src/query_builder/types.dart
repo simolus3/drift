@@ -38,6 +38,10 @@ abstract interface class TypeProvider {
   /// Returns a type implementation suitable for storing 64-bit signed integers.
   SqlType<int> get intType;
 
+  /// Returns a type implementation suitable for storing 64-bit signed integers
+  /// that are represented as a [BigInt] in Dart.
+  SqlType<BigInt> get int64Type;
+
   /// Returns a type implementation suitable for storing [double] values.
   SqlType<double> get doubleType;
 
@@ -77,6 +81,7 @@ enum BuiltinDriftType<T extends Object>
     implements _BuiltinDriftTypeWithoutBound<T> {
   text<core.String>._(),
   int<core.int>._(),
+  int64<core.BigInt>._(),
   double<core.double>._(),
   byteArray<Uint8List>._(),
   bool<core.bool>._(),
@@ -91,6 +96,7 @@ enum BuiltinDriftType<T extends Object>
     return switch (this) {
       BuiltinDriftType.text => implementation.textType,
       BuiltinDriftType.int => implementation.intType,
+      BuiltinDriftType.int64 => implementation.int64Type,
       BuiltinDriftType.double => implementation.doubleType,
       BuiltinDriftType.byteArray => implementation.byteArrayType,
       BuiltinDriftType.json => implementation.jsonType,

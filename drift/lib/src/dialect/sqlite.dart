@@ -62,6 +62,9 @@ final class SqliteDialect extends DriftDialect {
   SqlType<int> get intType => const _IntType();
 
   @override
+  SqlType<BigInt> get int64Type => const _BigIntType();
+
+  @override
   SqlType<DatabaseJson> get jsonType => const _JsonType();
 
   @override
@@ -151,6 +154,20 @@ final class _IntType extends _SqlTypeWithoutMapping<int> {
       BigInt() => databaseValue.toInt(),
       double() => databaseValue.toInt(),
       _ => int.parse(databaseValue.toString()),
+    };
+  }
+}
+
+final class _BigIntType extends _SqlTypeWithoutMapping<BigInt> {
+  const _BigIntType() : super('INTEGER');
+
+  @override
+  BigInt dartValue(DriftDialect dialect, Object databaseValue) {
+    return switch (databaseValue) {
+      int() => BigInt.from(databaseValue),
+      BigInt() => databaseValue,
+      double() => BigInt.from(databaseValue.toInt()),
+      _ => BigInt.parse(databaseValue.toString()),
     };
   }
 }

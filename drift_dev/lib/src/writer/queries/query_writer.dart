@@ -1,7 +1,7 @@
-import 'package:drift/drift.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
+import '../../analysis/dialect.dart';
 import '../../analysis/options.dart';
 import '../../analysis/resolver/queries/explicit_alias_transformer.dart';
 import '../../analysis/resolver/queries/nested_queries.dart';
@@ -507,9 +507,9 @@ class QueryWriter {
   /// been expanded. For instance, 'SELECT * FROM t WHERE x IN ?' will be turned
   /// into 'SELECT * FROM t WHERE x IN ($expandedVar1)'.
   String _queryCode(SqlQuery query) {
-    final dialectForCode = <String, List<SqlDialect>>{};
+    final dialectForCode = <String, List<RegisteredDriftDialect>>{};
 
-    for (final dialect in scope.options.supportedDialects) {
+    for (final dialect in scope.options.dialects.values) {
       final code =
           SqlWriter(scope.options, dialect: dialect, query: query).write();
 
@@ -776,7 +776,7 @@ class _ExpandedVariableWriter {
     // case, we have to desugar them by duplicating variables, e.g. `:a AND :a`
     // would be transformed to `? AND ?` with us binding the value to both
     // variables.
-    if (_emitter.writer.options.supportedDialects
+    if (_emitter.writer.options.dialects.values
             .any((e) => !e.supportsIndexedParameters) &&
         query.referencesAnyElementMoreThanOnce) {
       _buffer.write('executor.dialect.desugarDuplicateVariables([');

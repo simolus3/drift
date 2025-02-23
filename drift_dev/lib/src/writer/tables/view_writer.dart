@@ -88,7 +88,7 @@ class ViewWriter extends TableOrViewWriter {
       if (astNode != null) {
         emitter.writeSqlByDialectMap(astNode);
       } else {
-        final firstDialect = scope.options.supportedDialects.first;
+        final firstDialect = scope.options.dialects.values.first;
 
         emitter
           ..write('{')

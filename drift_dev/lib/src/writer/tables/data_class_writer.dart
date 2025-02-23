@@ -388,8 +388,8 @@ class RowMappingWriter {
 
       final String sqlType;
       switch (column.sqlType) {
-        case ColumnDriftType():
-          sqlType = writer.drift(column.sqlType.builtin.toString());
+        case ColumnDriftType(:final builtin):
+          sqlType = writer.drift(builtin.toString());
         case ColumnCustomType(:final custom):
           sqlType = writer.dartCode(custom.expression);
       }

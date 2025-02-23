@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift3.dart' show BuiltinDriftType;
 import 'package:drift_dev/src/analysis/driver/driver.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
@@ -28,7 +28,7 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
       final reader = SchemaFromCreateTable(
         driftExtensions: true,
         driftUseTextForDateTime:
-            resolver.driver.options.storeDateTimeValuesAsText,
+            resolver.driver.options.sqliteDialect.dateTimesAsText,
       );
       table = reader.read(stmt);
     } on CantReadSchemaException catch (e) {
@@ -70,13 +70,16 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
               column.definition?.typeNames?.toSingleEntity ?? stmt);
 
           if (dartType != null) {
+            final isInt = switch (type) {
+              ColumnDriftType(builtin: BuiltinDriftType.int) => true,
+              _ => false,
+            };
+
             converter = readEnumConverter(
               (msg) => reportError(DriftAnalysisError.inDriftFile(
                   column.definition ?? stmt, msg)),
               dartType,
-              type.builtin == DriftSqlType.int
-                  ? EnumType.intEnum
-                  : EnumType.textEnum,
+              isInt ? EnumType.intEnum : EnumType.textEnum,
               await resolver.driver.knownTypes,
             );
           }

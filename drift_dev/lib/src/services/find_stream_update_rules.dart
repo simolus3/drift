@@ -1,4 +1,11 @@
-import 'package:drift/drift.dart' hide DriftDatabase;
+import 'package:drift/drift3.dart'
+    show
+        StreamQueryUpdateRules,
+        UpdateRule,
+        UpdateKind,
+        TableUpdate,
+        WritePropagation,
+        TableUpdateQuery;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../analysis/results/file_results.dart';

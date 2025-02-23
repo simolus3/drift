@@ -21,10 +21,12 @@ abstract class Items extends Table {
 final class $Items extends Items
     with ResultSet<Item, $Items>
     implements GeneratedTable<Item, $Items> {
+  @override
   late final SchemaColumn<int> id =
       TableColumn(name: 'id', type: BuiltinDriftType.int.resolveIn)
         ..owningResultSet = this;
 
+  @override
   late final SchemaColumn<String> content =
       TableColumn(name: 'content', type: BuiltinDriftType.text.resolveIn)
         ..owningResultSet = this;

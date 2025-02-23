@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
+import 'package:drift/drift3.dart' show UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -750,26 +750,17 @@ final class ScalarResultColumn extends ResultColumn
     return dartNameForSqlColumn(name, existingNames: existingNames);
   }
 
-  int get _columnTypeCompatibilityHash {
-    final custom = switch (sqlType) {
-      ColumnDriftType() => null,
-      ColumnCustomType(:final custom) => custom,
-    };
-
-    return Object.hash(sqlType.builtin, custom?.dartType);
-  }
-
   @override
   int get compatibilityHashCode {
-    return Object.hash(ScalarResultColumn, name, _columnTypeCompatibilityHash,
-        nullable, typeConverter);
+    return Object.hash(
+        ScalarResultColumn, name, sqlType.hashCode, nullable, typeConverter);
   }
 
   @override
   bool isCompatibleTo(ResultColumn other) {
     if (other is ScalarResultColumn &&
         other.name == name &&
-        other.sqlType.builtin == sqlType.builtin &&
+        other.sqlType == sqlType &&
         other.nullable == nullable &&
         other.typeConverter == typeConverter) {
       // ok

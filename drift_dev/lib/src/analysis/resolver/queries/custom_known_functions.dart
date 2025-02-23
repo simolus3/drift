@@ -1,5 +1,6 @@
 import 'package:sqlparser/sqlparser.dart';
 
+import '../../dialect.dart';
 import '../../options.dart';
 
 class DriftOptionsExtension implements Extension {
@@ -9,9 +10,9 @@ class DriftOptionsExtension implements Extension {
 
   @override
   void register(SqlEngine engine) {
-    final knownFunctions = options.sqliteOptions?.knownFunctions;
+    final knownFunctions = options.sqliteDialect.knownFunctions;
 
-    if (knownFunctions != null) {
+    if (knownFunctions.isNotEmpty) {
       engine.registerFunctionHandler(_CustomFunctions(knownFunctions));
     }
   }

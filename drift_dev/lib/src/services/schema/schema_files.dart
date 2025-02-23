@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType, SqlDialect, UpdateKind;
+import 'package:drift/drift3.dart'
+    show BuiltinDriftType, DriftDialect, UpdateKind;
 import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:logging/logging.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -75,7 +76,7 @@ class SchemaWriter {
       }
     }
 
-    final knownStatements = <String, List<(SqlDialect, String)>>{};
+    final knownStatements = <String, List<(DriftDialect, String)>>{};
     if (requiresRuntimeInformation.isNotEmpty) {
       try {
         final statements = await SchemaIsolate.collectStatements(

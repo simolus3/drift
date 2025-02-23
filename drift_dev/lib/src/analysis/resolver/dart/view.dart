@@ -2,7 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift3.dart' show BuiltinDriftType;
 import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:recase/recase.dart';
 
@@ -304,15 +304,15 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     return columns;
   }
 
-  DriftSqlType? _dartTypeToColumnType(String name) {
+  BuiltinDriftType? _dartTypeToColumnType(String name) {
     return const {
-      'bool': DriftSqlType.bool,
-      'String': DriftSqlType.string,
-      'int': DriftSqlType.int,
-      'BigInt': DriftSqlType.bigInt,
-      'DateTime': DriftSqlType.dateTime,
-      'Uint8List': DriftSqlType.blob,
-      'double': DriftSqlType.double,
+      'bool': BuiltinDriftType.bool,
+      'String': BuiltinDriftType.text,
+      'int': BuiltinDriftType.int,
+      'BigInt': BuiltinDriftType.int64,
+      'DateTime': BuiltinDriftType.dateTime,
+      'Uint8List': BuiltinDriftType.byteArray,
+      'double': BuiltinDriftType.double,
     }[name];
   }
 }

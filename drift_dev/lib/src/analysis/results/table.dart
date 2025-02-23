@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift3.dart' show BuiltinDriftType;
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import 'dart.dart';
@@ -91,7 +91,7 @@ class DriftTable extends DriftElementWithResultSet {
     this.interfacesForRowClass = const [],
   }) {
     _rowIdColumn = DriftColumn(
-      sqlType: ColumnType.drift(DriftSqlType.int),
+      sqlType: ColumnType.drift(BuiltinDriftType.int),
       nullable: false,
       nameInSql: 'rowid',
       nameInDart: 'rowid',
@@ -135,11 +135,14 @@ class DriftTable extends DriftElementWithResultSet {
     final primaryKey = fullPrimaryKey;
     if (primaryKey.length == 1) {
       final column = primaryKey.single;
-      final builtinType = column.sqlType.builtin;
-      if (builtinType == DriftSqlType.int ||
-          builtinType == DriftSqlType.bigInt) {
-        // So this column is an alias for the rowid
-        return column;
+
+      if (column.sqlType case final ColumnDriftType type) {
+        final builtinType = type.builtin;
+        if (builtinType == BuiltinDriftType.int ||
+            builtinType == BuiltinDriftType.int64) {
+          // So this column is an alias for the rowid
+          return column;
+        }
       }
     }
 

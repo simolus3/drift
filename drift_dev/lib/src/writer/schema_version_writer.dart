@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:sqlparser/sqlparser.dart' as sql;
 import 'package:sqlparser/utils/node_to_text.dart';
 
@@ -27,7 +26,7 @@ final class _TableShape {
   final _ResultSetKind kind;
 
   // Map from Dart getter names to column names in SQL and the SQL type.
-  final Map<String, (String, DriftSqlType)> columnTypes;
+  final Map<String, (String, ColumnType)> columnTypes;
 
   _TableShape(this.kind, this.columnTypes);
 
@@ -41,13 +40,13 @@ final class _TableShape {
         _equality.equals(other.columnTypes, columnTypes);
   }
 
-  static const _equality = MapEquality<String, (String, DriftSqlType)>();
+  static const _equality = MapEquality<String, (String, ColumnType)>();
 
-  static Map<String, (String, DriftSqlType)> columnsFrom(
+  static Map<String, (String, ColumnType)> columnsFrom(
       DriftElementWithResultSet e) {
     return {
       for (final column in e.columns)
-        column.nameInDart: (column.nameInSql, column.sqlType.builtin),
+        column.nameInDart: (column.nameInSql, column.sqlType),
     };
   }
 }

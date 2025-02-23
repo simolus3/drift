@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift3.dart' show BuiltinDriftType;
 
 import 'column.dart';
 import 'dart.dart';
@@ -37,33 +37,47 @@ abstract class HasType {
 /// [HasType] is the interface for sql-typed elements and is implemented by
 /// columns.
 sealed class ColumnType {
-  /// The builtin drift type used by this column.
-  ///
-  /// Even though it's unused there, custom types also have this field set -
-  /// to [DriftSqlType.any] because drift doesn't reinterpret these values at
-  /// all.
-  final DriftSqlType builtin;
-
-  const ColumnType._(this.builtin);
-
-  const factory ColumnType.drift(DriftSqlType builtin) = ColumnDriftType;
+  const factory ColumnType.drift(BuiltinDriftType builtin) = ColumnDriftType;
 
   const factory ColumnType.custom(CustomColumnType custom) = ColumnCustomType;
 }
 
-final class ColumnDriftType extends ColumnType {
-  const ColumnDriftType(super.builtin) : super._();
+final class ColumnDriftType implements ColumnType {
+  /// The builtin drift type used by this column.
+  final BuiltinDriftType builtin;
+
+  const ColumnDriftType(this.builtin);
+
+  @override
+  int get hashCode => Object.hash(ColumnDriftType, builtin);
+
+  @override
+  bool operator ==(Object other) {
+    return other is ColumnDriftType && other.builtin == builtin;
+  }
 }
 
-final class ColumnCustomType extends ColumnType {
+final class ColumnCustomType implements ColumnType {
   final CustomColumnType custom;
 
-  const ColumnCustomType(this.custom) : super._(DriftSqlType.any);
+  const ColumnCustomType(this.custom);
+
+  @override
+  int get hashCode => Object.hash(ColumnCustomType, custom);
+
+  @override
+  bool operator ==(Object other) {
+    return other is ColumnCustomType && other.custom == custom;
+  }
 }
 
 extension OperationOnTypes on HasType {
   bool get isUint8ListInDart {
-    return sqlType.builtin == DriftSqlType.blob && typeConverter == null;
+    return typeConverter == null &&
+        switch (sqlType) {
+          ColumnDriftType(builtin: BuiltinDriftType.byteArray) => true,
+          _ => false,
+        };
   }
 
   /// Whether this type is nullable in Dart
@@ -79,14 +93,14 @@ extension OperationOnTypes on HasType {
   }
 }
 
-Map<DriftSqlType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
-  DriftSqlType.bool: DartTopLevelSymbol('bool', Uri.parse('dart:core')),
-  DriftSqlType.string: DartTopLevelSymbol('String', Uri.parse('dart:core')),
-  DriftSqlType.int: DartTopLevelSymbol('int', Uri.parse('dart:core')),
-  DriftSqlType.bigInt: DartTopLevelSymbol('BigInt', Uri.parse('dart:core')),
-  DriftSqlType.dateTime: DartTopLevelSymbol('DateTime', Uri.parse('dart:core')),
-  DriftSqlType.blob:
+Map<BuiltinDriftType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
+  BuiltinDriftType.bool: DartTopLevelSymbol('bool', Uri.parse('dart:core')),
+  BuiltinDriftType.text: DartTopLevelSymbol('String', Uri.parse('dart:core')),
+  BuiltinDriftType.int: DartTopLevelSymbol('int', Uri.parse('dart:core')),
+  BuiltinDriftType.int64: DartTopLevelSymbol('BigInt', Uri.parse('dart:core')),
+  BuiltinDriftType.dateTime:
+      DartTopLevelSymbol('DateTime', Uri.parse('dart:core')),
+  BuiltinDriftType.byteArray:
       DartTopLevelSymbol('Uint8List', Uri.parse('dart:typed_data')),
-  DriftSqlType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
-  DriftSqlType.any: DartTopLevelSymbol('DriftAny', AnnotatedDartCode.drift),
+  BuiltinDriftType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
 });

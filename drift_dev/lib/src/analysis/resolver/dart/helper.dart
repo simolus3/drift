@@ -31,7 +31,6 @@ class KnownDriftTypes {
   final InterfaceElement userDefinedSqlType;
   final InterfaceElement typeConverter;
   final InterfaceElement jsonTypeConverter;
-  final InterfaceType driftAny;
   final InterfaceType uint8List;
   final InterfaceType geopolyPolygon;
 
@@ -47,7 +46,6 @@ class KnownDriftTypes {
     this.jsonTypeConverter,
     this.driftDatabase,
     this.driftAccessor,
-    this.driftAny,
     this.uint8List,
     this.geopolyPolygon,
   );
@@ -72,8 +70,6 @@ class KnownDriftTypes {
       exportNamespace.get('JsonTypeConverter2') as InterfaceElement,
       dbElement.defaultInstantiation,
       daoElement.defaultInstantiation,
-      (exportNamespace.get('DriftAny') as InterfaceElement)
-          .defaultInstantiation,
       (exportNamespace.get('Uint8List') as InterfaceElement)
           .defaultInstantiation,
       (exportNamespace.get('GeopolyPolygon') as InterfaceElement)

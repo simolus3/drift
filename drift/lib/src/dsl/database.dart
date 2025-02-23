@@ -1,5 +1,3 @@
-part of 'dsl.dart';
-
 /// Use this class as an annotation to inform the generator that a database
 /// class should be generated using the specified [DriftDatabase.tables].
 ///

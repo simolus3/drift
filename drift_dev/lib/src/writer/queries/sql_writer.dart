@@ -1,15 +1,15 @@
 import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show SqlDialect;
-// ignore: deprecated_member_use
-import 'package:drift/sqlite_keywords.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
+import 'package:drift/drift3.dart';
 
+import '../../analysis/dialect.dart';
 import '../../analysis/resolver/drift/element_resolver.dart';
 import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';
 import '../../utils/string_escaper.dart';
+import 'keywords.dart';
 
 /// The expanded sql that we insert into queries whenever an array variable
 /// appears. For the query "SELECT * FROM t WHERE x IN ?", we generate
@@ -29,7 +29,7 @@ String placeholderContextName(FoundDartPlaceholder placeholder) {
 
 extension ToSqlText on AstNode {
   String toSqlWithoutDriftSpecificSyntax(
-      DriftOptions options, SqlDialect dialect) {
+      DriftOptions options, RegisteredDriftDialect dialect) {
     final writer = SqlWriter(options, dialect: dialect, escapeForDart: false);
     return writer.writeSql(this);
   }
@@ -39,19 +39,19 @@ class SqlWriter extends NodeSqlBuilder {
   final StringBuffer _out;
   final SqlQuery? query;
   final DriftOptions options;
-  final SqlDialect dialect;
+  final RegisteredDriftDialect staticDialect;
   final Map<NestedStarResultColumn, NestedResultTable> _starColumnToResolved;
 
-  bool get _isPostgres => dialect == SqlDialect.postgres;
+  late final DriftDialect _dialect = staticDialect.instantiate();
 
-  SqlWriter._(this.query, this.options, this.dialect,
+  SqlWriter._(this.query, this.options, this.staticDialect,
       this._starColumnToResolved, StringBuffer out, bool escapeForDart)
       : _out = out,
         super(escapeForDart ? _DartEscapingSink(out) : out);
 
   factory SqlWriter(
     DriftOptions options, {
-    required SqlDialect dialect,
+    required RegisteredDriftDialect dialect,
     SqlQuery? query,
     bool escapeForDart = true,
     StringBuffer? buffer,
@@ -90,9 +90,9 @@ class SqlWriter extends NodeSqlBuilder {
   @override
   bool isKeyword(String lexeme) {
     return isKeywordLexeme(lexeme) ||
-        switch (dialect) {
-          SqlDialect.postgres => isPostgresKeywordLexeme(lexeme),
-          SqlDialect.mariadb =>
+        switch (staticDialect) {
+          DriftPostgresDialect() => isPostgresKeywordLexeme(lexeme),
+          DriftMariadbDialect() =>
             additionalMariaDBKeywords.contains(lexeme.toUpperCase()),
           _ => false,
         };
@@ -100,7 +100,8 @@ class SqlWriter extends NodeSqlBuilder {
 
   @override
   String escapeIdentifier(String identifier) {
-    return dialect.escape(identifier);
+    final compiler = _dialect.createCompiler()..addReference(identifier);
+    return compiler.statement.buffer.toString();
   }
 
   FoundVariable? _findVariable(Variable target) {
@@ -112,11 +113,9 @@ class SqlWriter extends NodeSqlBuilder {
     if (variable.isArray) {
       _writeRawInSpaces('(\$${expandedName(variable)})');
     } else {
-      final mark = _isPostgres ? '\\\$' : '?';
-      final syntax =
-          dialect.supportsIndexedParameters ? '$mark${variable.index}' : mark;
-
-      _writeRawInSpaces(syntax);
+      final compiler = _dialect.createCompiler()
+        ..addPositionalVariable(variable.index);
+      _writeRawInSpaces(compiler.statement.buffer.toString());
     }
   }
 
@@ -130,7 +129,7 @@ class SqlWriter extends NodeSqlBuilder {
   void visitCastExpression(CastExpression e, void arg) {
     final schema = SchemaFromCreateTable(
       driftExtensions: true,
-      driftUseTextForDateTime: options.storeDateTimeValuesAsText,
+      driftUseTextForDateTime: options.sqliteDialect.dateTimesAsText,
     );
 
     final type = schema.resolveColumnType(e.typeName);
@@ -138,7 +137,8 @@ class SqlWriter extends NodeSqlBuilder {
     String? overriddenTypeName;
 
     if (type.hint<IsDateTime>() != null) {
-      overriddenTypeName = options.storeDateTimeValuesAsText ? 'TEXT' : 'INT';
+      overriddenTypeName =
+          options.sqliteDialect.dateTimesAsText ? 'TEXT' : 'INT';
     } else if (type.hint<IsBoolean>() != null) {
       overriddenTypeName = 'INT';
     } else {

@@ -1,13 +1,12 @@
-import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
-import 'package:drift_dev/src/writer/writer.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../analysis/dialect.dart';
 import '../analysis/driver/driver.dart';
-import '../analysis/options.dart';
+import '../analysis/resolver/drift/sqlparser/mapping.dart';
 import '../analysis/results/dart.dart';
-import '../analysis/results/types.dart';
 import '../utils/string_escaper.dart';
+import 'writer.dart';
 
 /// If the given [options] define custom SQL functions (via
 /// [SqliteAnalysisOptions.knownFunctions]), this writer generates a typed API
@@ -21,7 +20,7 @@ class FunctionStubsWriter {
   FunctionStubsWriter(this._driver, this._typeMapping, this._emitter);
 
   void write() {
-    final functions = _driver.options.sqliteOptions?.knownFunctions ?? const {};
+    final functions = _driver.options.sqliteDialect.knownFunctions;
     if (functions.isEmpty) return;
 
     _emitter
@@ -61,9 +60,7 @@ class FunctionStubsWriter {
   String _nameFor(String sqlName) => ReCase(sqlName).camelCase;
 
   void _writeTypeFor(ResolvedType type) {
-    final driftType = _typeMapping.sqlTypeToDrift(type).builtin;
-
-    _emitter.writeDart(AnnotatedDartCode([dartTypeNames[driftType]!]));
+    _emitter.writeDart(_emitter.dartType(_typeMapping.sqlToDrift(type)));
     if (type.nullable == true) {
       _emitter.write('?');
     }

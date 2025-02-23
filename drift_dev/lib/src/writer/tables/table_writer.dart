@@ -175,11 +175,7 @@ abstract class TableOrViewWriter {
     final isNullable = column.nullable;
     final additionalParams = <String, String>{};
     final expressionBuffer = StringBuffer();
-    final constraints = defaultConstraints(column);
-
-    // Remove dialect-specific constraints for dialects we don't care about.
-    constraints.removeWhere(
-        (key, _) => !emitter.writer.options.supportedDialects.contains(key));
+    final constraints = defaultConstraints(emitter.writer.options, column);
 
     for (final constraint in column.constraints) {
       if (constraint is LimitingTextLength) {
@@ -215,9 +211,8 @@ abstract class TableOrViewWriter {
     }
 
     switch (column.sqlType) {
-      case ColumnDriftType():
-        additionalParams['type'] =
-            emitter.drift(column.sqlType.builtin.toString());
+      case ColumnDriftType(:final builtin):
+        additionalParams['type'] = emitter.drift(builtin.toString());
       case ColumnCustomType(:final custom):
         additionalParams['type'] = emitter.dartCode(custom.expression);
     }

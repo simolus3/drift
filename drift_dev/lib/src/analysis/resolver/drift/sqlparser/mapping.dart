@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift3.dart' show BuiltinDriftType;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../../driver/driver.dart';
@@ -74,13 +74,12 @@ class TypeMapping {
   }
 
   ResolvedType _columnType(DriftColumn column) {
-    var type = _driftTypeToParser(column.sqlType.builtin)
+    var type = switch (column.sqlType) {
+      ColumnDriftType(:final builtin) => _driftTypeToParser(builtin),
+      ColumnCustomType(:final custom) =>
+        ResolvedType(type: BasicType.any, hints: [CustomTypeHint(custom)]),
+    }
         .withNullable(column.nullable);
-
-    type = switch (column.sqlType) {
-      ColumnDriftType() => type,
-      ColumnCustomType(:final custom) => type.addHint(CustomTypeHint(custom)),
-    };
 
     if (column.typeConverter case AppliedTypeConverter c) {
       type = type.addHint(TypeConverterHint(c));
@@ -89,62 +88,71 @@ class TypeMapping {
     return type;
   }
 
-  ResolvedType _driftTypeToParser(DriftSqlType type) {
+  ResolvedType _driftTypeToParser(BuiltinDriftType type) {
     return switch (type) {
-      DriftSqlType.int => const ResolvedType(type: BasicType.int),
-      DriftSqlType.bigInt =>
+      BuiltinDriftType.int => const ResolvedType(type: BasicType.int),
+      BuiltinDriftType.int64 =>
         const ResolvedType(type: BasicType.int, hints: [IsBigInt()]),
-      DriftSqlType.string => const ResolvedType(type: BasicType.text),
-      DriftSqlType.bool =>
+      BuiltinDriftType.text => const ResolvedType(type: BasicType.text),
+      BuiltinDriftType.bool =>
         const ResolvedType(type: BasicType.int, hints: [IsBoolean()]),
-      DriftSqlType.dateTime => ResolvedType(
-          type: driver.options.storeDateTimeValuesAsText
+      BuiltinDriftType.dateTime => ResolvedType(
+          type: driver.options.sqliteDialect.dateTimesAsText
               ? BasicType.text
               : BasicType.int,
           hints: const [IsDateTime()],
         ),
-      DriftSqlType.blob => const ResolvedType(type: BasicType.blob),
-      DriftSqlType.double => const ResolvedType(type: BasicType.real),
-      DriftSqlType.any => const ResolvedType(type: BasicType.any),
+      BuiltinDriftType.byteArray => const ResolvedType(type: BasicType.blob),
+      BuiltinDriftType.double => const ResolvedType(type: BasicType.real),
+      BuiltinDriftType.json => ResolvedType(
+          type: driver.options.sqliteDialect.binaryJson
+              ? BasicType.blob
+              : BasicType.text,
+        ),
     };
   }
 
-  static DriftSqlType toDefaultType(ResolvedType type, bool dateTimeAsText) {
+  static BuiltinDriftType toDefaultType(
+      ResolvedType type, bool dateTimeAsText) {
     switch (type.type) {
       case null:
       case BasicType.nullType:
-        return DriftSqlType.string;
+        return BuiltinDriftType.text;
       case BasicType.int:
         if (type.hint<IsBoolean>() != null) {
-          return DriftSqlType.bool;
+          return BuiltinDriftType.bool;
         } else if (!dateTimeAsText && type.hint<IsDateTime>() != null) {
-          return DriftSqlType.dateTime;
+          return BuiltinDriftType.dateTime;
         } else if (type.hint<IsBigInt>() != null) {
-          return DriftSqlType.bigInt;
+          return BuiltinDriftType.int64;
         }
-        return DriftSqlType.int;
+        return BuiltinDriftType.int;
       case BasicType.real:
-        return DriftSqlType.double;
+        return BuiltinDriftType.double;
       case BasicType.text:
         if (dateTimeAsText && type.hint<IsDateTime>() != null) {
-          return DriftSqlType.dateTime;
+          return BuiltinDriftType.dateTime;
         }
 
-        return DriftSqlType.string;
+        return BuiltinDriftType.text;
       case BasicType.blob:
-        return DriftSqlType.blob;
+        return BuiltinDriftType.byteArray;
       case BasicType.any:
-        return DriftSqlType.any;
+        throw 'todo: Custom any type';
     }
   }
 
-  DriftSqlType _toDefaultType(ResolvedType type) {
-    return toDefaultType(type, driver.options.storeDateTimeValuesAsText);
+  BuiltinDriftType _toDefaultType(ResolvedType type) {
+    return toDefaultType(type, driver.options.sqliteDialect.dateTimesAsText);
+  }
+
+  HasType sqlToDrift(ResolvedType? type) {
+    return _HasType(type, sqlTypeToDrift(type));
   }
 
   ColumnType sqlTypeToDrift(ResolvedType? type) {
     if (type == null) {
-      return const ColumnType.drift(DriftSqlType.string);
+      return const ColumnType.drift(BuiltinDriftType.text);
     }
 
     final customHint = type.hint<CustomTypeHint>();
@@ -218,4 +226,24 @@ class _SimpleColumn extends Column implements ColumnWithType {
   final ResolvedType type;
 
   _SimpleColumn(this.name, this.type);
+}
+
+final class _HasType extends HasType {
+  final ResolvedType? type;
+  @override
+  final ColumnType sqlType;
+
+  _HasType(this.type, this.sqlType);
+
+  @override
+  bool get isArray => type?.isArray ?? false;
+
+  @override
+  bool get nullable => type?.nullable ?? true;
+
+  @override
+  AppliedTypeConverter? get typeConverter {
+    final hint = type?.hint<TypeConverterHint>();
+    return hint?.converter;
+  }
 }

@@ -2,7 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
+import 'package:drift/drift3.dart' show BuiltinDriftType;
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart'
     show InitialDeferrableMode, ReferenceAction;
@@ -395,7 +395,7 @@ class ColumnParser {
           ? ColumnType.custom(custom)
           // Fallback if we fail to read the custom type - we'll also emit an
           // error int that case.
-          : ColumnType.drift(DriftSqlType.any);
+          : ColumnType.drift(BuiltinDriftType.text);
     } else {
       columnType =
           ColumnType.drift(_startMethodToBuiltinColumnType(foundStartMethod));
@@ -513,18 +513,18 @@ class ColumnParser {
     );
   }
 
-  DriftSqlType _startMethodToBuiltinColumnType(String name) {
+  BuiltinDriftType _startMethodToBuiltinColumnType(String name) {
     return const {
-      _startBool: DriftSqlType.bool,
-      _startString: DriftSqlType.string,
-      _startInt: DriftSqlType.int,
-      _startInt64: DriftSqlType.bigInt,
-      _startIntEnum: DriftSqlType.int,
-      _startTextEnum: DriftSqlType.string,
-      _startDateTime: DriftSqlType.dateTime,
-      _startBlob: DriftSqlType.blob,
-      _startReal: DriftSqlType.double,
-      _startAny: DriftSqlType.any,
+      _startBool: BuiltinDriftType.bool,
+      _startString: BuiltinDriftType.text,
+      _startInt: BuiltinDriftType.int,
+      _startInt64: BuiltinDriftType.int64,
+      _startIntEnum: BuiltinDriftType.int,
+      _startTextEnum: BuiltinDriftType.text,
+      _startDateTime: BuiltinDriftType.dateTime,
+      _startBlob: BuiltinDriftType.byteArray,
+      _startReal: BuiltinDriftType.double,
+      //     _startAny: DriftSqlType.any,
     }[name]!;
   }
 

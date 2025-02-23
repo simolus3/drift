@@ -1,14 +1,16 @@
-import 'package:drift/drift.dart';
-// ignore: deprecated_member_use
-import 'package:drift/sqlite_keywords.dart';
+import 'package:drift/drift3.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
+import '../../analysis/dialect.dart';
+import '../../analysis/options.dart';
 import '../../analysis/results/results.dart';
 
-Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
+Map<RegisteredDriftDialect, String> defaultConstraints(
+    DriftOptions options, DriftColumn column) {
+  final allDialects = options.dialects.values.toList();
   final defaultConstraints = <String>[];
-  final dialectSpecificConstraints = <SqlDialect, List<String>>{
-    for (final dialect in SqlDialect.values) dialect: [],
+  final dialectSpecificConstraints = <RegisteredDriftDialect, List<String>>{
+    for (final dialect in allDialects) dialect: [],
   };
 
   var wrotePkConstraint = false;
@@ -17,8 +19,9 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
     if (feature is PrimaryKeyColumn) {
       if (!wrotePkConstraint) {
         if (feature.isAutoIncrement) {
-          for (final dialect in SqlDialect.values) {
-            if (dialect == SqlDialect.mariadb) {
+          // TODO: Use runtime column builder for this?
+          for (final dialect in allDialects) {
+            if (dialect is DriftMariadbDialect) {
               dialectSpecificConstraints[dialect]!
                   .add('PRIMARY KEY AUTO_INCREMENT');
             } else {
@@ -47,10 +50,10 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
 
   for (final feature in column.constraints) {
     if (feature is ForeignKeyReference) {
-      final tableName = escapeIfNeeded(feature.otherColumn.owner.id.name);
-      final columnName = escapeIfNeeded(feature.otherColumn.nameInSql);
+      final tableName = feature.otherColumn.owner.id.name;
+      final columnName = feature.otherColumn.nameInSql;
 
-      var constraint = 'REFERENCES $tableName ($columnName)';
+      var constraint = 'REFERENCES "$tableName" ("$columnName")';
 
       final onUpdate = feature.onUpdate;
       final onDelete = feature.onDelete;
@@ -69,7 +72,7 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
 
       defaultConstraints.add(constraint);
     } else if (feature is DefaultConstraintsFromSchemaFile) {
-      String buildFor(SqlDialect dialect) {
+      String buildFor(RegisteredDriftDialect dialect) {
         final result = StringBuffer();
         if (feature.forAllDialects case final defaults?) {
           result.write(defaults);
@@ -84,17 +87,19 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
       }
 
       return {
-        for (final dialect in SqlDialect.values) dialect: buildFor(dialect),
+        for (final dialect in allDialects) dialect: buildFor(dialect),
       };
     }
   }
 
-  if (column.sqlType.builtin == DriftSqlType.bool) {
+  if (column.sqlType case ColumnDriftType(builtin: BuiltinDriftType.bool)) {
     final name = column.nameInSql;
-    dialectSpecificConstraints[SqlDialect.sqlite]!
-        .add('CHECK (${SqlDialect.sqlite.escape(name)} IN (0, 1))');
-    dialectSpecificConstraints[SqlDialect.mariadb]!
-        .add('CHECK (${SqlDialect.mariadb.escape(name)} IN (0, 1))');
+
+    dialectSpecificConstraints.forEach((dialect, constraints) {
+      if (dialect is DriftSqliteDialect || dialect is DriftMariadbDialect) {
+        dialectSpecificConstraints[dialect]!.add('CHECK ("$name" IN (0, 1))');
+      }
+    });
   }
 
   for (final constraints in dialectSpecificConstraints.values) {

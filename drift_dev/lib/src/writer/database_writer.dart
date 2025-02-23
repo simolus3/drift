@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' as drift;
+import 'package:drift/drift3.dart' as drift;
 // ignore: implementation_imports
 import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:drift_dev/src/writer/manager/database_manager_writer.dart';
@@ -223,7 +223,7 @@ class DatabaseWriter {
         ..writeln('int get schemaVersion => $version;');
     }
 
-    if (scope.options.storeDateTimeValuesAsText) {
+    if (scope.options.sqliteDialect.dateTimesAsText) {
       // Override database options to reflect that DateTimes are stored as text.
       final options = schemaScope.drift('DriftDatabaseOptions');
 
