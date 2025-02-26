@@ -7,6 +7,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
 import 'package:collection/collection.dart';
+import 'package:source_gen/source_gen.dart';
 
 import '../../backend.dart';
 import '../../driver/error.dart';
@@ -28,11 +29,16 @@ class KnownDriftTypes {
   final InterfaceType tableInfoType;
   final InterfaceType driftDatabase;
   final InterfaceType driftAccessor;
-  final InterfaceElement userDefinedSqlType;
+  final InterfaceElement sqlType;
   final InterfaceElement typeConverter;
   final InterfaceElement jsonTypeConverter;
   final InterfaceType uint8List;
   final InterfaceType geopolyPolygon;
+  final InterfaceElement driftColumnDeclarationBuilder;
+
+  late final TypeChecker checkDriftColumnDeclarationBuilder =
+      TypeChecker.fromStatic(
+          driftColumnDeclarationBuilder.defaultInstantiation);
 
   KnownDriftTypes._(
     this.helperLibrary,
@@ -41,13 +47,14 @@ class KnownDriftTypes {
     this.tableIndexType,
     this.viewType,
     this.tableInfoType,
-    this.userDefinedSqlType,
+    this.sqlType,
     this.typeConverter,
     this.jsonTypeConverter,
     this.driftDatabase,
     this.driftAccessor,
     this.uint8List,
     this.geopolyPolygon,
+    this.driftColumnDeclarationBuilder,
   );
 
   /// Constructs the set of known drift types from a helper library, which is
@@ -65,7 +72,7 @@ class KnownDriftTypes {
       (exportNamespace.get('TableIndex') as InterfaceElement).thisType,
       (exportNamespace.get('View') as InterfaceElement).thisType,
       (exportNamespace.get('TableInfo') as InterfaceElement).thisType,
-      exportNamespace.get('UserDefinedSqlType') as InterfaceElement,
+      exportNamespace.get('SqlType') as InterfaceElement,
       exportNamespace.get('TypeConverter') as InterfaceElement,
       exportNamespace.get('JsonTypeConverter2') as InterfaceElement,
       dbElement.defaultInstantiation,
@@ -74,6 +81,7 @@ class KnownDriftTypes {
           .defaultInstantiation,
       (exportNamespace.get('GeopolyPolygon') as InterfaceElement)
           .defaultInstantiation,
+      exportNamespace.get('DriftColumnDeclarationBuilder') as InterfaceElement,
     );
   }
 
@@ -85,8 +93,8 @@ class KnownDriftTypes {
     return type.asInstanceOf(typeConverter);
   }
 
-  InterfaceType? asUserDefinedType(DartType type) {
-    return type.asInstanceOf(userDefinedSqlType);
+  InterfaceType? asSqlType(DartType type) {
+    return type.asInstanceOf(sqlType);
   }
 
   /// Converts the given Dart [type] into an instantiation of the

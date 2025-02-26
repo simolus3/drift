@@ -2,7 +2,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/resolver/shared/data_class.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
@@ -127,8 +126,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
     if (!table.strict &&
         table.columns.any((c) => switch (c.sqlType) {
-              ColumnDriftType(:final builtin) => builtin == DriftSqlType.any,
-              ColumnCustomType() => false,
+              ColumnDriftType() => false,
+              ColumnCustomType(:final custom) => custom.isDriftAny,
             })) {
       reportError(DriftAnalysisError.forDartElement(
         element,

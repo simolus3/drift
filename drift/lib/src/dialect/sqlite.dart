@@ -20,6 +20,7 @@ extension DriftAnyColumnBuilder on Table {
   /// useful for columns with an unknown type in [isStrict] tables.
   /// This type has no direct equivalent for other database engines.
   @protected
+  @DriftColumnDeclarationBuilder.forCustom(SqliteDialect.anyType)
   ColumnBuilder<DriftAny> sqliteAny() => throw '';
 }
 
@@ -69,6 +70,8 @@ final class SqliteDialect extends DriftDialect {
 
   @override
   SqlType<String> get textType => const _StringType();
+
+  static SqlType<DriftAny> anyType() => const _AnyType();
 }
 
 final class _SqliteCompiler extends StatementCompiler {
@@ -295,3 +298,22 @@ final class _StringType extends _SqliteType<String> {
 }
 
 extension type DriftAny(Object fromDb) implements Object {}
+
+final class _AnyType extends _SqliteType<DriftAny> {
+  const _AnyType() : super('ANY');
+
+  @override
+  String sqlLiteral(DriftDialect dialect, DriftAny value) {
+    throw 'TODO';
+  }
+
+  @override
+  Object sqlParameter(DriftDialect dialect, DriftAny value) {
+    return value.fromDb;
+  }
+
+  @override
+  DriftAny dartValue(DriftDialect dialect, Object databaseValue) {
+    return DriftAny(databaseValue);
+  }
+}

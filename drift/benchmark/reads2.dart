@@ -1,13 +1,5 @@
 import 'package:drift/src/connections/sqlite3/connection.dart';
-import 'package:drift/src/dsl/columns.dart';
-import 'package:drift/src/dsl/table.dart';
-import 'package:drift/src/query_builder/results.dart';
-import 'package:drift/src/query_builder/schema/column.dart';
-import 'package:drift/src/query_builder/schema/entities.dart';
-import 'package:drift/src/query_builder/schema/result_set.dart';
-import 'package:drift/src/query_builder/schema/table.dart';
-import 'package:drift/src/query_builder/statements/select.dart';
-import 'package:drift/src/query_builder/types.dart';
+import 'package:drift/drift3.dart';
 import 'package:drift/src/runtime/database/db_base.dart';
 import 'package:sqlite3/sqlite3.dart' show sqlite3;
 

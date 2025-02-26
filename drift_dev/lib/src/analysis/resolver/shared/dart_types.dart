@@ -290,8 +290,7 @@ CustomColumnType? readCustomType(
   void Function(String) reportError,
 ) {
   final staticType = dartExpression.staticType;
-  final asCustomType =
-      staticType != null ? helper.asUserDefinedType(staticType) : null;
+  final asCustomType = staticType != null ? helper.asSqlType(staticType) : null;
 
   if (asCustomType == null) {
     reportError('Not a custom type');

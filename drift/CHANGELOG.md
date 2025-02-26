@@ -1,3 +1,12 @@
+## 3.0.0-dev
+
+- __Breaking__: Custom SQL types have been replaced with first-party types,
+ implement `DriftSqlType` instead.
+- The trailing `()` for column builders in Dart is no longer necessary.
+  Replace `integer().autoIncrement()()` with `integer().autoIncrement()`.
+- Add `@DriftColumnDeclarationBuilder` annotation, allowing custom types to
+  be used without a manual `customType` call.
+
 ## 2.25.0-dev
 
 - Report `SqliteException`s occurring on workers as a `SqliteException`

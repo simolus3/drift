@@ -105,15 +105,26 @@ class ColumnParser {
       ColumnDeclaration columnDeclaration, Element element) async {
     final expr = columnDeclaration.expression;
 
-    if (expr is! FunctionExpressionInvocation) {
+    // In drift < v3, columns were declared like this: text()(). In drift v3,
+    // we support a simple text() too. remainingExpr should be the initial
+    // text().
+    final fullColumnBuilder = switch (expr) {
+      FunctionExpressionInvocation(:final function) =>
+        function as MethodInvocation,
+      MethodInvocation() => expr,
+      _ => null,
+    };
+
+    if (fullColumnBuilder == null) {
       _resolver.reportError(
           DriftAnalysisError.forDartElement(element, _errorMessage));
       return null;
     }
-
-    var remainingExpr = expr.function as MethodInvocation;
+    var remainingExpr = fullColumnBuilder;
+    final helper = await _resolver.resolver.driver.knownTypes;
 
     String? foundStartMethod;
+    ColumnType? columnType;
     String? foundExplicitName;
     String? foundCustomConstraint;
     Expression? customConstraintSource;
@@ -121,6 +132,78 @@ class ColumnParser {
     AnnotatedDartCode? clientDefaultExpression;
     Expression? mappedAs;
     String? referencesColumnInSameTable;
+
+    bool tryExtractingStartMethod(SimpleIdentifier calledMethod) {
+      final methodName = calledMethod.name;
+      if (_starters.contains(methodName)) {
+        if (_startCustom.contains(methodName)) {
+          final expression = remainingExpr.argumentList.arguments.single;
+
+          final custom = readCustomType(
+            element.library!,
+            expression,
+            helper,
+            (message) => _resolver.reportError(
+              DriftAnalysisError.inDartAst(element, expression, message),
+            ),
+          );
+          columnType = custom != null
+              ? ColumnType.custom(custom)
+              // Fallback if we fail to read the custom type - we'll also emit an
+              // error int that case.
+              : ColumnType.drift(BuiltinDriftType.text);
+        } else {
+          columnType =
+              ColumnType.drift(_startMethodToBuiltinColumnType(methodName));
+        }
+
+        return true;
+      }
+
+      // See if the method called is annotated with DriftColumnDeclarationBuilder
+      final resolvedMethod = calledMethod.staticElement;
+      if (resolvedMethod != null) {
+        for (final annotation in resolvedMethod.metadata) {
+          final value = annotation.computeConstantValue();
+          if (value == null || value.type == null) {
+            continue;
+          }
+
+          if (helper.checkDriftColumnDeclarationBuilder
+              .isAssignableFromType(value.type!)) {
+            final builtin = value.getField('builtin');
+            final custom = value.getField('custom');
+
+            if (builtin != null && !builtin.isNull) {
+              columnType = ColumnType.drift(BuiltinDriftType.values
+                  .byName(builtin.getField('name')!.toStringValue()!));
+              return true;
+            } else if (custom != null && !custom.isNull) {
+              final element = custom.toFunctionValue()!;
+              final customType = helper.asSqlType(element.returnType)!;
+
+              columnType = ColumnType.custom(CustomColumnType(
+                AnnotatedDartCode.build((b) {
+                  // element is either a static or a top-level function.
+                  if (element.enclosingElement3 is LibraryElement) {
+                    b.addTopLevelElement(element);
+                  } else {
+                    b.addTopLevelElement(
+                        element.enclosingElement3 as ClassElement);
+                    b.addText(
+                        '.${element.name.isEmpty ? 'new' : element.name}');
+                  }
+                }),
+                customType.typeArguments[0],
+              ));
+              return true;
+            }
+          }
+        }
+      }
+
+      return false;
+    }
 
     var nullable = false;
     var hasDefaultConstraints = false;
@@ -130,7 +213,7 @@ class ColumnParser {
     while (true) {
       final methodName = remainingExpr.methodName.name;
 
-      if (_starters.contains(methodName)) {
+      if (tryExtractingStartMethod(remainingExpr.methodName)) {
         foundStartMethod = methodName;
         break;
       }
@@ -376,37 +459,13 @@ class ColumnParser {
     final sqlName = foundExplicitName ??
         _resolver.resolver.driver.options.caseFromDartToSql
             .apply(columnDeclaration.lexemeName);
-    ColumnType columnType;
-
-    final helper = await _resolver.resolver.driver.knownTypes;
-
-    if (foundStartMethod == _startCustom) {
-      final expression = remainingExpr.argumentList.arguments.single;
-
-      final custom = readCustomType(
-        element.library!,
-        expression,
-        helper,
-        (message) => _resolver.reportError(
-          DriftAnalysisError.inDartAst(element, mappedAs!, message),
-        ),
-      );
-      columnType = custom != null
-          ? ColumnType.custom(custom)
-          // Fallback if we fail to read the custom type - we'll also emit an
-          // error int that case.
-          : ColumnType.drift(BuiltinDriftType.text);
-    } else {
-      columnType =
-          ColumnType.drift(_startMethodToBuiltinColumnType(foundStartMethod));
-    }
 
     AppliedTypeConverter? converter;
     if (mappedAs != null) {
       converter = readTypeConverter(
         element.library!,
         mappedAs,
-        columnType,
+        columnType!,
         nullable,
         (message) => _resolver.reportError(
             DriftAnalysisError.inDartAst(element, mappedAs!, message)),
@@ -495,7 +554,7 @@ class ColumnParser {
     ));
     return PendingColumnInformation(
       DriftColumn(
-        sqlType: columnType,
+        sqlType: columnType!,
         nullable: nullable,
         nameInSql: sqlName,
         nameInDart: element.name!,

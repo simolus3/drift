@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
@@ -12,10 +11,10 @@ void main() {
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
 class TestTable extends Table {
-  TextColumn get textColumn => text()();
+  TextColumn get textColumn => text();
 }
 
 @DriftDatabase(tables: [TestTable])
@@ -39,10 +38,10 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
 class TestTable extends Table {
-  TextColumn get textColumn => text()();
+  TextColumn get textColumn => text();
 }
 
 @DriftDatabase(tables: [TestTable])
@@ -67,10 +66,10 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
 class TeStTaBlE extends Table {
-  TextColumn get tExTcOlUmN => text()();
+  TextColumn get tExTcOlUmN => text();
 }
 
 @DriftDatabase(tables: [TeStTaBlE])
@@ -96,7 +95,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
 class TestTable extends Table {
   TextColumn get text_column => text()();
@@ -125,7 +124,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
 class TestTable extends Table {
   TextColumn get textColumn => text()();
@@ -153,7 +152,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
 class Test_Table extends Table {
   TextColumn get textColumn => text()();
@@ -181,7 +180,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
 class TestTable extends Table {
   TextColumn get textColumn => text()();
@@ -210,7 +209,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
 class TestTable extends Table {
   TextColumn get textColumn => text()();
@@ -237,12 +236,19 @@ class Database {}
   test('recognizes custom column types', () async {
     final state = await TestBackend.inTest({
       'a|lib/main.dart': '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift3.dart';
 
-class StringArrayType implements CustomSqlType<List<String>> {}
+final class StringArrayType extends SqlType<List<String>> {
+  const StringArrayType();
+}
+
+extension on Table {
+  @DriftColumnDeclarationBuilder.forCustom(StringArrayType.new)
+  Column<List<String>> stringArray() => throw 'stub';
+}
 
 class TestTable extends Table {
-  Column<List<String>> get list => customType(StringArrayType())();
+  Column<List<String>> get list => stringArray();
 }
 ''',
     });
@@ -253,13 +259,13 @@ class TestTable extends Table {
     final table = file.analyzedElements.whereType<DriftTable>().single;
     final column = table.columns.single;
 
-    expect(column.sqlType.builtin, DriftSqlType.any);
+    expect(column.sqlType, isA<ColumnCustomType>());
     switch (column.sqlType) {
       case ColumnDriftType():
         break;
       case ColumnCustomType(:final custom):
         expect(custom.dartType.toString(), 'List<String>');
-        expect(custom.expression.toString(), 'StringArrayType()');
+        expect(custom.expression.toString(), 'StringArrayType.new');
     }
   });
 
@@ -433,8 +439,7 @@ class Database {}
     expect(
         studentGroupColumn.nameInDart, equals(teacherGroupColumn.nameInDart));
     expect(studentGroupColumn.nameInSql, equals(teacherGroupColumn.nameInSql));
-    expect(studentGroupColumn.sqlType.builtin,
-        equals(teacherGroupColumn.sqlType.builtin));
+    expect(studentGroupColumn.sqlType, equals(teacherGroupColumn.sqlType));
     expect(studentGroupColumn.nullable, equals(teacherGroupColumn.nullable));
     expect(studentGroupColumn.overriddenJsonName,
         equals(teacherGroupColumn.overriddenJsonName));
@@ -493,8 +498,8 @@ class Preferences extends Table {
     backend.expectNoErrors();
 
     final table = file.analyzedElements.single as DriftTable;
-    expect(table.columns.map((c) => c.sqlType.builtin),
-        [DriftSqlType.string, DriftSqlType.any]);
+    expect(table.columns.map((c) => c.sqlType),
+        [isA<ColumnDriftType>(), isA<ColumnCustomType>()]);
     expect(table.strict, isTrue);
   });
 }

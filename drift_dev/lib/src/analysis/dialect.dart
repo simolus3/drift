@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:charcode/ascii.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' hide JsonKey;
@@ -45,7 +43,7 @@ final class DriftSqliteDialect implements RegisteredDriftDialect {
     this.modules = const [],
     this.dateTimesAsText = false,
     this.binaryJson = true,
-    this.version = _defaultSqliteVersion,
+    this.version = DriftSqliteDialect._defaultSqliteVersion,
     this.knownFunctions = const {},
   });
 

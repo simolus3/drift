@@ -14,7 +14,7 @@ DriftSqliteDialect _$DriftSqliteDialectFromJson(Map json) => DriftSqliteDialect(
       dateTimesAsText: json['date_times_as_text'] as bool? ?? false,
       binaryJson: json['binary_json'] as bool? ?? true,
       version: json['version'] == null
-          ? _defaultSqliteVersion
+          ? DriftSqliteDialect._defaultSqliteVersion
           : const _SqliteVersionConverter().fromJson(json['version'] as String),
       knownFunctions: (json['known_functions'] as Map?)?.map(
             (k, e) => MapEntry(

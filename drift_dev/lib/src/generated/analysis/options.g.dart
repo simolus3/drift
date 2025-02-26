@@ -81,9 +81,8 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
               'scoped_dart_components', (v) => v as bool? ?? true),
           dialects: $checkedConvert(
               'dialects',
-              (v) => _$JsonConverterFromJson<Map<String, Object?>,
-                      Map<String, RegisteredDriftDialect>>(
-                  v, const _DialectsConverter().fromJson)),
+              (v) => const _DialectsConverter()
+                  .fromJson(v as Map<String, Object?>)),
           caseFromDartToSql: $checkedConvert(
               'case_from_dart_to_sql',
               (v) =>
@@ -157,9 +156,7 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'use_sql_column_name_as_json_key': instance.useSqlColumnNameAsJsonKey,
       'generate_connect_constructor': instance.generateConnectConstructor,
       'generate_manager': instance.generateManager,
-      'dialects': _$JsonConverterToJson<Map<String, Object?>,
-              Map<String, RegisteredDriftDialect>>(
-          instance.dialects, const _DialectsConverter().toJson),
+      'dialects': const _DialectsConverter().toJson(instance.dialects),
       'data_class_to_companions': instance.dataClassToCompanions,
       'mutable_classes': instance.generateMutableClasses,
       'row_class_constructor_all_required':
@@ -183,12 +180,6 @@ Map<String, dynamic> _$DriftOptionsToJson(DriftOptions instance) =>
       'databases': instance.databases,
     };
 
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
-
 const _$CaseFromDartToSqlEnumMap = {
   CaseFromDartToSql.preserve: 'preserve',
   CaseFromDartToSql.camel: 'camelCase',
@@ -198,9 +189,3 @@ const _$CaseFromDartToSqlEnumMap = {
   CaseFromDartToSql.lower: 'lowercase',
   CaseFromDartToSql.upper: 'UPPERCASE',
 };
-
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) =>
-    value == null ? null : toJson(value);

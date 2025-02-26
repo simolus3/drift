@@ -149,6 +149,8 @@ final class CustomColumnType {
   final AnnotatedDartCode expression;
   final DartType dartType;
 
+  bool get isDriftAny => false; // todo
+
   CustomColumnType(this.expression, this.dartType);
 
   @override

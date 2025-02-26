@@ -139,7 +139,7 @@ extension type BaseColumnBuilder<T extends Object>._(SchemaColumn<T> _never)
   /// Turns this column builder into a column. This method won't actually be
   /// called in your code. Instead, the generator will take a look at your
   /// source code to figure out your table structure.
-  @Deprecated('No longer necessary in Drift 3')
+  @Deprecated('No longer necessary in Drift 3, try removing the trailing `()`')
   Column<T> call() => _never;
 }
 
