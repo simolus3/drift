@@ -36,6 +36,8 @@ final class QueryProviderDefinition {
   final List<StatementPart> statement;
   final DartType? fixedResultType;
 
+  bool get isSingleRow => annotation.singleRow;
+
   QueryProviderDefinition({
     required this.annotation,
     required this.element,
@@ -420,11 +422,13 @@ final class _ResolvedDriftDatabase {
 }
 
 final class QueryProviderWriter {
+  final Writer writer;
   final Scope databaseScope;
   final Scope providerScope;
   final ResolvedQueryProvider query;
 
-  QueryProviderWriter(this.databaseScope, this.providerScope, this.query);
+  QueryProviderWriter(
+      this.writer, this.databaseScope, this.providerScope, this.query);
 
   bool get isProviderFamily => query.definition.parameters.isNotEmpty;
 
@@ -434,95 +438,69 @@ final class QueryProviderWriter {
     QueryWriter(databaseScope).write(query.query!);
   }
 
-  void write() {
-    _writeInnerQuery();
-
-    final emitter = providerScope.leaf();
-
-    if (isProviderFamily) {
-      // Signature: SelectableProviderFamily<Row, (int, String)> query(Object args)
-      emitter.writeDriftRiverpod('SelectableProviderFamily');
-      emitter
-        ..write('<')
-        ..writeDart(AnnotatedDartCode.importedSymbol(
-            AnnotatedDartCode.dartCore, 'List'))
-        ..write('<')
-        ..writeDart(AnnotatedDartCode.build(
-            (b) => b.addQueryResultRowType(query.query!)))
-        ..write('>, (');
-
-      var hadNamed = false;
-      for (final parameter in query.definition.parameters) {
-        final element = parameter.dart;
-        if (element.isPositional) {
-          emitter
-            ..writeDart(parameter.typeCode)
-            ..write(' ')
-            ..write(element.name)
-            ..write(',');
-        } else {
-          if (!hadNamed) {
-            hadNamed = true;
-            emitter.write('{');
-          }
-
-          emitter
-            ..writeDart(parameter.typeCode)
-            ..write(' ')
-            ..write(element.name)
-            ..write(',');
-        }
-      }
-
-      if (hadNamed) {
-        emitter.write('}');
-      }
-
-      emitter
-        ..write(')> ')
-        ..write(query.definition.methodName);
-    } else {
-      // Signature: SelectableProvider<Row> query(String sql)
-      emitter.writeDriftRiverpod('SelectableProvider');
-      emitter
-        ..write('<')
-        ..writeDart(AnnotatedDartCode.importedSymbol(
-            AnnotatedDartCode.dartCore, 'List'))
-        ..write('<')
-        ..writeDart(AnnotatedDartCode.build(
-            (b) => b.addQueryResultRowType(query.query!)))
-        ..write('>> ')
-        ..write(query.definition.methodName);
-    }
-
+  void _writeArgs(TextEmitter emitter, {bool isForParameters = false}) {
     emitter.write('(');
-    if (query.definition.parameterDeclarations != null) {
-      // TODO: Generate function type matching the actual function expr passed
-      emitter
-        ..writeDart(AnnotatedDartCode.importedSymbol(
-            AnnotatedDartCode.dartCore, 'Object'))
-        ..write(' _');
-    } else {
-      emitter
-        ..writeDart(AnnotatedDartCode.importedSymbol(
-            AnnotatedDartCode.dartCore, 'String'))
-        ..write(' _');
+    var hadNamed = false;
+    for (final parameter in query.definition.parameters) {
+      final element = parameter.dart;
+      if (element.isPositional) {
+        emitter
+          ..writeDart(parameter.typeCode)
+          ..write(' ')
+          ..write(element.name)
+          ..write(',');
+      } else {
+        if (!hadNamed) {
+          hadNamed = true;
+          emitter.write('{');
+        }
+
+        if (isForParameters) {
+          emitter.write('required ');
+        }
+
+        emitter
+          ..writeDart(parameter.typeCode)
+          ..write(' ')
+          ..write(element.name)
+          ..write(',');
+      }
     }
 
-    emitter
-      ..writeln(') {')
-      ..write('return ');
+    if (hadNamed) {
+      emitter.write('}');
+    }
+    emitter.write(')');
+  }
 
-    if (isProviderFamily) {
-      emitter
-        ..writeDriftRiverpod('queryProviderFamilyImpl')
-        ..write('((ref, args) => ');
-    } else {
-      emitter
-        ..writeDriftRiverpod('queryProviderImpl')
-        ..write('((ref) => ');
+  void _turnArgsIntoRecord(TextEmitter emitter) {
+    emitter.write('(');
+    var hadNamed = false;
+    for (final parameter in query.definition.parameters) {
+      final element = parameter.dart;
+      if (element.isPositional) {
+        emitter
+          ..write(element.name)
+          ..write(',');
+      } else {
+        if (!hadNamed) {
+          hadNamed = true;
+          emitter.write('{');
+        }
+
+        emitter
+          ..write(element.name)
+          ..write(',');
+      }
     }
 
+    if (hadNamed) {
+      emitter.write('}');
+    }
+    emitter.write(')');
+  }
+
+  void _writeObtainSelectable(TextEmitter emitter) {
     emitter
       ..write('ref.watch(')
       ..writeDart(AnnotatedDartCode.ast(query.definition.databaseProvider))
@@ -547,10 +525,107 @@ final class QueryProviderWriter {
       }
       emitter.write(',');
     }
+    emitter.write(')');
+  }
 
-    emitter
-      ..writeln('));')
-      ..writeln('}');
+  void _writeResultType(TextEmitter emitter) {
+    if (query.definition.isSingleRow) {
+      emitter.writeDart(AnnotatedDartCode.build((b) => b
+        ..addQueryResultRowType(query.query!)
+        ..addText('?')));
+    } else {
+      emitter
+        ..writeDart(AnnotatedDartCode.importedSymbol(
+            AnnotatedDartCode.dartCore, 'List'))
+        ..write('<')
+        ..writeDart(AnnotatedDartCode.build(
+            (b) => b.addQueryResultRowType(query.query!)))
+        ..write('>');
+    }
+  }
+
+  void write() {
+    _writeInnerQuery();
+
+    final emitter = providerScope.leaf();
+
+    if (isProviderFamily) {
+      // Write a class for the family:
+      final familyClass = writer.leaf();
+      final baseFamilyClass = query.definition.isSingleRow
+          ? 'SelectableSingleProviderFamily'
+          : 'SelectableProviderFamily';
+
+      final familyClassName =
+          '_\$QueryProviderFamily\$${query.definition.name}';
+      familyClass
+        ..writeln('')
+        ..writeln('// ignore: subtype_of_sealed_class')
+        ..write('final class $familyClassName extends ')
+        ..writeDriftRiverpod(baseFamilyClass)
+        ..write('<')
+        ..writeDart(AnnotatedDartCode.build(
+            (b) => b.addQueryResultRowType(query.query!)))
+        ..write(',');
+      _writeArgs(familyClass);
+      familyClass
+        ..writeln('> {')
+        ..write(familyClassName)
+        ..write(r'({required super.$database}): super($name: ')
+        ..write("r'${query.definition.name}',")
+        ..write('\$create: (ref, args) => ');
+      _writeObtainSelectable(familyClass);
+      familyClass.writeln(');');
+
+      // We represent args to the family as a record, which is awkward to use.
+      // Provider call() method that creates the record.
+      familyClass
+        ..writeDriftRiverpod('SelectableProvider')
+        ..write('<');
+      _writeResultType(familyClass);
+      familyClass.write('> call');
+      _writeArgs(familyClass, isForParameters: true);
+      familyClass.write(' => create(');
+      _turnArgsIntoRecord(familyClass);
+      familyClass.writeln(');');
+
+      familyClass.writeln('}'); // End family class
+
+      // Then, write an extension to create the family:
+      // Signature: SelectableProviderFamily<Row, (int, String)> query(Object args)
+      emitter
+        ..write(familyClassName)
+        ..write(' ')
+        ..write(query.definition.methodName)
+        ..write('(')
+        ..writeDart(AnnotatedDartCode.importedSymbol(
+            AnnotatedDartCode.dartCore, 'Object'))
+        ..write(' _)')
+        ..write(' => ')
+        ..write(familyClassName)
+        ..write('(\$database: ')
+        ..writeDart(AnnotatedDartCode.ast(query.definition.databaseProvider))
+        ..writeln(');');
+    } else {
+      // Signature: SelectableProvider<Row> query(String sql)
+
+      emitter.writeDriftRiverpod('SelectableProvider');
+      emitter.write('<');
+      _writeResultType(emitter);
+      emitter
+        ..write('> ')
+        ..write(query.definition.methodName)
+        ..write('(')
+        ..writeDart(AnnotatedDartCode.importedSymbol(
+            AnnotatedDartCode.dartCore, 'String'))
+        ..write(' _) { return ')
+        ..writeDriftRiverpod(query.definition.isSingleRow
+            ? 'queryProviderImplSingleOrNull'
+            : 'queryProviderImpl')
+        ..write('((ref) => ');
+      _writeObtainSelectable(emitter);
+      emitter.writeln(');}');
+    }
   }
 }
 

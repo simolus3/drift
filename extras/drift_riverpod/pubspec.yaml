@@ -1,8 +1,7 @@
 name: drift_riverpod
-description: A starting point for Dart libraries or applications.
+description: Utilities for integrating drift into apps using riverpod for state management.
 version: 0.1.0
 repository: https://github.com/simolus3/drift/tree/develop/extras/drift_riverpod
-homepage: https://drift.simonbinder.eu/docs/platforms/postgres/
 issue_tracker: https://github.com/simolus3/drift/issues
 
 environment:
@@ -14,11 +13,12 @@ dependencies:
   drift: ^2.25.0
   logging: ^1.3.0
   riverpod: ^2.6.1
-  riverpod_annotation: ^2.6.1
   source_gen: ^2.0.0
   drift_dev: ^2.25.0
+  meta: ^1.16.0
 
 dev_dependencies:
+  async: ^2.13.0
   build_resolvers: ^2.4.3
   build_runner: ^2.4.14
   build_test: ^2.2.3

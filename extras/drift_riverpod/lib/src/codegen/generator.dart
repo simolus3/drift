@@ -21,10 +21,10 @@ final class DriftRiverpodGenerator
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {
     (Writer, Scope, Scope)? possibleWriter;
-    Future<(Scope, Scope)> createWriter(DriftElementId id,
+    Future<(Writer, Scope, Scope)> createWriter(DriftElementId id,
         [DriftOptions? options]) async {
       if (possibleWriter case final writer?) {
-        return (writer.$2, writer.$3);
+        return writer;
       }
 
       final generationOptions = GenerationOptions(
@@ -52,7 +52,7 @@ final class DriftRiverpodGenerator
       writer.leaf().write('}');
 
       possibleWriter = (writer, extensionOnDatabase, extensionOnProvider);
-      return (extensionOnDatabase, extensionOnProvider);
+      return (writer, extensionOnDatabase, extensionOnProvider);
     }
 
     for (var annotated in library.annotatedWith(
@@ -77,11 +77,11 @@ final class DriftRiverpodGenerator
         final analyzed =
             await ResolvedQueryProvider.analyze(definition, buildStep);
         errors.addAll(analyzed.errors);
-        final (onDatabase, onProvider) =
+        final (writer, onDatabase, onProvider) =
             await createWriter(definition.database, analyzed.databaseOptions);
 
         if (analyzed.query != null) {
-          QueryProviderWriter(onDatabase, onProvider, analyzed).write();
+          QueryProviderWriter(writer, onDatabase, onProvider, analyzed).write();
         }
       }
 
