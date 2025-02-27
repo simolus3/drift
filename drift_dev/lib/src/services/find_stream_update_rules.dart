@@ -1,4 +1,4 @@
-import 'package:drift/drift3.dart'
+import 'package:drift/drift.dart'
     show
         StreamQueryUpdateRules,
         UpdateRule,

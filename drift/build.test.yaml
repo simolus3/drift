@@ -27,9 +27,8 @@ targets:
           raw_result_set_data: true
           named_parameters: true
           fatal_warnings: true
-          sql:
-            dialect: sqlite
-            options:
+          dialects:
+            sqlite:
               version: "3.37"
               modules:
                 - json1
@@ -45,17 +44,16 @@ targets:
       drift_dev:
         options:
           fatal_warnings: true
-          store_date_time_values_as_text: true
           # Dart doesn't support YAML merge tags yet, https://github.com/dart-lang/yaml/issues/121
           override_hash_and_equals_in_result_sets: true
           use_column_name_as_json_key_when_defined_in_moor_file: true
           write_from_json_string_constructor: true
           raw_result_set_data: true
           named_parameters: true
-          sql:
-            dialect: sqlite
-            options:
+          dialects:
+            sqlite:
               version: "3.37"
+              store_date_time_values_as_text: true
               modules:
                 - json1
                 - fts5

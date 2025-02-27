@@ -61,9 +61,9 @@ class MyConverter extends TypeConverter<int, String> {
   const MyConverter();
 
   @override
-  int? fromSql(String? fromDb) => throw 'stub';
+  int fromSql(String fromDb) => throw 'stub';
   @override
-  String? toSql(int? value) => throw 'stub';
+  String toSql(int value) => throw 'stub';
 }
 
 class RowClass {
@@ -72,7 +72,7 @@ class RowClass {
 
 @UseRowClass(RowClass)
 class TableClass extends Table {
-  TextColumn get x => text().map(const MyConverter())();
+  TextColumn get x => text().map(const MyConverter());
 }
       ''',
       'a|lib/generic.dart': '''
@@ -193,7 +193,7 @@ class MyCustomClass {
       'a|lib/custom_parent_class_no_error.dart': '''
 import 'package:drift/drift.dart';
 
-abstract class BaseModel extends DataClass {
+abstract class BaseModel {
   abstract final String id;
 }
 
@@ -206,36 +206,7 @@ class Companies extends Table {
       'a|lib/custom_parent_class_typed_no_error.dart': '''
 import 'package:drift/drift.dart';
 
-abstract class BaseModel<T> extends DataClass {
-  abstract final String id;
-}
-
-@DataClassName('Company', extending: BaseModel)
-class Companies extends Table {
-  TextColumn get id => text()();
-  TextColumn get name => text().named('name')();
-}
-''',
-      'a|lib/custom_parent_class_no_super.dart': '''
-import 'package:drift/drift.dart';
-
-abstract class BaseModel {
-  abstract final String id;
-}
-
-@DataClassName('Company', extending: BaseModel)
-class Companies extends Table {
-  TextColumn get id => text()();
-  TextColumn get name => text().named('name')();
-}
-''',
-      'a|lib/custom_parent_class_wrong_super.dart': '''
-import 'package:drift/drift.dart';
-
-class Test {
-}
-
-abstract class BaseModel extends Test {
+abstract class BaseModel<T> {
   abstract final String id;
 }
 
@@ -248,7 +219,7 @@ class Companies extends Table {
       'a|lib/custom_parent_class_typed_wrong_type_arg.dart': '''
 import 'package:drift/drift.dart';
 
-abstract class BaseModel<T> extends DataClass {
+abstract class BaseModel<T> {
   abstract final String id;
 }
 
@@ -261,7 +232,7 @@ class Companies extends Table {
       'a|lib/custom_parent_class_two_type_argument.dart': '''
 import 'package:drift/drift.dart';
 
-abstract class BaseModel<T, D> extends DataClass {
+abstract class BaseModel<T, D> {
   abstract final String id;
 }
 
@@ -451,40 +422,6 @@ class FooData {
       final file = await state
           .analyze('package:a/custom_parent_class_typed_no_error.dart');
       expect(file.allErrors, isEmpty);
-    });
-
-    test('check extends DataClass (no super)', () async {
-      final file =
-          await state.analyze('package:a/custom_parent_class_no_super.dart');
-
-      expect(
-        file.allErrors,
-        [
-          isDriftError(contains('Parameter `extending` in '
-              '@DataClassName must be subtype of DataClass'))
-        ],
-      );
-    });
-
-    test('extends DataClass (wrong super)', () async {
-      final file =
-          await state.analyze('package:a/custom_parent_class_wrong_super.dart');
-
-      expect(
-        file.allErrors,
-        [
-          isDriftError(contains('Parameter `extending` in '
-              '@DataClassName must be subtype of DataClass'))
-        ],
-      );
-
-      final table = file.analyzedElements.single as DriftTable;
-      expect(
-          table.customParentClass,
-          isA<CustomParentClass>()
-              .having((e) => e.isConst, 'isConst', false)
-              .having(
-                  (e) => e.parentClass.toString(), 'parentClass', 'BaseModel'));
     });
 
     test('wrong type argument in extending', () async {

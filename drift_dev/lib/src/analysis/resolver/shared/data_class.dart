@@ -41,18 +41,6 @@ CustomParentClass? parseCustomParentClass(
   if (extending != null && !extending.isNull) {
     final extendingType = extending.toTypeValue();
     if (extendingType is InterfaceType) {
-      final superType = extendingType.allSupertypes
-          .any((type) => isFromDrift(type) && type.element.name == 'DataClass');
-      if (!superType) {
-        resolver.reportError(
-          DriftAnalysisError.forDartElement(
-            element,
-            'Parameter `extending` in @DataClassName must be subtype of '
-            'DataClass',
-          ),
-        );
-      }
-
       if (extendingType.typeArguments.length > 1) {
         resolver.reportError(
           DriftAnalysisError.forDartElement(

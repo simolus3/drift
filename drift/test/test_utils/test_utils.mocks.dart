@@ -5,10 +5,11 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
-import 'package:drift/drift.dart' as _i6;
+import 'package:drift/drift.dart' as _i8;
+import 'package:drift/src/runtime/api/runtime_api.dart' as _i7;
 import 'package:drift/src/runtime/executor/helpers/delegates.dart' as _i3;
 import 'package:drift/src/runtime/executor/helpers/results.dart' as _i2;
-import 'package:drift/src/runtime/executor/stream_queries.dart' as _i7;
+import 'package:drift/src/runtime/executor/stream_queries.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
 
@@ -89,7 +90,7 @@ class MockDatabaseDelegate extends _i1.Mock implements _i3.DatabaseDelegate {
       ) as _i5.FutureOr<bool>);
 
   @override
-  _i5.Future<void> open(_i6.QueryExecutorUser? db) => (super.noSuchMethod(
+  _i5.Future<void> open(dynamic db) => (super.noSuchMethod(
         Invocation.method(
           #open,
           [db],
@@ -109,7 +110,7 @@ class MockDatabaseDelegate extends _i1.Mock implements _i3.DatabaseDelegate {
       ) as _i5.Future<void>);
 
   @override
-  void notifyDatabaseOpened(_i6.OpeningDetails? details) => super.noSuchMethod(
+  void notifyDatabaseOpened(dynamic details) => super.noSuchMethod(
         Invocation.method(
           #notifyDatabaseOpened,
           [details],
@@ -205,8 +206,7 @@ class MockDatabaseDelegate extends _i1.Mock implements _i3.DatabaseDelegate {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> runBatched(_i6.BatchedStatements? statements) =>
-      (super.noSuchMethod(
+  _i5.Future<void> runBatched(dynamic statements) => (super.noSuchMethod(
         Invocation.method(
           #runBatched,
           [statements],
@@ -266,11 +266,11 @@ class MockSupportedTransactionDelegate extends _i1.Mock
 /// A class which mocks [StreamQueryStore].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
+class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
   @override
   _i5.Stream<T> registerStream<T extends Object>(
-    _i7.QueryStreamFetcher<T>? fetcher,
-    _i6.DatabaseConnectionUser? database,
+    _i6.QueryStreamFetcher<T>? fetcher,
+    _i7.DatabaseConnectionUser? database,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -285,19 +285,19 @@ class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
       ) as _i5.Stream<T>);
 
   @override
-  _i5.Stream<Set<_i6.TableUpdate>> updatesForSync(
-          _i6.TableUpdateQuery? query) =>
+  _i5.Stream<Set<_i8.TableUpdate>> updatesForSync(
+          _i8.TableUpdateQuery? query) =>
       (super.noSuchMethod(
         Invocation.method(
           #updatesForSync,
           [query],
         ),
-        returnValue: _i5.Stream<Set<_i6.TableUpdate>>.empty(),
-        returnValueForMissingStub: _i5.Stream<Set<_i6.TableUpdate>>.empty(),
-      ) as _i5.Stream<Set<_i6.TableUpdate>>);
+        returnValue: _i5.Stream<Set<_i8.TableUpdate>>.empty(),
+        returnValueForMissingStub: _i5.Stream<Set<_i8.TableUpdate>>.empty(),
+      ) as _i5.Stream<Set<_i8.TableUpdate>>);
 
   @override
-  void handleTableUpdates(Set<_i6.TableUpdate>? updates) => super.noSuchMethod(
+  void handleTableUpdates(Set<_i8.TableUpdate>? updates) => super.noSuchMethod(
         Invocation.method(
           #handleTableUpdates,
           [updates],
@@ -307,7 +307,7 @@ class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
 
   @override
   void markAsClosed(
-    _i7.QueryStream<Object>? stream,
+    _i6.QueryStream<Object>? stream,
     void Function()? whenRemoved,
   ) =>
       super.noSuchMethod(
@@ -322,7 +322,7 @@ class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
       );
 
   @override
-  void markAsOpened(_i7.QueryStream<Object>? stream) => super.noSuchMethod(
+  void markAsOpened(_i6.QueryStream<Object>? stream) => super.noSuchMethod(
         Invocation.method(
           #markAsOpened,
           [stream],

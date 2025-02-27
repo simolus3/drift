@@ -20,9 +20,7 @@ class GeopolyTest extends Table
   static const VerificationMeta _aMeta = const VerificationMeta('a');
   late final GeneratedColumn<DriftAny> a = GeneratedColumn<DriftAny>(
       'a', aliasedName, true,
-      type: DriftSqlType.any,
-      requiredDuringInsert: false,
-      $customConstraints: '');
+      type: SqliteDialect, requiredDuringInsert: false, $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [shape, a];
   @override
@@ -54,7 +52,7 @@ class GeopolyTest extends Table
       shape: attachedDatabase.typeMapping
           .read(const GeopolyPolygonType(), data['${effectivePrefix}_shape']),
       a: attachedDatabase.typeMapping
-          .read(DriftSqlType.any, data['${effectivePrefix}a']),
+          .read(SqliteDialect, data['${effectivePrefix}a']),
     );
   }
 
@@ -81,7 +79,7 @@ class GeopolyTestData extends DataClass implements Insertable<GeopolyTestData> {
           Variable<GeopolyPolygon>(shape, const GeopolyPolygonType());
     }
     if (!nullToAbsent || a != null) {
-      map['a'] = Variable<DriftAny>(a);
+      map['a'] = Variable<DriftAny>(a, SqliteDialect);
     }
     return map;
   }
@@ -192,7 +190,7 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
           Variable<GeopolyPolygon>(shape.value, const GeopolyPolygonType());
     }
     if (a.present) {
-      map['a'] = Variable<DriftAny>(a.value);
+      map['a'] = Variable<DriftAny>(a.value, SqliteDialect);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);

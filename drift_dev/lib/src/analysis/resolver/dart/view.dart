@@ -2,7 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift3.dart' show BuiltinDriftType;
+import 'package:drift/drift.dart' show BuiltinDriftType;
 import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:recase/recase.dart';
 

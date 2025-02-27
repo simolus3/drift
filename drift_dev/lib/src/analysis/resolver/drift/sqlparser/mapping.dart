@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift/drift3.dart' show BuiltinDriftType;
+import 'package:drift/drift.dart' show BuiltinDriftType;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../../driver/driver.dart';
@@ -112,37 +112,40 @@ class TypeMapping {
     };
   }
 
-  static BuiltinDriftType toDefaultType(
-      ResolvedType type, bool dateTimeAsText) {
+  ColumnType toDefaultType(ResolvedType type, bool dateTimeAsText) {
     switch (type.type) {
       case null:
       case BasicType.nullType:
-        return BuiltinDriftType.text;
+        return ColumnType.drift(BuiltinDriftType.text);
       case BasicType.int:
         if (type.hint<IsBoolean>() != null) {
-          return BuiltinDriftType.bool;
+          return ColumnType.drift(BuiltinDriftType.bool);
         } else if (!dateTimeAsText && type.hint<IsDateTime>() != null) {
-          return BuiltinDriftType.dateTime;
+          return ColumnType.drift(BuiltinDriftType.dateTime);
         } else if (type.hint<IsBigInt>() != null) {
-          return BuiltinDriftType.int64;
+          return ColumnType.drift(BuiltinDriftType.int64);
         }
-        return BuiltinDriftType.int;
+        return ColumnType.drift(BuiltinDriftType.int);
       case BasicType.real:
-        return BuiltinDriftType.double;
+        return ColumnType.drift(BuiltinDriftType.double);
       case BasicType.text:
         if (dateTimeAsText && type.hint<IsDateTime>() != null) {
-          return BuiltinDriftType.dateTime;
+          return ColumnType.drift(BuiltinDriftType.dateTime);
         }
 
-        return BuiltinDriftType.text;
+        return ColumnType.drift(BuiltinDriftType.text);
       case BasicType.blob:
-        return BuiltinDriftType.byteArray;
+        return ColumnType.drift(BuiltinDriftType.byteArray);
       case BasicType.any:
-        throw 'todo: Custom any type';
+        return ColumnType.custom(CustomColumnType(
+          AnnotatedDartCode.build((b) => b.addSymbol(
+              'SqliteDialect', Uri.parse('package:drift/dialect/sqlite.dart'))),
+          knownTypes!.driftAny.thisType,
+        ));
     }
   }
 
-  BuiltinDriftType _toDefaultType(ResolvedType type) {
+  ColumnType _toDefaultType(ResolvedType type) {
     return toDefaultType(type, driver.options.sqliteDialect.dateTimesAsText);
   }
 
@@ -172,7 +175,7 @@ class TypeMapping {
       );
     }
 
-    return ColumnType.drift(_toDefaultType(type));
+    return _toDefaultType(type);
   }
 }
 

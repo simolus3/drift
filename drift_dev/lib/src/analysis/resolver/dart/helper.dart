@@ -35,6 +35,7 @@ class KnownDriftTypes {
   final InterfaceType uint8List;
   final InterfaceType geopolyPolygon;
   final InterfaceElement driftColumnDeclarationBuilder;
+  final InterfaceElement driftAny;
 
   late final TypeChecker checkDriftColumnDeclarationBuilder =
       TypeChecker.fromStatic(
@@ -55,6 +56,7 @@ class KnownDriftTypes {
     this.uint8List,
     this.geopolyPolygon,
     this.driftColumnDeclarationBuilder,
+    this.driftAny,
   );
 
   /// Constructs the set of known drift types from a helper library, which is
@@ -82,6 +84,7 @@ class KnownDriftTypes {
       (exportNamespace.get('GeopolyPolygon') as InterfaceElement)
           .defaultInstantiation,
       exportNamespace.get('DriftColumnDeclarationBuilder') as InterfaceElement,
+      exportNamespace.get('DriftAny') as InterfaceElement,
     );
   }
 

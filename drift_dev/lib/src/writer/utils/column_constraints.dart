@@ -1,4 +1,4 @@
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../../analysis/dialect.dart';

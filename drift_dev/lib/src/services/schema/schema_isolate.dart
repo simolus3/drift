@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:args/args.dart';
-import 'package:drift/drift3.dart' show DriftDialect;
+import 'package:drift/drift.dart' show DriftDialect;
 import 'package:path/path.dart' as p;
 
 import '../../analysis/options.dart';

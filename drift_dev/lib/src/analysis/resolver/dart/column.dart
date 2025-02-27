@@ -2,7 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift3.dart' show BuiltinDriftType;
+import 'package:drift/drift.dart' show BuiltinDriftType;
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart'
     show InitialDeferrableMode, ReferenceAction;
@@ -24,7 +24,6 @@ const String _startBool = 'boolean';
 const String _startDateTime = 'dateTime';
 const String _startBlob = 'blob';
 const String _startReal = 'real';
-const String _startAny = 'sqliteAny';
 const String _startCustom = 'customType';
 
 const Set<String> _starters = {
@@ -37,7 +36,6 @@ const Set<String> _starters = {
   _startDateTime,
   _startBlob,
   _startReal,
-  _startAny,
   _startCustom,
 };
 
@@ -583,7 +581,6 @@ class ColumnParser {
       _startDateTime: BuiltinDriftType.dateTime,
       _startBlob: BuiltinDriftType.byteArray,
       _startReal: BuiltinDriftType.double,
-      //     _startAny: DriftSqlType.any,
     }[name]!;
   }
 

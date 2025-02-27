@@ -80,9 +80,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
           scopedDartComponents: $checkedConvert(
               'scoped_dart_components', (v) => v as bool? ?? true),
           dialects: $checkedConvert(
-              'dialects',
-              (v) => const _DialectsConverter()
-                  .fromJson(v as Map<String, Object?>)),
+              'dialects', (v) => const _DialectsConverter().fromJson(v as Map)),
           caseFromDartToSql: $checkedConvert(
               'case_from_dart_to_sql',
               (v) =>

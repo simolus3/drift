@@ -2,7 +2,7 @@ import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 import '../../analysis/dialect.dart';
 import '../../analysis/resolver/drift/element_resolver.dart';

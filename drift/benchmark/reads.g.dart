@@ -13,7 +13,7 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       hasAutoIncrement: true,
-      type: DriftSqlType.int,
+      type: BuiltinDriftType.int,
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
@@ -22,7 +22,7 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
       'content', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      type: BuiltinDriftType.text, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [id, content];
   @override
@@ -54,9 +54,9 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Item(
       id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+          .read(BuiltinDriftType.int, data['${effectivePrefix}id'])!,
       content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+          .read(BuiltinDriftType.text, data['${effectivePrefix}content'])!,
     );
   }
 

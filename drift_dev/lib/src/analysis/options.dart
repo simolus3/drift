@@ -258,14 +258,14 @@ enum CaseFromDartToSql {
 }
 
 final class _DialectsConverter extends JsonConverter<
-    Map<String, RegisteredDriftDialect>, Map<String, Object?>> {
+    Map<String, RegisteredDriftDialect>, Map<Object?, Object?>> {
   const _DialectsConverter();
 
   @override
-  Map<String, RegisteredDriftDialect> fromJson(Map<String, Object?> json) {
-    return json.map((k, v) {
+  Map<String, RegisteredDriftDialect> fromJson(Map<Object?, Object?> json) {
+    return json.cast<String, Object?>().map((k, v) {
       final parsed = switch (k) {
-        'sqlite' => DriftSqliteDialect.fromJson(v as Map<String, Object?>),
+        'sqlite' => DriftSqliteDialect.fromJson(v as Map),
         _ => CustomDriftDialect(k)
       };
       return MapEntry(k, parsed);

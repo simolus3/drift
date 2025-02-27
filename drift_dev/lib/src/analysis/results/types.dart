@@ -1,4 +1,4 @@
-import 'package:drift/drift3.dart' show BuiltinDriftType;
+import 'package:drift/drift.dart' show BuiltinDriftType;
 
 import 'column.dart';
 import 'dart.dart';

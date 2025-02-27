@@ -14,7 +14,7 @@ class $_SomeTableTable extends _SomeTable
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
       hasAutoIncrement: true,
-      type: DriftSqlType.int,
+      type: BuiltinDriftType.int,
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
@@ -22,7 +22,7 @@ class $_SomeTableTable extends _SomeTable
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
+      type: BuiltinDriftType.text, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, name];
   @override
@@ -52,9 +52,9 @@ class $_SomeTableTable extends _SomeTable
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return _SomeTableData(
       id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+          .read(BuiltinDriftType.int, data['${effectivePrefix}id'])!,
       name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+          .read(BuiltinDriftType.text, data['${effectivePrefix}name']),
     );
   }
 

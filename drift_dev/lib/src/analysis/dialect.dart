@@ -1,7 +1,7 @@
 import 'package:charcode/ascii.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' hide JsonKey;
-import 'package:drift/drift3.dart' show DriftDialect;
+import 'package:drift/drift.dart' show DriftDialect;
 import 'package:drift/dialect/sqlite.dart';
 import 'package:string_scanner/string_scanner.dart';
 
@@ -47,7 +47,7 @@ final class DriftSqliteDialect implements RegisteredDriftDialect {
     this.knownFunctions = const {},
   });
 
-  factory DriftSqliteDialect.fromJson(Map<String, Object?> json) =>
+  factory DriftSqliteDialect.fromJson(Map<Object?, Object?> json) =>
       _$DriftSqliteDialectFromJson(json);
 
   /// Whether the [module] has been enabled in this configuration.

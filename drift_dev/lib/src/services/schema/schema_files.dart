@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:drift/drift3.dart'
+import 'package:drift/drift.dart'
     show BuiltinDriftType, DriftDialect, UpdateKind;
 import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:logging/logging.dart';

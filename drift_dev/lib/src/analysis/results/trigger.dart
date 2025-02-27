@@ -1,4 +1,4 @@
-import 'package:drift/drift3.dart' show UpdateKind;
+import 'package:drift/drift.dart' show UpdateKind;
 import 'package:sqlparser/sqlparser.dart';
 
 import 'results.dart';

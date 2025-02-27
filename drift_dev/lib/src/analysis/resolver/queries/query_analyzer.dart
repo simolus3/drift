@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
-import 'package:drift/drift3.dart' as drift;
+import 'package:drift/drift.dart' as drift;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 import 'package:sqlparser/sqlparser.dart' as sql;

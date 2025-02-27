@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift3.dart' show BuiltinDriftType;
+import 'package:drift/drift.dart' show BuiltinDriftType;
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import 'dart.dart';

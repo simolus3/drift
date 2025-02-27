@@ -11,7 +11,7 @@ void main() {
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 class TestTable extends Table {
   TextColumn get textColumn => text();
@@ -38,7 +38,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 class TestTable extends Table {
   TextColumn get textColumn => text();
@@ -66,7 +66,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 class TeStTaBlE extends Table {
   TextColumn get tExTcOlUmN => text();
@@ -95,7 +95,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 class TestTable extends Table {
   TextColumn get text_column => text()();
@@ -124,7 +124,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 class TestTable extends Table {
   TextColumn get textColumn => text()();
@@ -152,7 +152,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 class Test_Table extends Table {
   TextColumn get textColumn => text()();
@@ -180,7 +180,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 class TestTable extends Table {
   TextColumn get textColumn => text()();
@@ -209,7 +209,7 @@ class Database {}
     final state = await TestBackend.inTest(
       {
         'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 class TestTable extends Table {
   TextColumn get textColumn => text()();
@@ -236,7 +236,7 @@ class Database {}
   test('recognizes custom column types', () async {
     final state = await TestBackend.inTest({
       'a|lib/main.dart': '''
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 
 final class StringArrayType extends SqlType<List<String>> {
   const StringArrayType();
@@ -482,11 +482,12 @@ class Users extends Table {
   test('recognizes ANY columns', () async {
     final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 
 class Preferences extends Table {
-  TextColumn get key => text()();
-  AnyColumn get value => sqliteAny()();
+  TextColumn get key => text();
+  AnyColumn get value => sqliteAny();
 
   @override
   bool get isStrict => true;

@@ -1,5 +1,5 @@
 import 'package:drift/src/connections/sqlite3/connection.dart';
-import 'package:drift/drift3.dart';
+import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/database/db_base.dart';
 import 'package:sqlite3/sqlite3.dart' show sqlite3;
 

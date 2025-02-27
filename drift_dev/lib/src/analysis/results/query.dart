@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift3.dart' show UpdateKind;
+import 'package:drift/drift.dart' show UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 

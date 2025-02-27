@@ -1,6 +1,8 @@
-import 'package:drift/drift3.dart' as drift;
+// ignore_for_file: invalid_use_of_internal_member
+
+import 'package:drift/drift.dart' as drift;
 // ignore: implementation_imports
-import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:drift/src/runtime/streams/update_rules.dart';
 import 'package:drift_dev/src/writer/manager/database_manager_writer.dart';
 import 'package:drift_dev/src/writer/utils/memoized_getter.dart';
 import 'package:recase/recase.dart';

@@ -10,7 +10,7 @@ import 'package:analyzer/src/dart/element/type.dart'
         RecordTypeImpl,
         RecordTypeNamedFieldImpl,
         RecordTypePositionalFieldImpl;
-import 'package:drift/drift3.dart' show BuiltinDriftType;
+import 'package:drift/drift.dart' show BuiltinDriftType;
 
 import '../../driver/error.dart';
 import '../../results/results.dart';

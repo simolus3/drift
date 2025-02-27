@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import '../../query_builder/schema/result_set.dart';
 import '../../query_builder/schema/table.dart';
 import '../../query_builder/schema/view.dart';
@@ -127,18 +129,18 @@ sealed class TableUpdateQuery {
   const TableUpdateQuery();
 
   /// A query that listens for all table updates in a database.
-  const factory TableUpdateQuery.any() = _AnyUpdateQuery;
+  const factory TableUpdateQuery.any() = AnyUpdateQuery;
 
   /// A query that listens for all updates that match any query in [queries].
   const factory TableUpdateQuery.allOf(List<TableUpdateQuery> queries) =
-      _MultipleUpdateQuery;
+      MultipleUpdateQuery;
 
   /// A query that listens for all updates on a specific [table] by its name.
   ///
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
   const factory TableUpdateQuery.onTableName(String table,
-      {UpdateKind? limitUpdateKind}) = _SpecificUpdateQuery;
+      {UpdateKind? limitUpdateKind}) = SpecificUpdateQuery;
 
   /// A query that listens for all updates on a specific [table].
   ///
@@ -177,27 +179,30 @@ sealed class TableUpdateQuery {
   bool matches(TableUpdate update);
 }
 
-final class _AnyUpdateQuery extends TableUpdateQuery {
-  const _AnyUpdateQuery();
+@internal
+final class AnyUpdateQuery extends TableUpdateQuery {
+  const AnyUpdateQuery();
 
   @override
   bool matches(TableUpdate update) => true;
 }
 
-final class _MultipleUpdateQuery extends TableUpdateQuery {
+@internal
+final class MultipleUpdateQuery extends TableUpdateQuery {
   final List<TableUpdateQuery> queries;
 
-  const _MultipleUpdateQuery(this.queries);
+  const MultipleUpdateQuery(this.queries);
 
   @override
   bool matches(TableUpdate update) => queries.any((q) => q.matches(update));
 }
 
-final class _SpecificUpdateQuery extends TableUpdateQuery {
+@internal
+final class SpecificUpdateQuery extends TableUpdateQuery {
   final UpdateKind? limitUpdateKind;
   final String table;
 
-  const _SpecificUpdateQuery(this.table, {this.limitUpdateKind});
+  const SpecificUpdateQuery(this.table, {this.limitUpdateKind});
 
   @override
   bool matches(TableUpdate update) {
@@ -213,7 +218,7 @@ final class _SpecificUpdateQuery extends TableUpdateQuery {
 
   @override
   bool operator ==(Object other) {
-    return other is _SpecificUpdateQuery &&
+    return other is SpecificUpdateQuery &&
         other.limitUpdateKind == limitUpdateKind &&
         other.table == table;
   }
