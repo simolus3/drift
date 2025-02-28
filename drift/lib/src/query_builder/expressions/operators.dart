@@ -1,8 +1,6 @@
-import 'package:drift/src/query_builder/dialect.dart';
-
-import 'package:drift/src/query_builder/types.dart';
-
 import '../compiler.dart';
+import '../dialect.dart';
+import '../types.dart';
 import 'expression.dart';
 
 /// An expression of the form `<left> <operator> <right>`.
@@ -40,31 +38,69 @@ final class BinaryExpression<T extends Object> extends Expression<T> {
 
 /// Binary operators supported by drift.
 enum BinaryOperator implements SqlComponent {
-  /// An `==` expression in SQL.
-  equals(Precedence.comparisonEq),
+  /// A `COLLATE` operator in SQL.
+  collate(Precedence.collate, 'COLLATE'),
 
-  /// An `IS` expression in SQL.
-  $is(Precedence.comparisonEq),
+  /// A `||` operator in SQL.
+  stringConcatenation(Precedence.stringConcatenation, '||'),
+
+  /// A `*` operator in SQL.
+  multiply(Precedence.mulDivide, '*'),
+
+  /// A `/` operator in SQL.
+  divide(Precedence.mulDivide, '/'),
+
+  /// A `%` operator in SQL.
+  modulo(Precedence.mulDivide, '%'),
+
+  /// A `+` operator in SQL.
+  plus(Precedence.plusMinus, '+'),
+
+  /// A `-` operator in SQL.
+  minus(Precedence.plusMinus, '-'),
+
+  /// A `&` operator in SQL.
+  bitwiseAnd(Precedence.bitwise, '&'),
+
+  /// A `|` operator in SQL.
+  bitwiseOr(Precedence.bitwise, '|'),
+
+  /// A `==` operator in SQL.
+  equals(Precedence.comparisonEq, '=='),
+
+  /// A `LIKE` operator in SQL.
+  like(Precedence.comparison, 'LIKE'),
+
+  /// A `LIKE` operator in SQL.
+  regexp(Precedence.comparison, 'REGEXP'),
+
+  /// An `IS` operator in SQL.
+  $is(Precedence.comparisonEq, 'IS'),
 
   /// An `IS NOT` expression in SQL.
-  isNot(Precedence.comparisonEq),
+  isNot(Precedence.comparisonEq, 'IS NOT'),
 
   /// An `IN` expression in SQL.
-  $in(Precedence.comparisonEq),
+  $in(Precedence.comparisonEq, 'IN'),
 
-  /// An `NOT IN` expression in SQL.
-  notIn(Precedence.comparisonEq),
+  /// A `NOT IN` expression in SQL.
+  notIn(Precedence.comparisonEq, 'NOT IN'),
 
   /// An `OR` expression in SQL.
-  or(Precedence.or),
+  or(Precedence.or, 'OR'),
 
   /// An `AND` expression in SQL.
-  and(Precedence.and);
+  and(Precedence.and, 'AND');
 
   /// The [Precedence] associated with this binary operator.
   final Precedence precedence;
 
-  const BinaryOperator(this.precedence);
+  /// The default text to generate for this operator.
+  ///
+  /// Some dialects may chose to override this.
+  final String defaultLexeme;
+
+  const BinaryOperator(this.precedence, this.defaultLexeme);
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -114,13 +150,13 @@ final class UnaryExpression<T extends Object> extends Expression<T> {
 /// Unary SQL operators supported by drift.
 enum UnaryOperator implements SqlComponent {
   /// A `NOT` operation in SQL.
-  not(Precedence.not, true),
+  not(Precedence.not, true, 'NOT'),
 
   /// A bitwise not operation in SQL.
-  bitwiseNot(Precedence.unary, true),
+  bitwiseNot(Precedence.unary, true, '~'),
 
   /// A unary minus in SQL.
-  minus(Precedence.unary, true);
+  minus(Precedence.unary, true, '-');
 
   /// The [Precedence] associated with this binary operator.
   final Precedence precedence;
@@ -129,7 +165,12 @@ enum UnaryOperator implements SqlComponent {
   /// expression it is applied to in SQL.
   final bool isPrefix;
 
-  const UnaryOperator(this.precedence, this.isPrefix);
+  /// The default text to generate for this operator.
+  ///
+  /// Some dialects may chose to override this.
+  final String defaultLexeme;
+
+  const UnaryOperator(this.precedence, this.isPrefix, this.defaultLexeme);
 
   @override
   void compileWith(StatementCompiler compiler) {

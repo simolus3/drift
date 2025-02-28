@@ -312,6 +312,9 @@ enum Precedence implements Comparable<Precedence> {
   /// Precedence for the || operator in sql
   stringConcatenation._(18),
 
+  /// Precedence for the `COLLATE` operator in sql
+  collate._(19),
+
   /// Precedence for unary operators in sql
   unary._(20),
 

@@ -18,11 +18,8 @@ targets:
       drift_dev:
         enabled: true
         generate_for:
-          exclude:
-            # Exlude sources used for the drift-file based generation source
-            - "test/generated/custom_tables.dart"
-            - "test/generated/data_classes.dart"
-            - "test/generated/tables.drift*"
+          include:
+            - example/**
         options:
           override_hash_and_equals_in_result_sets: true
           use_column_name_as_json_key_when_defined_in_moor_file: true
@@ -33,30 +30,6 @@ targets:
           dialects:
             sqlite:
               version: "3.37"
-              modules:
-                - json1
-                - fts5
-                - geopoly
-  drift_custom:
-    auto_apply_builders: false
-    sources:
-     - "test/generated/custom_tables.dart"
-     - "test/generated/data_classes.dart"
-     - "test/generated/tables.drift*"
-    builders:
-      drift_dev:
-        options:
-          fatal_warnings: true
-          # Dart doesn't support YAML merge tags yet, https://github.com/dart-lang/yaml/issues/121
-          override_hash_and_equals_in_result_sets: true
-          use_column_name_as_json_key_when_defined_in_moor_file: true
-          write_from_json_string_constructor: true
-          raw_result_set_data: true
-          named_parameters: true
-          dialects:
-            sqlite:
-              version: "3.37"
-              store_date_time_values_as_text: true
               modules:
                 - json1
                 - fts5
@@ -73,7 +46,7 @@ targets:
           compiler: dart2js
 
   $default:
-    dependencies: [:drift_regular, :drift_custom, :web_worker]
+    dependencies: [:drift_regular, :web_worker]
     builders:
       build_test:test_bootstrap:
         enabled: false

@@ -2,7 +2,7 @@ import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' as drift;
 
 import '../../analysis/dialect.dart';
 import '../../analysis/resolver/drift/element_resolver.dart';
@@ -42,7 +42,7 @@ class SqlWriter extends NodeSqlBuilder {
   final RegisteredDriftDialect staticDialect;
   final Map<NestedStarResultColumn, NestedResultTable> _starColumnToResolved;
 
-  late final DriftDialect _dialect = staticDialect.instantiate();
+  late final drift.DriftDialect _dialect = staticDialect.instantiate();
 
   SqlWriter._(this.query, this.options, this.staticDialect,
       this._starColumnToResolved, StringBuffer out, bool escapeForDart)

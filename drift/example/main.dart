@@ -8,19 +8,20 @@ part 'main.g.dart';
 
 @DataClassName('TodoCategory')
 class TodoCategories extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get name => text();
 }
 
 @TableIndex(name: 'item_title', columns: {#title})
 class TodoItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text()();
-  TextColumn get content => text().nullable()();
-  IntColumn get categoryId => integer().references(TodoCategories, #id)();
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get title => text();
+  TextColumn get content => text().nullable();
+  IntColumn get categoryId => integer().references(TodoCategories, #id);
 
-  TextColumn get generatedText => text().nullable().generatedAs(
-      title + const Constant(' (') + content + const Constant(')'))();
+  TextColumn get generatedText => text()
+      .nullable()
+      .generatedAs(title + const Literal(' (') + content + const Literal(')'));
 }
 
 abstract class TodoCategoryItemCount extends View {

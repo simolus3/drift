@@ -257,23 +257,11 @@ abstract base class StatementCompiler {
   }
 
   void addBinaryOperator(BinaryOperator operator) {
-    statement.buffer.write(switch (operator) {
-      BinaryOperator.equals => '==',
-      BinaryOperator.$is => 'IS',
-      BinaryOperator.isNot => 'IS NOT',
-      BinaryOperator.or => 'OR',
-      BinaryOperator.and => 'AND',
-      BinaryOperator.$in => 'IN',
-      BinaryOperator.notIn => 'NOT IN',
-    });
+    statement.buffer.write(operator.defaultLexeme);
   }
 
   void addUnaryOperator(UnaryOperator operator) {
-    statement.buffer.write(switch (operator) {
-      UnaryOperator.not => 'NOT',
-      UnaryOperator.bitwiseNot => '~',
-      UnaryOperator.minus => '-',
-    });
+    statement.buffer.write(operator.defaultLexeme);
   }
 
   void addLiteral(Literal literal) {

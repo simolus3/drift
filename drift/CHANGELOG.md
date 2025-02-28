@@ -2,6 +2,7 @@
 
 - __Breaking__: Custom SQL types have been replaced with first-party types,
  implement `DriftSqlType` instead.
+- __Breaking__: Rename `Constant` to `Literal`.
 - The trailing `()` for column builders in Dart is no longer necessary.
   Replace `integer().autoIncrement()()` with `integer().autoIncrement()`.
 - Add `@DriftColumnDeclarationBuilder` annotation, allowing custom types to
