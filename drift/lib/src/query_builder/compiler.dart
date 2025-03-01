@@ -82,6 +82,12 @@ abstract base class StatementCompiler {
     }
   }
 
+  void addJoin(Join join) {}
+
+  void addJoinOperator(JoinOperator operator) {
+    statement.buffer.write(operator.defaultLexeme);
+  }
+
   void addSelectStatement(BaseSelectStatement select) {
     statement.buffer.write('SELECT ');
 

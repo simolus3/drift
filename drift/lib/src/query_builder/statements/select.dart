@@ -1,5 +1,8 @@
+import 'package:meta/meta.dart';
+
 import '../../connections/connection.dart';
 import '../../connections/result_set.dart';
+import '../../dsl/table.dart';
 import '../../runtime/database/connection_user.dart';
 import '../../runtime/selectable.dart';
 import '../clauses/where.dart';
@@ -33,6 +36,7 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
     structure.expressions[expression] ??= _nextPosition;
   }
 
+  @internal
   void addResultSet(ResultSet resultSet) {
     if (structure.tables.containsKey(resultSet)) {
       throw StateError(
@@ -49,10 +53,31 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
     structure.tables[resultSet] = positions;
   }
 
+  /// Adds [table] to this query using an `INNER JOIN` operator.
+  SelectStatement innerJoin(ResultSetDsl table,
+      {Expression<bool>? on, bool? includeInResult}) {
+    return _withAddedJoin(
+        Join.inner(table, on: on, includeInResult: includeInResult));
+  }
+
+  /// Adds [table] to this query using a `LEFT OUTER JOIN` operator.
+  SelectStatement leftOuter(ResultSetDsl table,
+      {Expression<bool>? on, bool? includeInResult}) {
+    return _withAddedJoin(
+        Join.leftOuter(table, on: on, includeInResult: includeInResult));
+  }
+
+  /// Adds [table] to this query using a `CROSS JOIN` operator.
+  SelectStatement cross(ResultSetDsl table, {bool? includeInResult}) {
+    return _withAddedJoin(Join.cross(table, includeInResult: includeInResult));
+  }
+
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addSelectStatement(this);
   }
+
+  SelectStatement _withAddedJoin(Join join);
 
   Row Function(DriftRow) _createMapper(DriftResultSet resultSet);
 
@@ -75,18 +100,32 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
   }
 }
 
-sealed class FromClauseElement implements SqlComponent {}
+final class SelectStatement extends BaseSelectStatement<DriftRow> {
+  final bool _includeJoinsByDefault;
 
-//final class Join extends FromClauseElement {}
+  SelectStatement(super.database, {bool includeJoinsByDefault = true})
+      : _includeJoinsByDefault = includeJoinsByDefault;
 
-final class TableReference extends FromClauseElement {
-  final ResultSet resultSet;
+  void _applyFrom(SingleTableSelectStatement other) {
+    addResultSet(other.resultSet);
 
-  TableReference(this.resultSet);
+    distinct = other.distinct;
+    from.addAll(other.from);
+    whereClause = other.whereClause;
+  }
 
   @override
-  void compileWith(StatementCompiler compiler) {
-    compiler.addTableReference(this);
+  SelectStatement _withAddedJoin(Join join) {
+    from.add(join);
+    if (join.includeInResult ?? _includeJoinsByDefault) {
+      addResultSet(join.table);
+    }
+    return this;
+  }
+
+  @override
+  DriftRow Function(DriftRow) _createMapper(DriftResultSet resultSet) {
+    return (row) => row;
   }
 }
 
@@ -117,5 +156,91 @@ final class SingleTableSelectStatement<Row extends Object,
   Row Function(DriftRow p1) _createMapper(DriftResultSet resultSet) {
     final inner = this.resultSet.createMapperToDart(resultSet);
     return (row) => inner(row)!;
+  }
+
+  @override
+  SelectStatement _withAddedJoin(Join join) {
+    return SelectStatement(_database)
+      .._applyFrom(this)
+      .._withAddedJoin(join);
+  }
+}
+
+sealed class FromClauseElement implements SqlComponent {}
+
+/// An operator used to compose joins, see [Join].
+enum JoinOperator implements SqlComponent {
+  /// Perform an inner join,
+  inner('INNER'),
+  leftOuter('LEFT OUTER'),
+  cross('CROSS');
+
+  /// The default lexeme to generate for this join operator. Some SQL dialects
+  /// may choose to override this.
+  final String defaultLexeme;
+
+  const JoinOperator(this.defaultLexeme);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addJoinOperator(this);
+  }
+}
+
+/// Represents a join of a [table] to a query.
+///
+/// This allows applying a [JoinOperator] and optionally also an [on] condition.
+final class Join extends FromClauseElement {
+  /// The [JoinOperator] to use for this join.
+  final JoinOperator operator;
+
+  /// The [ResultSet] that will be added to the query.
+  final ResultSet table;
+
+  /// For joins that aren't [JoinOperator.cross], contains an additional predicate
+  /// that must be matched for the join.
+  final Expression<bool>? on;
+
+  /// Whether [table] should appear in the result set (defaults to true).
+  /// Default value can be changed by `includeJoinedTableColumns` in
+  /// `selectOnly` statements.
+  ///
+  /// It can be useful to exclude some tables. Sometimes, tables are used in a
+  /// join only to run aggregate functions on them.
+  final bool? includeInResult;
+
+  /// Create a join clause with the given [operator] and [table].
+  Join(this.operator, ResultSetDsl table, {this.on, this.includeInResult})
+      : table = ResultSet.fromDsl(table);
+
+  /// Create an `INNER JOIN` for the [table].
+  Join.inner(ResultSetDsl table, {this.on, this.includeInResult})
+      : operator = JoinOperator.inner,
+        table = ResultSet.fromDsl(table);
+
+  /// Create an `LEFT OUTER JOIN` for the [table].
+  Join.leftOuter(ResultSetDsl table, {this.on, this.includeInResult})
+      : operator = JoinOperator.leftOuter,
+        table = ResultSet.fromDsl(table);
+
+  /// Create a `CROSS JOIN` for the [table].
+  Join.cross(ResultSetDsl table, {this.on, this.includeInResult})
+      : operator = JoinOperator.cross,
+        table = ResultSet.fromDsl(table);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addJoin(this);
+  }
+}
+
+final class TableReference extends FromClauseElement {
+  final ResultSet resultSet;
+
+  TableReference(this.resultSet);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addTableReference(this);
   }
 }

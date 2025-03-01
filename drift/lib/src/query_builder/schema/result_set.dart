@@ -1,9 +1,10 @@
+import '../../dsl/table.dart';
 import '../results.dart';
 import 'column.dart';
 import 'entities.dart';
 
 mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
-    implements DatabaseSchemaEntity {
+    implements ResultSetDsl, DatabaseSchemaEntity {
   String? get alias;
 
   List<SchemaColumn> get columns;
@@ -25,4 +26,8 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
   /// Type-level hack: Result sets are supposed to inherit from the [Self] type
   /// they declare, so this returns just `this`.
   Self asSelfType();
+
+  static ResultSet fromDsl(ResultSetDsl dsl) {
+    return dsl as ResultSet;
+  }
 }

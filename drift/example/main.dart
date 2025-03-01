@@ -31,12 +31,13 @@ abstract class TodoCategoryItemCount extends View {
   Expression<int> get itemCount => todoItems.id.count();
 
   @override
-  Query as() => select([
+  SelectStatement as() => select([
         todoCategories.name,
         itemCount,
-      ]).from(todoCategories).join([
-        innerJoin(todoItems, todoItems.categoryId.equalsExp(todoCategories.id))
-      ]);
+      ]).from(todoCategories).innerJoin(
+            todoItems,
+            on: todoItems.categoryId.equalsExp(todoCategories.id),
+          );
 }
 
 @DriftView(name: 'customViewName')
@@ -46,15 +47,14 @@ abstract class TodoItemWithCategoryNameView extends View {
 
   Expression<String> get title =>
       todoItems.title +
-      const Constant('(') +
+      const Literal('(') +
       todoCategories.name +
-      const Constant(')');
+      const Literal(')');
 
   @override
-  Query as() => select([todoItems.id, title]).from(todoItems).join([
-        innerJoin(
-            todoCategories, todoCategories.id.equalsExp(todoItems.categoryId))
-      ]);
+  SelectStatement as() =>
+      select([todoItems.id, title]).from(todoItems).innerJoin(todoCategories,
+          on: todoCategories.id.equalsExp(todoItems.categoryId));
 }
 
 @DriftDatabase(tables: [
