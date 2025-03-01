@@ -5,8 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
-import 'package:drift/drift.dart' as _i8;
-import 'package:drift/src/runtime/api/runtime_api.dart' as _i7;
+import 'package:drift/drift.dart' as _i7;
 import 'package:drift/src/runtime/executor/helpers/delegates.dart' as _i3;
 import 'package:drift/src/runtime/executor/helpers/results.dart' as _i2;
 import 'package:drift/src/runtime/executor/stream_queries.dart' as _i6;
@@ -270,7 +269,7 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
   @override
   _i5.Stream<T> registerStream<T extends Object>(
     _i6.QueryStreamFetcher<T>? fetcher,
-    _i7.DatabaseConnectionUser? database,
+    dynamic database,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -285,19 +284,19 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
       ) as _i5.Stream<T>);
 
   @override
-  _i5.Stream<Set<_i8.TableUpdate>> updatesForSync(
-          _i8.TableUpdateQuery? query) =>
+  _i5.Stream<Set<_i7.TableUpdate>> updatesForSync(
+          _i7.TableUpdateQuery? query) =>
       (super.noSuchMethod(
         Invocation.method(
           #updatesForSync,
           [query],
         ),
-        returnValue: _i5.Stream<Set<_i8.TableUpdate>>.empty(),
-        returnValueForMissingStub: _i5.Stream<Set<_i8.TableUpdate>>.empty(),
-      ) as _i5.Stream<Set<_i8.TableUpdate>>);
+        returnValue: _i5.Stream<Set<_i7.TableUpdate>>.empty(),
+        returnValueForMissingStub: _i5.Stream<Set<_i7.TableUpdate>>.empty(),
+      ) as _i5.Stream<Set<_i7.TableUpdate>>);
 
   @override
-  void handleTableUpdates(Set<_i8.TableUpdate>? updates) => super.noSuchMethod(
+  void handleTableUpdates(Set<_i7.TableUpdate>? updates) => super.noSuchMethod(
         Invocation.method(
           #handleTableUpdates,
           [updates],

@@ -4,8 +4,8 @@ analyzer:
   language:
     strict-casts: true
     strict-inference: true
-  exclude:
-    - "**/*.g.dart"
+#  exclude:
+#    - "**/*.g.dart"
 
 linter:
   rules:

@@ -358,10 +358,15 @@ class DataClassWriter {
   }
 }
 
-/// Generates code mapping a row (represented as a `Map`) to positional and
+/// Generates code mapping a row (represented as a `DriftRow`) to positional and
 /// named Dart arguments.
 class RowMappingWriter {
+  /// The underlying columns making up positional arguments to the target Dart
+  /// class.
   final List<DriftColumn> positional;
+
+  /// Map from drift columns to parameter names for named arguments to the Dart
+  /// class.
   final Map<DriftColumn, String> named;
   final DriftElementWithResultSet table;
   final Writer writer;
@@ -383,8 +388,8 @@ class RowMappingWriter {
 
   void writeArguments(StringBuffer buffer) {
     String readAndMap(DriftColumn column) {
-      final columnName = column.nameInSql;
-      final rawData = "data['\${effectivePrefix}$columnName']";
+      final index = table.columns.indexOf(column);
+      assert(index >= 0);
 
       final String sqlType;
       switch (column.sqlType) {
@@ -394,7 +399,7 @@ class RowMappingWriter {
           sqlType = writer.dartCode(custom.expression);
       }
 
-      var loadType = '$databaseGetter.typeMapping.read($sqlType, $rawData)';
+      var loadType = 'row.readWithType(columnPositions[$index], $sqlType)';
 
       if (!column.nullable) {
         loadType += '!';

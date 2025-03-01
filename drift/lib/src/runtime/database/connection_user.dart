@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
+import '../../query_builder.dart';
 import '../../query_builder/dialect.dart';
 import '../exceptions.dart';
 import 'db_base.dart';
@@ -166,6 +167,55 @@ abstract base class DatabaseConnectionUser {
   Future<T> _runConnectionZoned<T>(
       _ScopedDatabaseSession session, Future<T> Function() calculation) {
     return runZoned(calculation, zoneValues: {_zoneRootUserKey: session});
+  }
+
+  /// Creates a copy of the table with an alias so that it can be used in the
+  /// same query more than once.
+  ///
+  /// Example which uses the same table (here: points) more than once to
+  /// differentiate between the start and end point of a route:
+  /// ```
+  /// var source = alias(points, 'source');
+  /// var destination = alias(points, 'dest');
+  ///
+  /// select(routes).join([
+  ///   innerJoin(source, routes.startPoint.equalsExp(source.id)),
+  ///   innerJoin(destination, routes.startPoint.equalsExp(destination.id)),
+  /// ]);
+  /// ```
+  RS alias<Row extends Object, RS extends ResultSet<Row, RS>>(
+      ResultSet<Row, RS> table, String alias) {
+    return table.withAlias(alias).asSelfType();
+  }
+
+  /// Starts a query on the given table.
+  ///
+  /// In drift, queries are commonly used as a builder by chaining calls on
+  /// them. For instance, to load the 10 oldest users
+  /// with an 'S' in their name, you could use:
+  /// ```dart
+  /// Future<List<User>> oldestUsers() {
+  ///   return select(users)
+  ///     .where((u) => u.name.like('%S%'))
+  ///     .orderBy([(u) => OrderingTerm(
+  ///         expression: u.id,
+  ///         mode: OrderingMode.asc
+  ///      )])
+  ///     .limit(10)
+  ///     .get();
+  /// }
+  /// ```
+  ///
+  /// The [distinct] parameter (defaults to false) can be used to remove
+  /// duplicate rows from the result set.
+  ///
+  /// For more information on queries, see the
+  /// [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/).
+  SingleTableSelectStatement<Row, RS>
+      select<Row extends Object, RS extends ResultSet<Row, RS>>(
+          ResultSet<Row, RS> table,
+          {bool distinct = false}) {
+    return SingleTableSelectStatement<Row, RS>(this, table, distinct: distinct);
   }
 }
 

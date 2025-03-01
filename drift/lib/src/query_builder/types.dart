@@ -17,10 +17,7 @@ final class DatabaseJson {
 }
 
 /// The base class for column types in databases.
-abstract base class SqlType<T extends Object> {
-  /// Default const constructor so that subclasses can be const.
-  const SqlType();
-
+abstract interface class SqlType<T extends Object> {
   String typeName(DriftDialect dialect);
 
   Object sqlParameter(DriftDialect dialect, T value);
@@ -78,7 +75,7 @@ abstract interface class TypeProvider {
 interface class _BuiltinDriftTypeWithoutBound<T> {}
 
 enum BuiltinDriftType<T extends Object>
-    implements _BuiltinDriftTypeWithoutBound<T> {
+    implements _BuiltinDriftTypeWithoutBound<T>, SqlType<T> {
   text<core.String>._(),
   int<core.int>._(),
   int64<core.BigInt>._(),
@@ -158,5 +155,25 @@ enum BuiltinDriftType<T extends Object>
     }
 
     return type as BuiltinDriftType;
+  }
+
+  @override
+  T dartValue(DriftDialect dialect, Object databaseValue) {
+    return resolveIn(dialect).dartValue(dialect, databaseValue);
+  }
+
+  @override
+  String sqlLiteral(DriftDialect dialect, value) {
+    return resolveIn(dialect).sqlLiteral(dialect, value);
+  }
+
+  @override
+  Object sqlParameter(DriftDialect dialect, value) {
+    return resolveIn(dialect).sqlParameter(dialect, value);
+  }
+
+  @override
+  String typeName(DriftDialect dialect) {
+    return resolveIn(dialect).typeName(dialect);
   }
 }

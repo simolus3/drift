@@ -92,10 +92,6 @@ class ExistingRowClass {
   /// The default unnamed constructor is represented as an empty string.
   final String constructor;
 
-  /// Whether the [constructor] returns a future and thus needs to be awaited
-  /// to create an instance of the custom row class.
-  final bool isAsyncFactory;
-
   /// The name of drift columns which should be passed as positional arguments
   /// when creating an instance of the data class.
   final List<String> positionalColumns;
@@ -122,7 +118,6 @@ class ExistingRowClass {
     required this.namedColumns,
     required this.columnGetters,
     this.generateInsertable = false,
-    this.isAsyncFactory = false,
   });
 
   ExistingRowClass.record({
@@ -132,6 +127,5 @@ class ExistingRowClass {
     required this.columnGetters,
     this.generateInsertable = false,
   })  : targetClass = null,
-        constructor = '',
-        isAsyncFactory = false;
+        constructor = '';
 }

@@ -1,6 +1,5 @@
 import 'package:drift/src/connections/sqlite3/connection.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/src/runtime/database/db_base.dart';
 import 'package:sqlite3/sqlite3.dart' show sqlite3;
 
 typedef Item = ({int id, String content});
@@ -15,12 +14,12 @@ final class $Items extends Items
     implements GeneratedTable<Item, $Items> {
   @override
   late final SchemaColumn<int> id =
-      TableColumn(name: 'id', type: BuiltinDriftType.int.resolveIn)
+      TableColumn(name: 'id', type: BuiltinDriftType.int)
         ..owningResultSet = this;
 
   @override
   late final SchemaColumn<String> content =
-      TableColumn(name: 'content', type: BuiltinDriftType.text.resolveIn)
+      TableColumn(name: 'content', type: BuiltinDriftType.text)
         ..owningResultSet = this;
 
   @override

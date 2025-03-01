@@ -102,11 +102,11 @@ class ViewWriter extends TableOrViewWriter {
       buffer.writeln('null;');
     }
 
-    writeAsDslTable();
+    writeAsSelfType();
     writeMappingMethod(scope);
 
     for (final column in view.columns) {
-      writeColumnGetter(column, false);
+      writeColumnGetter(column);
     }
 
     _writeAliasGenerator();

@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 import '../../analysis/results/results.dart';
 import '../../utils/string_escaper.dart';
 import '../utils/column_constraints.dart';
@@ -16,7 +18,7 @@ abstract class TableOrViewWriter {
 
   StringBuffer get buffer => emitter.buffer;
 
-  void writeColumnGetter(DriftColumn column, bool isOverride) {
+  void writeColumnGetter(DriftColumn column, {bool isOverride = false}) {
     bool? isRequiredForInsert;
 
     if (tableOrView is DriftTable) {
@@ -28,6 +30,7 @@ abstract class TableOrViewWriter {
       column,
       emitter,
       isRequiredForInsert: isRequiredForInsert,
+      isForTable: tableOrView is DriftTable,
     );
 
     writeMemoizedGetter(
@@ -73,11 +76,14 @@ abstract class TableOrViewWriter {
   }
 
   void writeMappingMethod(Scope scope) {
+    final driftResultSet = emitter.drift('DriftResultSet');
+    final driftRow = emitter.drift('DriftRow');
+
     if (!scope.generationOptions.writeDataClasses) {
       buffer.writeln('''
         @override
-        Never map(Map<String, dynamic> data, {String? tablePrefix}) {
-          throw UnsupportedError('TableInfo.map in schema verification code');
+        Never createMapperToDart($driftResultSet resultSet) {
+          throw UnsupportedError('Mapping to Dart in schema verification code');
         }
       ''');
       return;
@@ -85,15 +91,25 @@ abstract class TableOrViewWriter {
 
     final dataClassType = emitter.dartCode(emitter.writer.rowType(tableOrView));
 
-    final isAsync = tableOrView.existingRowClass?.isAsyncFactory == true;
-    final returnType = isAsync ? 'Future<$dataClassType>' : dataClassType;
-    final asyncModifier = isAsync ? 'async' : '';
-
     buffer
-      ..write('@override $returnType map(Map<String, dynamic> data, '
-          '{String? tablePrefix}) $asyncModifier {\n')
-      ..write('final effectivePrefix = '
-          "tablePrefix != null ? '\$tablePrefix.' : '';");
+      ..writeln('@override')
+      ..write('$dataClassType? Function($driftRow) createMapperToDart(')
+      ..writeln('$driftResultSet resultSet) {')
+      ..writeln('final columnPositions = resultSet.structure.tables[this]!;')
+      ..writeln('return ($driftRow row) {');
+
+    // We need to check whether this table is present in the row at all (it may
+    // be absent for left outer joins).
+    final firstNonNullableColumn =
+        tableOrView.columns.indexed.firstWhereOrNull((c) => !c.$2.nullable);
+    if (firstNonNullableColumn case (final index, final column)?) {
+      buffer
+        ..writeln(
+            ' // Table not part of row if non-nullable column ${column.nameInDart} is missing')
+        ..writeln('if (row.raw.rawValue(columnPositions[$index]) == null) {')
+        ..writeln('return null;')
+        ..writeln('}');
+    }
 
     if (tableOrView.hasExistingRowClass) {
       final info = tableOrView.existingRowClass!;
@@ -113,9 +129,7 @@ abstract class TableOrViewWriter {
       );
 
       final ctor = info.constructor;
-      emitter
-        ..write('return ')
-        ..write(isAsync ? 'await ' : '');
+      emitter.write('return ');
       if (!info.isRecord) {
         // Write the constructor or async mapping method for this existing row
         // class. It will later be invoked by writing the arguments below.
@@ -149,31 +163,34 @@ abstract class TableOrViewWriter {
       buffer.writeln(';');
     }
 
-    buffer.write('}\n');
+    buffer.write('};}\n');
   }
 
   void writeGetColumnsOverride() {
+    final type = tableOrView is DriftTable ? 'TableColumn' : 'SchemaColumn';
+
     final columnsWithGetters =
         tableOrView.columns.map((c) => c.nameInDart).join(', ');
-    buffer.write(
-        '@override\nList<${emitter.drift('GeneratedColumn')}> get \$columns => '
+    buffer.write('@override\nList<${emitter.drift(type)}> get columns => '
         '[$columnsWithGetters];\n');
   }
 
-  void writeAsDslTable() {
-    buffer.write(
-        '@override\n${tableOrView.entityInfoName} get asDslTable => this;\n');
-  }
-
-  /// Returns the Dart type and the Dart expression creating a `GeneratedColumn`
+  /// Returns the Dart type and the Dart expression creating a `SchemaColumn`
   /// instance in drift for the given [column].
   static (String, String) instantiateColumn(
     DriftColumn column,
     TextEmitter emitter, {
+    bool isForTable = false,
     bool? isRequiredForInsert,
   }) {
-    final isNullable = column.nullable;
-    final additionalParams = <String, String>{};
+    final namedParameters = <String, String>{
+      'name': asDartLiteral(column.nameInSql),
+      'type': switch (column.sqlType) {
+        ColumnDriftType(:final builtin) => emitter.drift(builtin.toString()),
+        ColumnCustomType(:final custom) => emitter.dartCode(custom.expression),
+      },
+      'isNullable': column.nullable.toString(),
+    };
     final expressionBuffer = StringBuffer();
     final constraints = defaultConstraints(emitter.writer.options, column);
 
@@ -190,39 +207,28 @@ abstract class TableOrViewWriter {
         }
         buffer.write(')');
 
-        additionalParams['additionalChecks'] = buffer.toString();
+        namedParameters['additionalChecks'] = buffer.toString();
       }
 
       if (constraint is DartCheckExpression) {
         final dartCheck = emitter.dartCode(constraint.dartExpression);
-        additionalParams['check'] = '() => $dartCheck';
+        namedParameters['check'] = '() => $dartCheck';
       }
 
       if (constraint is ColumnGeneratedAs) {
         final dartCode = emitter.dartCode(constraint.dartExpression);
 
-        additionalParams['generatedAs'] =
+        namedParameters['generatedAs'] =
             '${emitter.drift('GeneratedAs')}($dartCode, ${constraint.stored})';
       }
-
-      if (constraint is PrimaryKeyColumn && constraint.isAutoIncrement) {
-        additionalParams['hasAutoIncrement'] = 'true';
-      }
-    }
-
-    switch (column.sqlType) {
-      case ColumnDriftType(:final builtin):
-        additionalParams['type'] = emitter.drift(builtin.toString());
-      case ColumnCustomType(:final custom):
-        additionalParams['type'] = emitter.dartCode(custom.expression);
     }
 
     if (isRequiredForInsert != null) {
-      additionalParams['requiredDuringInsert'] = isRequiredForInsert.toString();
+      namedParameters['requiredDuringInsert'] = isRequiredForInsert.toString();
     }
 
     if (column.customConstraints != null) {
-      additionalParams['\$customConstraints'] =
+      namedParameters['\$customConstraints'] =
           asDartLiteral(column.customConstraints!);
     } else if (constraints.values.any((constraint) => constraint.isNotEmpty)) {
       // Use the default constraints supported by drift
@@ -238,7 +244,7 @@ abstract class TableOrViewWriter {
             '${emitter.drift('SqlDialect.${entry.key.name}')}: ${asDartLiteral(entry.value)},',
         ];
 
-        additionalParams['defaultConstraints'] =
+        namedParameters['defaultConstraints'] =
             '${emitter.drift('GeneratedColumn.constraintsDependsOnDialect')}({${literalEntries.join('\n')}})';
       } else {
         // Constraints are the same regardless of dialect, only generate one set
@@ -246,32 +252,32 @@ abstract class TableOrViewWriter {
 
         final constraint = asDartLiteral(constraints.values.first);
 
-        additionalParams['defaultConstraints'] =
+        namedParameters['defaultConstraints'] =
             '${emitter.drift('GeneratedColumn.constraintIsAlways')}($constraint)';
       }
     }
 
     if (column.defaultArgument != null) {
-      additionalParams['defaultValue'] =
+      namedParameters['defaultValue'] =
           emitter.dartCode(column.defaultArgument!);
     }
 
     if (column.clientDefaultCode != null &&
         !emitter.writer.generationOptions.avoidUserCode) {
-      additionalParams['clientDefault'] =
+      namedParameters['clientDefault'] =
           emitter.dartCode(column.clientDefaultCode!);
     }
 
     final innerType = emitter.innerColumnType(column.sqlType);
     var type =
-        '${emitter.drift('GeneratedColumn')}<${emitter.dartCode(innerType)}>';
+        '${emitter.drift(isForTable ? 'TableColumn' : 'SchemaColumn')}<${emitter.dartCode(innerType)}>';
+
     expressionBuffer
       ..write(type)
-      ..write(
-          '(${asDartLiteral(column.nameInSql)}, aliasedName, $isNullable, ');
+      ..write('(');
 
     var first = true;
-    additionalParams.forEach((name, value) {
+    namedParameters.forEach((name, value) {
       if (!first) {
         expressionBuffer.write(', ');
       } else {
@@ -305,7 +311,13 @@ abstract class TableOrViewWriter {
         ..write(')');
     }
 
+    expressionBuffer.write('..owningResultSet = this');
     return (type, expressionBuffer.toString());
+  }
+
+  void writeAsSelfType() {
+    emitter.writeln(
+        '@override\n${tableOrView.entityInfoName} asSelfType() => this;\n');
   }
 }
 
@@ -320,10 +332,6 @@ class TableWriter extends TableOrViewWriter {
   DriftTable get tableOrView => table;
 
   TableWriter(this.table, this.scope);
-
-  bool get _skipVerification =>
-      scope.writer.options.skipVerificationCode ||
-      scope.generationOptions.isGeneratingForSchema;
 
   void writeInto() {
     emitter = scope.leaf();
@@ -366,7 +374,9 @@ class TableWriter extends TableOrViewWriter {
         ..write('class ${table.entityInfoName} extends ')
         ..write(emitter.drift('Table'))
         ..write(' with ')
-        ..write(emitter.drift('TableInfo'));
+        ..write(emitter.drift('ResultSet'))
+        ..write(' implements ')
+        ..write(emitter.drift('GeneratedTable'));
       if (table.isVirtual) {
         buffer.write(', ${emitter.drift('VirtualTableInfo')}');
       }
@@ -376,15 +386,17 @@ class TableWriter extends TableOrViewWriter {
       final tableDslName = table.definingDartClass ??
           AnnotatedDartCode.importedSymbol(AnnotatedDartCode.drift, 'Table');
 
-      // class UsersTable extends Users implements TableInfo<Users, User> {
-      final typeArgs = '<${table.entityInfoName}, $dataClass>';
+      // class UsersTable extends Users implements with ResultSet<User, Users> implements GeneratedTable<User, Users> {
+      final typeArgs = '<$dataClass, ${table.entityInfoName}>';
 
       emitter
         ..write('class ${table.entityInfoName} extends ')
         ..writeDart(tableDslName)
         ..write(' with ')
-        ..writeDart(AnnotatedDartCode.importedSymbol(
-            AnnotatedDartCode.drift, 'TableInfo'))
+        ..writeDriftRef('ResultSet')
+        ..write(typeArgs)
+        ..write(' implements ')
+        ..writeDriftRef('GeneratedTable')
         ..write(typeArgs);
 
       if (table.isVirtual) {
@@ -394,30 +406,25 @@ class TableWriter extends TableOrViewWriter {
 
     buffer
       ..writeln('{')
-      // write a GeneratedDatabase reference that is set in the constructor
-      ..writeln(
-          '@override final ${emitter.drift('GeneratedDatabase')} attachedDatabase;')
-      ..writeln('final String? _alias;')
-      ..writeln(
-          '${table.entityInfoName}(this.attachedDatabase, [this._alias]);');
+      ..writeln('@override')
+      ..writeln('final String? alias;')
+      ..writeln('${table.entityInfoName}([this.alias]);');
+    ;
 
     // Generate the columns
     for (final column in table.columns) {
-      _writeColumnVerificationMeta(column);
       // Only add an @override to a column getter if we're overriding the column
       // from a Dart DSL class.
-      writeColumnGetter(column, table.id.isDefinedInDart);
+      writeColumnGetter(column, isOverride: table.id.isDefinedInDart);
     }
 
     // Generate $columns, $tableName, asDslTable getters
     writeGetColumnsOverride();
     buffer
-      ..write('@override\nString get aliasedName => '
-          '_alias ?? actualTableName;\n')
-      ..write('@override\n String get actualTableName => \$name;\n')
+      ..write('@override\nString get entityName => \$name;')
       ..write('static const String \$name = \'${table.id.name}\';\n');
 
-    _writeValidityCheckMethod();
+    writeAsSelfType();
     _writePrimaryKeyOverride();
     _writeUniqueKeyOverride();
 
@@ -451,76 +458,9 @@ class TableWriter extends TableOrViewWriter {
     buffer.write('}');
   }
 
-  void _writeColumnVerificationMeta(DriftColumn column) {
-    if (!_skipVerification) {
-      final meta = emitter.drift('VerificationMeta');
-      final arg = asDartLiteral(column.nameInDart);
-
-      buffer
-        ..write('static const $meta ${_fieldNameForColumnMeta(column)} = ')
-        ..writeln("const $meta($arg);");
-    }
-  }
-
-  void _writeValidityCheckMethod() {
-    if (_skipVerification) return;
-
-    // dont't verify custom columns, we assume that the user knows what they're
-    // doing
-    if (table.columns.every((c) => c.typeConverter != null)) {
-      return;
-    }
-
-    final innerType = emitter.dartCode(emitter.writer.rowType(table));
-    emitter
-      ..writeln('@override')
-      ..writeDriftRef('VerificationContext')
-      ..write(' validateIntegrity(')
-      ..writeDriftRef('Insertable')
-      ..writeln('<$innerType> instance, {bool isInserting = false}) {')
-      ..write('final context = ${emitter.drift('VerificationContext')}();\n')
-      ..write('final data = instance.toColumns(true);\n');
-
-    const locals = {'instance', 'isInserting', 'context', 'data'};
-
-    for (final column in table.columns) {
-      final getterName = thisIfNeeded(column.nameInDart, locals);
-      final metaName = _fieldNameForColumnMeta(column);
-
-      if (column.typeConverter != null) {
-        // dont't verify custom columns, we assume that the user knows what
-        // they're doing
-        buffer.write('context.handle($metaName, '
-            'const ${emitter.drift('VerificationResult')}.success());');
-        continue;
-      }
-
-      final columnNameString = asDartLiteral(column.nameInSql);
-      buffer
-        ..write('if (data.containsKey($columnNameString)) {\n')
-        ..write('context.handle('
-            '$metaName, '
-            '$getterName.isAcceptableOrUnknown('
-            'data[$columnNameString]!, $metaName));')
-        ..write('}');
-
-      if (table.isColumnRequiredForInsert(column)) {
-        buffer
-          ..write(' else if (isInserting) {\n')
-          ..write('context.missing($metaName);\n')
-          ..write('}\n');
-      }
-    }
-    buffer.write('return context;\n}\n');
-  }
-
-  String _fieldNameForColumnMeta(DriftColumn column) {
-    return '_${column.nameInDart}Meta';
-  }
-
   void _writePrimaryKeyOverride() {
     buffer.write(
-        '@override\nSet<${emitter.drift('GeneratedColumn')}> get \$primaryKey => ');
+        '@override\nSet<${emitter.drift('TableColumn')}> get primaryKey => ');
     final primaryKey = table.fullPrimaryKey;
 
     if (primaryKey.isEmpty) {
@@ -575,8 +515,8 @@ class TableWriter extends TableOrViewWriter {
 
     buffer
       ..write('@override\n')
-      ..write('$typeName createAlias(String alias) {\n')
-      ..write('return $typeName(attachedDatabase, alias);')
+      ..write('$typeName withAlias(String alias) {\n')
+      ..write('return $typeName(alias);')
       ..write('}');
   }
 

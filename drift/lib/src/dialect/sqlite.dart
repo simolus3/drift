@@ -89,7 +89,7 @@ final class _SqliteCompiler extends StatementCompiler {
   }
 }
 
-abstract base class _SqliteType<T extends Object> extends SqlType<T> {
+abstract base class _SqliteType<T extends Object> implements SqlType<T> {
   final String name;
 
   const _SqliteType(this.name);

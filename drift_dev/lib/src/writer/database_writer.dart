@@ -66,7 +66,7 @@ class DatabaseWriter {
       ..write('class $className extends ')
       ..writeDriftRef('GeneratedDatabase')
       ..writeln('{')
-      ..writeln('$className(${firstLeaf.drift('QueryExecutor e')}): super(e);');
+      ..writeln('$className(super.implementation);');
 
     if (dbScope.options.generateConnectConstructor) {
       final conn = firstLeaf.drift('DatabaseConnection');

@@ -26,6 +26,7 @@ targets:
           write_from_json_string_constructor: true
           raw_result_set_data: true
           named_parameters: true
+          generate_manager: false # not yet ported to v3
           fatal_warnings: true
           dialects:
             sqlite:

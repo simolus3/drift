@@ -66,24 +66,6 @@ abstract class DatabaseConnectionUser {
   Stream<T> createStream<T extends Object>(QueryStreamFetcher<T> stmt) =>
       resolvedEngine.streamQueries.registerStream(stmt, this);
 
-  /// Creates a copy of the table with an alias so that it can be used in the
-  /// same query more than once.
-  ///
-  /// Example which uses the same table (here: points) more than once to
-  /// differentiate between the start and end point of a route:
-  /// ```
-  /// var source = alias(points, 'source');
-  /// var destination = alias(points, 'dest');
-  ///
-  /// select(routes).join([
-  ///   innerJoin(source, routes.startPoint.equalsExp(source.id)),
-  ///   innerJoin(destination, routes.startPoint.equalsExp(destination.id)),
-  /// ]);
-  /// ```
-  T alias<T, D>(ResultSetImplementation<T, D> table, String alias) {
-    return table.createAlias(alias).asDslTable;
-  }
-
   /// A, potentially more specific, database engine based on the [Zone] context.
   ///
   /// Inside a [transaction] block, drift will replace this [resolvedEngine]

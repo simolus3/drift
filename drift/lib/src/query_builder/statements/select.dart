@@ -17,7 +17,7 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
     with Selectable<Row> {
   final ResultSetStructure structure = ResultSetStructure();
 
-  bool distinct = false;
+  final bool distinct;
   final List<FromClauseElement> from = [];
 
   WhereClause? whereClause;
@@ -25,7 +25,7 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
   /// The database this statement should be sent to.
   DatabaseConnectionUser _database;
 
-  BaseSelectStatement(this._database);
+  BaseSelectStatement(this._database, {this.distinct = false});
 
   ColumnPosition get _nextPosition {
     final index = structure.expressions.length;
@@ -103,13 +103,14 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
 final class SelectStatement extends BaseSelectStatement<DriftRow> {
   final bool _includeJoinsByDefault;
 
-  SelectStatement(super.database, {bool includeJoinsByDefault = true})
+  SelectStatement(super.database,
+      {bool includeJoinsByDefault = true, super.distinct})
       : _includeJoinsByDefault = includeJoinsByDefault;
 
   void _applyFrom(SingleTableSelectStatement other) {
     addResultSet(other.resultSet);
 
-    distinct = other.distinct;
+    assert(distinct == other.distinct);
     from.addAll(other.from);
     whereClause = other.whereClause;
   }
@@ -137,7 +138,8 @@ final class SingleTableSelectStatement<Row extends Object,
   @override
   final ResultSet<Row, RS> resultSet;
 
-  SingleTableSelectStatement(super._database, this.resultSet) {
+  SingleTableSelectStatement(super._database, this.resultSet,
+      {super.distinct}) {
     final positions = <ColumnPosition>[];
     for (final (i, column) in resultSet.columns.indexed) {
       final position = (name: column.name, index: i);
@@ -160,7 +162,7 @@ final class SingleTableSelectStatement<Row extends Object,
 
   @override
   SelectStatement _withAddedJoin(Join join) {
-    return SelectStatement(_database)
+    return SelectStatement(_database, distinct: distinct)
       .._applyFrom(this)
       .._withAddedJoin(join);
   }

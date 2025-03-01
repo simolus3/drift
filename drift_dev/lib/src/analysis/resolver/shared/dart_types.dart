@@ -37,7 +37,6 @@ ExistingRowClass? validateExistingClass(
 ) {
   final desiredClass = dartClass.classElement;
   final library = desiredClass.library;
-  var isAsyncFactory = false;
 
   if (desiredClass.thisType.isDartCoreRecord) {
     // When the `Record` supertype from `dart:core` is used, generate a custom
@@ -81,20 +80,15 @@ ExistingRowClass? validateExistingClass(
         ));
       }
 
-      // The static factory must return a subtype of `FutureOr<ThatRowClass>`
-      final expectedReturnType =
-          library.typeProvider.futureOrType(instantiation);
+      // The static factory must return a subtype of `ThatRowClass`
       if (!library.typeSystem
-          .isAssignableTo(fallback.returnType, expectedReturnType)) {
+          .isAssignableTo(fallback.returnType, instantiation)) {
         step.reportError(DriftAnalysisError.forDartElement(
           fallback,
           'To be used as a factory for the custom row class, this method needs '
           'to return an instance of it.',
         ));
       }
-
-      isAsyncFactory = library.typeSystem.flatten(fallback.returnType) !=
-          fallback.returnType;
 
       ctor = fallback;
     }
@@ -184,7 +178,6 @@ ExistingRowClass? validateExistingClass(
     },
     columnGetters: getters,
     generateInsertable: generateInsertable,
-    isAsyncFactory: isAsyncFactory,
   );
 }
 

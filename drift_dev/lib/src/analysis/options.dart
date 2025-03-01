@@ -24,10 +24,6 @@ class DriftOptions {
   @JsonKey(name: 'override_hash_and_equals_in_result_sets', defaultValue: false)
   final bool overrideHashAndEqualsInResultSets;
 
-  /// Remove verification logic in the generated code.
-  @JsonKey(name: 'skip_verification_code', defaultValue: false)
-  final bool skipVerificationCode;
-
   /// Use a `<data-class>Companion` pattern instead of `<table-class>Companion`
   /// when naming companions.
   @JsonKey(name: 'use_data_class_name_for_companions', defaultValue: false)
@@ -123,7 +119,6 @@ class DriftOptions {
   const DriftOptions.defaults({
     this.generateFromJsonStringConstructor = false,
     this.overrideHashAndEqualsInResultSets = false,
-    this.skipVerificationCode = false,
     this.useDataClassNameForCompanions = false,
     this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = true,
     this.useSqlColumnNameAsJsonKey = false,
@@ -153,7 +148,6 @@ class DriftOptions {
   DriftOptions({
     required this.generateFromJsonStringConstructor,
     required this.overrideHashAndEqualsInResultSets,
-    required this.skipVerificationCode,
     required this.useDataClassNameForCompanions,
     required this.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
     required this.useSqlColumnNameAsJsonKey,
