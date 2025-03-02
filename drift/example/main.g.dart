@@ -15,8 +15,7 @@ class $TodoCategoriesTable extends TodoCategories
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'))
+      constraints: [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> name = TableColumn<String>(
@@ -40,7 +39,7 @@ class $TodoCategoriesTable extends TodoCategories
       DriftResultSet resultSet) {
     final columnPositions = resultSet.structure.tables[this]!;
     return (DriftRow row) {
-// Table not part of row if non-nullable column id is missing
+      // Not part of row if non-nullable column "id" is missing
       if (row.raw.rawValue(columnPositions[0]) == null) {
         return null;
       }
@@ -57,7 +56,7 @@ class $TodoCategoriesTable extends TodoCategories
   }
 }
 
-class TodoCategory extends DataClass implements Insertable<TodoCategory> {
+class TodoCategory extends LegacyDataClass implements Insertable<TodoCategory> {
   final int id;
   final String name;
   const TodoCategory({required this.id, required this.name});
@@ -87,7 +86,7 @@ class TodoCategory extends DataClass implements Insertable<TodoCategory> {
   factory TodoCategory.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       TodoCategory.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          LegacyDataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
@@ -188,8 +187,7 @@ class $TodoItemsTable extends TodoItems
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'))
+      constraints: [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> title = TableColumn<String>(
@@ -211,17 +209,23 @@ class $TodoItemsTable extends TodoItems
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES "todo_categories" ("id")'))
+      constraints: [
+        const ColumnForeignKeyConstraint(
+          otherTableName: 'todo_categories',
+          otherColumnName: 'id',
+        )
+      ])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> generatedText = TableColumn<String>(
       name: 'generated_text',
       type: BuiltinDriftType.text,
       isNullable: true,
-      generatedAs: GeneratedAs(
-          title + const Literal(' (') + content + const Literal(')'), false),
-      requiredDuringInsert: false)
+      requiredDuringInsert: false,
+      constraints: [
+        GeneratedAs(
+            title + const Literal(' (') + content + const Literal(')'), false)
+      ])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns =>
@@ -238,7 +242,7 @@ class $TodoItemsTable extends TodoItems
   TodoItem? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
     final columnPositions = resultSet.structure.tables[this]!;
     return (DriftRow row) {
-// Table not part of row if non-nullable column id is missing
+      // Not part of row if non-nullable column "id" is missing
       if (row.raw.rawValue(columnPositions[0]) == null) {
         return null;
       }
@@ -259,7 +263,7 @@ class $TodoItemsTable extends TodoItems
   }
 }
 
-class TodoItem extends DataClass implements Insertable<TodoItem> {
+class TodoItem extends LegacyDataClass implements Insertable<TodoItem> {
   final int id;
   final String title;
   final String? content;
@@ -308,7 +312,7 @@ class TodoItem extends DataClass implements Insertable<TodoItem> {
   factory TodoItem.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       TodoItem.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          LegacyDataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
@@ -437,7 +441,7 @@ class TodoItemsCompanion extends UpdateCompanion<TodoItem> {
   }
 }
 
-class TodoCategoryItemCountData extends DataClass {
+class TodoCategoryItemCountData extends LegacyDataClass {
   final String name;
   final int? itemCount;
   const TodoCategoryItemCountData({required this.name, this.itemCount});
@@ -452,7 +456,7 @@ class TodoCategoryItemCountData extends DataClass {
   factory TodoCategoryItemCountData.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       TodoCategoryItemCountData.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          LegacyDataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
@@ -488,24 +492,21 @@ class TodoCategoryItemCountData extends DataClass {
           other.itemCount == this.itemCount);
 }
 
-class $TodoCategoryItemCountView
-    extends ViewInfo<$TodoCategoryItemCountView, TodoCategoryItemCountData>
-    implements HasResultSet {
-  final String? _alias;
+class $TodoCategoryItemCountView extends TodoCategoryItemCount
+    with ResultSet<TodoCategoryItemCountData, $TodoCategoryItemCountView>
+    implements
+        GeneratedView<TodoCategoryItemCountData, $TodoCategoryItemCountView> {
   @override
-  final _$Database attachedDatabase;
-  $TodoCategoryItemCountView(this.attachedDatabase, [this._alias]);
-  $TodoItemsTable get todoItems => attachedDatabase.todoItems.createAlias('t0');
+  final String? alias;
+  final _$Database _attachedDatabase;
+  $TodoCategoryItemCountView(this._attachedDatabase, [this.alias]);
+  $TodoItemsTable get todoItems => _attachedDatabase.todoItems.withAlias('t0');
   $TodoCategoriesTable get todoCategories =>
-      attachedDatabase.todoCategories.createAlias('t1');
+      _attachedDatabase.todoCategories.withAlias('t1');
   @override
   List<SchemaColumn> get columns => [name, itemCount];
   @override
-  String get aliasedName => _alias ?? entityName;
-  @override
   String get entityName => 'todo_category_item_count';
-  @override
-  Map<SqlDialect, String>? get createViewStatements => null;
   @override
   $TodoCategoryItemCountView asSelfType() => this;
 
@@ -514,7 +515,7 @@ class $TodoCategoryItemCountView
       DriftResultSet resultSet) {
     final columnPositions = resultSet.structure.tables[this]!;
     return (DriftRow row) {
-// Table not part of row if non-nullable column name is missing
+      // Not part of row if non-nullable column "name" is missing
       if (row.raw.rawValue(columnPositions[0]) == null) {
         return null;
       }
@@ -525,33 +526,33 @@ class $TodoCategoryItemCountView
     };
   }
 
-  late final SchemaColumn<String> name = SchemaColumn<String>(
+  late final ViewColumn<String> name = ViewColumn<String>(
       name: 'name',
       type: BuiltinDriftType.text,
       isNullable: false,
-      generatedAs: GeneratedAs(todoCategories.name, false))
+      expression: todoCategories.name)
     ..owningResultSet = this;
-  late final SchemaColumn<int> itemCount = SchemaColumn<int>(
+  late final ViewColumn<int> itemCount = ViewColumn<int>(
       name: 'item_count',
       type: BuiltinDriftType.int,
       isNullable: true,
-      generatedAs: GeneratedAs(BaseAggregate(todoItems.id).count(), false))
+      expression: BaseAggregate(todoItems.id).count())
     ..owningResultSet = this;
   @override
-  $TodoCategoryItemCountView createAlias(String alias) {
-    return $TodoCategoryItemCountView(attachedDatabase, alias);
+  $TodoCategoryItemCountView withAlias(String alias) {
+    return $TodoCategoryItemCountView(_attachedDatabase, alias);
   }
 
   @override
-  Query? get query =>
-      (attachedDatabase.selectOnly(todoCategories)..addColumns($columns))
+  SelectStatement? get query =>
+      (_attachedDatabase.selectOnly(todoCategories)..addColumns(columns))
           .innerJoin(todoItems,
               on: todoItems.categoryId.equalsExp(todoCategories.id));
   @override
   Set<String> get readTables => const {'todo_items', 'todo_categories'};
 }
 
-class TodoItemWithCategoryNameViewData extends DataClass {
+class TodoItemWithCategoryNameViewData extends LegacyDataClass {
   final int id;
   final String? title;
   const TodoItemWithCategoryNameViewData({required this.id, this.title});
@@ -566,7 +567,7 @@ class TodoItemWithCategoryNameViewData extends DataClass {
   factory TodoItemWithCategoryNameViewData.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       TodoItemWithCategoryNameViewData.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          LegacyDataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
@@ -602,24 +603,24 @@ class TodoItemWithCategoryNameViewData extends DataClass {
           other.title == this.title);
 }
 
-class $TodoItemWithCategoryNameViewView extends ViewInfo<
-    $TodoItemWithCategoryNameViewView,
-    TodoItemWithCategoryNameViewData> implements HasResultSet {
-  final String? _alias;
+class $TodoItemWithCategoryNameViewView extends TodoItemWithCategoryNameView
+    with
+        ResultSet<TodoItemWithCategoryNameViewData,
+            $TodoItemWithCategoryNameViewView>
+    implements
+        GeneratedView<TodoItemWithCategoryNameViewData,
+            $TodoItemWithCategoryNameViewView> {
   @override
-  final _$Database attachedDatabase;
-  $TodoItemWithCategoryNameViewView(this.attachedDatabase, [this._alias]);
-  $TodoItemsTable get todoItems => attachedDatabase.todoItems.createAlias('t0');
+  final String? alias;
+  final _$Database _attachedDatabase;
+  $TodoItemWithCategoryNameViewView(this._attachedDatabase, [this.alias]);
+  $TodoItemsTable get todoItems => _attachedDatabase.todoItems.withAlias('t0');
   $TodoCategoriesTable get todoCategories =>
-      attachedDatabase.todoCategories.createAlias('t1');
+      _attachedDatabase.todoCategories.withAlias('t1');
   @override
   List<SchemaColumn> get columns => [id, title];
   @override
-  String get aliasedName => _alias ?? entityName;
-  @override
   String get entityName => 'customViewName';
-  @override
-  Map<SqlDialect, String>? get createViewStatements => null;
   @override
   $TodoItemWithCategoryNameViewView asSelfType() => this;
 
@@ -628,7 +629,7 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
       DriftResultSet resultSet) {
     final columnPositions = resultSet.structure.tables[this]!;
     return (DriftRow row) {
-// Table not part of row if non-nullable column id is missing
+      // Not part of row if non-nullable column "id" is missing
       if (row.raw.rawValue(columnPositions[0]) == null) {
         return null;
       }
@@ -639,31 +640,29 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
     };
   }
 
-  late final SchemaColumn<int> id = SchemaColumn<int>(
+  late final ViewColumn<int> id = ViewColumn<int>(
       name: 'id',
       type: BuiltinDriftType.int,
       isNullable: false,
-      generatedAs: GeneratedAs(todoItems.id, false))
+      expression: todoItems.id)
     ..owningResultSet = this;
-  late final SchemaColumn<String> title = SchemaColumn<String>(
+  late final ViewColumn<String> title = ViewColumn<String>(
       name: 'title',
       type: BuiltinDriftType.text,
       isNullable: true,
-      generatedAs: GeneratedAs(
-          todoItems.title +
-              const Literal('(') +
-              todoCategories.name +
-              const Literal(')'),
-          false))
+      expression: todoItems.title +
+          const Literal('(') +
+          todoCategories.name +
+          const Literal(')'))
     ..owningResultSet = this;
   @override
-  $TodoItemWithCategoryNameViewView createAlias(String alias) {
-    return $TodoItemWithCategoryNameViewView(attachedDatabase, alias);
+  $TodoItemWithCategoryNameViewView withAlias(String alias) {
+    return $TodoItemWithCategoryNameViewView(_attachedDatabase, alias);
   }
 
   @override
-  Query? get query =>
-      (attachedDatabase.selectOnly(todoItems)..addColumns($columns)).innerJoin(
+  SelectStatement? get query =>
+      (_attachedDatabase.selectOnly(todoItems)..addColumns(columns)).innerJoin(
           todoCategories,
           on: todoCategories.id.equalsExp(todoItems.categoryId));
   @override
@@ -672,8 +671,8 @@ class $TodoItemWithCategoryNameViewView extends ViewInfo<
 
 abstract class _$Database extends GeneratedDatabase {
   _$Database(super.implementation);
-  late final $TodoCategoriesTable todoCategories = $TodoCategoriesTable(this);
-  late final $TodoItemsTable todoItems = $TodoItemsTable(this);
+  late final $TodoCategoriesTable todoCategories = $TodoCategoriesTable();
+  late final $TodoItemsTable todoItems = $TodoItemsTable();
   late final $TodoCategoryItemCountView todoCategoryItemCount =
       $TodoCategoryItemCountView(this);
   late final $TodoItemWithCategoryNameViewView customViewName =
@@ -681,9 +680,6 @@ abstract class _$Database extends GeneratedDatabase {
   late final Index itemTitle = Index.byDialect('item_title', {
     SqlDialect.sqlite: 'CREATE INDEX item_title ON todo_items (title)',
   });
-  @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         todoCategories,

@@ -30,26 +30,33 @@ class ViewWriter extends TableOrViewWriter {
   void _writeViewInfoClass() {
     emitter = scope.leaf();
 
-    buffer.write(
-        'class ${view.entityInfoName} extends ${emitter.drift('ViewInfo')}');
-    if (scope.generationOptions.writeDataClasses) {
-      final viewClassName = emitter.dartCode(emitter.entityInfoType(view));
-      emitter
-        ..write('<$viewClassName, ')
-        ..writeDart(emitter.rowType(view))
-        ..write('>');
-    } else {
-      buffer.write('<${view.entityInfoName}, Never>');
-    }
-    buffer.writeln(' implements ${emitter.drift('HasResultSet')} {');
-
+    final viewClassName = emitter.dartCode(emitter.entityInfoType(view));
+    final dataClass = emitter.dartCode(emitter.rowType(view));
+    final typeArgs = scope.generationOptions.writeDataClasses
+        ? '<$dataClass, $viewClassName>'
+        : '<Never, $viewClassName>';
+    final viewDslName = view.definingDartClass ??
+        AnnotatedDartCode.importedSymbol(AnnotatedDartCode.drift, 'View');
     final dbClassName =
         databaseWriter?.dbClassName ?? emitter.drift('GeneratedDatabase');
+
+    emitter
+      ..write('class ${view.entityInfoName} extends ')
+      ..writeDart(viewDslName)
+      ..write(' with ')
+      ..writeDriftRef('ResultSet')
+      ..write(typeArgs)
+      ..write(' implements ')
+      ..writeDriftRef('GeneratedView')
+      ..write(typeArgs)
+      ..writeln('{');
+
     buffer
-      ..writeln('final String? _alias;')
-      ..writeln('@override final $dbClassName attachedDatabase;')
-      ..writeln('${view.entityInfoName}(this.attachedDatabase, '
-          '[this._alias]);');
+      ..writeln('@override')
+      ..writeln('final String? alias;')
+      ..writeln('final $dbClassName _attachedDatabase;')
+      ..writeln(
+          '${view.entityInfoName}(this._attachedDatabase, [this.alias]);');
 
     final source = view.source;
     if (source is DartViewSource) {
@@ -64,43 +71,15 @@ class ViewWriter extends TableOrViewWriter {
         emitter
           ..writeDart(emitter.entityInfoType(table))
           ..write(' get ${ref.name} => ')
-          ..writeDart(emitter.referenceElement(ref.table, 'attachedDatabase'))
-          ..writeln('.createAlias($alias);');
+          ..writeDart(emitter.referenceElement(ref.table, '_attachedDatabase'))
+          ..writeln('.withAlias($alias);');
       }
     }
 
     writeGetColumnsOverride();
 
-    buffer
-      ..write('@override\nString get aliasedName => '
-          '_alias ?? entityName;\n')
-      ..write('@override\n String get entityName=>'
-          ' ${asDartLiteral(view.schemaName)};\n');
-
-    emitter
-      ..writeln('@override')
-      ..write('Map<${emitter.drift('SqlDialect')}, String>')
-      ..write(source is! SqlViewSource ? '?' : '')
-      ..write('get createViewStatements => ');
-    if (source is SqlViewSource) {
-      final astNode = source.parsedStatement;
-
-      if (astNode != null) {
-        emitter.writeSqlByDialectMap(astNode);
-      } else {
-        final firstDialect = scope.options.dialects.values.first;
-
-        emitter
-          ..write('{')
-          ..writeDriftRef('SqlDialect')
-          ..write('.${firstDialect.name}: ')
-          ..write(asDartLiteral(source.sqlCreateViewStmt))
-          ..write('}');
-      }
-      buffer.writeln(';');
-    } else {
-      buffer.writeln('null;');
-    }
+    buffer.write('@override\n String get entityName=>'
+        ' ${asDartLiteral(view.schemaName)};\n');
 
     writeAsSelfType();
     writeMappingMethod(scope);
@@ -129,20 +108,21 @@ class ViewWriter extends TableOrViewWriter {
 
     buffer
       ..write('@override\n')
-      ..write('$typeName createAlias(String alias) {\n')
-      ..write('return $typeName(attachedDatabase, alias);')
+      ..write('$typeName withAlias(String alias) {\n')
+      ..write('return $typeName(_attachedDatabase, alias);')
       ..write('}');
   }
 
   void _writeQuery() {
-    buffer.write('@override\n${emitter.drift('Query?')} get query => ');
+    buffer
+        .write('@override\n${emitter.drift('SelectStatement')}? get query => ');
 
     final source = view.source;
     if (source is DartViewSource) {
       emitter
         ..write(
-            '(attachedDatabase.selectOnly(${scope.options.assumeCorrectReference ? source.primaryFrom?.name ?? source.staticSource : source.primaryFrom?.name})'
-            '..addColumns(\$columns))')
+            '(_attachedDatabase.selectOnly(${scope.options.assumeCorrectReference ? source.primaryFrom?.name ?? source.staticSource : source.primaryFrom?.name})'
+            '..addColumns(columns))')
         ..writeDart(source.dartQuerySource)
         ..writeln(';');
     } else {

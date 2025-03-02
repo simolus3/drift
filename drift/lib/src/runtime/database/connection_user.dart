@@ -217,6 +217,46 @@ abstract base class DatabaseConnectionUser {
           {bool distinct = false}) {
     return SingleTableSelectStatement<Row, RS>(this, table, distinct: distinct);
   }
+
+  /// Starts a complex statement on [table] that doesn't necessarily use all of
+  /// [table]'s columns.
+  ///
+  /// Unlike [select], which automatically selects all columns of [table], this
+  /// method is suitable for more advanced queries that can use [table] without
+  /// using their column. As an example, assuming we have a table `comments`
+  /// with a `TextColumn content`, this query would report the average length of
+  /// a comment:
+  /// ```dart
+  /// Stream<num> watchAverageCommentLength() {
+  ///   final avgLength = comments.content.length.avg();
+  ///   final query = selectOnly(comments)
+  ///     ..addColumns([avgLength]);
+  ///
+  ///   return query.map((row) => row.read(avgLength)).watchSingle();
+  /// }
+  /// ```
+  ///
+  /// While this query reads from `comments`, it doesn't use all of it's columns
+  /// (in fact, it uses none of them!). This makes it suitable for
+  /// [selectOnly] instead of [select].
+  ///
+  /// The [distinct] parameter (defaults to false) can be used to remove
+  /// duplicate rows from the result set.
+  ///
+  /// For simple queries, use [select].
+  ///
+  /// See also:
+  ///  - the documentation on [aggregate expressions](https://drift.simonbinder.eu/docs/getting-started/expressions/#aggregate)
+  ///  - the documentation on [group by](https://drift.simonbinder.eu/docs/advanced-features/joins/#group-by)
+  SelectStatement selectOnly(ResultSet table, {bool distinct = false}) {
+    final statement = SelectStatement(
+      this,
+      includeJoinsByDefault: false,
+      distinct: distinct,
+    );
+    statement.from.add(TableReference(table));
+    return statement;
+  }
 }
 
 final class _ScopedDatabaseSession {

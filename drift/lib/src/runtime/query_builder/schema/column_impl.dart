@@ -395,17 +395,3 @@ class GeneratedColumnWithTypeConverter<D, S extends Object>
     }
   }
 }
-
-/// Information filled out by the generator to support generated or virtual
-/// columns.
-class GeneratedAs {
-  /// The expression that this column evaluates to.
-  final Expression generatedAs;
-
-  /// Wehter this column is stored in the database, as opposed to being
-  /// `VIRTUAL` and evaluated on each read.
-  final bool stored;
-
-  /// Creates a [GeneratedAs] clause.
-  GeneratedAs(this.generatedAs, this.stored);
-}

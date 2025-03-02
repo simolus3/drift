@@ -11,6 +11,7 @@ import 'expressions/tuple.dart';
 import 'expressions/variables.dart';
 import 'results.dart';
 import 'schema/column.dart';
+import 'schema/column_constraints.dart';
 import 'statements/select.dart';
 import 'statements/transactions.dart';
 import 'types.dart';
@@ -40,6 +41,13 @@ abstract interface class SqlComponent {
 
 abstract mixin class DialectSpecificComponent implements SqlComponent {
   final Map<Symbol, Object?> dialectSpecificOptions = {};
+}
+
+final class CustomComponent implements SqlComponent {
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addCustom(this);
+  }
 }
 
 abstract base class StatementCompiler {
@@ -312,4 +320,45 @@ abstract base class StatementCompiler {
     }
     statement.buffer.write(';');
   }
+
+  void addColumnPrimaryKeyConstraint(ColumnPrimaryKeyConstraint constraint) {
+    statement.buffer.write('PRIMARY KEY');
+    if (constraint.isAutoIncrementing) {
+      statement.buffer.write(' AUTOINCREMENT');
+    }
+  }
+
+  void addColumnGeneratedAs(ColumnGeneratedAs constraint) {
+    statement.buffer.write('GENERATED ALWAYS AS (');
+    constraint.generatedAs.compileWith(this);
+    statement.buffer.write(')');
+    statement.buffer.write(constraint.stored ? ' STORED' : ' VIRTUAL');
+  }
+
+  void addColumnUniqueConstraint(ColumnUniqueConstraint constraint) {
+    statement.buffer.write('UNIQUE');
+  }
+
+  void addColumnForeignKeyConstraint(ColumnForeignKeyConstraint constraint) {
+    statement.buffer.write(
+        'REFERENCES ${constraint.otherTableName} (${constraint.otherColumnName})');
+    if (constraint.onUpdate case final onUpdate?) {
+      statement.buffer.write(' ON UPDATE ${onUpdate.defaultLexeme}');
+    }
+    if (constraint.onDelete case final onDelete?) {
+      statement.buffer.write(' ON UPDATE ${onDelete.defaultLexeme}');
+    }
+
+    if (constraint.initiallyDeferred) {
+      statement.buffer.write('INITIALLY DEFERRED');
+    }
+  }
+
+  void addColumnCheckConstraint(ColumnCheckConstraint constraint) {
+    statement.buffer.write('CHECK (');
+    constraint.check.compileWith(this);
+    statement.buffer.write(')');
+  }
+
+  void addCustom(CustomComponent component);
 }

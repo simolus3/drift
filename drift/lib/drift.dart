@@ -9,4 +9,5 @@ export 'src/runtime/database/connection_user.dart';
 export 'src/runtime/database/db_base.dart';
 export 'src/runtime/streams/update_rules.dart'
     hide AnyUpdateQuery, MultipleUpdateQuery, SpecificUpdateQuery;
+export 'src/runtime/runtime_options.dart';
 export 'src/runtime/type_converter.dart';

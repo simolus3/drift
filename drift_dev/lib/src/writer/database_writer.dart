@@ -100,7 +100,7 @@ class DatabaseWriter {
           buffer: dbScope.leaf().buffer,
           getterName: entity.dbGetterName,
           returnType: tableClassName,
-          code: '$tableClassName(this)',
+          code: '$tableClassName()',
         );
       } else if (entity is DriftTrigger) {
         writeMemoizedGetter(
@@ -175,13 +175,9 @@ class DatabaseWriter {
     // Write List of tables
     final schemaScope = dbScope.leaf();
 
-    final tableInfoType =
-        '${dbScope.drift('TableInfo')}<${dbScope.drift('Table')}, Object?>';
     final schemaEntity = dbScope.drift('DatabaseSchemaEntity');
 
     schemaScope
-      ..write('@override\nIterable<$tableInfoType> get allTables => ')
-      ..write('allSchemaEntities.whereType<$tableInfoType>();\n')
       ..write('@override\nList<$schemaEntity> get allSchemaEntities ')
       ..write('=> [')
       ..write(elements

@@ -241,6 +241,7 @@ class ElementSerializer {
           _serializeColumnConstraint(constraint),
       ],
       'customConstraints': column.customConstraints,
+      'viewExpression': column.viewExpression,
     };
   }
 
@@ -802,6 +803,11 @@ class ElementDeserializer {
           await _readConstraint(rawConstraint as Map, ownTable)
       ],
       customConstraints: json['customConstraints'] as String?,
+      viewExpression: switch (json['viewExpression']) {
+        null => null,
+        final viewExpression =>
+          AnnotatedDartCode.fromJson(viewExpression as Map),
+      },
     );
   }
 

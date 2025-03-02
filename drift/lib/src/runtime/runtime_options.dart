@@ -1,19 +1,4 @@
-import 'dart:async';
-
 import 'package:drift/drift.dart';
-import 'package:drift/src/runtime/executor/delayed_stream_queries.dart';
-import 'package:drift/src/runtime/executor/stream_queries.dart';
-import 'package:drift/src/runtime/executor/transactions.dart';
-import 'package:meta/meta.dart';
-
-import '../devtools/devtools.dart' as devtools;
-import '../query_builder/query_builder.dart';
-
-part 'batch.dart';
-part 'connection.dart';
-part 'connection_user.dart';
-part 'dao_base.dart';
-part 'db_base.dart';
 
 /// Defines additional runtime behavior for drift. Changing the fields of this
 /// class is rarely necessary.
@@ -21,7 +6,7 @@ class DriftRuntimeOptions {
   /// Don't warn when a database class isn't used as singleton.
   bool dontWarnAboutMultipleDatabases = false;
 
-  /// The [ValueSerializer] that will be used by default in [DataClass.toJson].
+  /// The [ValueSerializer] that will be used by default in [LegacyDataClass.toJson].
   ValueSerializer defaultSerializer = const ValueSerializer.defaults();
 
   /// The function used by drift to emit debug prints.

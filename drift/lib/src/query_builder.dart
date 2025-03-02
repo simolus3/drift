@@ -10,6 +10,7 @@ export 'query_builder/expressions/text.dart';
 export 'query_builder/expressions/tuple.dart';
 export 'query_builder/expressions/variables.dart';
 
+export 'query_builder/schema/column_constraints.dart';
 export 'query_builder/schema/column.dart';
 export 'query_builder/schema/entities.dart';
 export 'query_builder/schema/result_set.dart';

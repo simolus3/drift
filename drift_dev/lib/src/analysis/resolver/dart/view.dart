@@ -239,12 +239,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
           nullable: column.nullable || structure.referenceIsNullable(reference),
           nameInDart: dart,
           nameInSql: sql,
-          constraints: [
-            ColumnGeneratedAs(
-                AnnotatedDartCode.build(
-                    (b) => b.addText('${reference.name}.${column.nameInDart}')),
-                false),
-          ],
+          viewExpression: AnnotatedDartCode.build(
+              (b) => b.addText('${reference.name}.${column.nameInDart}')),
           typeConverter: column.typeConverter,
           foreignConverter: true,
         ));
@@ -285,19 +281,16 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
         final expression = (node.body as ExpressionFunctionBody).expression;
 
         columns.add(DriftColumn(
-          declaration: DriftDeclaration.dartElement(getter),
-          sqlType: ColumnType.drift(sqlType),
-          nameInDart: getter.name,
-          nameInSql: ReCase(getter.name).snakeCase,
-          nullable: true,
-          constraints: [
-            resolver.driver.options.assumeCorrectReference
-                ? ColumnGeneratedAs(AnnotatedDartCode.build((builder) {
+            declaration: DriftDeclaration.dartElement(getter),
+            sqlType: ColumnType.drift(sqlType),
+            nameInDart: getter.name,
+            nameInSql: ReCase(getter.name).snakeCase,
+            nullable: true,
+            viewExpression: resolver.driver.options.assumeCorrectReference
+                ? AnnotatedDartCode.build((builder) {
                     builder.addText(expression.toSource());
-                  }), false)
-                : ColumnGeneratedAs(AnnotatedDartCode.ast(expression), false),
-          ],
-        ));
+                  })
+                : AnnotatedDartCode.ast(expression)));
       }
     }
 

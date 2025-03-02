@@ -269,7 +269,7 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
   @override
   _i5.Stream<T> registerStream<T extends Object>(
     _i6.QueryStreamFetcher<T>? fetcher,
-    dynamic database,
+    _i7.DatabaseConnectionUser? database,
   ) =>
       (super.noSuchMethod(
         Invocation.method(

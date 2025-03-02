@@ -48,7 +48,7 @@ class DataClassWriter {
     final customParent = table.customParentClass;
     final parentClass = customParent != null
         ? _emitter.dartCode(customParent.parentClass)
-        : _emitter.drift('DataClass');
+        : _emitter.drift('LegacyDataClass');
     _buffer.write('class ${table.nameOfRowClass} extends $parentClass ');
 
     var hasImplementsClause = false;
@@ -196,7 +196,7 @@ class DataClassWriter {
       _buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
           '{$serializerType serializer}) => '
           '$dataClassName.fromJson('
-          'DataClass.parseJson(encodedJson) as Map<String, dynamic>, '
+          'LegacyDataClass.parseJson(encodedJson) as Map<String, dynamic>, '
           'serializer: serializer);');
     }
   }

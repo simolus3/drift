@@ -75,6 +75,10 @@ class DriftColumn implements HasType {
   /// that the filters and orderings should use to denote the reverse direction
   final String? referenceName;
 
+  /// For columns that are part of a Dart-defined view, code evaluating to an
+  /// `Expression` with the value for that column.
+  final AnnotatedDartCode? viewExpression;
+
   @override
   final AppliedTypeConverter? typeConverter;
 
@@ -100,6 +104,7 @@ class DriftColumn implements HasType {
     this.customConstraints,
     this.referenceName,
     bool foreignConverter = false,
+    this.viewExpression,
   }) {
     if (typeConverter != null && !foreignConverter) {
       typeConverter!.owningColumn = this;

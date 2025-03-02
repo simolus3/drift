@@ -1,76 +1,62 @@
-import 'package:drift/drift.dart';
-import 'package:sqlparser/sqlparser.dart' as sql;
+import 'package:drift_dev/src/utils/string_escaper.dart';
 
 import '../../analysis/dialect.dart';
-import '../../analysis/options.dart';
 import '../../analysis/results/results.dart';
+import '../writer.dart';
 
-Map<RegisteredDriftDialect, String> defaultConstraints(
-    DriftOptions options, DriftColumn column) {
-  final allDialects = options.dialects.values.toList();
-  final defaultConstraints = <String>[];
-  final dialectSpecificConstraints = <RegisteredDriftDialect, List<String>>{
-    for (final dialect in allDialects) dialect: [],
-  };
-
+/// Generates a list of expressions each evaluating to a `ColumnConstraint`
+/// instance for column constraints set on the [column].
+List<String> columnConstraints(TextEmitter emitter, DriftColumn column) {
+  final entries = <String>[];
   var wrotePkConstraint = false;
 
   for (final feature in column.constraints) {
     if (feature is PrimaryKeyColumn) {
       if (!wrotePkConstraint) {
-        if (feature.isAutoIncrement) {
-          // TODO: Use runtime column builder for this?
-          for (final dialect in allDialects) {
-            if (dialect is DriftMariadbDialect) {
-              dialectSpecificConstraints[dialect]!
-                  .add('PRIMARY KEY AUTO_INCREMENT');
-            } else {
-              dialectSpecificConstraints[dialect]!
-                  .add('PRIMARY KEY AUTOINCREMENT');
-            }
-          }
-        } else {
-          defaultConstraints.add('PRIMARY KEY');
-        }
-
+        entries.add(
+            'const ${emitter.drift('ColumnPrimaryKeyConstraint')}(isAutoIncrementing: ${feature.isAutoIncrement})');
         wrotePkConstraint = true;
         break;
       }
     }
   }
 
-  if (!wrotePkConstraint) {
-    for (final feature in column.constraints) {
-      if (feature is UniqueColumn) {
-        defaultConstraints.add('UNIQUE');
-        break;
-      }
-    }
-  }
-
   for (final feature in column.constraints) {
+    if (feature is UniqueColumn && !wrotePkConstraint) {
+      entries.add('const ${emitter.drift('ColumnUniqueConstraint')}()');
+      wrotePkConstraint = true;
+    }
+
     if (feature is ForeignKeyReference) {
       final tableName = feature.otherColumn.owner.id.name;
       final columnName = feature.otherColumn.nameInSql;
 
-      var constraint = 'REFERENCES "$tableName" ("$columnName")';
+      var constraint = 'const ${emitter.drift('ColumnForeignKeyConstraint')}('
+          'otherTableName: ${asDartLiteral(tableName)},'
+          'otherColumnName: ${asDartLiteral(columnName)},';
 
-      final onUpdate = feature.onUpdate;
-      final onDelete = feature.onDelete;
-
-      if (onUpdate != null) {
-        constraint = '$constraint ON UPDATE ${onUpdate.description}';
+      if (feature.onUpdate case final onUpdate?) {
+        constraint =
+            'onUpdate: ${emitter.drift('ReferenceAction')}.${onUpdate.name},';
       }
-
-      if (onDelete != null) {
-        constraint = '$constraint ON DELETE ${onDelete.description}';
+      if (feature.onDelete case final onDelete?) {
+        constraint =
+            'onDelete: ${emitter.drift('ReferenceAction')}.${onDelete.name},';
       }
-
       if (feature.initiallyDeferred) {
-        constraint = '$constraint DEFERRABLE INITIALLY DEFERRED';
+        constraint = 'initiallyDeferred: true,';
       }
 
-      defaultConstraints.add(constraint);
+      entries.add('$constraint)');
+    } else if (feature is DartCheckExpression) {
+      final dartCheck = emitter.dartCode(feature.dartExpression);
+
+      entries
+          .add('const ${emitter.drift('ColumnCheckConstraint')}($dartCheck)');
+    } else if (feature is ColumnGeneratedAs) {
+      final dartCode = emitter.dartCode(feature.dartExpression);
+      entries
+          .add('${emitter.drift('GeneratedAs')}($dartCode, ${feature.stored})');
     } else if (feature is DefaultConstraintsFromSchemaFile) {
       String buildFor(RegisteredDriftDialect dialect) {
         final result = StringBuffer();
@@ -86,44 +72,17 @@ Map<RegisteredDriftDialect, String> defaultConstraints(
         return result.toString();
       }
 
-      return {
-        for (final dialect in allDialects) dialect: buildFor(dialect),
-      };
-    }
-  }
+      final result =
+          StringBuffer('${emitter.drift('ColumnConstraint')}.custom({');
 
-  if (column.sqlType case ColumnDriftType(builtin: BuiltinDriftType.bool)) {
-    final name = column.nameInSql;
-
-    dialectSpecificConstraints.forEach((dialect, constraints) {
-      if (dialect is DriftSqliteDialect || dialect is DriftMariadbDialect) {
-        dialectSpecificConstraints[dialect]!.add('CHECK ("$name" IN (0, 1))');
+      for (final dialect in emitter.writer.options.dialects.values) {
+        result.writeln('$dialect: ${asDartLiteral(buildFor(dialect))},');
       }
-    });
-  }
 
-  for (final constraints in dialectSpecificConstraints.values) {
-    constraints.addAll(defaultConstraints);
-  }
-
-  return dialectSpecificConstraints.map(
-    (dialect, constraints) => MapEntry(dialect, constraints.join(' ')),
-  );
-}
-
-extension on sql.ReferenceAction {
-  String get description {
-    switch (this) {
-      case sql.ReferenceAction.setNull:
-        return 'SET NULL';
-      case sql.ReferenceAction.setDefault:
-        return 'SET DEFAULT';
-      case sql.ReferenceAction.cascade:
-        return 'CASCADE';
-      case sql.ReferenceAction.restrict:
-        return 'RESTRICT';
-      case sql.ReferenceAction.noAction:
-        return 'NO ACTION';
+      result.write('})');
+      return [result.toString()];
     }
   }
+
+  return entries;
 }

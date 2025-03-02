@@ -105,7 +105,7 @@ abstract class TableOrViewWriter {
     if (firstNonNullableColumn case (final index, final column)?) {
       buffer
         ..writeln(
-            ' // Table not part of row if non-nullable column ${column.nameInDart} is missing')
+            ' // Not part of row if non-nullable column "${column.nameInDart}" is missing')
         ..writeln('if (row.raw.rawValue(columnPositions[$index]) == null) {')
         ..writeln('return null;')
         ..writeln('}');
@@ -190,38 +190,11 @@ abstract class TableOrViewWriter {
         ColumnCustomType(:final custom) => emitter.dartCode(custom.expression),
       },
       'isNullable': column.nullable.toString(),
+      if (column.viewExpression case final viewExpression?)
+        'expression': emitter.dartCode(viewExpression),
     };
     final expressionBuffer = StringBuffer();
-    final constraints = defaultConstraints(emitter.writer.options, column);
-
-    for (final constraint in column.constraints) {
-      if (constraint is LimitingTextLength) {
-        final buffer =
-            StringBuffer(emitter.drift('GeneratedColumn.checkTextLength('));
-
-        if (constraint.minLength != null) {
-          buffer.write('minTextLength: ${constraint.minLength},');
-        }
-        if (constraint.maxLength != null) {
-          buffer.write('maxTextLength: ${constraint.maxLength}');
-        }
-        buffer.write(')');
-
-        namedParameters['additionalChecks'] = buffer.toString();
-      }
-
-      if (constraint is DartCheckExpression) {
-        final dartCheck = emitter.dartCode(constraint.dartExpression);
-        namedParameters['check'] = '() => $dartCheck';
-      }
-
-      if (constraint is ColumnGeneratedAs) {
-        final dartCode = emitter.dartCode(constraint.dartExpression);
-
-        namedParameters['generatedAs'] =
-            '${emitter.drift('GeneratedAs')}($dartCode, ${constraint.stored})';
-      }
-    }
+    final constraints = columnConstraints(emitter, column);
 
     if (isRequiredForInsert != null) {
       namedParameters['requiredDuringInsert'] = isRequiredForInsert.toString();
@@ -230,31 +203,9 @@ abstract class TableOrViewWriter {
     if (column.customConstraints != null) {
       namedParameters['\$customConstraints'] =
           asDartLiteral(column.customConstraints!);
-    } else if (constraints.values.any((constraint) => constraint.isNotEmpty)) {
+    } else if (constraints.isNotEmpty) {
       // Use the default constraints supported by drift
-
-      if (constraints.values.any(
-        (value) => value != constraints.values.first,
-      )) {
-        // One or more constraints are different depending on dialect, generate
-        // per-dialect constraints
-
-        final literalEntries = [
-          for (final entry in constraints.entries)
-            '${emitter.drift('SqlDialect.${entry.key.name}')}: ${asDartLiteral(entry.value)},',
-        ];
-
-        namedParameters['defaultConstraints'] =
-            '${emitter.drift('GeneratedColumn.constraintsDependsOnDialect')}({${literalEntries.join('\n')}})';
-      } else {
-        // Constraints are the same regardless of dialect, only generate one set
-        // of them
-
-        final constraint = asDartLiteral(constraints.values.first);
-
-        namedParameters['defaultConstraints'] =
-            '${emitter.drift('GeneratedColumn.constraintIsAlways')}($constraint)';
-      }
+      namedParameters['constraints'] = '[${constraints.join(', ')}]';
     }
 
     if (column.defaultArgument != null) {
@@ -270,7 +221,7 @@ abstract class TableOrViewWriter {
 
     final innerType = emitter.innerColumnType(column.sqlType);
     var type =
-        '${emitter.drift(isForTable ? 'TableColumn' : 'SchemaColumn')}<${emitter.dartCode(innerType)}>';
+        '${emitter.drift(isForTable ? 'TableColumn' : 'ViewColumn')}<${emitter.dartCode(innerType)}>';
 
     expressionBuffer
       ..write(type)
@@ -409,7 +360,6 @@ class TableWriter extends TableOrViewWriter {
       ..writeln('@override')
       ..writeln('final String? alias;')
       ..writeln('${table.entityInfoName}([this.alias]);');
-    ;
 
     // Generate the columns
     for (final column in table.columns) {

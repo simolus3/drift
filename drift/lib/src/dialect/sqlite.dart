@@ -87,6 +87,11 @@ final class _SqliteCompiler extends StatementCompiler {
       ..write('?')
       ..write(index);
   }
+
+  @override
+  void addCustom(CustomComponent component) {
+    throw 'todo: addCustom';
+  }
 }
 
 abstract base class _SqliteType<T extends Object> implements SqlType<T> {

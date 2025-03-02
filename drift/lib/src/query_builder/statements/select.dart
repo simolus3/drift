@@ -13,8 +13,8 @@ import '../schema/result_set.dart';
 import 'statement.dart';
 import 'query.dart';
 
-sealed class BaseSelectStatement<Row> extends SqlStatement
-    with Selectable<Row> {
+sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
+    Row> extends SqlStatement with Selectable<Row> {
   final ResultSetStructure structure = ResultSetStructure();
 
   final bool distinct;
@@ -32,8 +32,16 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
     return (name: 'c$index', index: index);
   }
 
-  void addColumn(Expression expression) {
+  Self addColumn(Expression expression) {
     structure.expressions[expression] ??= _nextPosition;
+    return _asSelf();
+  }
+
+  Self addColumns(Iterable<Expression> expressions) {
+    for (final expression in expressions) {
+      structure.expressions[expression] ??= _nextPosition;
+    }
+    return _asSelf();
   }
 
   @internal
@@ -77,6 +85,8 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
     compiler.addSelectStatement(this);
   }
 
+  Self _asSelf();
+
   SelectStatement _withAddedJoin(Join join);
 
   Row Function(DriftRow) _createMapper(DriftResultSet resultSet);
@@ -100,7 +110,8 @@ sealed class BaseSelectStatement<Row> extends SqlStatement
   }
 }
 
-final class SelectStatement extends BaseSelectStatement<DriftRow> {
+final class SelectStatement
+    extends BaseSelectStatement<SelectStatement, DriftRow> {
   final bool _includeJoinsByDefault;
 
   SelectStatement(super.database,
@@ -114,6 +125,9 @@ final class SelectStatement extends BaseSelectStatement<DriftRow> {
     from.addAll(other.from);
     whereClause = other.whereClause;
   }
+
+  @override
+  SelectStatement _asSelf() => this;
 
   @override
   SelectStatement _withAddedJoin(Join join) {
@@ -131,7 +145,8 @@ final class SelectStatement extends BaseSelectStatement<DriftRow> {
 }
 
 final class SingleTableSelectStatement<Row extends Object,
-        RS extends ResultSet<Row, RS>> extends BaseSelectStatement<Row>
+        RS extends ResultSet<Row, RS>>
+    extends BaseSelectStatement<SingleTableSelectStatement<Row, RS>, Row>
     with
         SingleTableStatementMixin<Row, RS,
             SingleTableSelectStatement<Row, RS>> {
@@ -153,6 +168,9 @@ final class SingleTableSelectStatement<Row extends Object,
 
   @override
   SingleTableSelectStatement<Row, RS> asSelf() => this;
+
+  @override
+  SingleTableSelectStatement<Row, RS> _asSelf() => this;
 
   @override
   Row Function(DriftRow p1) _createMapper(DriftResultSet resultSet) {
