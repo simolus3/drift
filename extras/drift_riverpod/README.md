@@ -1,39 +1,52 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Tools that make using [drift](https://drift.simonbinder.eu/) easier in apps using [Riverpod](https://riverpod.dev/)
+for state management.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+This package provides a simple provider helper to create drift databases as a
+provider:
 
 ```dart
-const like = 'sample';
+import 'package:drift_riverpod/drift_riverpod.dart';
+import 'package:drift_flutter/drift_flutter.dart';
+
+final database = DriftProvider((ref) => Database(driftDatabase(...)));
+```
+
+This package also provides a code-generator that allows turning SQL queries into
+well-typed providers. To define them, annotate a top-level variable with `@queryProvider`.
+The initializer of that variable must call a non-existing method on the database to provide
+the SQL statement to run, like this:
+
+```dart
+@queryProvider
+final allUsers = database.$allUsers('SELECT * FROM users');
+```
+
+Here:
+
+1. `database` must be a `ProviderListenable` providing a drift database or DAO.
+2. `$allUsers` can be any method name.
+3. The argument must be a string literal. It will be analyzed by `drift_riverpod` at build time
+   to validate the statement and generate a mapping to Dart.
+
+After running `build_runner` the usual way, `drift_riverpod` will have turned `allUsers`
+into a working provider:
+
+```dart
+final AsyncValue<List<User>> users = ref.watch(allUsers);
+```
+
+### Advanced usage
+
+For query providers that return a single row only, use the full `@QueryProvider()` annotation
+and pass `singleRow: true`:
+
+```dart
+@QueryProvider(singleRow: true)
+final countUsers = database.$countUsers('SELECT COUNT(*) FROM users;');
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+An overview of this package is also available under the Drift documentation website.
