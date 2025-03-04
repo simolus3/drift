@@ -57,6 +57,8 @@ dependency_overrides:
     path: ../drift_dev
   drift_postgres:
     path: ../extras/drift_postgres
+  drift_riverpod:
+    path: ../extras/drift_riverpod
   sqlparser:
     path: ../sqlparser
 

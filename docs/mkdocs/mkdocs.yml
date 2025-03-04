@@ -148,6 +148,7 @@ nav:
       - Tools/devtools.md
   - Guides:
       - guides/datetime-migrations.md
+      - guides/drift_for_state_management.md
       - upgrading.md
       - migrating_to_drift.md
       - Internals/index.md
