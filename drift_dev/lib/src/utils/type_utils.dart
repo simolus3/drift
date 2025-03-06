@@ -1,9 +1,11 @@
 import 'package:analyzer/dart/element/type.dart';
+import 'package:path/path.dart' as p;
 
 bool isFromDrift(DartType type) {
   if (type is! InterfaceType) return false;
 
-  final firstComponent = type.element.library.location?.components.first;
+  final firstComponent =
+      p.split(type.element3.library2.firstFragment.source.fullName).firstOrNull;
   if (firstComponent == null) return false;
 
   return firstComponent.contains('drift') || firstComponent.contains('moor');
@@ -27,7 +29,7 @@ bool isExpression(DartType type) {
 extension TypeUtils on DartType {
   String? get nameIfInterfaceType {
     final $this = this;
-    return $this is InterfaceType ? $this.element.name : null;
+    return $this is InterfaceType ? $this.element3.name3 : null;
   }
 
   String get userVisibleName => getDisplayString();

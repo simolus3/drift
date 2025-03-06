@@ -1,8 +1,9 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
+import 'package:analyzer/dart/element/visitor2.dart';
 import 'package:drift/drift.dart' show TableIndex;
 import 'package:source_gen/source_gen.dart';
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
@@ -59,7 +60,7 @@ class DiscoverStep {
 
     switch (extension) {
       case '.dart':
-        LibraryElement library;
+        LibraryElement2 library;
         try {
           library = await _driver.backend.readDart(_file.ownUri);
         } catch (e) {
@@ -155,9 +156,9 @@ class DiscoverStep {
   }
 }
 
-class _FindDartElements extends RecursiveElementVisitor<void> {
+class _FindDartElements extends RecursiveElementVisitor2<void> {
   final DiscoverStep _discoverStep;
-  final LibraryElement _library;
+  final LibraryElement2 _library;
 
   final List<DriftImport> imports = [];
 
@@ -195,7 +196,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     await Future.wait(_pendingWork);
   }
 
-  bool _isDslTable(ClassElement element) {
+  bool _isDslTable(ClassElement2 element) {
     // check if the table inherits from the drift table class. The !isExactly
     // check is here because we run this generator on drift itself and we get
     // weird errors for the Table class itself. In weird cases where we iterate
@@ -209,17 +210,18 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
         !element.mixins.any((e) => e.nameIfInterfaceType == 'TableInfo');
   }
 
-  bool _isDslView(ClassElement element) {
+  bool _isDslView(ClassElement2 element) {
     return _isView.isAssignableFrom(element) && !_isView.isExactly(element);
   }
 
   @override
-  void visitClassElement(ClassElement element) {
+  void visitClassElement(ClassElement2 element) {
     if (_isDslTable(element)) {
       // Ignore "abstract tables" (i.e. table classes with abstract methods)
-      final declaresAbstractMethod = element.methods
-          .cast<ExecutableElement>()
-          .followedBy(element.accessors)
+      final declaresAbstractMethod = element.methods2
+          .cast<ExecutableElement2>()
+          .followedBy(element.getters2)
+          .followedBy(element.setters2)
           .any((e) => e.isAbstract);
       if (!declaresAbstractMethod) {
         _pendingWork.add(Future.sync(() async {
@@ -247,7 +249,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
 
       final firstDb = _isDatabase.firstAnnotationOf(element);
       final firstDao = _isDao.firstAnnotationOf(element);
-      final id = _discoverStep._id(element.name);
+      final id = _discoverStep._id(element.name3!);
 
       if (firstDb != null) {
         found.add(DiscoveredBaseAccessor(id, element, firstDb, true));
@@ -259,34 +261,40 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     super.visitClassElement(element);
   }
 
-  void _handleImportOrExport(LibraryElement? imported, bool isExported) {
+  void _handleImportOrExport(LibraryElement2? imported,
+      {required bool isExport}) {
     if (imported != null && !imported.isInSdk) {
       _pendingWork.add(Future(() async {
         final uri = await _discoverStep._driver.backend.uriOfDart(imported);
-        imports.add((uri: uri, transitive: isExported));
+        imports.add((uri: uri, transitive: isExport));
       }));
     }
   }
 
   @override
-  void visitLibraryExportElement(LibraryExportElement element) {
-    _handleImportOrExport(element.exportedLibrary, true);
+  void visitLibraryElement(LibraryElement2 element) {
+    for (final fragment in element.fragments) {
+      for (final export in fragment.libraryExports2) {
+        _handleImportOrExport(export.exportedLibrary2, isExport: true);
+      }
+
+      for (final import in fragment.libraryImports2) {
+        _handleImportOrExport(import.importedLibrary2, isExport: false);
+      }
+    }
+
+    super.visitLibraryElement(element);
   }
 
-  @override
-  void visitLibraryImportElement(LibraryImportElement element) {
-    _handleImportOrExport(element.importedLibrary, false);
-  }
-
-  String _defaultNameForTableOrView(ClassElement definingElement) {
+  String _defaultNameForTableOrView(ClassElement2 definingElement) {
     return _discoverStep._driver.options.caseFromDartToSql
-        .apply(definingElement.name);
+        .apply(definingElement.name3!);
   }
 
   /// Finds a [TableIndex] annotations on the [table].
   Iterable<(ElementAnnotation, DriftElementId)> _tableIndexAnnotation(
-      ClassElement table) sync* {
-    for (final annotation in table.metadata) {
+      ClassElement2 table) sync* {
+    for (final annotation in table.metadata2.annotations) {
       final computed = annotation.computeConstantValue();
       final type = computed?.type;
 
@@ -312,8 +320,8 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     }
   }
 
-  DartObject? _driftViewAnnotation(ClassElement view) {
-    for (final annotation in view.metadata) {
+  DartObject? _driftViewAnnotation(ClassElement2 view) {
+    for (final annotation in view.metadata2.annotations) {
       final computed = annotation.computeConstantValue();
       final annotationClass = computed!.type!.nameIfInterfaceType;
 
@@ -332,10 +340,10 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   /// named `tracked_user`.
   /// The default behavior can be overridden by declaring a getter named
   /// `tableName` returning a direct string literal.
-  Future<String> _sqlNameOfTable(ClassElement table) async {
+  Future<String> _sqlNameOfTable(ClassElement2 table) async {
     final defaultName = _defaultNameForTableOrView(table);
 
-    final tableNameGetter = table.augmented.lookUpGetter(
+    final tableNameGetter = table.lookUpGetter2(
       name: 'tableName',
       library: _library,
     );

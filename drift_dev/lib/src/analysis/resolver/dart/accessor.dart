@@ -58,7 +58,7 @@ class DartAccessorResolver
       }
 
       final table = await resolveDartReferenceOrReportError<DriftTable>(
-          dartType.element,
+          dartType.element3,
           (msg) => DriftAnalysisError.forDartElement(element, msg));
       if (table != null) {
         tables.add(table);
@@ -81,7 +81,7 @@ class DartAccessorResolver
       }
 
       final view = await resolveDartReferenceOrReportError<DriftView>(
-          dartType.element,
+          dartType.element3,
           (msg) => DriftAnalysisError.forDartElement(element, msg));
       if (view != null) {
         views.add(view);
@@ -139,7 +139,7 @@ class DartAccessorResolver
         }
 
         final dao = await resolveDartReferenceOrReportError<DatabaseAccessor>(
-            type.element,
+            type.element3,
             (msg) => DriftAnalysisError.forDartElement(element, msg));
         if (dao != null) accessors.add(dao);
       }
@@ -158,12 +158,12 @@ class DartAccessorResolver
       );
     } else {
       final dbType = element.allSupertypes
-          .firstWhereOrNull((i) => i.element.name == 'DatabaseAccessor');
+          .firstWhereOrNull((i) => i.element3.name3 == 'DatabaseAccessor');
 
       // inherits from DatabaseAccessor<T>, we want to know which T
 
       final dbImpl = dbType?.typeArguments.single ??
-          element.library.typeProvider.dynamicType;
+          element.library2.typeProvider.dynamicType;
       if (dbImpl is DynamicType) {
         reportError(DriftAnalysisError.forDartElement(
           element,
@@ -186,15 +186,16 @@ class DartAccessorResolver
   }
 
   Future<int?> _readSchemaVersion() async {
-    final element =
-        discovered.dartElement.thisType.getGetter('schemaVersion')?.variable2;
+    final element = discovered.dartElement.thisType
+        .lookUpGetter3('schemaVersion', discovered.dartElement.library2)
+        ?.variable3;
     if (element == null) return null;
 
     try {
       if (element.isSynthetic) {
         // Getter, read from `=>` body if possible.
         final expr = returnExpressionOfMethod(await resolver.driver.backend
-            .loadElementDeclaration(element.getter!) as MethodDeclaration);
+            .loadElementDeclaration(element.getter2!) as MethodDeclaration);
         if (expr is IntegerLiteral) {
           return expr.value;
         }
@@ -213,15 +214,15 @@ class DartAccessorResolver
   }
 
   bool _hasConstructorWithDatabaseConnection() {
-    final constructor = discovered.dartElement.unnamedConstructor;
+    final constructor = discovered.dartElement.unnamedConstructor2;
     if (constructor == null) {
       return false;
     }
-    if (constructor.parameters.length != 1) {
+    if (constructor.formalParameters.length != 1) {
       return false;
     }
 
-    final [param] = constructor.parameters;
+    final [param] = constructor.formalParameters;
     if (param.isNamed) {
       return false;
     }

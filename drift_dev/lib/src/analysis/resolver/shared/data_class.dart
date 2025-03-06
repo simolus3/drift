@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:drift_dev/src/analysis/results/result_sets.dart';
 
@@ -34,15 +34,15 @@ String dataClassNameForClassName(String tableName) {
 CustomParentClass? parseCustomParentClass(
   String? dartTypeName,
   DartObject dataClassName,
-  ClassElement element,
+  ClassElement2 element,
   LocalElementResolver resolver,
 ) {
   final extending = dataClassName.getField('extending');
   if (extending != null && !extending.isNull) {
     final extendingType = extending.toTypeValue();
     if (extendingType is InterfaceType) {
-      final superType = extendingType.allSupertypes
-          .any((type) => isFromDrift(type) && type.element.name == 'DataClass');
+      final superType = extendingType.allSupertypes.any(
+          (type) => isFromDrift(type) && type.element3.name3 == 'DataClass');
       if (!superType) {
         resolver.reportError(
           DriftAnalysisError.forDartElement(
@@ -64,7 +64,7 @@ CustomParentClass? parseCustomParentClass(
       }
 
       final defaultConstructor =
-          extendingType.lookUpConstructor(null, element.library);
+          extendingType.lookUpConstructor2(null, element.library2);
       var isConst = true;
       AnnotatedDartCode code;
       if (defaultConstructor == null) {
@@ -86,10 +86,10 @@ CustomParentClass? parseCustomParentClass(
         final genericType = extendingType.typeArguments[0];
         if (genericType.isDartCoreObject || genericType is DynamicType) {
           code = AnnotatedDartCode([
-            DartTopLevelSymbol.topLevelElement(extendingType.element),
+            DartTopLevelSymbol.topLevelElement(extendingType.element3),
             const DartLexeme('<'),
             DartTopLevelSymbol(
-              dartTypeName ?? dataClassNameForClassName(element.name),
+              dartTypeName ?? dataClassNameForClassName(element.name3!),
               null,
             ),
             const DartLexeme('>'),

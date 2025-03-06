@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
@@ -28,11 +28,11 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       DriftDeclaration.dartElement(discovered.dartElement),
       columns: columns,
       nameOfRowClass: dataClassInfo.enforcedName ??
-          dataClassNameForClassName(discovered.dartElement.name),
+          dataClassNameForClassName(discovered.dartElement.name3!),
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
       interfacesForRowClass: dataClassInfo.interfaces,
-      entityInfoName: '\$${discovered.dartElement.name}View',
+      entityInfoName: '\$${discovered.dartElement.name3!}View',
       source: DartViewSource(structure.dartQuerySource, structure.primarySource,
           staticReferences, structure.staticSource),
       references: [
@@ -43,8 +43,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
 
   Future<List<TableReferenceInDartView>> _parseStaticReferences() async {
     return await Stream.fromIterable(discovered.dartElement.allSupertypes
-            .map((t) => t.element)
-            .followedBy([discovered.dartElement]).expand((e) => e.fields))
+            .map((t) => t.element3)
+            .followedBy([discovered.dartElement]).expand((e) => e.fields2))
         .asyncMap((field) => _getStaticReference(field))
         .where((ref) => ref != null)
         .cast<TableReferenceInDartView>()
@@ -52,23 +52,23 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
   }
 
   Future<TableReferenceInDartView?> _getStaticReference(
-      FieldElement field) async {
+      FieldElement2 field) async {
     final type = field.type;
     final knownTypes = await resolver.driver.knownTypes;
-    final typeSystem = field.library.typeSystem;
+    final typeSystem = field.library2.typeSystem;
 
     if (type is! InterfaceType ||
         !typeSystem.isAssignableTo(type, knownTypes.tableType)) {
       return null;
     }
 
-    if (field.getter != null) {
+    if (field.getter2 != null) {
       try {
-        final node =
-            await resolver.driver.backend.loadElementDeclaration(field.getter!);
+        final node = await resolver.driver.backend
+            .loadElementDeclaration(field.getter2!);
         if (node is MethodDeclaration && node.body is EmptyFunctionBody) {
           final table = await resolveDartReferenceOrReportError<DriftTable>(
-              type.element, (msg) {
+              type.element3, (msg) {
             return DriftAnalysisError.inDartAst(
                 field, node.returnType ?? node.name, msg);
           });
@@ -86,7 +86,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
   Future<_ParsedDartViewSelect> _parseSelectStructure(
     List<TableReferenceInDartView> references,
   ) async {
-    MethodElement? as;
+    MethodElement2? as;
 
     _ParsedDartViewSelect error(String message) {
       reportError(DriftAnalysisError.forDartElement(
@@ -106,8 +106,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       );
     }
 
-    as = discovered.dartElement.methods
-        .where((method) => method.name == 'as')
+    as = discovered.dartElement.methods2
+        .where((method) => method.name3 == 'as')
         .firstOrNull;
 
     if (as == null) {
@@ -250,7 +250,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
         ));
       } else {
         // Locally-defined column, defined as a getter on this view class.
-        final getter = discovered.dartElement.thisType.getGetter(parts[0]);
+        final getter = discovered.dartElement.thisType
+            .lookUpGetter3(parts[0], discovered.dartElement.library2);
 
         if (getter == null) {
           reportError(DriftAnalysisError.inDartAst(
@@ -287,8 +288,8 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
         columns.add(DriftColumn(
           declaration: DriftDeclaration.dartElement(getter),
           sqlType: ColumnType.drift(sqlType),
-          nameInDart: getter.name,
-          nameInSql: ReCase(getter.name).snakeCase,
+          nameInDart: getter.name3!,
+          nameInSql: ReCase(getter.name3!).snakeCase,
           nullable: true,
           constraints: [
             resolver.driver.options.assumeCorrectReference

@@ -1,15 +1,9 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
-// ignore: implementation_imports
-import 'package:analyzer/src/dart/element/type.dart'
-    show
-        RecordTypeImpl,
-        RecordTypeNamedFieldImpl,
-        RecordTypePositionalFieldImpl;
 import 'package:drift/drift.dart' show DriftSqlType;
 
 import '../../driver/error.dart';
@@ -18,7 +12,7 @@ import '../dart/helper.dart';
 import '../resolver.dart';
 
 class FoundDartClass {
-  final InterfaceElement classElement;
+  final InterfaceElement2 classElement;
 
   /// The instantiation of the [classElement], if the found type was a generic
   /// typedef.
@@ -36,7 +30,7 @@ ExistingRowClass? validateExistingClass(
   KnownDriftTypes knownTypes,
 ) {
   final desiredClass = dartClass.classElement;
-  final library = desiredClass.library;
+  final library = desiredClass.library2;
   var isAsyncFactory = false;
 
   if (desiredClass.thisType.isDartCoreRecord) {
@@ -51,7 +45,7 @@ ExistingRowClass? validateExistingClass(
     );
   }
 
-  ExecutableElement? ctor;
+  ExecutableElement2? ctor;
   final InterfaceType instantiation;
 
   if (dartClass.instantiation != null) {
@@ -62,15 +56,15 @@ ExistingRowClass? validateExistingClass(
 
     // If we have an instantation, search the constructor on the type because it
     // will report the right parameter types if they're generic.
-    ctor = instantiation.lookUpConstructor(constructor, desiredClass.library);
+    ctor = instantiation.lookUpConstructor2(constructor, desiredClass.library2);
   } else {
-    ctor = desiredClass.getNamedConstructor(constructor);
+    ctor = desiredClass.getNamedConstructor2(constructor);
     instantiation = library.typeSystem.instantiateInterfaceToBounds(
         element: desiredClass, nullabilitySuffix: NullabilitySuffix.none);
   }
 
   if (ctor == null) {
-    final fallback = desiredClass.getMethod(constructor);
+    final fallback = desiredClass.getMethod2(constructor);
 
     if (fallback != null) {
       if (!fallback.isStatic) {
@@ -119,10 +113,10 @@ ExistingRowClass? validateExistingClass(
   };
 
   final positionalColumns = <DriftColumn>[];
-  final namedColumns = <ParameterElement, DriftColumn>{};
+  final namedColumns = <FormalParameterElement, DriftColumn>{};
 
-  for (final parameter in ctor.parameters) {
-    final column = unmatchedColumnsByName.remove(parameter.name);
+  for (final parameter in ctor.formalParameters) {
+    final column = unmatchedColumnsByName.remove(parameter.name3);
     if (column != null) {
       if (parameter.isPositional) {
         positionalColumns.add(column);
@@ -134,7 +128,7 @@ ExistingRowClass? validateExistingClass(
     } else if (!parameter.isOptional) {
       step.reportError(DriftAnalysisError.forDartElement(
         parameter,
-        'Unexpected parameter ${parameter.name} which has no matching column.',
+        'Unexpected parameter ${parameter.name3} which has no matching column.',
       ));
     }
   }
@@ -142,13 +136,13 @@ ExistingRowClass? validateExistingClass(
   final getters = <String, String>{};
   final missingGetters = <String>[];
   for (final column in columns) {
-    final matchingField = dartClass.classElement.augmented.lookUpGetter(
+    final matchingField = dartClass.classElement.lookUpGetter2(
       name: column.nameInDart,
-      library: dartClass.classElement.library,
+      library: dartClass.classElement.library2,
     );
 
     if (matchingField case final field?) {
-      getters[column.nameInSql] = field.name;
+      getters[column.nameInSql] = field.name3!;
     } else {
       missingGetters.add(column.nameInDart);
     }
@@ -174,7 +168,7 @@ ExistingRowClass? validateExistingClass(
     ],
     namedColumns: {
       for (final named in namedColumns.entries)
-        named.key.name: named.value.nameInSql,
+        named.key.name3!: named.value.nameInSql,
     },
     columnGetters: getters,
     generateInsertable: generateInsertable,
@@ -183,14 +177,14 @@ ExistingRowClass? validateExistingClass(
 }
 
 ExistingRowClass validateRowClassFromRecordType(
-  Element element,
+  Element2 element,
   Iterable<DriftColumn> columns,
   RecordType dartType,
   bool generateInsertable,
   LocalElementResolver step,
   KnownDriftTypes knownTypes,
 ) {
-  final library = element.library!;
+  final library = element.library2!;
 
   final unmatchedColumnsByName = {
     for (final column in columns) column.nameInDart: column
@@ -278,7 +272,7 @@ enum EnumType {
 }
 
 CustomColumnType? readCustomType(
-  LibraryElement library,
+  LibraryElement2 library,
   Expression dartExpression,
   KnownDriftTypes helper,
   void Function(String) reportError,
@@ -298,7 +292,7 @@ CustomColumnType? readCustomType(
 }
 
 AppliedTypeConverter? readTypeConverter(
-  LibraryElement library,
+  LibraryElement2 library,
   Expression dartExpression,
   ColumnType columnType,
   bool columnIsNullable,
@@ -373,8 +367,8 @@ AppliedTypeConverter readEnumConverter(
     reportError('Not a class: `$dartEnumType`');
   }
 
-  final creatingClass = dartEnumType.element;
-  if (creatingClass is! EnumElement) {
+  final creatingClass = dartEnumType.element3;
+  if (creatingClass is! EnumElement2) {
     reportError('Not an enum: `${creatingClass!.displayName}`');
   }
 
@@ -390,9 +384,9 @@ AppliedTypeConverter readEnumConverter(
     }
     builder
       ..addText('<')
-      ..addTopLevelElement(dartEnumType.element!)
+      ..addTopLevelElement(dartEnumType.element3!)
       ..addText('>(')
-      ..addTopLevelElement(dartEnumType.element!)
+      ..addTopLevelElement(dartEnumType.element3!)
       ..addText('.values)');
   });
 
@@ -413,13 +407,13 @@ AppliedTypeConverter readEnumConverter(
 }
 
 void _checkParameterType(
-  ParameterElement element,
+  FormalParameterElement element,
   DriftColumn column,
   LocalElementResolver resolver,
   KnownDriftTypes helper,
 ) {
   final type = element.type;
-  final library = element.library!;
+  final library = element.library2!;
   final typesystem = library.typeSystem;
 
   void error(String message) {
@@ -507,14 +501,14 @@ extension on TypeProvider {
       case DriftSqlType.int:
         return intType;
       case DriftSqlType.bigInt:
-        return intElement.library.getClass('BigInt')!.instantiate(
+        return intElement2.library2.getClass2('BigInt')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case DriftSqlType.string:
         return stringType;
       case DriftSqlType.bool:
         return boolType;
       case DriftSqlType.dateTime:
-        return intElement.library.getClass('DateTime')!.instantiate(
+        return intElement2.library2.getClass2('DateTime')!.instantiate(
             typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
       case DriftSqlType.blob:
         return knownTypes.uint8List;
@@ -532,16 +526,11 @@ extension CreateRecordType on TypeProvider {
     required List<MapEntry<String, DartType>> named,
     NullabilitySuffix nullabilitySuffix = NullabilitySuffix.none,
   }) {
-    // todo: Use public API after https://dart-review.googlesource.com/c/sdk/+/277401
-    return RecordTypeImpl(
-      positionalFields: [
-        for (final type in positional)
-          RecordTypePositionalFieldImpl(type: type),
-      ],
-      namedFields: [
-        for (final namedEntry in named)
-          RecordTypeNamedFieldImpl(name: namedEntry.key, type: namedEntry.value)
-      ],
+    return RecordType(
+      positional: positional,
+      named: {
+        for (final namedEntry in named) namedEntry.key: namedEntry.value,
+      },
       nullabilitySuffix: nullabilitySuffix,
     );
   }

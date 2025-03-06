@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/syntactic_entity.dart' as dart;
-import 'package:analyzer/dart/element/element.dart' as dart;
+import 'package:analyzer/dart/element/element2.dart' as dart;
 import 'package:source_gen/source_gen.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -11,7 +11,7 @@ class DriftAnalysisError {
   DriftAnalysisError(this.span, this.message);
 
   factory DriftAnalysisError.forDartElement(
-      dart.Element element, String message) {
+      dart.Element2 element, String message) {
     return DriftAnalysisError(
       spanForElement(element),
       message,
@@ -19,7 +19,7 @@ class DriftAnalysisError {
   }
 
   factory DriftAnalysisError.inDartAst(
-      dart.Element element, dart.SyntacticEntity entity, String message) {
+      dart.Element2 element, dart.SyntacticEntity entity, String message) {
     return DriftAnalysisError(dartAstSpan(element, entity), message);
   }
 
@@ -51,7 +51,7 @@ class DriftAnalysisError {
   }
 
   static FileSpan dartAstSpan(
-      dart.Element element, dart.SyntacticEntity entity) {
+      dart.Element2 element, dart.SyntacticEntity entity) {
     final span = spanForElement(element) as FileSpan;
     return span.file.span(entity.offset, entity.end);
   }
