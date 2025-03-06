@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType;
@@ -97,12 +97,12 @@ class ColumnParser {
   /// migrations), there might not be a `creationTime` in scope for the check
   /// constraint. So, we annotate these references in [AnnotatedDartCode] and
   /// use that information when generating code to transform the code.
-  final Map<Element, String> _columnsInSameTable;
+  final Map<Element2, String> _columnsInSameTable;
 
   ColumnParser(this._resolver, this._columnsInSameTable);
 
   Future<PendingColumnInformation?> parse(
-      ColumnDeclaration columnDeclaration, Element element) async {
+      ColumnDeclaration columnDeclaration, Element2 element) async {
     final expr = columnDeclaration.expression;
 
     if (expr is! FunctionExpressionInvocation) {
@@ -174,8 +174,8 @@ class ColumnParser {
             break;
           }
 
-          final staticElement = first.staticElement;
-          if (staticElement is! ClassElement) {
+          final staticElement = first.element;
+          if (staticElement is! ClassElement2) {
             _resolver.reportError(DriftAnalysisError.inDartAst(
               element,
               first,
@@ -384,7 +384,7 @@ class ColumnParser {
       final expression = remainingExpr.argumentList.arguments.single;
 
       final custom = readCustomType(
-        element.library!,
+        element.library2!,
         expression,
         helper,
         (message) => _resolver.reportError(
@@ -404,7 +404,7 @@ class ColumnParser {
     AppliedTypeConverter? converter;
     if (mappedAs != null) {
       converter = readTypeConverter(
-        element.library!,
+        element.library2!,
         mappedAs,
         columnType,
         nullable,
@@ -498,7 +498,7 @@ class ColumnParser {
         sqlType: columnType,
         nullable: nullable,
         nameInSql: sqlName,
-        nameInDart: element.name!,
+        nameInDart: element.name3!,
         declaration: DriftDeclaration.dartElement(element),
         typeConverter: converter,
         clientDefaultCode: clientDefaultExpression,
@@ -528,15 +528,15 @@ class ColumnParser {
     }[name]!;
   }
 
-  String? _readJsonKey(Element getter) {
-    final annotations = getter.metadata;
+  String? _readJsonKey(Element2 getter) {
+    final annotations = getter.metadataIfAnnotatable;
     final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
       final valueType = value?.type;
 
       return valueType is InterfaceType &&
           isFromDrift(valueType) &&
-          valueType.element.name == 'JsonKey';
+          valueType.element3.name3 == 'JsonKey';
     });
 
     if (object == null) return null;
@@ -544,15 +544,15 @@ class ColumnParser {
     return object.computeConstantValue()!.getField('key')!.toStringValue();
   }
 
-  String? _readReferenceName(Element getter) {
-    final annotations = getter.metadata;
+  String? _readReferenceName(Element2 getter) {
+    final annotations = getter.metadataIfAnnotatable;
     final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
       final valueType = value?.type;
 
       return valueType is InterfaceType &&
           isFromDrift(valueType) &&
-          valueType.element.name == 'ReferenceName';
+          valueType.element3.name3 == 'ReferenceName';
     });
 
     if (object == null) return null;

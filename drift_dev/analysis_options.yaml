@@ -5,3 +5,7 @@ analyzer:
     strict-casts: true
   exclude:
     - "**/*.g.dart"
+
+linter:
+  rules:
+    analyzer_use_new_elements: true

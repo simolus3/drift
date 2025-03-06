@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart' as build;
 import 'package:build/build.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';
@@ -33,7 +34,7 @@ class DriftBuildBackend extends DriftBackend {
   }
 
   @override
-  Future<Uri> uriOfDart(Element element) async {
+  Future<Uri> uriOfDart(Element2 element) async {
     final id = await _buildStep.resolver.assetIdForElement(element);
     return id.uri;
   }
@@ -42,7 +43,7 @@ class DriftBuildBackend extends DriftBackend {
   bool get canReadDart => true;
 
   @override
-  Future<LibraryElement> readDart(Uri uri) async {
+  Future<LibraryElement2> readDart(Uri uri) async {
     if (uri.scheme == 'dart') {
       final name = 'dart.${uri.path}';
       final library = await _buildStep.resolver.findLibraryByName(name);
@@ -62,7 +63,7 @@ class DriftBuildBackend extends DriftBackend {
   }
 
   @override
-  Future<AstNode?> loadElementDeclaration(Element element) {
+  Future<AstNode?> loadElementDeclaration(Element2 element) {
     return _buildStep.resolver.astNodeFor(element, resolve: true);
   }
 
@@ -188,7 +189,7 @@ class BuildCacheReader implements AnalysisResultCacheReader {
   }
 
   @override
-  Future<LibraryElement?> readTypeHelperFor(Uri uri) async {
+  Future<LibraryElement2?> readTypeHelperFor(Uri uri) async {
     final assetId = AssetId.resolve(uri).addExtension('.types.temp.dart');
     if (await _buildStep.canRead(assetId)) {
       return _buildStep.resolver.libraryFor(assetId, allowSyntaxErrors: true);
