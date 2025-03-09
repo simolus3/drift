@@ -28,12 +28,11 @@ final class ColumnGeneratedAs extends ColumnConstraint {
   /// The expression that this column evaluates to.
   final Expression generatedAs;
 
-  /// Wehter this column is stored in the database, as opposed to being
+  /// Wether this column is stored in the database, as opposed to being
   /// `VIRTUAL` and evaluated on each read.
   final bool stored;
 
-  const ColumnGeneratedAs({required this.generatedAs, required this.stored})
-      : super._();
+  const ColumnGeneratedAs(this.generatedAs, {this.stored = false}) : super._();
 
   @override
   void compileWith(StatementCompiler compiler) {

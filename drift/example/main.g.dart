@@ -223,8 +223,9 @@ class $TodoItemsTable extends TodoItems
       isNullable: true,
       requiredDuringInsert: false,
       constraints: [
-        GeneratedAs(
-            title + const Literal(' (') + content + const Literal(')'), false)
+        ColumnGeneratedAs(
+            title + const Literal(' (') + content + const Literal(')'),
+            stored: false)
       ])
     ..owningResultSet = this;
   @override
@@ -669,7 +670,7 @@ class $TodoItemWithCategoryNameViewView extends TodoItemWithCategoryNameView
   Set<String> get readTables => const {'todo_items', 'todo_categories'};
 }
 
-abstract class _$Database extends GeneratedDatabase {
+abstract base class _$Database extends GeneratedDatabase {
   _$Database(super.implementation);
   late final $TodoCategoriesTable todoCategories = $TodoCategoriesTable();
   late final $TodoItemsTable todoItems = $TodoItemsTable();
@@ -677,15 +678,7 @@ abstract class _$Database extends GeneratedDatabase {
       $TodoCategoryItemCountView(this);
   late final $TodoItemWithCategoryNameViewView customViewName =
       $TodoItemWithCategoryNameViewView(this);
-  late final Index itemTitle = Index.byDialect('item_title', {
-    SqlDialect.sqlite: 'CREATE INDEX item_title ON todo_items (title)',
-  });
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-        todoCategories,
-        todoItems,
-        todoCategoryItemCount,
-        customViewName,
-        itemTitle
-      ];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [todoCategories, todoItems, todoCategoryItemCount, customViewName];
 }

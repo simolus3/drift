@@ -63,7 +63,7 @@ class DatabaseWriter {
     }
 
     firstLeaf
-      ..write('class $className extends ')
+      ..write('base class $className extends ')
       ..writeDriftRef('GeneratedDatabase')
       ..writeln('{')
       ..writeln('$className(super.implementation);');

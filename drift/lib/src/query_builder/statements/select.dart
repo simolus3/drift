@@ -133,7 +133,7 @@ final class SelectStatement
   SelectStatement _withAddedJoin(Join join) {
     from.add(join);
     if (join.includeInResult ?? _includeJoinsByDefault) {
-      addResultSet(join.table);
+      addResultSet(join.table.resultSet);
     }
     return this;
   }
@@ -191,9 +191,9 @@ sealed class FromClauseElement implements SqlComponent {}
 /// An operator used to compose joins, see [Join].
 enum JoinOperator implements SqlComponent {
   /// Perform an inner join,
-  inner('INNER'),
-  leftOuter('LEFT OUTER'),
-  cross('CROSS');
+  inner('INNER JOIN'),
+  leftOuter('LEFT OUTER JOIN'),
+  cross('CROSS JOIN');
 
   /// The default lexeme to generate for this join operator. Some SQL dialects
   /// may choose to override this.
@@ -215,7 +215,7 @@ final class Join extends FromClauseElement {
   final JoinOperator operator;
 
   /// The [ResultSet] that will be added to the query.
-  final ResultSet table;
+  final TableReference table;
 
   /// For joins that aren't [JoinOperator.cross], contains an additional predicate
   /// that must be matched for the join.
@@ -231,22 +231,22 @@ final class Join extends FromClauseElement {
 
   /// Create a join clause with the given [operator] and [table].
   Join(this.operator, ResultSetDsl table, {this.on, this.includeInResult})
-      : table = ResultSet.fromDsl(table);
+      : table = TableReference(ResultSet.fromDsl(table));
 
   /// Create an `INNER JOIN` for the [table].
   Join.inner(ResultSetDsl table, {this.on, this.includeInResult})
       : operator = JoinOperator.inner,
-        table = ResultSet.fromDsl(table);
+        table = TableReference(ResultSet.fromDsl(table));
 
   /// Create an `LEFT OUTER JOIN` for the [table].
   Join.leftOuter(ResultSetDsl table, {this.on, this.includeInResult})
       : operator = JoinOperator.leftOuter,
-        table = ResultSet.fromDsl(table);
+        table = TableReference(ResultSet.fromDsl(table));
 
   /// Create a `CROSS JOIN` for the [table].
   Join.cross(ResultSetDsl table, {this.on, this.includeInResult})
       : operator = JoinOperator.cross,
-        table = ResultSet.fromDsl(table);
+        table = TableReference(ResultSet.fromDsl(table));
 
   @override
   void compileWith(StatementCompiler compiler) {

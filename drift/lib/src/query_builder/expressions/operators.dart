@@ -65,8 +65,8 @@ enum BinaryOperator implements SqlComponent {
   /// A `|` operator in SQL.
   bitwiseOr(Precedence.bitwise, '|'),
 
-  /// A `==` operator in SQL.
-  equals(Precedence.comparisonEq, '=='),
+  /// A `=` operator in SQL.
+  equals(Precedence.comparisonEq, '='),
 
   /// A `LIKE` operator in SQL.
   like(Precedence.comparison, 'LIKE'),

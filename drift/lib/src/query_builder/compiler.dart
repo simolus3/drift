@@ -90,7 +90,15 @@ abstract base class StatementCompiler {
     }
   }
 
-  void addJoin(Join join) {}
+  void addJoin(Join join) {
+    join.operator.compileWith(this);
+    statement.space();
+    join.table.compileWith(this);
+    if (join.on case final on?) {
+      statement.buffer.write(' ON ');
+      on.compileWith(this);
+    }
+  }
 
   void addJoinOperator(JoinOperator operator) {
     statement.buffer.write(operator.defaultLexeme);
@@ -112,13 +120,18 @@ abstract base class StatementCompiler {
     });
     statement.resultSetStructure = select.structure;
 
+    statement.hasMultipleTables = select.from.length > 1;
     if (select.from case [final first, ...final rest]) {
       statement.buffer.write(' FROM ');
       first.compileWith(this);
 
       for (final entry in rest) {
-        // TODO: No comma necessary for join
-        statement.buffer.write(', ');
+        if (entry is! Join) {
+          statement.buffer.write(', ');
+        } else {
+          statement.space();
+        }
+
         entry.compileWith(this);
       }
     }

@@ -13,7 +13,7 @@ class TodoCategories extends Table {
   TextColumn get name => text();
 }
 
-@TableIndex(name: 'item_title', columns: {#title})
+//@TableIndex(name: 'item_title', columns: {#title})
 class TodoItems extends Table {
   IntColumn get id => integer().autoIncrement();
   TextColumn get title => text();
@@ -65,7 +65,7 @@ abstract class TodoItemWithCategoryNameView extends View {
   TodoCategoryItemCount,
   TodoItemWithCategoryNameView,
 ])
-class Database extends _$Database {
+final class Database extends _$Database {
   Database(super.implementation);
 
   @override
@@ -109,9 +109,9 @@ Future<void> main() async {
     return sqlite3.openInMemory();
   }));
 
-  db.allItems.listen((event) {
+/*  db.allItems.listen((event) {
     print('Todo-item in database: $event');
-  });
+  });*/
 
 /*
   // Add category
