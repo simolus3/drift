@@ -3,9 +3,13 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
+import '../../connections/result_set.dart';
 import '../../query_builder.dart';
 import '../../query_builder/dialect.dart';
+import '../../query_builder/statements/statement.dart';
 import '../exceptions.dart';
+import '../selectable.dart';
+import 'custom_select.dart';
 import 'db_base.dart';
 
 const _zoneRootUserKey = #DatabaseConnectionUser;
@@ -256,6 +260,43 @@ abstract base class DatabaseConnectionUser {
     );
     statement.from.add(TableReference(table));
     return statement;
+  }
+
+  Future<QueryResult> runStatement(SqlStatement statement) async {
+    final info = StatementInfo(dialect.compile(statement));
+    return (await currentSession()).execute(info);
+  }
+
+  /// Creates a custom select statement from the given sql [query].
+  ///
+  /// The query can be run once by calling [Selectable.get].
+  ///
+  /// For an auto-updating query stream, the [readsFrom] parameter needs to be
+  /// set to the tables the SQL statement reads from - drift can't infer it
+  /// automatically like for other queries constructed with its Dart API.
+  /// When, [Selectable.watch] can be used to construct an updating stream.
+  ///
+  /// For queries that are known to only return a single row,
+  /// [Selectable.getSingle] and [Selectable.watchSingle] can be used as well.
+  ///
+  /// If you use variables in your query (for instance with "?"), they will be
+  /// bound to the [variables] you specify on this query.
+  Selectable<CustomRow> customSelect(String query,
+      {List<Variable> variables = const [],
+      Set<ResultSet> readsFrom = const {}}) {
+    return CustomSelectStatement(query, variables, readsFrom, this);
+  }
+
+  /// Executes the custom sql [statement] on the database.
+  ///
+  /// [statement] should contain exactly one SQL statement. Attempting to run
+  /// multiple statements with a single [customStatement] may not be fully
+  /// supported on all platforms.
+  Future<void> customStatement(String statement,
+      [List<TypedNullableValue>? args]) async {
+    final session = await currentSession();
+    await session.execute(
+        StatementInfo.fromText(statement, variables: args ?? const []));
   }
 }
 

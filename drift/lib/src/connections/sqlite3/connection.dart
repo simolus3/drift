@@ -79,4 +79,9 @@ final class _SqliteRow extends RawRow {
   Object? rawValue(ColumnPosition position) {
     return row.columnAt(position.index);
   }
+
+  @override
+  Object? byName(String name) {
+    return row[name];
+  }
 }

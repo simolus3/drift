@@ -1,12 +1,18 @@
 import 'package:drift/src/dsl/table.dart';
 
+import '../compiler.dart';
+import '../statements/statement.dart';
 import 'column.dart';
 import 'column_constraints.dart';
+import 'entities.dart';
 import 'result_set.dart';
 
 abstract interface class GeneratedTable<Row extends Object,
         Self extends GeneratedTable<Row, Self>> extends Table
-    implements ResultSet<Row, Self> {}
+    implements ResultSet<Row, Self> {
+  @override
+  List<TableColumn> get columns;
+}
 
 final class TableColumn<T extends Object> extends SchemaColumn<T> {
   /// Whether this column is required when inserting new rows into the table.
@@ -23,11 +29,107 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
   /// [ColumnPrimaryKeyConstraint] to this column.
   final List<ColumnConstraint> constraints;
 
+  /// A function that yields a default column for inserts if no value has been
+  /// set. This is different to [defaultValue] since the function is written in
+  /// Dart, not SQL. It's a compile-time error to declare columns where both
+  /// [defaultValue] and [clientDefault] are non-null.
+  ///
+  /// See also: [BuildColumn.clientDefault].
+  final T? Function()? clientDefault;
+
   TableColumn({
     required super.name,
     required super.type,
     super.isNullable,
     this.requiredDuringInsert = true,
     this.constraints = const [],
+    this.clientDefault,
   });
+}
+
+/// Represents a `CREATE TABLE` statement in SQL.
+///
+/// Drift provides no information about the structure of that statement outside
+/// of the [entity] to create. This is because generating `CREATE TABLE`
+/// statements is highly dialect-specific, and this layout allows dialects to
+/// customize how they generate these statements most easily.
+final class CreateTableStatement extends CreateStatement<GeneratedTable> {
+  /// Create a statement that will `CREATE` the [entity] when issued.
+  CreateTableStatement(super.entity, {super.ifNotExists});
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    return compiler.addCreateTableStatement(this);
+  }
+}
+
+/// A statement renaming [oldName] to [table].
+final class RenameTableStatement extends SqlStatement {
+  /// The table to be renamed, with the new name.
+  final GeneratedTable table;
+
+  /// The old name of the table.
+  final String oldName;
+
+  /// @nodoc
+  RenameTableStatement(this.oldName, this.table);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addRenameTableStatement(this);
+  }
+}
+
+/// A statement adding a column to a table.
+final class AddColumnStatement extends SqlStatement {
+  /// The table to which the [column] should be added.
+  final GeneratedTable table;
+
+  /// The column to add.
+  final TableColumn column;
+
+  /// @nodoc
+  AddColumnStatement(this.table, this.column);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addAddColumnStatement(this);
+  }
+}
+
+/// A statement removing a column to a table.
+final class DropColumnStatement extends SqlStatement {
+  /// The table from which the [columnName] should be removed.
+  final GeneratedTable table;
+
+  /// The (unescaped) name of the column to remove.
+  final String columnName;
+
+  /// @nodoc
+  DropColumnStatement(this.table, this.columnName);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addDropColumnStatement(this);
+  }
+}
+
+/// A statement renaming [oldName] in [table] to [column].
+final class RenameColumnStatement extends SqlStatement {
+  /// The table to be altered.
+  final GeneratedTable table;
+
+  /// The current state of the column (with the new name).
+  final TableColumn column;
+
+  /// The old name of the column.
+  final String oldName;
+
+  /// @nodoc
+  RenameColumnStatement(this.table, this.oldName, this.column);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addRenameColumnStatement(this);
+  }
 }

@@ -326,19 +326,6 @@ abstract class DatabaseConnectionUser {
     return customSelect(query, variables: variables, readsFrom: readsFrom);
   }
 
-  /// Executes the custom sql [statement] on the database.
-  ///
-  /// [statement] should contain exactly one SQL statement. Attempting to run
-  /// multiple statements with a single [customStatement] may not be fully
-  /// supported on all platforms.
-  Future<void> customStatement(String statement, [List<dynamic>? args]) {
-    final engine = resolvedEngine;
-
-    return engine.doWhenOpened((executor) {
-      return executor.runCustom(statement, args);
-    });
-  }
-
   /// Runs statements inside a batch.
   ///
   /// A batch can only run a subset of statements, and those statements must be

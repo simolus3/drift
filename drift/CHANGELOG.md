@@ -5,6 +5,7 @@
 - __Breaking__: Rename `Constant` to `Literal`.
 - __Breaking__: Rename `innerJoin()` to `Join.inner`, `leftOuterJoin` to
   `Join.leftOuter` and `crossJoin` to `Join.cross`.
+- __Breaking__: Rename `QueryRow` to `CustomRow`. `CustomRow.read` is now non-nullable.
 - The trailing `()` for column builders in Dart is no longer necessary.
   Replace `integer().autoIncrement()()` with `integer().autoIncrement()`.
 - Add `@DriftColumnDeclarationBuilder` annotation, allowing custom types to

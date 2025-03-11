@@ -12,6 +12,10 @@ import 'expressions/variables.dart';
 import 'results.dart';
 import 'schema/column.dart';
 import 'schema/column_constraints.dart';
+import 'schema/drop.dart';
+import 'schema/entities.dart';
+import 'schema/table.dart';
+import 'schema/view.dart';
 import 'statements/select.dart';
 import 'statements/transactions.dart';
 import 'types.dart';
@@ -62,6 +66,38 @@ abstract base class StatementCompiler {
     throw UnsupportedError('Unhandled expression: $expression');
   }
 
+  void addTableColumnDefinition(TableColumn column) {}
+
+  void addAddColumnStatement(AddColumnStatement stmt) {
+    statement.buffer.write('ALTER TABLE');
+    addReference(stmt.table.aliasOrName);
+    statement.buffer.write(' ADD COLUMN ');
+    addTableColumnDefinition(stmt.column);
+  }
+
+  void addDropColumnStatement(DropColumnStatement stmt) {
+    statement.buffer.write('ALTER TABLE ');
+    addReference(stmt.table.aliasOrName);
+    statement.buffer.write(' DROP COLUMN ');
+    addReference(stmt.columnName);
+  }
+
+  void addRenameColumnStatement(RenameColumnStatement stmt) {
+    statement.buffer.write('ALTER TABLE ');
+    addReference(stmt.table.aliasOrName);
+    statement.buffer.write(' RENAME COLUMN ');
+    addReference(stmt.oldName);
+    statement.buffer.write(' TO ');
+    addReference(stmt.column.name);
+  }
+
+  void addRenameTableStatement(RenameTableStatement stmt) {
+    statement.buffer.write('ALTER TABLE ');
+    addReference(stmt.oldName);
+    statement.buffer.write(' RENAME TO ');
+    addReference(stmt.table.entityName);
+  }
+
   void addReference(String name) {
     statement.buffer
       ..write('"')
@@ -88,6 +124,22 @@ abstract base class StatementCompiler {
       statement.buffer.write(' AS ');
       addReference(alias);
     }
+  }
+
+  void addCreateTableStatement(CreateTableStatement statement) {}
+
+  void addCreateViewStatement(CreateViewStatement statement) {}
+
+  void addCreateIndexStatement(CreateIndexStatement statement) {}
+
+  void addCreateTriggerStatement(CreateTriggerStatement statement) {}
+
+  void addDropStatement(DropStatement stmt) {
+    statement.buffer
+      ..write('DROP ')
+      ..write(stmt.kind)
+      ..write(' IF EXISTS ');
+    addReference(stmt.name);
   }
 
   void addJoin(Join join) {

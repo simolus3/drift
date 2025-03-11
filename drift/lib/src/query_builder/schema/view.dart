@@ -1,6 +1,8 @@
+import '../compiler.dart';
 import '../expressions/expression.dart';
 import '../statements/select.dart';
 import 'column.dart';
+import 'entities.dart';
 import 'result_set.dart';
 
 abstract interface class GeneratedView<Row extends Object,
@@ -17,4 +19,15 @@ final class ViewColumn<T extends Object> extends SchemaColumn<T> {
     super.isNullable,
     required this.expression,
   });
+}
+
+/// Represents a `CREATE VIEW` statement in SQL.
+final class CreateViewStatement extends CreateStatement<GeneratedView> {
+  /// Create a statement that will `CREATE` the [entity] when issued.
+  CreateViewStatement(super.entity, {super.ifNotExists});
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    return compiler.addCreateViewStatement(this);
+  }
 }

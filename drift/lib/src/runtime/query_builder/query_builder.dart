@@ -20,7 +20,9 @@ import 'package:drift/src/utils/async_map.dart';
 import 'package:drift/src/utils/single_transformer.dart';
 import 'package:meta/meta.dart';
 
+import '../../query_builder/schema/entities.dart';
 import '../../utils/async.dart';
+import '../database/db_base.dart';
 import '../utils.dart';
 // New files should not be part of this mega library, which we're trying to
 // split up.

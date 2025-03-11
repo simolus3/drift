@@ -7,6 +7,7 @@ export 'src/query_builder.dart';
 export 'src/runtime/data_class.dart';
 export 'src/runtime/database/connection_user.dart';
 export 'src/runtime/database/db_base.dart';
+export 'src/runtime/migrations.dart';
 export 'src/runtime/streams/update_rules.dart'
     hide AnyUpdateQuery, MultipleUpdateQuery, SpecificUpdateQuery;
 export 'src/runtime/runtime_options.dart';

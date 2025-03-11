@@ -42,14 +42,6 @@ class GeneratedColumn<T extends Object> extends Column<T> {
   /// typically depends on the column itself.
   final Expression<bool> Function()? check;
 
-  /// A function that yields a default column for inserts if no value has been
-  /// set. This is different to [defaultValue] since the function is written in
-  /// Dart, not SQL. It's a compile-time error to declare columns where both
-  /// [defaultValue] and [clientDefault] are non-null.
-  ///
-  /// See also: [BuildColumn.clientDefault].
-  final T? Function()? clientDefault;
-
   /// Additional checks performed on values before inserts or updates.
   final VerificationResult Function(T?, VerificationMeta)? additionalChecks;
 

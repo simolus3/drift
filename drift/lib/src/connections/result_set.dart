@@ -33,4 +33,6 @@ abstract base class RawRow {
   RawRow({required this.resultSet});
 
   Object? rawValue(ColumnPosition position);
+
+  Object? byName(String name);
 }
