@@ -316,3 +316,14 @@ extension on DriftTransactionSession {
     }
   }
 }
+
+/// Methods available internally but not exposed as part of drift's public API.
+@internal
+extension InternalConnectionUser on DatabaseConnectionUser {
+  @protected
+  Future<T> runConnectionZoned<T>(
+      DriftSession session, Future<T> Function() calculation) {
+    final wrapped = _ScopedDatabaseSession(session);
+    return runZoned(calculation, zoneValues: {_zoneRootUserKey: wrapped});
+  }
+}

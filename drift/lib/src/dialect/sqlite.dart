@@ -88,6 +88,23 @@ final class _SqliteCompiler extends StatementCompiler {
   }
 
   @override
+  void addCreateTableStatement(CreateTableStatement stmt) {
+    super.addCreateTableStatement(stmt);
+
+    final table = stmt.entity;
+    final options = [
+      if (table.withoutRowId) 'WITHOUT ROWID',
+      if (table.isStrict) 'STRICT'
+    ].join(', ');
+
+    if (options.isNotEmpty) {
+      statement.buffer
+        ..write(' ')
+        ..write(options);
+    }
+  }
+
+  @override
   void addCustom(CustomComponent component) {
     throw 'todo: addCustom';
   }

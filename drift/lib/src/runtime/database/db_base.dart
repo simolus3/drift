@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
 import '../../query_builder/schema/entities.dart';
+import '../migrations.dart';
 import '../streams/update_rules.dart';
 import 'connection_compat.dart';
 import 'connection_user.dart';
@@ -21,6 +22,15 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   /// The [schemaVersion] must be positive. Typically, one starts with a value
   /// of `1` and increments the value for each modification to the schema.
   int get schemaVersion;
+
+  /// Defines the migration strategy that will determine how to deal with an
+  /// increasing [schemaVersion]. The default value only supports creating the
+  /// database by creating all tables known in this database. When you have
+  /// changes in your schema, you'll need a custom migration strategy to create
+  /// the new tables or change the columns.
+  MigrationStrategy get migration => MigrationStrategy();
+  MigrationStrategy? _cachedMigration;
+  MigrationStrategy get _resolvedMigration => _cachedMigration ??= migration;
 
   /// The collection of update rules contains information on how updates on
   /// tables result in other updates, for instance due to a trigger.
@@ -52,13 +62,39 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       return opening;
     } else {
       return _openingSession = Future(() async {
-        // TODO: Migrations, before-open callback
+        final inner = await implementation.open();
+
+        // Run migrations in a scoped connection zone so that they can use the
+        // database while calls outside of migrations are waiting on this future
+        // to complete.
+        await runConnectionZoned(
+          inner,
+          () => _runMigrations(inner),
+        );
+
         return DriftCompatibilitySession(
-          inner: await implementation.open(),
+          inner: inner,
           dialect: implementation.dialect,
         );
       });
     }
+  }
+
+  Future<void> _runMigrations(DriftRootSession session) async {
+    final oldVersion = await session.schemaVersion;
+    final strategy = _resolvedMigration;
+    final migrator = Migrator(this);
+
+    if (oldVersion == 0) {
+      await strategy.onCreate(migrator);
+      await session.writeSchemaVersion(schemaVersion);
+    } else if (oldVersion < schemaVersion) {
+      await strategy.onUpgrade(migrator, oldVersion, schemaVersion);
+      await session.writeSchemaVersion(schemaVersion);
+    }
+
+    await strategy.beforeOpen?.call(
+        OpeningDetails(oldVersion == 0 ? null : oldVersion, schemaVersion));
   }
 
   /// Closes this drift database and releases associated resources.

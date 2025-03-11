@@ -4,7 +4,7 @@ import '../../dialect/sqlite.dart';
 import '../connection.dart';
 import '../result_set.dart';
 
-final class SqliteConnection implements DriftSession {
+final class SqliteConnection implements DriftSession, DriftRootSession {
   final sqlite.CommonDatabase database;
   final SqliteDialect dialect;
 
@@ -53,6 +53,14 @@ final class SqliteConnection implements DriftSession {
   @override
   Future<void> close() async {
     database.dispose();
+  }
+
+  @override
+  Future<int> get schemaVersion async => database.userVersion;
+
+  @override
+  Future<void> writeSchemaVersion(int version) async {
+    database.userVersion = version;
   }
 }
 

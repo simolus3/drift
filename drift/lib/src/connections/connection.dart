@@ -5,14 +5,14 @@ import 'result_set.dart';
 
 final class DriftDatabaseImplementation {
   final DriftDialect dialect;
-  final Future<DriftSession> Function() _openConnection;
+  final Future<DriftRootSession> Function() _openConnection;
 
   DriftDatabaseImplementation(
       {required this.dialect,
-      required Future<DriftSession> Function() openConnection})
+      required Future<DriftRootSession> Function() openConnection})
       : _openConnection = openConnection;
 
-  Future<DriftSession> open() {
+  Future<DriftRootSession> open() {
     return _openConnection();
   }
 }
@@ -35,6 +35,11 @@ abstract interface class DriftSession {
   Future<List<QueryResult>> executeBatch(List<StatementBatch> batch);
 
   Future<void> close();
+}
+
+abstract interface class DriftRootSession implements DriftSession {
+  Future<int> get schemaVersion;
+  Future<void> writeSchemaVersion(int version);
 }
 
 final class StatementBatch {

@@ -44,7 +44,7 @@ final class MigrationStrategy {
 
   /// Construct a migration strategy from the provided [onCreate] and
   /// [onUpgrade] methods.
-  MigrationStrategy({
+  const MigrationStrategy({
     this.onCreate = _defaultOnCreate,
     this.onUpgrade = _defaultOnUpdate,
     this.beforeOpen,

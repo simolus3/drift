@@ -66,7 +66,23 @@ abstract base class StatementCompiler {
     throw UnsupportedError('Unhandled expression: $expression');
   }
 
-  void addTableColumnDefinition(TableColumn column) {}
+  void addTableColumnDefinition(TableColumn column) {
+    addReference(column.name);
+    statement.space();
+    statement.buffer.write(column.type.typeName(dialect));
+
+    if (!column.isNullable) {
+      statement.buffer.write('NOT NULL');
+    }
+
+    for (final (i, constraint) in column.constraints.indexed) {
+      if (i != 0) {
+        statement.space();
+      }
+
+      constraint.compileWith(this);
+    }
+  }
 
   void addAddColumnStatement(AddColumnStatement stmt) {
     statement.buffer.write('ALTER TABLE');
@@ -126,7 +142,36 @@ abstract base class StatementCompiler {
     }
   }
 
-  void addCreateTableStatement(CreateTableStatement statement) {}
+  void addCreateTableStatement(CreateTableStatement stmt) {
+    final table = stmt.entity;
+    statement.buffer.write('CREATE TABLE');
+    if (stmt.ifNotExists) {
+      statement.buffer.write(' IF NOT EXISTS');
+    }
+    addReference(table.entityName);
+    statement.buffer.write('(');
+
+    for (final (i, column) in table.columns.indexed) {
+      if (i != 0) {
+        statement.comma();
+      }
+
+      addTableColumnDefinition(column);
+    }
+
+    if (!table.dontWriteConstraints) {
+      // TODO: Emit table constraints
+    }
+
+    final constraints = table.customConstraints;
+    for (var i = 0; i < constraints.length; i++) {
+      statement.buffer
+        ..write(', ')
+        ..write(constraints[i]);
+    }
+
+    statement.buffer.write(')');
+  }
 
   void addCreateViewStatement(CreateViewStatement statement) {}
 
