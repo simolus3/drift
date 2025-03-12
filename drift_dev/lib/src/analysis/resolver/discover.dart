@@ -164,7 +164,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
   final TypeChecker _isTable,
       _isTableIndex,
       _isView,
-      _isTableInfo,
+      _isGeneratedResultSet,
       _isDatabase,
       _isDao;
 
@@ -178,7 +178,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
       : _isTable = _checker(knownTypes.tableType),
         _isTableIndex = _checker(knownTypes.tableIndexType),
         _isView = _checker(knownTypes.viewType),
-        _isTableInfo = _checker(knownTypes.tableInfoType),
+        _isGeneratedResultSet = _checker(knownTypes.resultSetType),
         _isDatabase = _checker(knownTypes.driftDatabase),
         _isDao = _checker(knownTypes.driftAccessor);
 
@@ -203,7 +203,7 @@ class _FindDartElements extends RecursiveElementVisitor<void> {
     // implementations as tables.
     return _isTable.isAssignableFrom(element) &&
         !_isTable.isExactly(element) &&
-        !_isTableInfo.isAssignableFrom(element) &&
+        !_isGeneratedResultSet.isAssignableFrom(element) &&
         // Temporary workaround until https://github.com/dart-lang/source_gen/pull/628
         // gets merged.
         !element.mixins.any((e) => e.nameIfInterfaceType == 'TableInfo');

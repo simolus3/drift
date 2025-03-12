@@ -14,9 +14,8 @@ extension type RowId._(int id) {
 }
 
 mixin AutoIncrement on Table {
-  late final id = integer()
-      .autoIncrement()
-      .map(TypeConverter.extensionType<RowId, int>())();
+  late final id =
+      integer().autoIncrement().map(TypeConverter.extensionType<RowId, int>());
 }
 
 @DataClassName('TodoEntry')
@@ -24,17 +23,16 @@ class TodosTable extends Table with AutoIncrement {
   @override
   String get tableName => 'todos';
 
-  late final title = text().withLength(min: 4, max: 16).nullable()();
-  late final content = text()();
-  @JsonKey('target_date')
-  late final targetDate = dateTime().nullable().unique()();
+  late final title = text().withLength(min: 4, max: 16).nullable();
+  late final content = text();
+  late final targetDate = dateTime().nullable().unique();
   @ReferenceName("todos")
   late final category = integer()
       .references(Categories, #id, initiallyDeferred: true)
       .map(TypeConverter.extensionType<RowId, int>())
-      .nullable()();
+      .nullable();
 
-  late final status = textEnum<TodoStatus>().nullable()();
+  late final status = textEnum<TodoStatus>().nullable();
 
   @override
   List<Set<Column>>? get uniqueKeys => [
@@ -46,31 +44,31 @@ class TodosTable extends Table with AutoIncrement {
 enum TodoStatus { open, workInProgress, done }
 
 class Users extends Table with AutoIncrement {
-  late final name = text().withLength(min: 6, max: 32).unique()();
-  late final isAwesome = boolean().withDefault(const Constant(true))();
+  late final name = text().withLength(min: 6, max: 32).unique();
+  late final isAwesome = boolean().withDefault(const Literal(true));
 
-  late final profilePicture = blob()();
+  late final profilePicture = blob();
   late final DateTimeColumn creationTime = dateTime()
       // ignore: recursive_getters
       .check(creationTime.isBiggerThan(Constant(DateTime.utc(1950))))
-      .withDefault(currentDateAndTime)();
+      .withDefault(currentDateAndTime);
 }
 
 @DataClassName('Category')
 class Categories extends Table with AutoIncrement {
   late final description =
-      text().named('desc').customConstraint('NOT NULL UNIQUE')();
+      text().named('desc').customConstraint('NOT NULL UNIQUE');
   late final priority =
-      intEnum<CategoryPriority>().withDefault(const Constant(0))();
+      intEnum<CategoryPriority>().withDefault(const Literal(0));
 
-  late final descriptionInUpperCase = text().generatedAs(description.upper())();
+  late final descriptionInUpperCase = text().generatedAs(description.upper());
 }
 
 enum CategoryPriority { low, medium, high }
 
 class SharedTodos extends Table {
-  late final todo = integer()();
-  late final user = integer()();
+  late final todo = integer();
+  late final user = integer();
 
   @override
   Set<Column> get primaryKey => {todo, user};
@@ -86,54 +84,53 @@ const _uuid = Uuid();
 
 @UseRowClass(CustomRowClass, constructor: 'map', generateInsertable: true)
 class TableWithoutPK extends Table {
-  IntColumn get notReallyAnId => integer()();
-  RealColumn get someFloat => real()();
-  Int64Column get webSafeInt => int64().nullable()();
+  IntColumn get notReallyAnId => integer();
+  RealColumn get someFloat => real();
+  Int64Column get webSafeInt => int64().nullable();
 
   TextColumn get custom =>
-      text().map(const CustomConverter()).clientDefault(_uuid.v4)();
+      text().map(const CustomConverter()).clientDefault(_uuid.v4);
 }
 
 class TableWithEveryColumnType extends Table with AutoIncrement {
-  BoolColumn get aBool => boolean().nullable()();
-  DateTimeColumn get aDateTime => dateTime().nullable()();
-  TextColumn get aText => text().nullable()();
-  IntColumn get anInt => integer().nullable()();
-  Int64Column get anInt64 => int64().nullable()();
-  RealColumn get aReal => real().nullable()();
-  BlobColumn get aBlob => blob().nullable()();
-  IntColumn get anIntEnum => intEnum<TodoStatus>().nullable()();
+  BoolColumn get aBool => boolean().nullable();
+  DateTimeColumn get aDateTime => dateTime().nullable();
+  TextColumn get aText => text().nullable();
+  IntColumn get anInt => integer().nullable();
+  Int64Column get anInt64 => int64().nullable();
+  RealColumn get aReal => real().nullable();
+  BlobColumn get aBlob => blob().nullable();
+  IntColumn get anIntEnum => intEnum<TodoStatus>().nullable();
   TextColumn get aTextWithConverter => text()
       .named('insert')
       .map(const CustomJsonConverter())
       .nullable()
-      .nullable()();
+      .nullable();
 }
 
 class Department extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text().nullable()();
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get name => text().nullable();
 }
 
 class Product extends Table {
-  TextColumn get sku => text()();
-  TextColumn get name => text().nullable()();
-  IntColumn get department =>
-      integer().references(Department, #id).nullable()();
+  TextColumn get sku => text();
+  TextColumn get name => text().nullable();
+  IntColumn get department => integer().references(Department, #id).nullable();
 }
 
 class Listing extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer().autoIncrement();
   @ReferenceName('listings')
-  TextColumn get product => text().references(Product, #sku)();
+  TextColumn get product => text().references(Product, #sku);
   @ReferenceName('listings')
-  IntColumn get store => integer().references(Store, #id).nullable()();
-  RealColumn get price => real().nullable()();
+  IntColumn get store => integer().references(Store, #id).nullable();
+  RealColumn get price => real().nullable();
 }
 
 class Store extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text().nullable()();
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get name => text().nullable();
 }
 
 class CustomRowClass {
@@ -159,7 +156,7 @@ class CustomRowClass {
 class PureDefaults extends Table {
   // name after keyword to ensure it's escaped properly
   TextColumn get txt =>
-      text().named('insert').map(const CustomJsonConverter()).nullable()();
+      text().named('insert').map(const CustomJsonConverter()).nullable();
 
   @override
   Set<Column> get primaryKey => {txt};
@@ -219,10 +216,10 @@ abstract class CategoryTodoCountView extends View {
   Expression<int> get itemCount => todos.id.count();
 
   @override
-  Query as() => select([categoryId, description, itemCount])
+  BaseSelectStatement as() => select([categoryId, description, itemCount])
       .from(categories)
-      .join([innerJoin(todos, todos.category.equalsExp(categories.id))])
-    ..groupBy([categories.id]);
+      .innerJoin(todos, on: todos.category.equalsExp(categories.id));
+//    ..groupBy([categories.id]);
 }
 
 abstract class TodoWithCategoryView extends View {
@@ -230,63 +227,45 @@ abstract class TodoWithCategoryView extends View {
   Categories get categories;
 
   @override
-  Query as() => select([todos.title, categories.description])
+  BaseSelectStatement as() => select([todos.title, categories.description])
       .from(todos)
-      .join([innerJoin(categories, categories.id.equalsExp(todos.category))]);
+      .innerJoin(categories, on: categories.id.equalsExp(todos.category));
 }
 
 class WithCustomType extends Table {
-  Column<UuidValue> get id => customType(uuidType)();
+  Column<UuidValue> get id => col(const UuidType());
 }
 
-class NativeUuidType implements CustomSqlType<UuidValue> {
-  const NativeUuidType();
+final class UuidType implements SqlType<UuidValue> {
+  const UuidType();
 
-  @override
-  String mapToSqlLiteral(UuidValue dartValue) {
-    return "'$dartValue'";
+  bool _supportsUuids(DriftDialect dialect) {
+    return dialect.known == KnownSqlDialect.postgres;
   }
 
   @override
-  Object mapToSqlParameter(UuidValue dartValue) {
-    return dartValue;
+  UuidValue dartValue(DriftDialect dialect, Object databaseValue) {
+    return switch (databaseValue) {
+      final UuidValue value => value,
+      var other => UuidValue.fromString(other.toString()),
+    };
   }
 
   @override
-  UuidValue read(Object fromSql) {
-    return fromSql as UuidValue;
+  String sqlLiteral(DriftDialect dialect, Object value) {
+    return "'$value'";
   }
 
   @override
-  String sqlTypeName(GenerationContext context) => 'uuid';
+  Object sqlParameter(DriftDialect dialect, Object value) {
+    return _supportsUuids(dialect) ? value : "'$value'";
+  }
+
+  @override
+  String typeName(DriftDialect dialect) {
+    return _supportsUuids(dialect) ? 'uuid' : 'text';
+  }
 }
-
-class _UuidAsTextType implements CustomSqlType<UuidValue> {
-  const _UuidAsTextType();
-
-  @override
-  String mapToSqlLiteral(UuidValue dartValue) {
-    return "'$dartValue'";
-  }
-
-  @override
-  Object mapToSqlParameter(UuidValue dartValue) {
-    return dartValue.toString();
-  }
-
-  @override
-  UuidValue read(Object fromSql) {
-    return UuidValue.fromString(fromSql as String);
-  }
-
-  @override
-  String sqlTypeName(GenerationContext context) => 'text';
-}
-
-const uuidType = DialectAwareSqlType<UuidValue>.via(
-  fallback: _UuidAsTextType(),
-  overrides: {SqlDialect.postgres: NativeUuidType()},
-);
 
 @DriftDatabase(
   tables: [
@@ -307,7 +286,7 @@ const uuidType = DialectAwareSqlType<UuidValue>.via(
     CategoryTodoCountView,
     TodoWithCategoryView,
   ],
-  daos: [SomeDao],
+//  daos: [SomeDao],
   queries: {
     'allTodosWithCategory': 'SELECT t.*, c.id as catId, c."desc" as catDesc '
         'FROM todos t INNER JOIN categories c ON c.id = t.category',
@@ -333,6 +312,7 @@ class TodoDb extends _$TodoDb {
   int schemaVersion = 1;
 }
 
+/*
 @DriftAccessor(
   tables: [Users, SharedTodos, TodosTable],
   views: [TodoWithCategoryView],
@@ -343,9 +323,11 @@ class TodoDb extends _$TodoDb {
         'WHERE u.id = :user'
   },
 )
+
 class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
   SomeDao(super.db);
 }
 
 QueryExecutor get _nullExecutor =>
     LazyDatabase(() => throw UnsupportedError('stub'));
+*/

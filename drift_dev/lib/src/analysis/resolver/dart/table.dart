@@ -306,26 +306,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       final isLateFinalField = e.isLate && e.isFinal && e.getter != null;
       if (!isLateFinalField) return false;
 
-      if (isColumn(e.type)) {
-        return true;
-      } else {
-        if (isColumnBuilder(e.type)) {
-          // When defining a column with a declaration it's possible that the user
-          // forgot to add an extra pair of parentheses at the end.
-          // In that case, field would be a `ColumnBuilder` instead of a `Column`.
-          // We should warn the user about this.
-          // To print a detailed error message we willresolve the element to get the entire field declaration.
-          final declaration = (await resolver.driver.backend
-              .loadElementDeclaration(e.declaration) as VariableDeclaration);
-          reportError(DriftAnalysisError.inDartAst(
-            declaration.declaredElement!,
-            declaration.endToken,
-            '\nIt seems that you forgot to initialize the `${e.getter?.name}` column on the `${element.name}` table.\n'
-            'Solution: Add an extra pair of parentheses at the end of the column: `$declaration()`.',
-          ));
-        }
-        return false;
-      }
+      return isColumn(e.type) || isColumnBuilder(e.type);
     }
 
     final Set<String> columnNames = {};

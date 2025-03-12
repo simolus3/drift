@@ -5,10 +5,10 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
-import 'package:drift/drift.dart' as _i7;
+import 'package:drift/drift.dart' as _i6;
 import 'package:drift/src/runtime/executor/helpers/delegates.dart' as _i3;
 import 'package:drift/src/runtime/executor/helpers/results.dart' as _i2;
-import 'package:drift/src/runtime/executor/stream_queries.dart' as _i6;
+import 'package:drift/src/runtime/executor/stream_queries.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
 
@@ -109,7 +109,7 @@ class MockDatabaseDelegate extends _i1.Mock implements _i3.DatabaseDelegate {
       ) as _i5.Future<void>);
 
   @override
-  void notifyDatabaseOpened(dynamic details) => super.noSuchMethod(
+  void notifyDatabaseOpened(_i6.OpeningDetails? details) => super.noSuchMethod(
         Invocation.method(
           #notifyDatabaseOpened,
           [details],
@@ -265,11 +265,11 @@ class MockSupportedTransactionDelegate extends _i1.Mock
 /// A class which mocks [StreamQueryStore].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
+class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
   @override
   _i5.Stream<T> registerStream<T extends Object>(
-    _i6.QueryStreamFetcher<T>? fetcher,
-    _i7.DatabaseConnectionUser? database,
+    _i7.QueryStreamFetcher<T>? fetcher,
+    _i6.DatabaseConnectionUser? database,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -284,19 +284,19 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
       ) as _i5.Stream<T>);
 
   @override
-  _i5.Stream<Set<_i7.TableUpdate>> updatesForSync(
-          _i7.TableUpdateQuery? query) =>
+  _i5.Stream<Set<_i6.TableUpdate>> updatesForSync(
+          _i6.TableUpdateQuery? query) =>
       (super.noSuchMethod(
         Invocation.method(
           #updatesForSync,
           [query],
         ),
-        returnValue: _i5.Stream<Set<_i7.TableUpdate>>.empty(),
-        returnValueForMissingStub: _i5.Stream<Set<_i7.TableUpdate>>.empty(),
-      ) as _i5.Stream<Set<_i7.TableUpdate>>);
+        returnValue: _i5.Stream<Set<_i6.TableUpdate>>.empty(),
+        returnValueForMissingStub: _i5.Stream<Set<_i6.TableUpdate>>.empty(),
+      ) as _i5.Stream<Set<_i6.TableUpdate>>);
 
   @override
-  void handleTableUpdates(Set<_i7.TableUpdate>? updates) => super.noSuchMethod(
+  void handleTableUpdates(Set<_i6.TableUpdate>? updates) => super.noSuchMethod(
         Invocation.method(
           #handleTableUpdates,
           [updates],
@@ -306,7 +306,7 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
 
   @override
   void markAsClosed(
-    _i6.QueryStream<Object>? stream,
+    _i7.QueryStream<Object>? stream,
     void Function()? whenRemoved,
   ) =>
       super.noSuchMethod(
@@ -321,7 +321,7 @@ class MockStreamQueries extends _i1.Mock implements _i6.StreamQueryStore {
       );
 
   @override
-  void markAsOpened(_i6.QueryStream<Object>? stream) => super.noSuchMethod(
+  void markAsOpened(_i7.QueryStream<Object>? stream) => super.noSuchMethod(
         Invocation.method(
           #markAsOpened,
           [stream],

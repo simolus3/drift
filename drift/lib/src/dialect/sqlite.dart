@@ -45,6 +45,9 @@ final class SqliteDialect extends DriftDialect {
   SqliteDialect({this.options = const SqliteOptions()});
 
   @override
+  KnownSqlDialect? get known => KnownSqlDialect.sqlite;
+
+  @override
   StatementCompiler createCompiler() => _SqliteCompiler(this);
 
   @override

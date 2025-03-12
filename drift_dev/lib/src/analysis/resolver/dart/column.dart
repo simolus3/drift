@@ -25,6 +25,7 @@ const String _startDateTime = 'dateTime';
 const String _startBlob = 'blob';
 const String _startReal = 'real';
 const String _startCustom = 'customType';
+const String _startCustomCol = 'col';
 
 const Set<String> _starters = {
   _startInt,
@@ -37,6 +38,7 @@ const Set<String> _starters = {
   _startBlob,
   _startReal,
   _startCustom,
+  _startCustomCol,
 };
 
 const String _methodNamed = 'named';
@@ -134,7 +136,8 @@ class ColumnParser {
     bool tryExtractingStartMethod(SimpleIdentifier calledMethod) {
       final methodName = calledMethod.name;
       if (_starters.contains(methodName)) {
-        if (_startCustom.contains(methodName)) {
+        if (_startCustom.contains(methodName) ||
+            _startCustomCol.contains(methodName)) {
           final expression = remainingExpr.argumentList.arguments.single;
 
           final custom = readCustomType(

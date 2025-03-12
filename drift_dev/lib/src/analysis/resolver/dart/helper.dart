@@ -26,7 +26,7 @@ class KnownDriftTypes {
   final InterfaceType tableType;
   final InterfaceType tableIndexType;
   final InterfaceType viewType;
-  final InterfaceType tableInfoType;
+  final InterfaceType resultSetType;
   final InterfaceType driftDatabase;
   final InterfaceType driftAccessor;
   final InterfaceElement sqlType;
@@ -47,7 +47,7 @@ class KnownDriftTypes {
     this.tableType,
     this.tableIndexType,
     this.viewType,
-    this.tableInfoType,
+    this.resultSetType,
     this.sqlType,
     this.typeConverter,
     this.jsonTypeConverter,
@@ -73,7 +73,7 @@ class KnownDriftTypes {
       tableElement.defaultInstantiation,
       (exportNamespace.get('TableIndex') as InterfaceElement).thisType,
       (exportNamespace.get('View') as InterfaceElement).thisType,
-      (exportNamespace.get('TableInfo') as InterfaceElement).thisType,
+      (exportNamespace.get('ResultSet') as InterfaceElement).thisType,
       exportNamespace.get('SqlType') as InterfaceElement,
       exportNamespace.get('TypeConverter') as InterfaceElement,
       exportNamespace.get('JsonTypeConverter2') as InterfaceElement,

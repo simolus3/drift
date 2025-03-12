@@ -1,7 +1,14 @@
 import 'compiler.dart';
 import 'types.dart';
 
+enum KnownSqlDialect {
+  sqlite,
+  postgres,
+}
+
 abstract base class DriftDialect implements TypeProvider {
+  KnownSqlDialect? get known;
+
   @override
   SqlType<T> resolveType<T extends Object>() {
     return BuiltinDriftType.forType<T>().resolveIn(this);

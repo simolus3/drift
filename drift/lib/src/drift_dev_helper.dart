@@ -12,4 +12,5 @@ export 'dsl/table.dart'
     show DriftColumnDeclarationBuilder, Table, TableIndex, View;
 export 'dsl/database.dart' show DriftAccessor, DriftDatabase;
 export 'query_builder/types.dart' show SqlType;
+export 'query_builder/schema/result_set.dart' show ResultSet;
 export 'dialect/sqlite.dart' show DriftAny;
