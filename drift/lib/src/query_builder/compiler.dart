@@ -70,17 +70,21 @@ abstract base class StatementCompiler {
     addReference(column.name);
     statement.space();
     statement.buffer.write(column.type.typeName(dialect));
+    statement.space();
 
+    var hadConstraint = false;
     if (!column.isNullable) {
+      hadConstraint = true;
       statement.buffer.write('NOT NULL');
     }
 
-    for (final (i, constraint) in column.constraints.indexed) {
-      if (i != 0) {
+    for (final constraint in column.constraints) {
+      if (hadConstraint) {
         statement.space();
       }
 
       constraint.compileWith(this);
+      hadConstraint = true;
     }
   }
 
@@ -144,9 +148,9 @@ abstract base class StatementCompiler {
 
   void addCreateTableStatement(CreateTableStatement stmt) {
     final table = stmt.entity;
-    statement.buffer.write('CREATE TABLE');
+    statement.buffer.write('CREATE TABLE ');
     if (stmt.ifNotExists) {
-      statement.buffer.write(' IF NOT EXISTS');
+      statement.buffer.write('IF NOT EXISTS ');
     }
     addReference(table.entityName);
     statement.buffer.write('(');
@@ -203,6 +207,8 @@ abstract base class StatementCompiler {
 
   void addSelectStatement(BaseSelectStatement select) {
     statement.buffer.write('SELECT ');
+    statement.resultSetStructure = select.structure;
+    statement.hasMultipleTables = select.from.length > 1;
 
     var first = true;
     select.structure.expressions.forEach((expr, position) {
@@ -215,9 +221,7 @@ abstract base class StatementCompiler {
       statement.buffer.write(' AS ');
       addReference(position.name);
     });
-    statement.resultSetStructure = select.structure;
 
-    statement.hasMultipleTables = select.from.length > 1;
     if (select.from case [final first, ...final rest]) {
       statement.buffer.write(' FROM ');
       first.compileWith(this);
