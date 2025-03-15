@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
 import '../../query_builder/schema/entities.dart';
 import '../migrations.dart';
+import '../streams/delayed_stream_queries.dart';
+import '../streams/store.dart';
 import '../streams/update_rules.dart';
 import 'connection_compat.dart';
 import 'connection_user.dart';
@@ -13,8 +17,13 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   final DriftDatabaseImplementation implementation;
   Future<DriftSession>? _openingSession;
 
+  final Completer<StreamQueryStore> _openedStreamQueries = Completer();
+  late StreamQueryStore _streamQueryStore;
+
   /// Opens a drift database backed by a given [implementation].
-  GeneratedDatabase(this.implementation);
+  GeneratedDatabase(this.implementation) {
+    _streamQueryStore = DelayedStreamQueryStore(_openedStreamQueries.future);
+  }
 
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
@@ -46,8 +55,6 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   /// specific entities that are also encoded as schema entities.
   Iterable<DatabaseSchemaEntity> get allSchemaEntities;
 
-  // TODO: Migrations
-
   @override
   GeneratedDatabase get attachedDatabase => this;
 
@@ -62,13 +69,15 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       return opening;
     } else {
       return _openingSession = Future(() async {
-        final inner = await implementation.open();
+        final (inner, streams) = await implementation.open();
+        _openedStreamQueries.complete(streams);
 
         // Run migrations in a scoped connection zone so that they can use the
         // database while calls outside of migrations are waiting on this future
         // to complete.
         await runConnectionZoned(
           inner,
+          streams,
           () => _runMigrations(inner),
         );
 
@@ -98,5 +107,17 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   }
 
   /// Closes this drift database and releases associated resources.
-  Future<void> close() async {}
+  Future<void> close() async {
+    if (_openingSession case final opening?) {
+      final resolved = await opening;
+
+      await resolved.close();
+      await _streamQueryStore.close();
+    }
+  }
+}
+
+@internal
+extension InternalGeneratedDatabase on GeneratedDatabase {
+  StreamQueryStore get rootStreamQueries => _streamQueryStore;
 }

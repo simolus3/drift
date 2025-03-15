@@ -15,6 +15,16 @@ abstract interface class GeneratedTable<Row extends Object,
   List<TableColumn> get columns;
 }
 
+/// Additional interface for tables in a drift file that have been created with
+/// an `CREATE VIRTUAL TABLE STATEMENT`.
+mixin VirtualTableInfo<Row extends Object,
+    Self extends GeneratedTable<Row, Self>> on GeneratedTable<Row, Self> {
+  /// Returns the module name and the arguments that were used in the statement
+  /// that created this table. In that sense, `CREATE VIRTUAL TABLE <name> USING <moduleAndArgs>;`
+  /// can be used to create this table in sql.
+  String get moduleAndArgs;
+}
+
 final class TableColumn<T extends Object> extends SchemaColumn<T> {
   /// Whether this column is required when inserting new rows into the table.
   ///

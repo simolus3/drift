@@ -414,32 +414,6 @@ abstract class DatabaseConnectionUser {
     return context;
   }
 
-  /// Used by generated code to expand array variables.
-  String $expandVar(int start, int amount) {
-    final buffer = StringBuffer();
-
-    final variableSymbol = switch (executor.dialect) {
-      SqlDialect.postgres => r'$',
-      _ => '?',
-    };
-    final supportsIndexedParameters =
-        executor.dialect.supportsIndexedParameters;
-
-    for (var x = 0; x < amount; x++) {
-      if (supportsIndexedParameters) {
-        buffer.write('$variableSymbol${start + x}');
-      } else {
-        buffer.write(variableSymbol);
-      }
-
-      if (x != amount - 1) {
-        buffer.write(', ');
-      }
-    }
-
-    return buffer.toString();
-  }
-
   /// Closes this database and releases associated resources.
   Future<void> close() async {
     await streamQueries.close();

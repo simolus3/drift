@@ -1,7 +1,8 @@
-import 'package:drift/src/runtime/api/runtime_api.dart';
 import 'package:meta/meta.dart';
 
-import 'stream_queries.dart';
+import '../database/connection_user.dart';
+import 'store.dart';
+import 'update_rules.dart';
 
 /// Version of [StreamQueryStore] that delegates work to an asynchronously-
 /// available delegate.
@@ -24,16 +25,6 @@ class DelayedStreamQueryStore implements StreamQueryStore {
   @override
   void handleTableUpdates(Set<TableUpdate> updates) {
     _resolved?.handleTableUpdates(updates);
-  }
-
-  @override
-  void markAsClosed(QueryStream stream, void Function() whenRemoved) {
-    throw UnimplementedError('The stream will call this on the delegate');
-  }
-
-  @override
-  void markAsOpened(QueryStream stream) {
-    throw UnimplementedError('The stream will call this on the delegate');
   }
 
   Stream<T> _delegateStream<T>(

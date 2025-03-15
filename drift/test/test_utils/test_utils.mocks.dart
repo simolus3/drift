@@ -8,7 +8,7 @@ import 'dart:async' as _i5;
 import 'package:drift/drift.dart' as _i6;
 import 'package:drift/src/runtime/executor/helpers/delegates.dart' as _i3;
 import 'package:drift/src/runtime/executor/helpers/results.dart' as _i2;
-import 'package:drift/src/runtime/executor/stream_queries.dart' as _i7;
+import 'package:drift/src/runtime/streams/store.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
 
@@ -300,31 +300,6 @@ class MockStreamQueries extends _i1.Mock implements _i7.StreamQueryStore {
         Invocation.method(
           #handleTableUpdates,
           [updates],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void markAsClosed(
-    _i7.QueryStream<Object>? stream,
-    void Function()? whenRemoved,
-  ) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #markAsClosed,
-          [
-            stream,
-            whenRemoved,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void markAsOpened(_i7.QueryStream<Object>? stream) => super.noSuchMethod(
-        Invocation.method(
-          #markAsOpened,
-          [stream],
         ),
         returnValueForMissingStub: null,
       );

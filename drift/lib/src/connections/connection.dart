@@ -1,7 +1,9 @@
 import '../query_builder/compiler.dart';
 import '../query_builder/dialect.dart';
-import '../query_builder/results.dart';
 import '../query_builder/types.dart';
+import '../runtime/streams/store.dart';
+import '../runtime/streams/store_impl.dart';
+import '../runtime/streams/update_rules.dart';
 import 'result_set.dart';
 
 final class DriftDatabaseImplementation {
@@ -13,8 +15,9 @@ final class DriftDatabaseImplementation {
       required Future<DriftRootSession> Function() openConnection})
       : _openConnection = openConnection;
 
-  Future<DriftRootSession> open() {
-    return _openConnection();
+  Future<(DriftRootSession, StreamQueryStore)> open() async {
+    final session = await _openConnection();
+    return (session, LocalStreamQueryStore());
   }
 }
 
@@ -56,19 +59,19 @@ final class StatementInfo {
   final String sql;
   final bool needsResultSet;
   final List<TypedNullableValue> variables;
-  final ResultSetStructure? resultSetStructure;
+  final List<TableUpdate> expectedWrites;
 
   StatementInfo(CompiledStatement this.generated)
       : sql = generated.buffer.toString(),
         needsResultSet = generated.resultSetStructure != null,
         variables = generated.variables,
-        resultSetStructure = generated.resultSetStructure;
+        expectedWrites = const []; // TODO
 
   StatementInfo.fromText(
     this.sql, {
     this.variables = const [],
     this.needsResultSet = false,
-    this.resultSetStructure,
+    this.expectedWrites = const [],
   }) : generated = null;
 
   Iterable<Object?> sqlVariables(DriftDialect dialect) =>

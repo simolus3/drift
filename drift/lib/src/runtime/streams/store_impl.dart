@@ -1,76 +1,19 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
-import '../api/runtime_api.dart';
 import '../cancellation_zone.dart';
-
-const _listEquality = ListEquality<Object?>();
+import 'store.dart';
 
 // This is an internal drift library that's never exported to users.
 // ignore_for_file: public_member_api_docs
 
-/// Representation of a select statement that knows from which tables the
-/// statement is reading its data and how to execute the query.
+/// A local [StreamQueryStore] not taking any external database updates into
+/// account.
 @internal
-class QueryStreamFetcher<Rows extends Object> {
-  /// Table updates that will affect this stream.
-  ///
-  /// If any of these tables changes, the stream must fetch its data again.
-  final TableUpdateQuery readsFrom;
-
-  /// Key that can be used to check whether two fetchers will yield the same
-  /// result when operating on the same data.
-  ///
-  /// When not null, [Rows] must be `List<Map<String, Object?>>` (the most
-  /// common form used for all queries except for manager queries with
-  /// prefetches).
-  final StreamKey? key;
-
-  /// Function that asynchronously fetches the latest set of data.
-  final Future<Rows> Function() fetchData;
-
-  QueryStreamFetcher({
-    required this.readsFrom,
-    this.key,
-    required this.fetchData,
-  });
-}
-
-/// Key that uniquely identifies a select statement. If two keys created from
-/// two select statements are equal, the statements are equal as well.
-///
-/// As two equal statements always yield the same result when operating on the
-/// same data, this can make streams more efficient as we can return the same
-/// stream for two equivalent queries.
-@internal
-class StreamKey {
-  final String sql;
-  final List<dynamic> variables;
-
-  StreamKey(this.sql, this.variables);
-
-  @override
-  int get hashCode {
-    return Object.hash(sql, _listEquality.hash(variables));
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is StreamKey &&
-            other.sql == sql &&
-            _listEquality.equals(other.variables, variables));
-  }
-}
-
-/// Keeps track of active streams created from [SimpleSelectStatement]s and
-/// updates them when needed.
-@internal
-class StreamQueryStore {
+base class LocalStreamQueryStore implements StreamQueryStore {
   final Map<StreamKey, QueryStream> _activeKeyStreams = {};
   final HashSet<StreamKey?> _keysPendingRemoval = HashSet<StreamKey?>();
 
@@ -89,10 +32,10 @@ class StreamQueryStore {
   final StreamController<Set<TableUpdate>> _tableUpdates =
       StreamController.broadcast(sync: true);
 
-  StreamQueryStore({bool closeStreamsSynchronously = false})
+  LocalStreamQueryStore({bool closeStreamsSynchronously = false})
       : _closeStreamsSynchronously = closeStreamsSynchronously;
 
-  /// Creates a new stream from the select statement.
+  @override
   Stream<T> registerStream<T extends Object>(
       QueryStreamFetcher<T> fetcher, DatabaseConnectionUser database) {
     final key = fetcher.key;
@@ -116,14 +59,14 @@ class StreamQueryStore {
     return stream._stream;
   }
 
+  @override
   Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery query) {
     return _tableUpdates.stream
         .map((e) => e.where(query.matches).toSet())
         .where((e) => e.isNotEmpty);
   }
 
-  /// Handles updates on a given table by re-executing all queries that read
-  /// from that table.
+  @override
   void handleTableUpdates(Set<TableUpdate> updates) {
     if (_isShuttingDown) return;
     _tableUpdates.add(updates);
@@ -174,6 +117,7 @@ class StreamQueryStore {
     }
   }
 
+  @override
   Future<void> close() async {
     _isShuttingDown = true;
 
@@ -194,7 +138,7 @@ class StreamQueryStore {
 
 class QueryStream<Rows extends Object> {
   final QueryStreamFetcher<Rows> _fetcher;
-  final StreamQueryStore _store;
+  final LocalStreamQueryStore _store;
   final DatabaseConnectionUser _database;
 
   final List<_QueryStreamListener> _listeners = [];
@@ -328,13 +272,9 @@ class QueryStream<Rows extends Object> {
     _runningOperations.add(operation);
 
     try {
-      if (!_database.isOpen) {
-        // We should make sure the database has been opened before using
-        // runCancellable! The first statement on the database is responsible
-        // for opening it (which includes running migrations), a process that
-        // must not be cancelled.
-        await _database.resolvedEngine.doWhenOpened((_) {});
-      }
+      // Make sure the database is ready to be used before running the query in
+      // a cancellation zone. Opening the database should never be cancelled.
+      await _database.currentSession();
 
       if (operation.isCancelled) return;
       runCancellable<Rows>(_fetcher.fetchData, token: operation);
@@ -380,50 +320,5 @@ class _QueryStreamListener<Rows> {
       lastEvent = row;
       controller.add(row);
     }
-  }
-}
-
-// Note: These classes are here because we want them to be public, but not
-// exposed without an src import.
-
-class AnyUpdateQuery extends TableUpdateQuery {
-  const AnyUpdateQuery();
-
-  @override
-  bool matches(TableUpdate update) => true;
-}
-
-class MultipleUpdateQuery extends TableUpdateQuery {
-  final List<TableUpdateQuery> queries;
-
-  const MultipleUpdateQuery(this.queries);
-
-  @override
-  bool matches(TableUpdate update) => queries.any((q) => q.matches(update));
-}
-
-class SpecificUpdateQuery extends TableUpdateQuery {
-  final UpdateKind? limitUpdateKind;
-  final String table;
-
-  const SpecificUpdateQuery(this.table, {this.limitUpdateKind});
-
-  @override
-  bool matches(TableUpdate update) {
-    if (update.table != table) return false;
-
-    return update.kind == null ||
-        limitUpdateKind == null ||
-        update.kind == limitUpdateKind;
-  }
-
-  @override
-  int get hashCode => Object.hash(limitUpdateKind, table);
-
-  @override
-  bool operator ==(Object other) {
-    return other is SpecificUpdateQuery &&
-        other.limitUpdateKind == limitUpdateKind &&
-        other.table == table;
   }
 }

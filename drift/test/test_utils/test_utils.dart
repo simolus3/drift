@@ -1,6 +1,6 @@
 import 'package:drift/backends.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:drift/src/runtime/streams/store.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 

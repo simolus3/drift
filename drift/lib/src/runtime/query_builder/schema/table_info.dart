@@ -105,15 +105,6 @@ mixin TableInfo<TableDsl extends Table, D> on Table
   int get hashCode => Object.hash(aliasedName, actualTableName);
 }
 
-/// Additional interface for tables in a drift file that have been created with
-/// an `CREATE VIRTUAL TABLE STATEMENT`.
-mixin VirtualTableInfo<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
-  /// Returns the module name and the arguments that were used in the statement
-  /// that created this table. In that sense, `CREATE VIRTUAL TABLE <name> USING <moduleAndArgs>;`
-  /// can be used to create this table in sql.
-  String get moduleAndArgs;
-}
-
 /// Static extension members for generated table classes.
 ///
 /// Most of these are accessed internally by drift or by generated code.

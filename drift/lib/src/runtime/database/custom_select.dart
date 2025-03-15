@@ -47,7 +47,7 @@ final class CustomSelectStatement<T> with Selectable<T> {
       query,
       variables,
       tables,
-      (resultSet) => (row) => CustomRow._(row.raw, db),
+      (resultSet) => (row) => CustomRow(row.raw, db),
       db,
     );
   }
@@ -90,7 +90,8 @@ final class CustomRow {
   final RawRow row;
   final DatabaseConnectionUser _db;
 
-  CustomRow._(this.row, this._db);
+  /// Wraps a raw [row] into a [CustomRow].
+  CustomRow(this.row, this._db);
 
   /// Reads an arbitrary value from the row and maps it to a fitting dart type.
   ///

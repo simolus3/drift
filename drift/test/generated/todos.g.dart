@@ -3290,7 +3290,7 @@ abstract base class _$TodoDb extends GeneratedDatabase {
       ];
 }
 
-class AllTodosWithCategoryResult extends CustomResultSet {
+final class AllTodosWithCategoryResult extends CustomResultSet {
   final RowId id;
   final String? title;
   final String content;

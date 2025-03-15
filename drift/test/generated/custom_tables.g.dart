@@ -523,7 +523,7 @@ class ConfigTable extends Table
     ..owningResultSet = this;
   late final TableColumn<DriftAny> configValue = TableColumn<DriftAny>(
       name: 'config_value',
-      type: SqliteDialect,
+      type: SqliteDialect.anyType(),
       isNullable: true,
       requiredDuringInsert: false,
       constraints: [ColumnConstraint.customSql('')])
@@ -567,7 +567,7 @@ class ConfigTable extends Table
       }
       return Config(
         configKey: row.readWithType(positions[0], BuiltinDriftType.text)!,
-        configValue: row.readWithType(positions[1], SqliteDialect),
+        configValue: row.readWithType(positions[1], SqliteDialect.anyType()),
         syncState: ConfigTable.$convertersyncStaten
             .fromSql(row.readWithType(positions[2], BuiltinDriftType.int)),
         syncStateImplicit: ConfigTable.$convertersyncStateImplicitn
@@ -614,7 +614,7 @@ class Config extends LegacyDataClass implements Insertable<Config> {
     map['config_key'] = Variable<String>(configKey);
     if (!nullToAbsent || configValue != null) {
       map['config_value'] =
-          Variable<DriftAny>(configValue, (_) => SqliteDialect);
+          Variable<DriftAny>(configValue, (_) => SqliteDialect.anyType());
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] =
@@ -778,7 +778,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
     }
     if (configValue.present) {
       map['config_value'] =
-          Variable<DriftAny>(configValue.value, (_) => SqliteDialect);
+          Variable<DriftAny>(configValue.value, (_) => SqliteDialect.anyType());
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(
@@ -1575,7 +1575,7 @@ class MyView extends View
       }
       return MyViewData(
         configKey: row.readWithType(positions[0], BuiltinDriftType.text)!,
-        configValue: row.readWithType(positions[1], SqliteDialect),
+        configValue: row.readWithType(positions[1], SqliteDialect.anyType()),
         syncState: ConfigTable.$convertersyncStaten
             .fromSql(row.readWithType(positions[2], BuiltinDriftType.int)),
         syncStateImplicit: ConfigTable.$convertersyncStateImplicitn
@@ -1588,7 +1588,7 @@ class MyView extends View
       name: 'config_key', type: BuiltinDriftType.text, isNullable: false)
     ..owningResultSet = this;
   late final ViewColumn<DriftAny> configValue = ViewColumn<DriftAny>(
-      name: 'config_value', type: SqliteDialect, isNullable: true)
+      name: 'config_value', type: SqliteDialect.anyType(), isNullable: true)
     ..owningResultSet = this;
   late final ViewColumnWithTypeConverter<SyncType?, int> syncState =
       ViewColumn<int>(
@@ -1636,7 +1636,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
       variables: [
         Variable<String>(key),
-        Variable<DriftAny>(value, (_) => SqliteDialect)
+        Variable<DriftAny>(value, (_) => SqliteDialect.anyType())
       ],
       updates: {config},
     );
@@ -1865,7 +1865,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         createMapper: (DriftResultSet resultSet) {
           final type$int = dialect.intType;
           final type$text = dialect.textType;
-          final type$2 = SqliteDialect;
+          final type$2 = SqliteDialect.anyType();
 
           return (DriftRow row) => ReadRowIdResult(
                 row: row,
@@ -2059,7 +2059,7 @@ typedef ReadMultiple$clause = OrderBy Function(ConfigTable config);
 typedef ReadDynamic$predicate = Expression<bool> Function(ConfigTable config);
 typedef TypeConverterVar$pred = Expression<bool> Function(ConfigTable config);
 
-class JsonResult extends CustomResultSet {
+final class JsonResult extends CustomResultSet {
   final String key;
   final String? value;
   JsonResult({
@@ -2085,7 +2085,7 @@ class JsonResult extends CustomResultSet {
   }
 }
 
-class MultipleResult extends CustomResultSet {
+final class MultipleResult extends CustomResultSet {
   final String? a;
   final int? b;
   final WithConstraint? c;
@@ -2118,7 +2118,7 @@ class MultipleResult extends CustomResultSet {
 typedef Multiple$predicate = Expression<bool> Function(
     WithDefaults d, WithConstraints c);
 
-class ReadRowIdResult extends CustomResultSet {
+final class ReadRowIdResult extends CustomResultSet {
   final int rowid;
   final String configKey;
   final DriftAny? configValue;
@@ -2160,7 +2160,7 @@ class ReadRowIdResult extends CustomResultSet {
 typedef ReadRowId$expr = Expression<int> Function(ConfigTable config);
 typedef ReadView$where = Expression<bool> Function(MyView my_view);
 
-class NestedResult extends CustomResultSet {
+final class NestedResult extends CustomResultSet {
   final WithDefault defaults;
   final List<WithConstraint> nestedQuery1;
   NestedResult({

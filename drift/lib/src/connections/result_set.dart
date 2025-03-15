@@ -11,10 +11,15 @@ typedef ColumnPosition = ({String name, int index});
 
 final class QueryResult {
   final int? affectedRows;
-  // todo: Last insert rowid? Is sqlite specific
+  final int? lastInsertRowId;
+
   final RawResultSet? resultSet;
 
-  QueryResult({required this.affectedRows, required this.resultSet});
+  QueryResult({
+    this.affectedRows,
+    this.lastInsertRowId,
+    required this.resultSet,
+  });
 }
 
 abstract base class RawResultSet

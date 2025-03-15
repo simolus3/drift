@@ -9,6 +9,8 @@ import '../../query_builder/dialect.dart';
 import '../../query_builder/statements/statement.dart';
 import '../exceptions.dart';
 import '../selectable.dart';
+import '../streams/scoped.dart';
+import '../streams/store.dart';
 import '../streams/update_rules.dart';
 import 'custom_select.dart';
 import 'db_base.dart';
@@ -31,6 +33,46 @@ abstract base class DatabaseConnectionUser {
     } else {
       return attachedDatabase.rootConnection();
     }
+  }
+
+  StreamQueryStore _currentStreamQueryStore() {
+    if (Zone.current[_zoneRootUserKey] case final scoped?) {
+      return (scoped as _ScopedDatabaseSession)._streamQueries;
+    } else {
+      return attachedDatabase.rootStreamQueries;
+    }
+  }
+
+  /// Marks the [tables] as updated.
+  ///
+  /// In response to calling this method, all streams listening on any of the
+  /// [tables] will load their data again.
+  ///
+  /// Primarily, this method is meant to be used by drift-internal code. Higher-
+  /// level drift APIs will call this method to dispatch stream updates.
+  /// Of course, you can also call it yourself to manually dispatch table
+  /// updates. To obtain a [TableInfo], use the corresponding getter on the
+  /// database class.
+  void markTablesUpdated(Iterable<GeneratedTable> tables) {
+    notifyUpdates(
+      {for (final table in tables) TableUpdate.onTable(table)},
+    );
+  }
+
+  /// Dispatches the set of [updates] to the stream query manager.
+  ///
+  /// This method is more specific than [markTablesUpdated] in the presence of
+  /// triggers or foreign key constraints. Drift needs to support both when
+  /// calculating which streams to update. For instance, consider a simple
+  /// database with two tables (`a` and `b`) and a trigger inserting into `b`
+  /// after a delete on `a`).
+  /// Now, an insert on `a` should not update a stream listening on table `b`,
+  /// but a delete should! This additional information is not available with
+  /// [markTablesUpdated], so [notifyUpdates] can be used to more efficiently
+  /// calculate stream updates in some instances.
+  void notifyUpdates(Set<TableUpdate> updates) {
+    final withRulesApplied = attachedDatabase.streamUpdateRules.apply(updates);
+    _currentStreamQueryStore().handleTableUpdates(withRulesApplied);
   }
 
   /// Executes [action] in a transaction, which means that all its queries and
@@ -85,8 +127,10 @@ abstract base class DatabaseConnectionUser {
     final resolved = await currentSession();
     final transaction = await (resolved as DriftTransactionParent)
         .begin(options ?? TransactionOptions());
+    final nestedStreams = ScopedStreamQueryStore(_currentStreamQueryStore());
 
-    return _runConnectionZoned(_ScopedDatabaseSession(transaction), () async {
+    return _runConnectionZoned(
+        _ScopedDatabaseSession(transaction, nestedStreams), () async {
       var success = false;
 
       try {
@@ -109,7 +153,7 @@ abstract base class DatabaseConnectionUser {
           }
         }
 
-        // TODO: await transaction.disposeChildStreams();
+        await nestedStreams.close(forwardUpdates: success);
       }
     });
   }
@@ -153,14 +197,16 @@ abstract base class DatabaseConnectionUser {
     final resolved = await currentSession();
     final exclusive =
         await (resolved as DriftSessionWithInternalLocks).exclusive();
+    final streams = ScopedStreamQueryStore(_currentStreamQueryStore());
 
     return _runConnectionZoned(
-      _ScopedDatabaseSession(exclusive),
+      _ScopedDatabaseSession(exclusive, streams),
       () async {
         try {
           return await action();
         } finally {
-          exclusive.close();
+          await exclusive.close();
+          await streams.close();
         }
       },
     );
@@ -324,15 +370,9 @@ abstract base class DatabaseConnectionUser {
     Set<ResultSet>? updates,
     UpdateKind? updateKind,
   }) async {
-    return _customWrite(
-      query,
-      variables,
-      updates,
-      updateKind,
-      (executor, sql, vars) {
-        return executor.runUpdate(sql, vars);
-      },
-    );
+    final result =
+        await _customWrite(query, variables, updates, UpdateKind.update);
+    return result.affectedRows ?? 0;
   }
 
   /// Executes a custom insert statement and returns the last inserted rowid.
@@ -341,16 +381,10 @@ abstract base class DatabaseConnectionUser {
   /// [updates] parameter. Query-streams running on any of these tables will
   /// then be re-run.
   Future<int> customInsert(String query,
-      {List<Variable> variables = const [], Set<ResultSet>? updates}) {
-    return _customWrite(
-      query,
-      variables,
-      updates,
-      UpdateKind.insert,
-      (executor, sql, vars) {
-        return executor.runInsert(sql, vars);
-      },
-    );
+      {List<Variable> variables = const [], Set<ResultSet>? updates}) async {
+    final result =
+        await _customWrite(query, variables, updates, UpdateKind.insert);
+    return result.lastInsertRowId ?? 0;
   }
 
   /// Runs a `INSERT`, `UPDATE` or `DELETE` statement returning rows.
@@ -361,17 +395,16 @@ abstract base class DatabaseConnectionUser {
   /// you can also set the [updateKind] parameter.
   /// This is optional, but can improve the accuracy of query updates,
   /// especially when using triggers.
-  Future<List<QueryRow>> customWriteReturning(
+  Future<List<CustomRow>> customWriteReturning(
     String query, {
     List<Variable> variables = const [],
     Set<ResultSet>? updates,
     UpdateKind? updateKind,
-  }) {
-    return _customWrite(query, variables, updates, updateKind,
-        (executor, sql, vars) async {
-      final rows = await executor.runSelect(sql, vars);
-      return [for (final row in rows) QueryRow(row, attachedDatabase)];
-    });
+  }) async {
+    final result = await _customWrite(query, variables, updates, updateKind);
+    return [
+      for (final row in result.resultSet!) CustomRow(row, this),
+    ];
   }
 
   /// Common logic for [customUpdate] and [customInsert] which takes care of
@@ -384,13 +417,17 @@ abstract base class DatabaseConnectionUser {
     UpdateKind? updateKind,
   ) async {
     final session = await currentSession();
-    final result =
-        await session.execute(StatementInfo.fromText(query, variables: [
-      for (final variable in variables) variable.resolveValue(dialect),
-    ]));
+    final result = await session.execute(
+      StatementInfo.fromText(
+        query,
+        variables: [
+          for (final variable in variables) variable.resolveValue(dialect),
+        ],
+      ),
+    );
 
     if (updates != null) {
-      engine.notifyUpdates({
+      notifyUpdates({
         for (final table in updates)
           TableUpdate(table.entityName, kind: updateKind),
       });
@@ -398,12 +435,28 @@ abstract base class DatabaseConnectionUser {
 
     return result;
   }
+
+  /// Used by generated code to expand array variables.
+  String $expandVar(int start, int amount) {
+    final compiler = dialect.createCompiler();
+
+    for (var x = 0; x < amount; x++) {
+      compiler.addPositionalVariable(start + x);
+
+      if (x != amount - 1) {
+        compiler.statement.comma();
+      }
+    }
+
+    return compiler.statement.buffer.toString();
+  }
 }
 
 final class _ScopedDatabaseSession {
   final DriftSession _session;
+  final StreamQueryStore _streamQueries;
 
-  _ScopedDatabaseSession(this._session);
+  _ScopedDatabaseSession(this._session, this._streamQueries);
 }
 
 extension on DriftTransactionSession {
@@ -420,10 +473,11 @@ extension on DriftTransactionSession {
 /// Methods available internally but not exposed as part of drift's public API.
 @internal
 extension InternalConnectionUser on DatabaseConnectionUser {
-  @protected
-  Future<T> runConnectionZoned<T>(
-      DriftSession session, Future<T> Function() calculation) {
-    final wrapped = _ScopedDatabaseSession(session);
+  Future<T> runConnectionZoned<T>(DriftSession session,
+      StreamQueryStore streamQueries, Future<T> Function() calculation) {
+    final wrapped = _ScopedDatabaseSession(session, streamQueries);
     return runZoned(calculation, zoneValues: {_zoneRootUserKey: wrapped});
   }
+
+  StreamQueryStore currentStreamQueryStore() => _currentStreamQueryStore();
 }

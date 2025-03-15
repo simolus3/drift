@@ -20,7 +20,7 @@ class GeopolyTest extends Table
     ..owningResultSet = this;
   late final TableColumn<DriftAny> a = TableColumn<DriftAny>(
       name: 'a',
-      type: SqliteDialect,
+      type: SqliteDialect.anyType(),
       isNullable: true,
       requiredDuringInsert: false,
       constraints: [ColumnConstraint.customSql('')])
@@ -41,7 +41,7 @@ class GeopolyTest extends Table
     return (DriftRow row) {
       return GeopolyTestData(
         shape: row.readWithType(positions[0], const GeopolyPolygonType()),
-        a: row.readWithType(positions[1], SqliteDialect),
+        a: row.readWithType(positions[1], SqliteDialect.anyType()),
       );
     };
   }
@@ -70,7 +70,7 @@ class GeopolyTestData extends LegacyDataClass
           Variable<GeopolyPolygon>(shape, (_) => const GeopolyPolygonType());
     }
     if (!nullToAbsent || a != null) {
-      map['a'] = Variable<DriftAny>(a, (_) => SqliteDialect);
+      map['a'] = Variable<DriftAny>(a, (_) => SqliteDialect.anyType());
     }
     return map;
   }
@@ -181,7 +181,7 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
           shape.value, (_) => const GeopolyPolygonType());
     }
     if (a.present) {
-      map['a'] = Variable<DriftAny>(a.value, (_) => SqliteDialect);
+      map['a'] = Variable<DriftAny>(a.value, (_) => SqliteDialect.anyType());
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);

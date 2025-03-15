@@ -37,16 +37,11 @@ final class Trigger extends DatabaseSchemaEntity {
 
   /// A function responsible for writing the `CREATE TRIGGER` definition given
   /// a [StatementCompiler].
-  final void Function(StatementCompiler) generateDefinition;
+  final CustomComponent definition;
 
   /// Creates a trigger from its name and the (possibly dialect-specific)
   /// definition generator.
-  Trigger(this.entityName, this.generateDefinition);
-
-  /// Creates a trigger backed by an [sql] string that's not dialect-specific.
-  Trigger.simpleSql(this.entityName, String sql)
-      : generateDefinition =
-            ((compiler) => compiler.statement.buffer.write(sql));
+  Trigger(this.entityName, this.definition);
 }
 
 /// Represents a `CREATE TRIGGER` statement in SQL.
@@ -67,16 +62,11 @@ final class Index extends DatabaseSchemaEntity {
 
   /// A function responsible for writing the `CREATE INDEX` definition given
   /// a [StatementCompiler].
-  final void Function(StatementCompiler) generateDefinition;
+  final CustomComponent definition;
 
   /// Creates a trigger from its name and the (possibly dialect-specific)
   /// definition generator.
-  Index(this.entityName, this.generateDefinition);
-
-  /// Creates an index backed by an [sql] string that's not dialect-specific.
-  Index.simpleSql(this.entityName, String sql)
-      : generateDefinition =
-            ((compiler) => compiler.statement.buffer.write(sql));
+  Index(this.entityName, this.definition);
 }
 
 /// Represents a `CREATE INDEX` statement in SQL.

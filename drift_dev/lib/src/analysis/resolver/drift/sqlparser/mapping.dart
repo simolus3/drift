@@ -138,8 +138,12 @@ class TypeMapping {
         return ColumnType.drift(BuiltinDriftType.byteArray);
       case BasicType.any:
         return ColumnType.custom(CustomColumnType(
-          AnnotatedDartCode.build((b) => b.addSymbol(
-              'SqliteDialect', Uri.parse('package:drift/dialect/sqlite.dart'))),
+          AnnotatedDartCode.build((b) {
+            b
+              ..addSymbol('SqliteDialect',
+                  Uri.parse('package:drift/dialect/sqlite.dart'))
+              ..addText('.anyType()');
+          }),
           knownTypes!.driftAny.thisType,
         ));
     }
