@@ -1,5 +1,6 @@
 import 'package:drift/src/dsl/table.dart';
 
+import '../../runtime/type_converter.dart';
 import '../compiler.dart';
 import '../statements/statement.dart';
 import 'column.dart';
@@ -45,6 +46,39 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
     this.constraints = const [],
     this.clientDefault,
   });
+
+  /// Applies a type converter to this column.
+  ///
+  /// This is mainly used by the generator.
+  TableColumnWithTypeConverter<D, T> withConverter<D>(
+      TypeConverter<D, T?> converter) {
+    return TableColumnWithTypeConverter._(
+      base: this,
+      converter: converter,
+    );
+  }
+}
+
+/// A [TableColumn] that has a [TypeConverter] attached to it.
+///
+/// This provides methods like [SchemaColumnWithTypeConverter.equalsValue],
+/// which can be used to apply the type converter when building comparisons.
+final class TableColumnWithTypeConverter<D, S extends Object>
+    extends TableColumn<S> with SchemaColumnWithTypeConverter<D, S> {
+  @override
+  final TypeConverter<D, S?> converter;
+
+  TableColumnWithTypeConverter._({
+    required this.converter,
+    required TableColumn<S> base,
+  }) : super(
+          name: base.name,
+          type: base.type,
+          isNullable: base.isNullable,
+          requiredDuringInsert: base.requiredDuringInsert,
+          constraints: base.constraints,
+          clientDefault: base.clientDefault,
+        );
 }
 
 /// Represents a `CREATE TABLE` statement in SQL.

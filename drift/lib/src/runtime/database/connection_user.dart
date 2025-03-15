@@ -9,6 +9,7 @@ import '../../query_builder/dialect.dart';
 import '../../query_builder/statements/statement.dart';
 import '../exceptions.dart';
 import '../selectable.dart';
+import '../streams/update_rules.dart';
 import 'custom_select.dart';
 import 'db_base.dart';
 
@@ -284,7 +285,17 @@ abstract base class DatabaseConnectionUser {
   Selectable<CustomRow> customSelect(String query,
       {List<Variable> variables = const [],
       Set<ResultSet> readsFrom = const {}}) {
-    return CustomSelectStatement(query, variables, readsFrom, this);
+    return CustomSelectStatement.unmapped(query, variables, readsFrom, this);
+  }
+
+  Selectable<T> customSelectMapped<T>({
+    required String query,
+    required T Function(DriftRow) Function(DriftResultSet) createMapper,
+    List<Variable> variables = const [],
+    Set<ResultSet> readsFrom = const {},
+  }) {
+    return CustomSelectStatement(
+        query, variables, readsFrom, createMapper, this);
   }
 
   /// Executes the custom sql [statement] on the database.
@@ -297,6 +308,95 @@ abstract base class DatabaseConnectionUser {
     final session = await currentSession();
     await session.execute(
         StatementInfo.fromText(statement, variables: args ?? const []));
+  }
+
+  /// Executes a custom delete or update statement and returns the amount of
+  /// rows that have been changed.
+  /// You can use the [updates] parameter so that drift knows which tables are
+  /// affected by your query. All select streams that depend on a table
+  /// specified there will then update their data. For more accurate results,
+  /// you can also set the [updateKind] parameter to [UpdateKind.delete] or
+  /// [UpdateKind.update]. This is optional, but can improve the accuracy of
+  /// query updates, especially when using triggers.
+  Future<int> customUpdate(
+    String query, {
+    List<Variable> variables = const [],
+    Set<ResultSet>? updates,
+    UpdateKind? updateKind,
+  }) async {
+    return _customWrite(
+      query,
+      variables,
+      updates,
+      updateKind,
+      (executor, sql, vars) {
+        return executor.runUpdate(sql, vars);
+      },
+    );
+  }
+
+  /// Executes a custom insert statement and returns the last inserted rowid.
+  ///
+  /// You can tell drift which tables your query is going to affect by using the
+  /// [updates] parameter. Query-streams running on any of these tables will
+  /// then be re-run.
+  Future<int> customInsert(String query,
+      {List<Variable> variables = const [], Set<ResultSet>? updates}) {
+    return _customWrite(
+      query,
+      variables,
+      updates,
+      UpdateKind.insert,
+      (executor, sql, vars) {
+        return executor.runInsert(sql, vars);
+      },
+    );
+  }
+
+  /// Runs a `INSERT`, `UPDATE` or `DELETE` statement returning rows.
+  ///
+  /// You can use the [updates] parameter so that drift knows which tables are
+  /// affected by your query. All select streams that depend on a table
+  /// specified there will then update their data. For more accurate results,
+  /// you can also set the [updateKind] parameter.
+  /// This is optional, but can improve the accuracy of query updates,
+  /// especially when using triggers.
+  Future<List<QueryRow>> customWriteReturning(
+    String query, {
+    List<Variable> variables = const [],
+    Set<ResultSet>? updates,
+    UpdateKind? updateKind,
+  }) {
+    return _customWrite(query, variables, updates, updateKind,
+        (executor, sql, vars) async {
+      final rows = await executor.runSelect(sql, vars);
+      return [for (final row in rows) QueryRow(row, attachedDatabase)];
+    });
+  }
+
+  /// Common logic for [customUpdate] and [customInsert] which takes care of
+  /// mapping the variables, running the query and optionally informing the
+  /// stream-queries.
+  Future<QueryResult> _customWrite(
+    String query,
+    List<Variable> variables,
+    Set<ResultSet>? updates,
+    UpdateKind? updateKind,
+  ) async {
+    final session = await currentSession();
+    final result =
+        await session.execute(StatementInfo.fromText(query, variables: [
+      for (final variable in variables) variable.resolveValue(dialect),
+    ]));
+
+    if (updates != null) {
+      engine.notifyUpdates({
+        for (final table in updates)
+          TableUpdate(table.entityName, kind: updateKind),
+      });
+    }
+
+    return result;
   }
 }
 

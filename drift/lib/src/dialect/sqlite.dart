@@ -42,7 +42,7 @@ final class SqliteOptions {
 final class SqliteDialect extends DriftDialect {
   final SqliteOptions options;
 
-  SqliteDialect({this.options = const SqliteOptions()});
+  const SqliteDialect({this.options = const SqliteOptions()});
 
   @override
   KnownSqlDialect? get known => KnownSqlDialect.sqlite;
@@ -105,11 +105,6 @@ final class _SqliteCompiler extends StatementCompiler {
         ..write(' ')
         ..write(options);
     }
-  }
-
-  @override
-  void addCustom(CustomComponent component) {
-    throw 'todo: addCustom';
   }
 }
 

@@ -1,11 +1,14 @@
+import 'dart:typed_data';
+
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:mockito/annotations.dart';
 import 'package:uuid/uuid.dart';
 
 // Generate mocks for drift
-@GenerateNiceMocks([MockSpec<TodoDb>()])
+//@GenerateNiceMocks([MockSpec<TodoDb>()])
 // ignore: unused_import
-import 'todos.mocks.dart';
+//import 'todos.mocks.dart';
 
 part 'todos.g.dart';
 
@@ -14,7 +17,7 @@ extension type RowId._(int id) {
 }
 
 mixin AutoIncrement on Table {
-  late final id =
+  IntColumn get id =>
       integer().autoIncrement().map(TypeConverter.extensionType<RowId, int>());
 }
 
@@ -23,16 +26,16 @@ class TodosTable extends Table with AutoIncrement {
   @override
   String get tableName => 'todos';
 
-  late final title = text().withLength(min: 4, max: 16).nullable();
-  late final content = text();
-  late final targetDate = dateTime().nullable().unique();
+  TextColumn get title => text().withLength(min: 4, max: 16).nullable();
+  TextColumn get content => text();
+  DateTimeColumn get targetDate => dateTime().nullable().unique();
   @ReferenceName("todos")
-  late final category = integer()
+  IntColumn get category => integer()
       .references(Categories, #id, initiallyDeferred: true)
       .map(TypeConverter.extensionType<RowId, int>())
       .nullable();
 
-  late final status = textEnum<TodoStatus>().nullable();
+  TextColumn get status => textEnum<TodoStatus>().nullable();
 
   @override
   List<Set<Column>>? get uniqueKeys => [
@@ -44,31 +47,35 @@ class TodosTable extends Table with AutoIncrement {
 enum TodoStatus { open, workInProgress, done }
 
 class Users extends Table with AutoIncrement {
-  late final name = text().withLength(min: 6, max: 32).unique();
-  late final isAwesome = boolean().withDefault(const Literal(true));
+  TextColumn get name => text().withLength(min: 6, max: 32).unique();
+  BoolColumn get isAwesome => boolean().withDefault(const Literal(true));
 
-  late final profilePicture = blob();
+  BlobColumn get profilePicture => blob();
+
+  /*
   late final DateTimeColumn creationTime = dateTime()
       // ignore: recursive_getters
       .check(creationTime.isBiggerThan(Constant(DateTime.utc(1950))))
       .withDefault(currentDateAndTime);
+      */
 }
 
 @DataClassName('Category')
 class Categories extends Table with AutoIncrement {
-  late final description =
+  TextColumn get description =>
       text().named('desc').customConstraint('NOT NULL UNIQUE');
-  late final priority =
+  IntColumn get priority =>
       intEnum<CategoryPriority>().withDefault(const Literal(0));
 
-  late final descriptionInUpperCase = text().generatedAs(description.upper());
+  TextColumn get descriptionInUpperCase =>
+      text().generatedAs(description.upper());
 }
 
 enum CategoryPriority { low, medium, high }
 
 class SharedTodos extends Table {
-  late final todo = integer();
-  late final user = integer();
+  IntColumn get todo => integer();
+  IntColumn get user => integer();
 
   @override
   Set<Column> get primaryKey => {todo, user};
@@ -297,16 +304,13 @@ final class UuidType implements SqlType<UuidValue> {
     'findCustom': 'SELECT custom FROM table_without_p_k WHERE some_float < 10',
   },
 )
-class TodoDb extends _$TodoDb {
-  TodoDb([QueryExecutor? e]) : super(e ?? _nullExecutor) {
+final class TodoDb extends _$TodoDb {
+  TodoDb([DriftDatabaseImplementation? e]) : super(e ?? _nullExecutor()) {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
 
   @override
   MigrationStrategy migration = MigrationStrategy();
-
-  @override
-  DriftDatabaseOptions options = const DriftDatabaseOptions();
 
   @override
   int schemaVersion = 1;
@@ -327,7 +331,11 @@ class TodoDb extends _$TodoDb {
 class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
   SomeDao(super.db);
 }
-
-QueryExecutor get _nullExecutor =>
-    LazyDatabase(() => throw UnsupportedError('stub'));
 */
+
+DriftDatabaseImplementation _nullExecutor([DriftDialect? dialect]) {
+  return DriftDatabaseImplementation(
+    dialect: dialect ?? const SqliteDialect(),
+    openConnection: () async => throw UnimplementedError('_nullExecutor'),
+  );
+}

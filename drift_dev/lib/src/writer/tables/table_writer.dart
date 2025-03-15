@@ -76,13 +76,13 @@ abstract class TableOrViewWriter {
   }
 
   void writeMappingMethod(Scope scope) {
-    final driftResultSet = emitter.drift('DriftResultSet');
+    final columnPosition = emitter.drift('ColumnPosition');
     final driftRow = emitter.drift('DriftRow');
 
     if (!scope.generationOptions.writeDataClasses) {
       buffer.writeln('''
         @override
-        Never createMapperToDart($driftResultSet resultSet) {
+        Never createMapperFromPositions(List<$columnPosition> positions) {
           throw UnsupportedError('Mapping to Dart in schema verification code');
         }
       ''');
@@ -93,9 +93,8 @@ abstract class TableOrViewWriter {
 
     buffer
       ..writeln('@override')
-      ..write('$dataClassType? Function($driftRow) createMapperToDart(')
-      ..writeln('$driftResultSet resultSet) {')
-      ..writeln('final columnPositions = resultSet.structure.tables[this]!;')
+      ..write('$dataClassType? Function($driftRow) createMapperFromPositions(')
+      ..writeln('List<$columnPosition> positions) {')
       ..writeln('return ($driftRow row) {');
 
     // We need to check whether this table is present in the row at all (it may
@@ -106,7 +105,7 @@ abstract class TableOrViewWriter {
       buffer
         ..writeln(
             ' // Not part of row if non-nullable column "${column.nameInDart}" is missing')
-        ..writeln('if (row.raw.rawValue(columnPositions[$index]) == null) {')
+        ..writeln('if (row.raw.rawValue(positions[$index]) == null) {')
         ..writeln('return null;')
         ..writeln('}');
     }
@@ -200,17 +199,18 @@ abstract class TableOrViewWriter {
       namedParameters['requiredDuringInsert'] = isRequiredForInsert.toString();
     }
 
+    if (column.defaultArgument case final columnDefault?) {
+      constraints.add(
+          '${emitter.drift('ColumnDefaultConstraint')}(${emitter.dartCode(columnDefault)})');
+    }
+
     if (column.customConstraints != null) {
-      namedParameters['\$customConstraints'] =
-          asDartLiteral(column.customConstraints!);
+      namedParameters['constraints'] =
+          '[${emitter.drift('ColumnConstraint.customSql')}'
+          '(${asDartLiteral(column.customConstraints!)})]';
     } else if (constraints.isNotEmpty) {
       // Use the default constraints supported by drift
       namedParameters['constraints'] = '[${constraints.join(', ')}]';
-    }
-
-    if (column.defaultArgument != null) {
-      namedParameters['defaultValue'] =
-          emitter.dartCode(column.defaultArgument!);
     }
 
     if (column.clientDefaultCode != null &&
@@ -220,8 +220,9 @@ abstract class TableOrViewWriter {
     }
 
     final innerType = emitter.innerColumnType(column.sqlType);
+    var baseColumnImpl = isForTable ? 'TableColumn' : 'ViewColumn';
     var type =
-        '${emitter.drift(isForTable ? 'TableColumn' : 'ViewColumn')}<${emitter.dartCode(innerType)}>';
+        '${emitter.drift(baseColumnImpl)}<${emitter.dartCode(innerType)}>';
 
     expressionBuffer
       ..write(type)
@@ -245,14 +246,14 @@ abstract class TableOrViewWriter {
 
     final converter = column.typeConverter;
     if (converter != null && !emitter.writer.generationOptions.avoidUserCode) {
-      // Generate a GeneratedColumnWithTypeConverter instance, as it has
+      // Generate a TableColumnWithTypeConverter instance, as it has
       // additional methods to check for equality against a mapped value.
       final mappedType = emitter.dartCode(emitter.writer.dartType(column));
 
       final converterCode = emitter.dartCode(emitter.writer
           .readConverter(converter, forNullable: column.nullable));
 
-      type = '${emitter.drift('GeneratedColumnWithTypeConverter')}'
+      type = '${emitter.drift('${baseColumnImpl}WithTypeConverter')}'
           '<$mappedType, ${emitter.dartCode(innerType)}>';
       expressionBuffer
         ..write('.withConverter<')
@@ -441,7 +442,7 @@ class TableWriter extends TableOrViewWriter {
       return;
     }
 
-    buffer.write('@override\nList<Set<${emitter.drift('GeneratedColumn')}>> '
+    buffer.write('@override\nList<Set<${emitter.drift('TableColumn')}>> '
         'get uniqueKeys => [');
 
     for (final uniqueKey in uniqueKeys) {

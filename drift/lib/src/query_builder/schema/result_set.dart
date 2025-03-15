@@ -1,3 +1,4 @@
+import '../../connections/result_set.dart';
 import '../../dsl/table.dart';
 import '../results.dart';
 import 'column.dart';
@@ -15,7 +16,12 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     for (final column in columns) column.name: column,
   };
 
-  Row? Function(DriftRow) createMapperToDart(DriftResultSet resultSet);
+  Row? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
+    return createMapperFromPositions(resultSet.structure.tables[this]!);
+  }
+
+  Row? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions);
 
   Row? mapToDart(DriftRow row) {
     return createMapperToDart(row.resultSet)(row);

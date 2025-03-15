@@ -11,6 +11,7 @@ import 'package:sqlparser/sqlparser.dart';
 class ExplicitAliasTransformer extends Transformer<bool> {
   int _aliasCounter = 0;
   final Map<Expression, String> _renamed = {};
+  final Map<Column, String> _renamedFromStar = {};
 
   /// Rewrites an SQL [node] to use explicit aliases for columns.
   AstNode rewrite(AstNode node) {
@@ -24,6 +25,10 @@ class ExplicitAliasTransformer extends Transformer<bool> {
       // In compound select statement, the first column determines the overall
       // name
       column = column.columns.first;
+    }
+
+    if (_renamedFromStar[column] case final fromStar?) {
+      return fromStar;
     }
 
     if (column is ExpressionColumn) {
@@ -66,6 +71,42 @@ class ExplicitAliasTransformer extends Transformer<bool> {
     } else {
       return super.visitExpressionResultColumn(e, arg);
     }
+  }
+
+  @override
+  AstNode? visitSelectStatement(SelectStatement e, bool arg) {
+    if (arg) {
+      final newColumns = <ResultColumn>[];
+
+      for (final column in e.columns) {
+        if (column is StarResultColumn) {
+          // Expand star columns to ensure the indices we've computed for
+          // columns are accurate.
+          if (column.resolvedColumns case final resolved?) {
+            for (final expandedColumn in resolved) {
+              final name = '_c${_aliasCounter++}';
+              _renamedFromStar[expandedColumn] = name;
+
+              newColumns.add(ExpressionResultColumn(
+                expression: Reference(
+                  columnName: expandedColumn.name,
+                  entityName: column.tableName,
+                ),
+                as: name,
+              ));
+            }
+          } else {
+            newColumns.add(column);
+          }
+        } else {
+          newColumns.add(transform(column, arg) as ResultColumn);
+        }
+      }
+
+      e.columns = newColumns;
+    }
+
+    return super.visitSelectStatement(e, arg);
   }
 
   @override

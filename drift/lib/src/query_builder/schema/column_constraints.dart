@@ -6,6 +6,10 @@ abstract base class ColumnConstraint implements SqlComponent {
 
   const factory ColumnConstraint.custom(CustomComponent custom) =
       _CustomColumnConstraint;
+
+  factory ColumnConstraint.customSql(String sql) {
+    return ColumnConstraint.custom(CustomComponent(sql));
+  }
 }
 
 final class ColumnPrimaryKeyConstraint extends ColumnConstraint {
@@ -17,6 +21,20 @@ final class ColumnPrimaryKeyConstraint extends ColumnConstraint {
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addColumnPrimaryKeyConstraint(this);
+  }
+}
+
+/// A `DEFAULT` constraint in SQL.
+final class ColumnDefaultConstraint extends ColumnConstraint {
+  /// The default expression to use for the column when no value is given for
+  /// inserts.
+  final Expression defaultExpression;
+
+  const ColumnDefaultConstraint(this.defaultExpression) : super._();
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addColumnDefaultConstraint(this);
   }
 }
 

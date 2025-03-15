@@ -27,7 +27,3 @@ export 'src/runtime/types/converters.dart';
 export 'src/runtime/types/mapping.dart' hide BaseSqlType, UserDefinedSqlType;
 export 'src/runtime/manager/manager.dart';
 export 'src/utils/lazy_database.dart';
-
-/// A [ListEquality] instance used by generated drift code for the `==` and
-/// [Object.hashCode] implementation of generated classes if they contain lists.
-const ListEquality $driftBlobEquality = ListEquality();

@@ -35,17 +35,16 @@ class $_SomeTableTable extends _SomeTable
   @override
   Set<TableColumn> get primaryKey => {id};
   @override
-  _SomeTableData? Function(DriftRow) createMapperToDart(
-      DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  _SomeTableData? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       // Not part of row if non-nullable column "id" is missing
-      if (row.raw.rawValue(columnPositions[0]) == null) {
+      if (row.raw.rawValue(positions[0]) == null) {
         return null;
       }
       return _SomeTableData(
-        id: row.readWithType(columnPositions[0], BuiltinDriftType.int)!,
-        name: row.readWithType(columnPositions[1], BuiltinDriftType.text),
+        id: row.readWithType(positions[0], BuiltinDriftType.int)!,
+        name: row.readWithType(positions[1], BuiltinDriftType.text),
       );
     };
   }
@@ -184,136 +183,7 @@ class _SomeTableCompanion extends UpdateCompanion<_SomeTableData> {
 
 abstract base class _$_SomeDb extends GeneratedDatabase {
   _$_SomeDb(super.implementation);
-  $_SomeDbManager get managers => $_SomeDbManager(this);
   late final $_SomeTableTable someTable = $_SomeTableTable();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [someTable];
-}
-
-typedef $$_SomeTableTableCreateCompanionBuilder = _SomeTableCompanion Function({
-  Value<int> id,
-  Value<String?> name,
-});
-typedef $$_SomeTableTableUpdateCompanionBuilder = _SomeTableCompanion Function({
-  Value<int> id,
-  Value<String?> name,
-});
-
-class $$_SomeTableTableFilterComposer
-    extends Composer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
-}
-
-class $$_SomeTableTableOrderingComposer
-    extends Composer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
-}
-
-class $$_SomeTableTableAnnotationComposer
-    extends Composer<_$_SomeDb, $_SomeTableTable> {
-  $$_SomeTableTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-}
-
-class $$_SomeTableTableTableManager extends RootTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableAnnotationComposer,
-    $$_SomeTableTableCreateCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder,
-    (
-      _SomeTableData,
-      BaseReferences<_$_SomeDb, $_SomeTableTable, _SomeTableData>
-    ),
-    _SomeTableData,
-    PrefetchHooks Function()> {
-  $$_SomeTableTableTableManager(_$_SomeDb db, $_SomeTableTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$_SomeTableTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$_SomeTableTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$_SomeTableTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              _SomeTableCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String?> name = const Value.absent(),
-          }) =>
-              _SomeTableCompanion.insert(
-            id: id,
-            name: name,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$_SomeTableTableProcessedTableManager = ProcessedTableManager<
-    _$_SomeDb,
-    $_SomeTableTable,
-    _SomeTableData,
-    $$_SomeTableTableFilterComposer,
-    $$_SomeTableTableOrderingComposer,
-    $$_SomeTableTableAnnotationComposer,
-    $$_SomeTableTableCreateCompanionBuilder,
-    $$_SomeTableTableUpdateCompanionBuilder,
-    (
-      _SomeTableData,
-      BaseReferences<_$_SomeDb, $_SomeTableTable, _SomeTableData>
-    ),
-    _SomeTableData,
-    PrefetchHooks Function()>;
-
-class $_SomeDbManager {
-  final _$_SomeDb _db;
-  $_SomeDbManager(this._db);
-  $$_SomeTableTableTableManager get someTable =>
-      $$_SomeTableTableTableManager(_db, _db.someTable);
 }

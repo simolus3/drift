@@ -27,6 +27,7 @@ targets:
           raw_result_set_data: true
           named_parameters: true
           fatal_warnings: true
+          generate_manager: false # not yet ported
           dialects:
             sqlite:
               version: "3.37"
@@ -50,6 +51,7 @@ targets:
           write_from_json_string_constructor: true
           raw_result_set_data: true
           named_parameters: true
+          generate_manager: false # not yet ported
           dialects:
             sqlite:
               version: "3.37"

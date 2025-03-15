@@ -1,26 +1,26 @@
 import 'package:drift/drift.dart';
 
-class CustomTextType implements CustomSqlType<String> {
+class CustomTextType implements SqlType<String> {
   const CustomTextType();
 
   @override
-  String mapToSqlLiteral(String dartValue) {
-    final escapedChars = dartValue.replaceAll('\'', '\'\'');
+  String sqlLiteral(DriftDialect dialect, String value) {
+    final escapedChars = value.replaceAll('\'', '\'\'');
     return "'$escapedChars'";
   }
 
   @override
-  Object mapToSqlParameter(String dartValue) {
-    return dartValue;
+  Object sqlParameter(DriftDialect dialect, String value) {
+    return value;
   }
 
   @override
-  String read(Object fromSql) {
-    return fromSql.toString();
+  String dartValue(DriftDialect dialect, Object databaseValue) {
+    return databaseValue.toString();
   }
 
   @override
-  String sqlTypeName(GenerationContext context) {
+  String typeName(DriftDialect dialect) {
     // Still has text column affinity, but can be used to verify that the type
     // really is used.
     return 'MY_TEXT';

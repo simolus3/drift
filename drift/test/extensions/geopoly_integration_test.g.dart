@@ -16,14 +16,14 @@ class GeopolyTest extends Table
       type: const GeopolyPolygonType(),
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<DriftAny> a = TableColumn<DriftAny>(
       name: 'a',
       type: SqliteDialect,
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [shape, a];
@@ -36,13 +36,12 @@ class GeopolyTest extends Table
   @override
   Set<TableColumn> get primaryKey => const {};
   @override
-  GeopolyTestData? Function(DriftRow) createMapperToDart(
-      DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  GeopolyTestData? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       return GeopolyTestData(
-        shape: row.readWithType(columnPositions[0], const GeopolyPolygonType()),
-        a: row.readWithType(columnPositions[1], SqliteDialect),
+        shape: row.readWithType(positions[0], const GeopolyPolygonType()),
+        a: row.readWithType(positions[1], SqliteDialect),
       );
     };
   }
@@ -68,10 +67,10 @@ class GeopolyTestData extends LegacyDataClass
     final map = <String, Expression>{};
     if (!nullToAbsent || shape != null) {
       map['_shape'] =
-          Variable<GeopolyPolygon>(shape, const GeopolyPolygonType());
+          Variable<GeopolyPolygon>(shape, (_) => const GeopolyPolygonType());
     }
     if (!nullToAbsent || a != null) {
-      map['a'] = Variable<DriftAny>(a, SqliteDialect);
+      map['a'] = Variable<DriftAny>(a, (_) => SqliteDialect);
     }
     return map;
   }
@@ -178,11 +177,11 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (shape.present) {
-      map['_shape'] =
-          Variable<GeopolyPolygon>(shape.value, const GeopolyPolygonType());
+      map['_shape'] = Variable<GeopolyPolygon>(
+          shape.value, (_) => const GeopolyPolygonType());
     }
     if (a.present) {
-      map['a'] = Variable<DriftAny>(a.value, SqliteDialect);
+      map['a'] = Variable<DriftAny>(a.value, (_) => SqliteDialect);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -203,154 +202,23 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
 
 abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
   _$_GeopolyTestDatabase(super.implementation);
-  $_GeopolyTestDatabaseManager get managers =>
-      $_GeopolyTestDatabaseManager(this);
   late final GeopolyTest geopolyTest = GeopolyTest();
   Selectable<double?> area(int var1) {
-    return customSelect(
-        'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = ?1',
-        variables: [
-          Variable<int>(var1)
-        ],
+    return customSelectMapped<double?>(
+        query:
+            'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = ?1',
+        variables: [Variable<int>(var1)],
         readsFrom: {
           geopolyTest,
-        }).map((QueryRow row) => row.readNullable<double>('_c0'));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$double = dialect.doubleType;
+
+          return (DriftRow row) =>
+              row.readWithType(const (index: 0, name: '_c0'), type$double);
+        });
   }
 
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [geopolyTest];
-}
-
-typedef $GeopolyTestCreateCompanionBuilder = GeopolyTestCompanion Function({
-  Value<GeopolyPolygon?> shape,
-  Value<DriftAny?> a,
-  Value<int> rowid,
-});
-typedef $GeopolyTestUpdateCompanionBuilder = GeopolyTestCompanion Function({
-  Value<GeopolyPolygon?> shape,
-  Value<DriftAny?> a,
-  Value<int> rowid,
-});
-
-class $GeopolyTestFilterComposer
-    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<GeopolyPolygon> get shape => $composableBuilder(
-      column: $table.shape, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DriftAny> get a => $composableBuilder(
-      column: $table.a, builder: (column) => ColumnFilters(column));
-}
-
-class $GeopolyTestOrderingComposer
-    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<GeopolyPolygon> get shape => $composableBuilder(
-      column: $table.shape, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DriftAny> get a => $composableBuilder(
-      column: $table.a, builder: (column) => ColumnOrderings(column));
-}
-
-class $GeopolyTestAnnotationComposer
-    extends Composer<_$_GeopolyTestDatabase, GeopolyTest> {
-  $GeopolyTestAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<GeopolyPolygon> get shape =>
-      $composableBuilder(column: $table.shape, builder: (column) => column);
-
-  GeneratedColumn<DriftAny> get a =>
-      $composableBuilder(column: $table.a, builder: (column) => column);
-}
-
-class $GeopolyTestTableManager extends RootTableManager<
-    _$_GeopolyTestDatabase,
-    GeopolyTest,
-    GeopolyTestData,
-    $GeopolyTestFilterComposer,
-    $GeopolyTestOrderingComposer,
-    $GeopolyTestAnnotationComposer,
-    $GeopolyTestCreateCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder,
-    (
-      GeopolyTestData,
-      BaseReferences<_$_GeopolyTestDatabase, GeopolyTest, GeopolyTestData>
-    ),
-    GeopolyTestData,
-    PrefetchHooks Function()> {
-  $GeopolyTestTableManager(_$_GeopolyTestDatabase db, GeopolyTest table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $GeopolyTestFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $GeopolyTestOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $GeopolyTestAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<GeopolyPolygon?> shape = const Value.absent(),
-            Value<DriftAny?> a = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              GeopolyTestCompanion(
-            shape: shape,
-            a: a,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            Value<GeopolyPolygon?> shape = const Value.absent(),
-            Value<DriftAny?> a = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              GeopolyTestCompanion.insert(
-            shape: shape,
-            a: a,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $GeopolyTestProcessedTableManager = ProcessedTableManager<
-    _$_GeopolyTestDatabase,
-    GeopolyTest,
-    GeopolyTestData,
-    $GeopolyTestFilterComposer,
-    $GeopolyTestOrderingComposer,
-    $GeopolyTestAnnotationComposer,
-    $GeopolyTestCreateCompanionBuilder,
-    $GeopolyTestUpdateCompanionBuilder,
-    (
-      GeopolyTestData,
-      BaseReferences<_$_GeopolyTestDatabase, GeopolyTest, GeopolyTestData>
-    ),
-    GeopolyTestData,
-    PrefetchHooks Function()>;
-
-class $_GeopolyTestDatabaseManager {
-  final _$_GeopolyTestDatabase _db;
-  $_GeopolyTestDatabaseManager(this._db);
-  $GeopolyTestTableManager get geopolyTest =>
-      $GeopolyTestTableManager(_db, _db.geopolyTest);
 }

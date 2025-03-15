@@ -48,6 +48,15 @@ abstract mixin class DialectSpecificComponent implements SqlComponent {
 }
 
 final class CustomComponent implements SqlComponent {
+  final String fallbackSql;
+  final Map<KnownSqlDialect, String> dialectSpecifcSql;
+
+  const CustomComponent(this.fallbackSql, {this.dialectSpecifcSql = const {}});
+
+  String sqlFor(KnownSqlDialect? dialect) {
+    return dialectSpecifcSql[dialect] ?? fallbackSql;
+  }
+
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addCustom(this);
@@ -129,8 +138,7 @@ abstract base class StatementCompiler {
     if (statement._variableIndexes[variable] case final index?) {
       addPositionalVariable(index);
     } else {
-      final type = variable.resolveType(dialect);
-      statement.variables.add((type, variable.value));
+      statement.variables.add(variable.resolveValue(dialect));
       final sqlIndex = statement.variables.length;
       statement._variableIndexes[variable] = sqlIndex;
 
@@ -442,6 +450,11 @@ abstract base class StatementCompiler {
     }
   }
 
+  void addColumnDefaultConstraint(ColumnDefaultConstraint constraint) {
+    statement.buffer.write('DEFAULT ');
+    constraint.defaultExpression.compileWith(this);
+  }
+
   void addColumnGeneratedAs(ColumnGeneratedAs constraint) {
     statement.buffer.write('GENERATED ALWAYS AS (');
     constraint.generatedAs.compileWith(this);
@@ -474,5 +487,7 @@ abstract base class StatementCompiler {
     statement.buffer.write(')');
   }
 
-  void addCustom(CustomComponent component);
+  void addCustom(CustomComponent component) {
+    statement.buffer.write(component.sqlFor(dialect.known));
+  }
 }

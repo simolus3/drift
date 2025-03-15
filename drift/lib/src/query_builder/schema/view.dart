@@ -1,3 +1,4 @@
+import '../../runtime/type_converter.dart';
 import '../compiler.dart';
 import '../expressions/expression.dart';
 import '../statements/select.dart';
@@ -19,6 +20,37 @@ final class ViewColumn<T extends Object> extends SchemaColumn<T> {
     super.isNullable,
     required this.expression,
   });
+
+  /// Applies a type converter to this column.
+  ///
+  /// This is mainly used by the generator.
+  ViewColumnWithTypeConverter<D, T> withConverter<D>(
+      TypeConverter<D, T?> converter) {
+    return ViewColumnWithTypeConverter._(
+      base: this,
+      converter: converter,
+    );
+  }
+}
+
+/// A [Expression] that has a [TypeConverter] attached to it.
+///
+/// This provides methods like [SchemaColumnWithTypeConverter.equalsValue],
+/// which can be used to apply the type converter when building comparisons.
+final class ViewColumnWithTypeConverter<D, S extends Object>
+    extends ViewColumn<S> with SchemaColumnWithTypeConverter<D, S> {
+  @override
+  final TypeConverter<D, S?> converter;
+
+  ViewColumnWithTypeConverter._({
+    required this.converter,
+    required ViewColumn<S> base,
+  }) : super(
+          name: base.name,
+          type: base.type,
+          isNullable: base.isNullable,
+          expression: base.expression,
+        );
 }
 
 /// Represents a `CREATE VIEW` statement in SQL.

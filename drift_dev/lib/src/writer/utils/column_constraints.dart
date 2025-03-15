@@ -36,15 +36,15 @@ List<String> columnConstraints(TextEmitter emitter, DriftColumn column) {
           'otherColumnName: ${asDartLiteral(columnName)},';
 
       if (feature.onUpdate case final onUpdate?) {
-        constraint =
+        constraint +=
             'onUpdate: ${emitter.drift('ReferenceAction')}.${onUpdate.name},';
       }
       if (feature.onDelete case final onDelete?) {
-        constraint =
+        constraint +=
             'onDelete: ${emitter.drift('ReferenceAction')}.${onDelete.name},';
       }
       if (feature.initiallyDeferred) {
-        constraint = 'initiallyDeferred: true,';
+        constraint += 'initiallyDeferred: true,';
       }
 
       entries.add('$constraint)');

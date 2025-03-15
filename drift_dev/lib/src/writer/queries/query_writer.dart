@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show BuiltinDriftType;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
@@ -84,201 +85,16 @@ class QueryWriter {
 
   String _nameOfCreationMethod(SqlSelectQuery select) => select.name;
 
-  /// Writes the function literal that turns a "QueryRow" into the desired
-  /// custom return type of a query.
+  /// Writes the function literal of the type
+  /// `T Function(DriftRow) Function(DriftResultSet)`.
+  ///
+  /// Drift uses a two-stage design to map rows. The outer function receives the
+  /// result set and is responsible for loading the relevant types and possibly
+  /// resolving indices. The inner function returned by the outer one is then
+  /// responsible for mapping rows. This avoids duplicate work that can be
+  /// shared across different rows.
   void _writeMappingLambda(InferredResultSet resultSet, QueryRowType rowClass) {
-    final queryRow = _emitter.drift('QueryRow');
-    final asyncModifier = rowClass.requiresAsynchronousContext ? 'async' : '';
-
-    // We can write every available mapping as a Dart expression via
-    // _writeArgumentExpression. This can be turned into a lambda by appending
-    // it with `(QueryRow row) => $expression`. That's also what we're doing,
-    // but if we'll just call mapFromRow in there, we can just tear that method
-    // off instead. This is just an optimization.
-    final singleValue = rowClass.singleValue;
-    if (singleValue is MatchingDriftTable && singleValue.effectivelyNoAlias) {
-      // Tear-off mapFromRow method on table
-      _emitter.write('${singleValue.table.dbGetterName}.mapFromRow');
-    } else {
-      // In all other cases, we're off to write the expression.
-      _emitter.write('($queryRow row) $asyncModifier => ');
-      _writeArgumentExpression(
-          rowClass, resultSet, (sqlPrefix: null, isNullable: false));
-    }
-  }
-
-  /// Writes code that will read the [argument] for an existing row type from
-  /// the raw `QueryRow`.
-  void _writeArgumentExpression(
-    ArgumentForQueryRowType argument,
-    InferredResultSet resultSet,
-    _ArgumentContext context,
-  ) {
-    switch (argument) {
-      case RawQueryRow():
-        _buffer.write('row');
-      case ScalarResultColumn():
-        _readScalar(argument, context);
-      case MatchingDriftTable():
-        _readMatchingTable(argument, context);
-      case StructuredFromNestedColumn():
-        final prefix = resultSet.nestedPrefixFor(argument.table);
-        _writeArgumentExpression(
-          argument.nestedType,
-          resultSet,
-          (sqlPrefix: prefix, isNullable: argument.nullable),
-        );
-      case MappedNestedListQuery():
-        _buffer.write('await ');
-        final query = argument.column.query;
-        _writeCustomSelectStatement(query, argument.nestedType);
-        _buffer.write('.get()');
-      case QueryRowType():
-        final singleValue = argument.singleValue;
-        if (singleValue != null) {
-          return _writeArgumentExpression(singleValue, resultSet, context);
-        }
-
-        if (context.isNullable) {
-          // If this structed type is nullable, it's coming from an OUTER join
-          // which means that, even if the individual components making up the
-          // structure are non-nullable, they might all be null in SQL. We
-          // detect this case by looking for a non-nullable column and, if it's
-          // null, return null directly instead of creating the structured type.
-          for (final arg in argument.positionalArguments
-              .followedBy(argument.namedArguments.values)
-              .whereType<ScalarResultColumn>()) {
-            if (!arg.nullable) {
-              final keyInMap = context.applyPrefix(arg.name);
-              _buffer.write(
-                  'row.data[${asDartLiteral(keyInMap)}] == null ? null : ');
-            }
-          }
-        }
-
-        final _ArgumentContext childContext = (
-          sqlPrefix: context.sqlPrefix,
-          // Individual fields making up this query row type aren't covered by
-          // the outer nullability.
-          isNullable: false,
-        );
-
-        if (!argument.isRecord) {
-          // We're writing a constructor, so let's start with the class name.
-          _emitter.writeDart(argument.rowType);
-
-          final constructorName = argument.constructorName;
-          if (constructorName.isNotEmpty) {
-            _emitter
-              ..write('.')
-              ..write(constructorName);
-          }
-        }
-
-        _buffer.write('(');
-        for (final positional in argument.positionalArguments) {
-          _writeArgumentExpression(positional, resultSet, childContext);
-          _buffer.write(', ');
-        }
-        argument.namedArguments.forEach((name, parameter) {
-          _buffer.write('$name: ');
-          _writeArgumentExpression(parameter, resultSet, childContext);
-          _buffer.write(', ');
-        });
-
-        _buffer.write(')');
-    }
-  }
-
-  /// Writes Dart code that, given a variable of type `QueryRow` named `row`
-  /// in the same scope, reads the [column] from that row and brings it into a
-  /// suitable type.
-  void _readScalar(ScalarResultColumn column, _ArgumentContext context) {
-    final specialName = _transformer.newNameFor(column.sqlParserColumn!);
-    final isNullable = context.isNullable || column.nullable;
-
-    var name = specialName ?? column.name;
-    if (context.sqlPrefix != null) {
-      name = '${context.sqlPrefix}.$name';
-    }
-
-    final dartLiteral = asDartLiteral(name);
-
-    final rawDartType =
-        _emitter.dartCode(_emitter.innerColumnType(column.sqlType));
-    String code;
-
-    switch (column.sqlType) {
-      case ColumnDriftType():
-        final method = isNullable ? 'readNullable' : 'read';
-        code = 'row.$method<$rawDartType>($dartLiteral)';
-      case ColumnCustomType(:final custom):
-        final method = isNullable ? 'readNullableWithType' : 'readWithType';
-        final typeImpl = _emitter.dartCode(custom.expression);
-        code = 'row.$method<$rawDartType>($typeImpl, $dartLiteral)';
-    }
-
-    final converter = column.typeConverter;
-    if (converter != null) {
-      if (converter.canBeSkippedForNulls && isNullable) {
-        // The type converter maps non-nullable types, but the column may be
-        // nullable in SQL => just map null to null and only invoke the type
-        // converter for non-null values.
-        final wrapFrom = _emitter.drift('NullAwareTypeConverter.wrapFromSql');
-        code = '$wrapFrom(${readConverter(_emitter, converter)}, $code)';
-      } else {
-        // Just apply the type converter directly.
-        code = '${readConverter(_emitter, converter)}.fromSql($code)';
-      }
-    }
-
-    _emitter.write(code);
-  }
-
-  void _readMatchingTable(MatchingDriftTable match, _ArgumentContext context) {
-    // note that, even if the result set has a matching table, we can't just
-    // use the mapFromRow() function of that table - the column names might
-    // be different!
-    final table = match.table;
-
-    if (match.effectivelyNoAlias) {
-      final mappingMethod =
-          context.isNullable ? 'mapFromRowOrNull' : 'mapFromRow';
-      final sqlPrefix = context.sqlPrefix;
-
-      _emitter.write('await ${table.dbGetterName}.$mappingMethod(row');
-      if (sqlPrefix != null) {
-        _emitter.write(', tablePrefix: ${asDartLiteral(sqlPrefix)}');
-      }
-
-      _emitter.write(')');
-    } else {
-      // If the entire table can be nullable, we can check whether a non-nullable
-      // column from the table is null. If it is, the entire table is null. This
-      // can happen when the table comes from an outer join.
-      if (context.isNullable) {
-        for (final MapEntry(:key, :value) in match.aliasToColumn.entries) {
-          if (!value.nullable) {
-            final mapKey = context.applyPrefix(key);
-
-            _emitter
-                .write('row.data[${asDartLiteral(mapKey)}] == null ? null : ');
-          }
-        }
-      }
-
-      _emitter.write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
-
-      for (final alias in match.aliasToColumn.entries) {
-        _emitter
-          ..write(asDartLiteral(context.applyPrefix(alias.key)))
-          ..write(': ')
-          ..write(asDartLiteral(alias.value.nameInSql))
-          ..write(', ');
-      }
-
-      _emitter.write('})');
-    }
+    _MappingCodeWriter(this).write(_emitter, resultSet, rowClass);
   }
 
   /// Writes a method returning a `Selectable<T>`, where `T` is the return type
@@ -308,22 +124,21 @@ class QueryWriter {
 
   void _writeCustomSelectStatement(SqlSelectQuery select,
       [QueryRowType? resultType]) {
-    _buffer.write(' customSelect(${_queryCode(select)}, ');
-    _writeVariables(select);
-    _buffer.write(', ');
-    _writeReadsFrom(select);
-
     final resultSet = select.resultSet;
     resultType ??= select.queryRowType(options);
 
-    if (resultType.requiresAsynchronousContext) {
-      _buffer.write(').asyncMap(');
-    } else {
-      _buffer.write(').map(');
-    }
+    _emitter
+      ..write(' customSelectMapped<')
+      ..writeDart(resultType.rowType)
+      ..write('>(query: ${_queryCode(select)},');
 
+    _writeVariables(select);
+    _emitter.write(',');
+    _writeReadsFrom(select);
+    _emitter.write(', createMapper: ');
     _writeMappingLambda(resultSet, resultType);
-    _buffer.write(')');
+
+    _emitter.write(')');
   }
 
   void _writeUpdatingQueryWithReturning(UpdatingQuery update) {
@@ -522,8 +337,8 @@ class QueryWriter {
     } else {
       // Create a switch expression matching over the dialect of the database
       // we're connected to.
-      final buffer = StringBuffer('switch (executor.dialect) {');
-      final dialectEnum = scope.drift('SqlDialect');
+      final buffer = StringBuffer('switch (dialect.known) {');
+      final dialectEnum = scope.drift('KnownSqlDialect');
 
       var index = 0;
       for (final MapEntry(key: code, value: dialects)
@@ -587,6 +402,208 @@ class QueryWriter {
 /// Returns code to load an instance of the [converter] at runtime.
 String readConverter(TextEmitter emitter, AppliedTypeConverter converter) {
   return emitter.dartCode(emitter.readConverter(converter));
+}
+
+/// Builds code responsible for mapping `DriftRow`s into the result type of the
+/// query.
+class _MappingCodeWriter {
+  final QueryWriter _writer;
+
+  final StringBuffer _outerSetup = StringBuffer();
+  final StringBuffer _innerMapper = StringBuffer();
+
+  final Map<Object, String> _obtainedTypes = {};
+  int _mappingFunctionCounter = 0;
+
+  TextEmitter get _emitter => _writer._emitter;
+
+  _MappingCodeWriter(this._writer);
+
+  String referenceBuiltinType(BuiltinDriftType type) {
+    return _obtainedTypes.putIfAbsent(type, () {
+      final variableName = 'type\$${type.name}';
+      _outerSetup
+        ..writeln('final $variableName = dialect.')
+        // This is an inlined implementation of BuiltinDriftType.resolveIn, it
+        // calls e.g. this.dialect.intType
+        ..write('${type.name}Type')
+        ..writeln(';');
+
+      return variableName;
+    });
+  }
+
+  String referenceType(ColumnType type) {
+    return switch (type) {
+      ColumnDriftType(:final builtin) => referenceBuiltinType(builtin),
+      ColumnCustomType(:final custom) => _obtainedTypes.putIfAbsent(custom, () {
+          final variableName = 'type\$${_obtainedTypes.length}';
+          _outerSetup
+            ..writeln('final $variableName = ')
+            ..write(_writer._emitter.dartCode(custom.expression))
+            ..writeln(';');
+
+          return variableName;
+        }),
+    };
+  }
+
+  String columnPosition(ScalarResultColumn column, {bool addConst = true}) {
+    final specialName =
+        _writer._transformer.newNameFor(column.sqlParserColumn!);
+
+    final prefix = addConst ? 'const' : '';
+    return '$prefix (index: ${column.index}, name: ${asDartLiteral(specialName ?? column.name)})';
+  }
+
+  void write(
+      TextEmitter outer, InferredResultSet resultSet, QueryRowType rowClass) {
+    _writeArgumentExpression(
+        rowClass, resultSet, (isNullable: false, sqlPrefix: null));
+    outer
+      ..writeln('(${outer.drift('DriftResultSet')} resultSet) {')
+      ..writeln(_outerSetup)
+      ..write('return (')
+      ..writeDriftRef('DriftRow')
+      ..writeln(' row) => $_innerMapper;')
+      ..writeln('}');
+  }
+
+  /// Writes code that will read the [argument] for an existing row type from
+  /// the raw `QueryRow`.
+  void _writeArgumentExpression(
+    ArgumentForQueryRowType argument,
+    InferredResultSet resultSet,
+    _ArgumentContext context,
+  ) {
+    switch (argument) {
+      case RawQueryRow():
+        _innerMapper.write('row');
+      case ScalarResultColumn():
+        _readScalar(argument, context);
+      case MatchingDriftTable():
+        _readMatchingTable(argument, context);
+      case StructuredFromNestedColumn():
+        final prefix = resultSet.nestedPrefixFor(argument.table);
+        _writeArgumentExpression(
+          argument.nestedType,
+          resultSet,
+          (sqlPrefix: prefix, isNullable: argument.nullable),
+        );
+      case MappedNestedListQuery():
+        _innerMapper.write("throw 'todo'");
+//        _innerMapper.write('await ');
+//        final query = argument.column.query;
+//        _writeCustomSelectStatement(query, argument.nestedType);
+//        _innerMapper.write('.get()');
+      case QueryRowType():
+        final singleValue = argument.singleValue;
+        if (singleValue != null) {
+          return _writeArgumentExpression(singleValue, resultSet, context);
+        }
+
+        if (context.isNullable) {
+          // If this structed type is nullable, it's coming from an OUTER join
+          // which means that, even if the individual components making up the
+          // structure are non-nullable, they might all be null in SQL. We
+          // detect this case by looking for a non-nullable column and, if it's
+          // null, return null directly instead of creating the structured type.
+          for (final arg in argument.positionalArguments
+              .followedBy(argument.namedArguments.values)
+              .whereType<ScalarResultColumn>()) {
+            if (!arg.nullable) {
+              final keyInMap = context.applyPrefix(arg.name);
+              _innerMapper.write(
+                  'row.data[${asDartLiteral(keyInMap)}] == null ? null : ');
+            }
+          }
+        }
+
+        final _ArgumentContext childContext = (
+          sqlPrefix: context.sqlPrefix,
+          // Individual fields making up this query row type aren't covered by
+          // the outer nullability.
+          isNullable: false,
+        );
+
+        if (!argument.isRecord) {
+          // We're writing a constructor, so let's start with the class name.
+          _innerMapper.write(_emitter.dartCode(argument.rowType));
+
+          final constructorName = argument.constructorName;
+          if (constructorName.isNotEmpty) {
+            _innerMapper
+              ..write('.')
+              ..write(constructorName);
+          }
+        }
+
+        _innerMapper.write('(');
+        for (final positional in argument.positionalArguments) {
+          _writeArgumentExpression(positional, resultSet, childContext);
+          _innerMapper.write(', ');
+        }
+        argument.namedArguments.forEach((name, parameter) {
+          _innerMapper.write('$name: ');
+          _writeArgumentExpression(parameter, resultSet, childContext);
+          _innerMapper.write(', ');
+        });
+
+        _innerMapper.write(')');
+    }
+  }
+
+  /// Writes Dart code that, given a variable of type `QueryRow` named `row`
+  /// in the same scope, reads the [column] from that row and brings it into a
+  /// suitable type.
+  void _readScalar(ScalarResultColumn column, _ArgumentContext context) {
+    final isNullable = context.isNullable || column.nullable;
+
+    final position = columnPosition(column);
+    var code = 'row.readWithType($position, ${referenceType(column.sqlType)})';
+    if (!isNullable) {
+      code += '!';
+    }
+
+    final converter = column.typeConverter;
+    if (converter != null) {
+      if (converter.canBeSkippedForNulls && isNullable) {
+        // The type converter maps non-nullable types, but the column may be
+        // nullable in SQL => just map null to null and only invoke the type
+        // converter for non-null values.
+        final wrapFrom = _emitter.drift('NullAwareTypeConverter.wrapFromSql');
+        code = '$wrapFrom(${readConverter(_emitter, converter)}, $code)';
+      } else {
+        // Just apply the type converter directly.
+        code = '${readConverter(_emitter, converter)}.fromSql($code)';
+      }
+    }
+
+    _innerMapper.write(code);
+  }
+
+  void _readMatchingTable(MatchingDriftTable match, _ArgumentContext context) {
+    final table = match.table;
+    final mappingFunctionName = 'map_${_mappingFunctionCounter++}';
+    _outerSetup.write(
+        'final $mappingFunctionName = ${table.dbGetterName}.createMapperFromPositions(const [');
+
+    for (final column in table.columns) {
+      final source = match.columnToSource[column]!;
+
+      _outerSetup.write(columnPosition(
+        source,
+        addConst: false, // Is already const from list literal
+      ));
+      _outerSetup.write(',');
+    }
+    _outerSetup.writeln(']);');
+
+    _innerMapper.write('$mappingFunctionName(row)');
+    if (!context.isNullable) {
+      _innerMapper.write('!');
+    }
+  }
 }
 
 class _ExpandedDeclarationWriter {

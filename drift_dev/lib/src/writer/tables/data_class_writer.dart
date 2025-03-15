@@ -399,7 +399,7 @@ class RowMappingWriter {
           sqlType = writer.dartCode(custom.expression);
       }
 
-      var loadType = 'row.readWithType(columnPositions[$index], $sqlType)';
+      var loadType = 'row.readWithType(positions[$index], $sqlType)';
 
       if (!column.nullable) {
         loadType += '!';

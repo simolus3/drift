@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 void main() {
   final engine =
       SqlEngine(EngineOptions(driftOptions: const DriftSqlOptions()));
-  final result = engine.parse('CREATE TABLE a (id INTEGER);');
+  final result = engine.parse('CREATE TABLE a (id INTEGER, content TEXT);');
   engine.registerTable(const SchemaFromCreateTable()
       .read(result.rootNode as CreateTableStatement));
 
@@ -38,6 +38,11 @@ void main() {
   test('rewrites compound select statements', () {
     checkTransformation("SELECT 1 + 2, 'foo' UNION ALL SELECT 3+ 4, 'bar'",
         "SELECT 1 + 2 AS _c0, 'foo' AS _c1 UNION ALL SELECT 3 + 4, 'bar'");
+  });
+
+  test('expands star columns', () {
+    checkTransformation(
+        'SELECT * FROM a', 'SELECT id AS _c0, content AS _c1 FROM a');
   });
 
   test('rewrites references for compount select statements', () {

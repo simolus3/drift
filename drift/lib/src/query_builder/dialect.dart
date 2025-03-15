@@ -7,6 +7,8 @@ enum KnownSqlDialect {
 }
 
 abstract base class DriftDialect implements TypeProvider {
+  const DriftDialect();
+
   KnownSqlDialect? get known;
 
   @override

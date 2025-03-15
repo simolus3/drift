@@ -14,7 +14,7 @@ class NoIds extends Table
       type: BuiltinDriftType.byteArray,
       isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL PRIMARY KEY')
+      constraints: [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [payload];
@@ -27,15 +27,15 @@ class NoIds extends Table
   @override
   Set<TableColumn> get primaryKey => {payload};
   @override
-  NoIdRow? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  NoIdRow? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       // Not part of row if non-nullable column "payload" is missing
-      if (row.raw.rawValue(columnPositions[0]) == null) {
+      if (row.raw.rawValue(positions[0]) == null) {
         return null;
       }
       return NoIdRow(
-        row.readWithType(columnPositions[0], BuiltinDriftType.byteArray)!,
+        row.readWithType(positions[0], BuiltinDriftType.byteArray)!,
       );
     };
   }
@@ -101,18 +101,17 @@ class WithDefaults extends Table
   WithDefaults([this.alias]);
   late final TableColumn<String> a = TableColumn<String>(
       name: 'a',
-      type: BuiltinDriftType.text,
+      type: const CustomTextType(),
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: 'DEFAULT \'something\'',
-      defaultValue: const CustomExpression('\'something\''))
+      constraints: [ColumnConstraint.customSql('DEFAULT \'something\'')])
     ..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
       name: 'b',
       type: BuiltinDriftType.int,
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: 'UNIQUE NULL')
+      constraints: [ColumnConstraint.customSql('UNIQUE NULL')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [a, b];
@@ -125,12 +124,12 @@ class WithDefaults extends Table
   @override
   Set<TableColumn> get primaryKey => const {};
   @override
-  WithDefault? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  WithDefault? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       return WithDefault(
-        a: row.readWithType(columnPositions[0], BuiltinDriftType.text),
-        b: row.readWithType(columnPositions[1], BuiltinDriftType.int),
+        a: row.readWithType(positions[0], const CustomTextType()),
+        b: row.readWithType(positions[1], BuiltinDriftType.int),
       );
     };
   }
@@ -152,7 +151,7 @@ class WithDefault extends LegacyDataClass implements Insertable<WithDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || a != null) {
-      map['a'] = Variable<String>(a);
+      map['a'] = Variable<String>(a, (_) => const CustomTextType());
     }
     if (!nullToAbsent || b != null) {
       map['b'] = Variable<int>(b);
@@ -259,7 +258,7 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (a.present) {
-      map['a'] = Variable<String>(a.value);
+      map['a'] = Variable<String>(a.value, (_) => const CustomTextType());
     }
     if (b.present) {
       map['b'] = Variable<int>(b.value);
@@ -292,21 +291,21 @@ class WithConstraints extends Table
       type: BuiltinDriftType.text,
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
       name: 'b',
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL')
+      constraints: [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<double> c = TableColumn<double>(
       name: 'c',
       type: BuiltinDriftType.double,
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [a, b, c];
@@ -319,18 +318,17 @@ class WithConstraints extends Table
   @override
   Set<TableColumn> get primaryKey => const {};
   @override
-  WithConstraint? Function(DriftRow) createMapperToDart(
-      DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  WithConstraint? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       // Not part of row if non-nullable column "b" is missing
-      if (row.raw.rawValue(columnPositions[1]) == null) {
+      if (row.raw.rawValue(positions[1]) == null) {
         return null;
       }
       return WithConstraint(
-        a: row.readWithType(columnPositions[0], BuiltinDriftType.text),
-        b: row.readWithType(columnPositions[1], BuiltinDriftType.int)!,
-        c: row.readWithType(columnPositions[2], BuiltinDriftType.double),
+        a: row.readWithType(positions[0], BuiltinDriftType.text),
+        b: row.readWithType(positions[1], BuiltinDriftType.int)!,
+        c: row.readWithType(positions[2], BuiltinDriftType.double),
       );
     };
   }
@@ -521,31 +519,31 @@ class ConfigTable extends Table
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL PRIMARY KEY')
+      constraints: [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')])
     ..owningResultSet = this;
   late final TableColumn<DriftAny> configValue = TableColumn<DriftAny>(
       name: 'config_value',
       type: SqliteDialect,
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
-  late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
+  late final TableColumnWithTypeConverter<SyncType?, int> syncState =
       TableColumn<int>(
               name: 'sync_state',
               type: BuiltinDriftType.int,
               isNullable: true,
               requiredDuringInsert: false,
-              $customConstraints: '')
+              constraints: [ColumnConstraint.customSql('')])
           .withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
         ..owningResultSet = this;
-  late final GeneratedColumnWithTypeConverter<SyncType?, int>
-      syncStateImplicit = TableColumn<int>(
+  late final TableColumnWithTypeConverter<SyncType?, int> syncStateImplicit =
+      TableColumn<int>(
               name: 'sync_state_implicit',
               type: BuiltinDriftType.int,
               isNullable: true,
               requiredDuringInsert: false,
-              $customConstraints: '')
+              constraints: [ColumnConstraint.customSql('')])
           .withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn)
         ..owningResultSet = this;
   @override
@@ -560,20 +558,20 @@ class ConfigTable extends Table
   @override
   Set<TableColumn> get primaryKey => {configKey};
   @override
-  Config? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  Config? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       // Not part of row if non-nullable column "configKey" is missing
-      if (row.raw.rawValue(columnPositions[0]) == null) {
+      if (row.raw.rawValue(positions[0]) == null) {
         return null;
       }
       return Config(
-        configKey: row.readWithType(columnPositions[0], BuiltinDriftType.text)!,
-        configValue: row.readWithType(columnPositions[1], SqliteDialect),
-        syncState: ConfigTable.$convertersyncStaten.fromSql(
-            row.readWithType(columnPositions[2], BuiltinDriftType.int)),
-        syncStateImplicit: ConfigTable.$convertersyncStateImplicitn.fromSql(
-            row.readWithType(columnPositions[3], BuiltinDriftType.int)),
+        configKey: row.readWithType(positions[0], BuiltinDriftType.text)!,
+        configValue: row.readWithType(positions[1], SqliteDialect),
+        syncState: ConfigTable.$convertersyncStaten
+            .fromSql(row.readWithType(positions[2], BuiltinDriftType.int)),
+        syncStateImplicit: ConfigTable.$convertersyncStateImplicitn
+            .fromSql(row.readWithType(positions[3], BuiltinDriftType.int)),
       );
     };
   }
@@ -615,7 +613,8 @@ class Config extends LegacyDataClass implements Insertable<Config> {
     final map = <String, Expression>{};
     map['config_key'] = Variable<String>(configKey);
     if (!nullToAbsent || configValue != null) {
-      map['config_value'] = Variable<DriftAny>(configValue, SqliteDialect);
+      map['config_value'] =
+          Variable<DriftAny>(configValue, (_) => SqliteDialect);
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] =
@@ -779,7 +778,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
     }
     if (configValue.present) {
       map['config_value'] =
-          Variable<DriftAny>(configValue.value, SqliteDialect);
+          Variable<DriftAny>(configValue.value, (_) => SqliteDialect);
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(
@@ -820,28 +819,28 @@ class Mytable extends Table
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      $customConstraints: 'NOT NULL')
+      constraints: [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<String> sometext = TableColumn<String>(
       name: 'sometext',
       type: BuiltinDriftType.text,
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<bool> isInserting = TableColumn<bool>(
       name: 'is_inserting',
       type: BuiltinDriftType.bool,
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<DateTime> somedate = TableColumn<DateTime>(
       name: 'somedate',
       type: BuiltinDriftType.dateTime,
       isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [someid, sometext, isInserting, somedate];
@@ -854,24 +853,22 @@ class Mytable extends Table
   @override
   Set<TableColumn> get primaryKey => {someid};
   @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
+  List<Set<TableColumn>> get uniqueKeys => [
         {sometext, isInserting},
       ];
   @override
-  MytableData? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  MytableData? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       // Not part of row if non-nullable column "someid" is missing
-      if (row.raw.rawValue(columnPositions[0]) == null) {
+      if (row.raw.rawValue(positions[0]) == null) {
         return null;
       }
       return MytableData(
-        someid: row.readWithType(columnPositions[0], BuiltinDriftType.int)!,
-        sometext: row.readWithType(columnPositions[1], BuiltinDriftType.text),
-        isInserting:
-            row.readWithType(columnPositions[2], BuiltinDriftType.bool),
-        somedate:
-            row.readWithType(columnPositions[3], BuiltinDriftType.dateTime),
+        someid: row.readWithType(positions[0], BuiltinDriftType.int)!,
+        sometext: row.readWithType(positions[1], BuiltinDriftType.text),
+        isInserting: row.readWithType(positions[2], BuiltinDriftType.bool),
+        somedate: row.readWithType(positions[3], BuiltinDriftType.dateTime),
       );
     };
   }
@@ -1081,21 +1078,21 @@ class Email extends Table
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<String> title = TableColumn<String>(
       name: 'title',
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<String> body = TableColumn<String>(
       name: 'body',
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: '')
+      constraints: [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [sender, title, body];
@@ -1108,17 +1105,17 @@ class Email extends Table
   @override
   Set<TableColumn> get primaryKey => const {};
   @override
-  EMail? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  EMail? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       // Not part of row if non-nullable column "sender" is missing
-      if (row.raw.rawValue(columnPositions[0]) == null) {
+      if (row.raw.rawValue(positions[0]) == null) {
         return null;
       }
       return EMail(
-        sender: row.readWithType(columnPositions[0], BuiltinDriftType.text)!,
-        title: row.readWithType(columnPositions[1], BuiltinDriftType.text)!,
-        body: row.readWithType(columnPositions[2], BuiltinDriftType.text)!,
+        sender: row.readWithType(positions[0], BuiltinDriftType.text)!,
+        title: row.readWithType(positions[1], BuiltinDriftType.text)!,
+        body: row.readWithType(positions[2], BuiltinDriftType.text)!,
       );
     };
   }
@@ -1301,14 +1298,14 @@ class WeirdTable extends Table
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL')
+      constraints: [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<String> textColumn = TableColumn<String>(
       name: 'text',
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL')
+      constraints: [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [sqlClass, textColumn];
@@ -1321,17 +1318,16 @@ class WeirdTable extends Table
   @override
   Set<TableColumn> get primaryKey => const {};
   @override
-  WeirdData? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  WeirdData? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       // Not part of row if non-nullable column "sqlClass" is missing
-      if (row.raw.rawValue(columnPositions[0]) == null) {
+      if (row.raw.rawValue(positions[0]) == null) {
         return null;
       }
       return WeirdData(
-        sqlClass: row.readWithType(columnPositions[0], BuiltinDriftType.int)!,
-        textColumn:
-            row.readWithType(columnPositions[1], BuiltinDriftType.text)!,
+        sqlClass: row.readWithType(positions[0], BuiltinDriftType.int)!,
+        textColumn: row.readWithType(positions[1], BuiltinDriftType.text)!,
       );
     };
   }
@@ -1570,20 +1566,20 @@ class MyView extends View
   MyView asSelfType() => this;
 
   @override
-  MyViewData? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
-    final columnPositions = resultSet.structure.tables[this]!;
+  MyViewData? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (DriftRow row) {
       // Not part of row if non-nullable column "configKey" is missing
-      if (row.raw.rawValue(columnPositions[0]) == null) {
+      if (row.raw.rawValue(positions[0]) == null) {
         return null;
       }
       return MyViewData(
-        configKey: row.readWithType(columnPositions[0], BuiltinDriftType.text)!,
-        configValue: row.readWithType(columnPositions[1], SqliteDialect),
-        syncState: ConfigTable.$convertersyncStaten.fromSql(
-            row.readWithType(columnPositions[2], BuiltinDriftType.int)),
-        syncStateImplicit: ConfigTable.$convertersyncStateImplicitn.fromSql(
-            row.readWithType(columnPositions[3], BuiltinDriftType.int)),
+        configKey: row.readWithType(positions[0], BuiltinDriftType.text)!,
+        configValue: row.readWithType(positions[1], SqliteDialect),
+        syncState: ConfigTable.$convertersyncStaten
+            .fromSql(row.readWithType(positions[2], BuiltinDriftType.int)),
+        syncStateImplicit: ConfigTable.$convertersyncStateImplicitn
+            .fromSql(row.readWithType(positions[3], BuiltinDriftType.int)),
       );
     };
   }
@@ -1594,13 +1590,13 @@ class MyView extends View
   late final ViewColumn<DriftAny> configValue = ViewColumn<DriftAny>(
       name: 'config_value', type: SqliteDialect, isNullable: true)
     ..owningResultSet = this;
-  late final GeneratedColumnWithTypeConverter<SyncType?, int> syncState =
+  late final ViewColumnWithTypeConverter<SyncType?, int> syncState =
       ViewColumn<int>(
               name: 'sync_state', type: BuiltinDriftType.int, isNullable: true)
           .withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
         ..owningResultSet = this;
-  late final GeneratedColumnWithTypeConverter<SyncType?, int>
-      syncStateImplicit = ViewColumn<int>(
+  late final ViewColumnWithTypeConverter<SyncType?, int> syncStateImplicit =
+      ViewColumn<int>(
               name: 'sync_state_implicit',
               type: BuiltinDriftType.int,
               isNullable: true)
@@ -1619,7 +1615,6 @@ class MyView extends View
 
 abstract base class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(super.implementation);
-  $CustomTablesDbManager get managers => $CustomTablesDbManager(this);
   late final NoIds noIds = NoIds();
   late final WithDefaults withDefaults = WithDefaults();
   late final WithConstraints withConstraints = WithConstraints();
@@ -1641,27 +1636,30 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
       variables: [
         Variable<String>(key),
-        Variable<DriftAny>(value, SqliteDialect)
+        Variable<DriftAny>(value, (_) => SqliteDialect)
       ],
       updates: {config},
     );
   }
 
   Selectable<Config> readConfig(String var1) {
-    return customSelect(
-        'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?1',
-        variables: [
-          Variable<String>(var1)
-        ],
+    return customSelectMapped<Config>(
+        query:
+            'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?1',
+        variables: [Variable<String>(var1)],
         readsFrom: {
           config,
-        }).asyncMap(
-        (QueryRow row) async => config.mapFromRowWithAlias(row, const {
-              'ck': 'config_key',
-              'cf': 'config_value',
-              'cs1': 'sync_state',
-              'cs2': 'sync_state_implicit',
-            }));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = config.createMapperFromPositions(const [
+            (index: 0, name: 'ck'),
+            (index: 1, name: 'cf'),
+            (index: 2, name: 'cs1'),
+            (index: 3, name: 'cs2'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        });
   }
 
   Selectable<Config> readMultiple(List<String> var1,
@@ -1673,8 +1671,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         clause?.call(this.config) ?? const OrderBy.nothing(),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedclause.amountOfVariables;
-    return customSelect(
-        'SELECT * FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
+    return customSelectMapped<Config>(
+        query:
+            'SELECT config_key AS _c0, config_value AS _c1, sync_state AS _c2, sync_state_implicit AS _c3 FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
         variables: [
           for (var $ in var1) Variable<String>($),
           ...generatedclause.introducedVariables
@@ -1682,7 +1681,17 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           config,
           ...generatedclause.watchedTables,
-        }).asyncMap(config.mapFromRow);
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = config.createMapperFromPositions(const [
+            (index: 0, name: '_c0'),
+            (index: 1, name: '_c1'),
+            (index: 2, name: '_c2'),
+            (index: 3, name: '_c3'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        });
   }
 
   Selectable<Config> readDynamic({ReadDynamic$predicate? predicate}) {
@@ -1694,14 +1703,24 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
             }),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
-    return customSelect('SELECT * FROM config WHERE ${generatedpredicate.sql}',
-        variables: [
-          ...generatedpredicate.introducedVariables
-        ],
+    return customSelectMapped<Config>(
+        query:
+            'SELECT config_key AS _c0, config_value AS _c1, sync_state AS _c2, sync_state_implicit AS _c3 FROM config WHERE ${generatedpredicate.sql}',
+        variables: [...generatedpredicate.introducedVariables],
         readsFrom: {
           config,
           ...generatedpredicate.watchedTables,
-        }).asyncMap(config.mapFromRow);
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = config.createMapperFromPositions(const [
+            (index: 0, name: '_c0'),
+            (index: 1, name: '_c1'),
+            (index: 2, name: '_c2'),
+            (index: 3, name: '_c3'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        });
   }
 
   Selectable<String> typeConverterVar(SyncType? var1, List<SyncType?> var2,
@@ -1716,8 +1735,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
-    return customSelect(
-        'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
+    return customSelectMapped<String>(
+        query:
+            'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
           Variable<int>(ConfigTable.$convertersyncStaten.toSql(var1)),
           ...generatedpred.introducedVariables,
@@ -1727,29 +1747,52 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         readsFrom: {
           config,
           ...generatedpred.watchedTables,
-        }).map((QueryRow row) => row.read<String>('config_key'));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$text = dialect.textType;
+
+          return (DriftRow row) => row
+              .readWithType(const (index: 0, name: 'config_key'), type$text)!;
+        });
   }
 
   Selectable<JsonResult> tableValued() {
-    return customSelect(
-        'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
+    return customSelectMapped<JsonResult>(
+        query:
+            'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
         variables: [],
         readsFrom: {
           config,
-        }).map((QueryRow row) => JsonResult(
-          row: row,
-          key: row.read<String>('key'),
-          value: row.readNullable<String>('value'),
-        ));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$text = dialect.textType;
+
+          return (DriftRow row) => JsonResult(
+                row: row,
+                key:
+                    row.readWithType(const (index: 0, name: 'key'), type$text)!,
+                value: row
+                    .readWithType(const (index: 1, name: 'value'), type$text),
+              );
+        });
   }
 
   Selectable<JsonResult> another() {
-    return customSelect('SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value', variables: [], readsFrom: {})
-        .map((QueryRow row) => JsonResult(
-              row: row,
-              key: row.read<String>('key'),
-              value: row.readNullable<String>('value'),
-            ));
+    return customSelectMapped<JsonResult>(
+        query: 'SELECT \'one\' AS "key", NULLIF(\'two\', \'another\') AS value',
+        variables: [],
+        readsFrom: {},
+        createMapper: (DriftResultSet resultSet) {
+          final type$text = dialect.textType;
+
+          return (DriftRow row) => JsonResult(
+                row: row,
+                key:
+                    row.readWithType(const (index: 0, name: 'key'), type$text)!,
+                value: row
+                    .readWithType(const (index: 1, name: 'value'), type$text),
+              );
+        });
   }
 
   Selectable<MultipleResult> multiple({required Multiple$predicate predicate}) {
@@ -1760,33 +1803,50 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         hasMultipleTables: true,
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
-    return customSelect(
-        'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
-        variables: [
-          ...generatedpredicate.introducedVariables
-        ],
+    return customSelectMapped<MultipleResult>(
+        query:
+            'SELECT d.a AS _c0, d.b AS _c1,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
+        variables: [...generatedpredicate.introducedVariables],
         readsFrom: {
           withDefaults,
           withConstraints,
           ...generatedpredicate.watchedTables,
-        }).asyncMap((QueryRow row) async => MultipleResult(
-          row: row,
-          a: row.readNullable<String>('a'),
-          b: row.readNullable<int>('b'),
-          c: await withConstraints.mapFromRowOrNull(row,
-              tablePrefix: 'nested_0'),
-        ));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$0 = const CustomTextType();
+          final type$int = dialect.intType;
+          final map_0 = withConstraints.createMapperFromPositions(const [
+            (index: 0, name: 'a'),
+            (index: 1, name: 'b'),
+            (index: 2, name: 'c'),
+          ]);
+
+          return (DriftRow row) => MultipleResult(
+                row: row,
+                a: row.readWithType(const (index: 0, name: '_c0'), type$0),
+                b: row.readWithType(const (index: 1, name: '_c1'), type$int),
+                c: map_0(row),
+              );
+        });
   }
 
   Selectable<EMail> searchEmails({required String? term}) {
-    return customSelect(
-        'SELECT * FROM email WHERE email MATCH ?1 ORDER BY rank',
-        variables: [
-          Variable<String>(term)
-        ],
+    return customSelectMapped<EMail>(
+        query:
+            'SELECT sender AS _c0, title AS _c1, body AS _c2 FROM email WHERE email MATCH ?1 ORDER BY rank',
+        variables: [Variable<String>(term)],
         readsFrom: {
           email,
-        }).asyncMap(email.mapFromRow);
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = email.createMapperFromPositions(const [
+            (index: 0, name: '_c0'),
+            (index: 1, name: '_c1'),
+            (index: 2, name: '_c2'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        });
   }
 
   Selectable<ReadRowIdResult> readRowId({required ReadRowId$expr expr}) {
@@ -1794,27 +1854,35 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     final generatedexpr =
         $write(expr(this.config), startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedexpr.amountOfVariables;
-    return customSelect(
-        'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
-        variables: [
-          ...generatedexpr.introducedVariables
-        ],
+    return customSelectMapped<ReadRowIdResult>(
+        query:
+            'SELECT oid, config_key AS _c0, config_value AS _c1, sync_state AS _c2, sync_state_implicit AS _c3 FROM config WHERE _rowid_ = ${generatedexpr.sql}',
+        variables: [...generatedexpr.introducedVariables],
         readsFrom: {
           config,
           ...generatedexpr.watchedTables,
-        }).map((QueryRow row) => ReadRowIdResult(
-          row: row,
-          rowid: row.read<int>('rowid'),
-          configKey: row.read<String>('config_key'),
-          configValue:
-              row.readNullableWithType<DriftAny>(SqliteDialect, 'config_value'),
-          syncState: NullAwareTypeConverter.wrapFromSql(
-              ConfigTable.$convertersyncState,
-              row.readNullable<int>('sync_state')),
-          syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
-              ConfigTable.$convertersyncStateImplicit,
-              row.readNullable<int>('sync_state_implicit')),
-        ));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$int = dialect.intType;
+          final type$text = dialect.textType;
+          final type$2 = SqliteDialect;
+
+          return (DriftRow row) => ReadRowIdResult(
+                row: row,
+                rowid: row
+                    .readWithType(const (index: 0, name: 'rowid'), type$int)!,
+                configKey:
+                    row.readWithType(const (index: 1, name: '_c0'), type$text)!,
+                configValue:
+                    row.readWithType(const (index: 2, name: '_c1'), type$2),
+                syncState: NullAwareTypeConverter.wrapFromSql(
+                    ConfigTable.$convertersyncState,
+                    row.readWithType(const (index: 3, name: '_c2'), type$int)),
+                syncStateImplicit: NullAwareTypeConverter.wrapFromSql(
+                    ConfigTable.$convertersyncStateImplicit,
+                    row.readWithType(const (index: 4, name: '_c3'), type$int)),
+              );
+        });
   }
 
   Selectable<MyViewData> readView({ReadView$where? where}) {
@@ -1826,29 +1894,53 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
             }),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedwhere.amountOfVariables;
-    return customSelect('SELECT * FROM my_view WHERE ${generatedwhere.sql}',
-        variables: [
-          ...generatedwhere.introducedVariables
-        ],
+    return customSelectMapped<MyViewData>(
+        query:
+            'SELECT config_key AS _c0, config_value AS _c1, sync_state AS _c2, sync_state_implicit AS _c3 FROM my_view WHERE ${generatedwhere.sql}',
+        variables: [...generatedwhere.introducedVariables],
         readsFrom: {
           config,
           ...generatedwhere.watchedTables,
-        }).asyncMap(myView.mapFromRow);
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = myView.createMapperFromPositions(const [
+            (index: 0, name: '_c0'),
+            (index: 1, name: '_c1'),
+            (index: 2, name: '_c2'),
+            (index: 3, name: '_c3'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        });
   }
 
   Selectable<int> cfeTest() {
-    return customSelect(
-        'WITH RECURSIVE cnt (x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
+    return customSelectMapped<int>(
+        query:
+            'WITH RECURSIVE cnt (x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt LIMIT 1000000) SELECT x FROM cnt',
         variables: [],
-        readsFrom: {}).map((QueryRow row) => row.read<int>('x'));
+        readsFrom: {},
+        createMapper: (DriftResultSet resultSet) {
+          final type$int = dialect.intType;
+
+          return (DriftRow row) =>
+              row.readWithType(const (index: 0, name: 'x'), type$int)!;
+        });
   }
 
   Selectable<int?> nullableQuery() {
-    return customSelect('SELECT MAX(oid) AS _c0 FROM config',
+    return customSelectMapped<int?>(
+        query: 'SELECT MAX(oid) AS _c0 FROM config',
         variables: [],
         readsFrom: {
           config,
-        }).map((QueryRow row) => row.readNullable<int>('_c0'));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$int = dialect.intType;
+
+          return (DriftRow row) =>
+              row.readWithType(const (index: 0, name: '_c0'), type$int);
+        });
   }
 
   Future<List<Config>> addConfig({required Insertable<Config> value}) {
@@ -1856,62 +1948,80 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     final generatedvalue =
         $writeInsertable(this.config, value, startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedvalue.amountOfVariables;
-    return customWriteReturning(
-            'INSERT INTO config ${generatedvalue.sql} RETURNING *',
-            variables: [...generatedvalue.introducedVariables],
-            updates: {config})
-        .then((rows) => Future.wait(rows.map(config.mapFromRow)));
+    return customWriteReturning('INSERT INTO config ${generatedvalue.sql} RETURNING *',
+        variables: [
+          ...generatedvalue.introducedVariables
+        ],
+        updates: {
+          config
+        }).then((rows) => rows.map((DriftResultSet resultSet) {
+          final map_0 = config.createMapperFromPositions(const [
+            (index: 0, name: 'config_key'),
+            (index: 1, name: 'config_value'),
+            (index: 2, name: 'sync_state'),
+            (index: 3, name: 'sync_state_implicit'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        }).toList());
   }
 
   Selectable<NestedResult> nested(String? var1) {
-    return customSelect(
-        'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
-        variables: [
-          Variable<String>(var1)
-        ],
+    return customSelectMapped<NestedResult>(
+        query:
+            'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
+        variables: [Variable<String>(var1, (_) => const CustomTextType())],
         readsFrom: {
           withConstraints,
           withDefaults,
-        }).asyncMap((QueryRow row) async => NestedResult(
-          row: row,
-          defaults: await withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),
-          nestedQuery1: await customSelect(
-              'SELECT * FROM with_constraints AS c WHERE c.b = ?1',
-              variables: [
-                Variable<int>(row.read('\$n_0'))
-              ],
-              readsFrom: {
-                withConstraints,
-                withDefaults,
-              }).asyncMap(withConstraints.mapFromRow).get(),
-        ));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = withDefaults.createMapperFromPositions(const [
+            (index: 0, name: 'a'),
+            (index: 1, name: 'b'),
+          ]);
+
+          return (DriftRow row) => NestedResult(
+                row: row,
+                defaults: map_0(row)!,
+                nestedQuery1: throw 'todo',
+              );
+        });
   }
 
   Selectable<MyCustomResultClass> customResult() {
-    return customSelect(
-        'SELECT with_constraints.b, config.sync_state,"config"."config_key" AS "nested_0.config_key", "config"."config_value" AS "nested_0.config_value", "config"."sync_state" AS "nested_0.sync_state", "config"."sync_state_implicit" AS "nested_0.sync_state_implicit","no_ids"."payload" AS "nested_1.payload" FROM with_constraints INNER JOIN config ON config_key = with_constraints.a CROSS JOIN no_ids',
+    return customSelectMapped<MyCustomResultClass>(
+        query:
+            'SELECT with_constraints.b, config.sync_state,"config"."config_key" AS "nested_0.config_key", "config"."config_value" AS "nested_0.config_value", "config"."sync_state" AS "nested_0.sync_state", "config"."sync_state_implicit" AS "nested_0.sync_state_implicit","no_ids"."payload" AS "nested_1.payload" FROM with_constraints INNER JOIN config ON config_key = with_constraints.a CROSS JOIN no_ids',
         variables: [],
         readsFrom: {
           withConstraints,
           config,
           noIds,
-        }).asyncMap((QueryRow row) async => MyCustomResultClass(
-          row.read<int>('b'),
-          syncState: NullAwareTypeConverter.wrapFromSql(
-              ConfigTable.$convertersyncState,
-              row.readNullable<int>('sync_state')),
-          config: await config.mapFromRow(row, tablePrefix: 'nested_0'),
-          noIds: await noIds.mapFromRow(row, tablePrefix: 'nested_1'),
-          nested: await customSelect('SELECT * FROM no_ids',
-                  variables: [],
-                  readsFrom: {
-                noIds,
-              })
-              .map((QueryRow row) => Buffer(
-                    row.read<Uint8List>('payload'),
-                  ))
-              .get(),
-        ));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$int = dialect.intType;
+          final map_0 = config.createMapperFromPositions(const [
+            (index: 0, name: 'config_key'),
+            (index: 1, name: 'config_value'),
+            (index: 2, name: 'sync_state'),
+            (index: 3, name: 'sync_state_implicit'),
+          ]);
+          final map_1 = noIds.createMapperFromPositions(const [
+            (index: 0, name: 'payload'),
+          ]);
+
+          return (DriftRow row) => MyCustomResultClass(
+                row.readWithType(const (index: 0, name: 'b'), type$int)!,
+                syncState: NullAwareTypeConverter.wrapFromSql(
+                    ConfigTable.$convertersyncState,
+                    row.readWithType(
+                        const (index: 1, name: 'sync_state'), type$int)),
+                config: map_0(row)!,
+                noIds: map_1(row)!,
+                nested: throw 'todo',
+              );
+        });
   }
 
   @override
@@ -1945,930 +2055,6 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       );
 }
 
-typedef $NoIdsCreateCompanionBuilder = NoIdsCompanion Function({
-  required Uint8List payload,
-});
-typedef $NoIdsUpdateCompanionBuilder = NoIdsCompanion Function({
-  Value<Uint8List> payload,
-});
-
-class $NoIdsFilterComposer extends Composer<_$CustomTablesDb, NoIds> {
-  $NoIdsFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<Uint8List> get payload => $composableBuilder(
-      column: $table.payload, builder: (column) => ColumnFilters(column));
-}
-
-class $NoIdsOrderingComposer extends Composer<_$CustomTablesDb, NoIds> {
-  $NoIdsOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<Uint8List> get payload => $composableBuilder(
-      column: $table.payload, builder: (column) => ColumnOrderings(column));
-}
-
-class $NoIdsAnnotationComposer extends Composer<_$CustomTablesDb, NoIds> {
-  $NoIdsAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<Uint8List> get payload =>
-      $composableBuilder(column: $table.payload, builder: (column) => column);
-}
-
-class $NoIdsTableManager extends RootTableManager<
-    _$CustomTablesDb,
-    NoIds,
-    NoIdRow,
-    $NoIdsFilterComposer,
-    $NoIdsOrderingComposer,
-    $NoIdsAnnotationComposer,
-    $NoIdsCreateCompanionBuilder,
-    $NoIdsUpdateCompanionBuilder,
-    (NoIdRow, BaseReferences<_$CustomTablesDb, NoIds, NoIdRow>),
-    NoIdRow,
-    PrefetchHooks Function()> {
-  $NoIdsTableManager(_$CustomTablesDb db, NoIds table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $NoIdsFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $NoIdsOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $NoIdsAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<Uint8List> payload = const Value.absent(),
-          }) =>
-              NoIdsCompanion(
-            payload: payload,
-          ),
-          createCompanionCallback: ({
-            required Uint8List payload,
-          }) =>
-              NoIdsCompanion.insert(
-            payload: payload,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $NoIdsProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    NoIds,
-    NoIdRow,
-    $NoIdsFilterComposer,
-    $NoIdsOrderingComposer,
-    $NoIdsAnnotationComposer,
-    $NoIdsCreateCompanionBuilder,
-    $NoIdsUpdateCompanionBuilder,
-    (NoIdRow, BaseReferences<_$CustomTablesDb, NoIds, NoIdRow>),
-    NoIdRow,
-    PrefetchHooks Function()>;
-typedef $WithDefaultsCreateCompanionBuilder = WithDefaultsCompanion Function({
-  Value<String?> a,
-  Value<int?> b,
-  Value<int> rowid,
-});
-typedef $WithDefaultsUpdateCompanionBuilder = WithDefaultsCompanion Function({
-  Value<String?> a,
-  Value<int?> b,
-  Value<int> rowid,
-});
-
-class $WithDefaultsFilterComposer
-    extends Composer<_$CustomTablesDb, WithDefaults> {
-  $WithDefaultsFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get a => $composableBuilder(
-      column: $table.a, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get b => $composableBuilder(
-      column: $table.b, builder: (column) => ColumnFilters(column));
-}
-
-class $WithDefaultsOrderingComposer
-    extends Composer<_$CustomTablesDb, WithDefaults> {
-  $WithDefaultsOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get a => $composableBuilder(
-      column: $table.a, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get b => $composableBuilder(
-      column: $table.b, builder: (column) => ColumnOrderings(column));
-}
-
-class $WithDefaultsAnnotationComposer
-    extends Composer<_$CustomTablesDb, WithDefaults> {
-  $WithDefaultsAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get a =>
-      $composableBuilder(column: $table.a, builder: (column) => column);
-
-  GeneratedColumn<int> get b =>
-      $composableBuilder(column: $table.b, builder: (column) => column);
-}
-
-class $WithDefaultsTableManager extends RootTableManager<
-    _$CustomTablesDb,
-    WithDefaults,
-    WithDefault,
-    $WithDefaultsFilterComposer,
-    $WithDefaultsOrderingComposer,
-    $WithDefaultsAnnotationComposer,
-    $WithDefaultsCreateCompanionBuilder,
-    $WithDefaultsUpdateCompanionBuilder,
-    (WithDefault, BaseReferences<_$CustomTablesDb, WithDefaults, WithDefault>),
-    WithDefault,
-    PrefetchHooks Function()> {
-  $WithDefaultsTableManager(_$CustomTablesDb db, WithDefaults table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $WithDefaultsFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $WithDefaultsOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $WithDefaultsAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String?> a = const Value.absent(),
-            Value<int?> b = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              WithDefaultsCompanion(
-            a: a,
-            b: b,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            Value<String?> a = const Value.absent(),
-            Value<int?> b = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              WithDefaultsCompanion.insert(
-            a: a,
-            b: b,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $WithDefaultsProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    WithDefaults,
-    WithDefault,
-    $WithDefaultsFilterComposer,
-    $WithDefaultsOrderingComposer,
-    $WithDefaultsAnnotationComposer,
-    $WithDefaultsCreateCompanionBuilder,
-    $WithDefaultsUpdateCompanionBuilder,
-    (WithDefault, BaseReferences<_$CustomTablesDb, WithDefaults, WithDefault>),
-    WithDefault,
-    PrefetchHooks Function()>;
-typedef $WithConstraintsCreateCompanionBuilder = WithConstraintsCompanion
-    Function({
-  Value<String?> a,
-  required int b,
-  Value<double?> c,
-  Value<int> rowid,
-});
-typedef $WithConstraintsUpdateCompanionBuilder = WithConstraintsCompanion
-    Function({
-  Value<String?> a,
-  Value<int> b,
-  Value<double?> c,
-  Value<int> rowid,
-});
-
-class $WithConstraintsFilterComposer
-    extends Composer<_$CustomTablesDb, WithConstraints> {
-  $WithConstraintsFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get a => $composableBuilder(
-      column: $table.a, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get b => $composableBuilder(
-      column: $table.b, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<double> get c => $composableBuilder(
-      column: $table.c, builder: (column) => ColumnFilters(column));
-}
-
-class $WithConstraintsOrderingComposer
-    extends Composer<_$CustomTablesDb, WithConstraints> {
-  $WithConstraintsOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get a => $composableBuilder(
-      column: $table.a, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get b => $composableBuilder(
-      column: $table.b, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get c => $composableBuilder(
-      column: $table.c, builder: (column) => ColumnOrderings(column));
-}
-
-class $WithConstraintsAnnotationComposer
-    extends Composer<_$CustomTablesDb, WithConstraints> {
-  $WithConstraintsAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get a =>
-      $composableBuilder(column: $table.a, builder: (column) => column);
-
-  GeneratedColumn<int> get b =>
-      $composableBuilder(column: $table.b, builder: (column) => column);
-
-  GeneratedColumn<double> get c =>
-      $composableBuilder(column: $table.c, builder: (column) => column);
-}
-
-class $WithConstraintsTableManager extends RootTableManager<
-    _$CustomTablesDb,
-    WithConstraints,
-    WithConstraint,
-    $WithConstraintsFilterComposer,
-    $WithConstraintsOrderingComposer,
-    $WithConstraintsAnnotationComposer,
-    $WithConstraintsCreateCompanionBuilder,
-    $WithConstraintsUpdateCompanionBuilder,
-    (
-      WithConstraint,
-      BaseReferences<_$CustomTablesDb, WithConstraints, WithConstraint>
-    ),
-    WithConstraint,
-    PrefetchHooks Function()> {
-  $WithConstraintsTableManager(_$CustomTablesDb db, WithConstraints table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $WithConstraintsFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $WithConstraintsOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $WithConstraintsAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String?> a = const Value.absent(),
-            Value<int> b = const Value.absent(),
-            Value<double?> c = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              WithConstraintsCompanion(
-            a: a,
-            b: b,
-            c: c,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            Value<String?> a = const Value.absent(),
-            required int b,
-            Value<double?> c = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              WithConstraintsCompanion.insert(
-            a: a,
-            b: b,
-            c: c,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $WithConstraintsProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    WithConstraints,
-    WithConstraint,
-    $WithConstraintsFilterComposer,
-    $WithConstraintsOrderingComposer,
-    $WithConstraintsAnnotationComposer,
-    $WithConstraintsCreateCompanionBuilder,
-    $WithConstraintsUpdateCompanionBuilder,
-    (
-      WithConstraint,
-      BaseReferences<_$CustomTablesDb, WithConstraints, WithConstraint>
-    ),
-    WithConstraint,
-    PrefetchHooks Function()>;
-typedef $ConfigTableCreateCompanionBuilder = ConfigCompanion Function({
-  required String configKey,
-  Value<DriftAny?> configValue,
-  Value<SyncType?> syncState,
-  Value<SyncType?> syncStateImplicit,
-  Value<int> rowid,
-});
-typedef $ConfigTableUpdateCompanionBuilder = ConfigCompanion Function({
-  Value<String> configKey,
-  Value<DriftAny?> configValue,
-  Value<SyncType?> syncState,
-  Value<SyncType?> syncStateImplicit,
-  Value<int> rowid,
-});
-
-class $ConfigTableFilterComposer
-    extends Composer<_$CustomTablesDb, ConfigTable> {
-  $ConfigTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get configKey => $composableBuilder(
-      column: $table.configKey, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DriftAny> get configValue => $composableBuilder(
-      column: $table.configValue, builder: (column) => ColumnFilters(column));
-
-  ColumnWithTypeConverterFilters<SyncType?, SyncType, int> get syncState =>
-      $composableBuilder(
-          column: $table.syncState,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
-
-  ColumnWithTypeConverterFilters<SyncType?, SyncType, int>
-      get syncStateImplicit => $composableBuilder(
-          column: $table.syncStateImplicit,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
-}
-
-class $ConfigTableOrderingComposer
-    extends Composer<_$CustomTablesDb, ConfigTable> {
-  $ConfigTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get configKey => $composableBuilder(
-      column: $table.configKey, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DriftAny> get configValue => $composableBuilder(
-      column: $table.configValue, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get syncState => $composableBuilder(
-      column: $table.syncState, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get syncStateImplicit => $composableBuilder(
-      column: $table.syncStateImplicit,
-      builder: (column) => ColumnOrderings(column));
-}
-
-class $ConfigTableAnnotationComposer
-    extends Composer<_$CustomTablesDb, ConfigTable> {
-  $ConfigTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get configKey =>
-      $composableBuilder(column: $table.configKey, builder: (column) => column);
-
-  GeneratedColumn<DriftAny> get configValue => $composableBuilder(
-      column: $table.configValue, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<SyncType?, int> get syncState =>
-      $composableBuilder(column: $table.syncState, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<SyncType?, int> get syncStateImplicit =>
-      $composableBuilder(
-          column: $table.syncStateImplicit, builder: (column) => column);
-}
-
-class $ConfigTableTableManager extends RootTableManager<
-    _$CustomTablesDb,
-    ConfigTable,
-    Config,
-    $ConfigTableFilterComposer,
-    $ConfigTableOrderingComposer,
-    $ConfigTableAnnotationComposer,
-    $ConfigTableCreateCompanionBuilder,
-    $ConfigTableUpdateCompanionBuilder,
-    (Config, BaseReferences<_$CustomTablesDb, ConfigTable, Config>),
-    Config,
-    PrefetchHooks Function()> {
-  $ConfigTableTableManager(_$CustomTablesDb db, ConfigTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $ConfigTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $ConfigTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $ConfigTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> configKey = const Value.absent(),
-            Value<DriftAny?> configValue = const Value.absent(),
-            Value<SyncType?> syncState = const Value.absent(),
-            Value<SyncType?> syncStateImplicit = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ConfigCompanion(
-            configKey: configKey,
-            configValue: configValue,
-            syncState: syncState,
-            syncStateImplicit: syncStateImplicit,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String configKey,
-            Value<DriftAny?> configValue = const Value.absent(),
-            Value<SyncType?> syncState = const Value.absent(),
-            Value<SyncType?> syncStateImplicit = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              ConfigCompanion.insert(
-            configKey: configKey,
-            configValue: configValue,
-            syncState: syncState,
-            syncStateImplicit: syncStateImplicit,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $ConfigTableProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    ConfigTable,
-    Config,
-    $ConfigTableFilterComposer,
-    $ConfigTableOrderingComposer,
-    $ConfigTableAnnotationComposer,
-    $ConfigTableCreateCompanionBuilder,
-    $ConfigTableUpdateCompanionBuilder,
-    (Config, BaseReferences<_$CustomTablesDb, ConfigTable, Config>),
-    Config,
-    PrefetchHooks Function()>;
-typedef $MytableCreateCompanionBuilder = MytableCompanion Function({
-  Value<int> someid,
-  Value<String?> sometext,
-  Value<bool?> isInserting,
-  Value<DateTime?> somedate,
-});
-typedef $MytableUpdateCompanionBuilder = MytableCompanion Function({
-  Value<int> someid,
-  Value<String?> sometext,
-  Value<bool?> isInserting,
-  Value<DateTime?> somedate,
-});
-
-class $MytableFilterComposer extends Composer<_$CustomTablesDb, Mytable> {
-  $MytableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get someid => $composableBuilder(
-      column: $table.someid, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get sometext => $composableBuilder(
-      column: $table.sometext, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isInserting => $composableBuilder(
-      column: $table.isInserting, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get somedate => $composableBuilder(
-      column: $table.somedate, builder: (column) => ColumnFilters(column));
-}
-
-class $MytableOrderingComposer extends Composer<_$CustomTablesDb, Mytable> {
-  $MytableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get someid => $composableBuilder(
-      column: $table.someid, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get sometext => $composableBuilder(
-      column: $table.sometext, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get isInserting => $composableBuilder(
-      column: $table.isInserting, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get somedate => $composableBuilder(
-      column: $table.somedate, builder: (column) => ColumnOrderings(column));
-}
-
-class $MytableAnnotationComposer extends Composer<_$CustomTablesDb, Mytable> {
-  $MytableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get someid =>
-      $composableBuilder(column: $table.someid, builder: (column) => column);
-
-  GeneratedColumn<String> get sometext =>
-      $composableBuilder(column: $table.sometext, builder: (column) => column);
-
-  GeneratedColumn<bool> get isInserting => $composableBuilder(
-      column: $table.isInserting, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get somedate =>
-      $composableBuilder(column: $table.somedate, builder: (column) => column);
-}
-
-class $MytableTableManager extends RootTableManager<
-    _$CustomTablesDb,
-    Mytable,
-    MytableData,
-    $MytableFilterComposer,
-    $MytableOrderingComposer,
-    $MytableAnnotationComposer,
-    $MytableCreateCompanionBuilder,
-    $MytableUpdateCompanionBuilder,
-    (MytableData, BaseReferences<_$CustomTablesDb, Mytable, MytableData>),
-    MytableData,
-    PrefetchHooks Function()> {
-  $MytableTableManager(_$CustomTablesDb db, Mytable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $MytableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $MytableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $MytableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> someid = const Value.absent(),
-            Value<String?> sometext = const Value.absent(),
-            Value<bool?> isInserting = const Value.absent(),
-            Value<DateTime?> somedate = const Value.absent(),
-          }) =>
-              MytableCompanion(
-            someid: someid,
-            sometext: sometext,
-            isInserting: isInserting,
-            somedate: somedate,
-          ),
-          createCompanionCallback: ({
-            Value<int> someid = const Value.absent(),
-            Value<String?> sometext = const Value.absent(),
-            Value<bool?> isInserting = const Value.absent(),
-            Value<DateTime?> somedate = const Value.absent(),
-          }) =>
-              MytableCompanion.insert(
-            someid: someid,
-            sometext: sometext,
-            isInserting: isInserting,
-            somedate: somedate,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $MytableProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    Mytable,
-    MytableData,
-    $MytableFilterComposer,
-    $MytableOrderingComposer,
-    $MytableAnnotationComposer,
-    $MytableCreateCompanionBuilder,
-    $MytableUpdateCompanionBuilder,
-    (MytableData, BaseReferences<_$CustomTablesDb, Mytable, MytableData>),
-    MytableData,
-    PrefetchHooks Function()>;
-typedef $EmailCreateCompanionBuilder = EmailCompanion Function({
-  required String sender,
-  required String title,
-  required String body,
-  Value<int> rowid,
-});
-typedef $EmailUpdateCompanionBuilder = EmailCompanion Function({
-  Value<String> sender,
-  Value<String> title,
-  Value<String> body,
-  Value<int> rowid,
-});
-
-class $EmailFilterComposer extends Composer<_$CustomTablesDb, Email> {
-  $EmailFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get sender => $composableBuilder(
-      column: $table.sender, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get body => $composableBuilder(
-      column: $table.body, builder: (column) => ColumnFilters(column));
-}
-
-class $EmailOrderingComposer extends Composer<_$CustomTablesDb, Email> {
-  $EmailOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get sender => $composableBuilder(
-      column: $table.sender, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get title => $composableBuilder(
-      column: $table.title, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get body => $composableBuilder(
-      column: $table.body, builder: (column) => ColumnOrderings(column));
-}
-
-class $EmailAnnotationComposer extends Composer<_$CustomTablesDb, Email> {
-  $EmailAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get sender =>
-      $composableBuilder(column: $table.sender, builder: (column) => column);
-
-  GeneratedColumn<String> get title =>
-      $composableBuilder(column: $table.title, builder: (column) => column);
-
-  GeneratedColumn<String> get body =>
-      $composableBuilder(column: $table.body, builder: (column) => column);
-}
-
-class $EmailTableManager extends RootTableManager<
-    _$CustomTablesDb,
-    Email,
-    EMail,
-    $EmailFilterComposer,
-    $EmailOrderingComposer,
-    $EmailAnnotationComposer,
-    $EmailCreateCompanionBuilder,
-    $EmailUpdateCompanionBuilder,
-    (EMail, BaseReferences<_$CustomTablesDb, Email, EMail>),
-    EMail,
-    PrefetchHooks Function()> {
-  $EmailTableManager(_$CustomTablesDb db, Email table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $EmailFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $EmailOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $EmailAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<String> sender = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String> body = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              EmailCompanion(
-            sender: sender,
-            title: title,
-            body: body,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String sender,
-            required String title,
-            required String body,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              EmailCompanion.insert(
-            sender: sender,
-            title: title,
-            body: body,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $EmailProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    Email,
-    EMail,
-    $EmailFilterComposer,
-    $EmailOrderingComposer,
-    $EmailAnnotationComposer,
-    $EmailCreateCompanionBuilder,
-    $EmailUpdateCompanionBuilder,
-    (EMail, BaseReferences<_$CustomTablesDb, Email, EMail>),
-    EMail,
-    PrefetchHooks Function()>;
-typedef $WeirdTableCreateCompanionBuilder = WeirdTableCompanion Function({
-  required int sqlClass,
-  required String textColumn,
-  Value<int> rowid,
-});
-typedef $WeirdTableUpdateCompanionBuilder = WeirdTableCompanion Function({
-  Value<int> sqlClass,
-  Value<String> textColumn,
-  Value<int> rowid,
-});
-
-class $WeirdTableFilterComposer extends Composer<_$CustomTablesDb, WeirdTable> {
-  $WeirdTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get sqlClass => $composableBuilder(
-      column: $table.sqlClass, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get textColumn => $composableBuilder(
-      column: $table.textColumn, builder: (column) => ColumnFilters(column));
-}
-
-class $WeirdTableOrderingComposer
-    extends Composer<_$CustomTablesDb, WeirdTable> {
-  $WeirdTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get sqlClass => $composableBuilder(
-      column: $table.sqlClass, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get textColumn => $composableBuilder(
-      column: $table.textColumn, builder: (column) => ColumnOrderings(column));
-}
-
-class $WeirdTableAnnotationComposer
-    extends Composer<_$CustomTablesDb, WeirdTable> {
-  $WeirdTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get sqlClass =>
-      $composableBuilder(column: $table.sqlClass, builder: (column) => column);
-
-  GeneratedColumn<String> get textColumn => $composableBuilder(
-      column: $table.textColumn, builder: (column) => column);
-}
-
-class $WeirdTableTableManager extends RootTableManager<
-    _$CustomTablesDb,
-    WeirdTable,
-    WeirdData,
-    $WeirdTableFilterComposer,
-    $WeirdTableOrderingComposer,
-    $WeirdTableAnnotationComposer,
-    $WeirdTableCreateCompanionBuilder,
-    $WeirdTableUpdateCompanionBuilder,
-    (WeirdData, BaseReferences<_$CustomTablesDb, WeirdTable, WeirdData>),
-    WeirdData,
-    PrefetchHooks Function()> {
-  $WeirdTableTableManager(_$CustomTablesDb db, WeirdTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $WeirdTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $WeirdTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $WeirdTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> sqlClass = const Value.absent(),
-            Value<String> textColumn = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              WeirdTableCompanion(
-            sqlClass: sqlClass,
-            textColumn: textColumn,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int sqlClass,
-            required String textColumn,
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              WeirdTableCompanion.insert(
-            sqlClass: sqlClass,
-            textColumn: textColumn,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $WeirdTableProcessedTableManager = ProcessedTableManager<
-    _$CustomTablesDb,
-    WeirdTable,
-    WeirdData,
-    $WeirdTableFilterComposer,
-    $WeirdTableOrderingComposer,
-    $WeirdTableAnnotationComposer,
-    $WeirdTableCreateCompanionBuilder,
-    $WeirdTableUpdateCompanionBuilder,
-    (WeirdData, BaseReferences<_$CustomTablesDb, WeirdTable, WeirdData>),
-    WeirdData,
-    PrefetchHooks Function()>;
-
-class $CustomTablesDbManager {
-  final _$CustomTablesDb _db;
-  $CustomTablesDbManager(this._db);
-  $NoIdsTableManager get noIds => $NoIdsTableManager(_db, _db.noIds);
-  $WithDefaultsTableManager get withDefaults =>
-      $WithDefaultsTableManager(_db, _db.withDefaults);
-  $WithConstraintsTableManager get withConstraints =>
-      $WithConstraintsTableManager(_db, _db.withConstraints);
-  $ConfigTableTableManager get config =>
-      $ConfigTableTableManager(_db, _db.config);
-  $MytableTableManager get mytable => $MytableTableManager(_db, _db.mytable);
-  $EmailTableManager get email => $EmailTableManager(_db, _db.email);
-  $WeirdTableTableManager get weirdTable =>
-      $WeirdTableTableManager(_db, _db.weirdTable);
-}
-
 typedef ReadMultiple$clause = OrderBy Function(ConfigTable config);
 typedef ReadDynamic$predicate = Expression<bool> Function(ConfigTable config);
 typedef TypeConverterVar$pred = Expression<bool> Function(ConfigTable config);
@@ -2877,7 +2063,7 @@ class JsonResult extends CustomResultSet {
   final String key;
   final String? value;
   JsonResult({
-    required QueryRow row,
+    required DriftRow row,
     required this.key,
     this.value,
   }) : super(row);
@@ -2904,7 +2090,7 @@ class MultipleResult extends CustomResultSet {
   final int? b;
   final WithConstraint? c;
   MultipleResult({
-    required QueryRow row,
+    required DriftRow row,
     this.a,
     this.b,
     this.c,
@@ -2939,7 +2125,7 @@ class ReadRowIdResult extends CustomResultSet {
   final SyncType? syncState;
   final SyncType? syncStateImplicit;
   ReadRowIdResult({
-    required QueryRow row,
+    required DriftRow row,
     required this.rowid,
     required this.configKey,
     this.configValue,
@@ -2978,7 +2164,7 @@ class NestedResult extends CustomResultSet {
   final WithDefault defaults;
   final List<WithConstraint> nestedQuery1;
   NestedResult({
-    required QueryRow row,
+    required DriftRow row,
     required this.defaults,
     required this.nestedQuery1,
   }) : super(row);

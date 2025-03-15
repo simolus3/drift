@@ -480,6 +480,16 @@ class InferredResultSet {
 
   Iterable<NestedResult> get nestedResults => columns.whereType();
 
+  /// The amount of underlying columns (as selected from the database) wrapped
+  /// in this result set.
+  int get underlyingColumnCount => columns
+      .map((e) => switch (e) {
+            ScalarResultColumn() => 1,
+            NestedResultTable() => e.innerResultSet.underlyingColumnCount,
+            NestedResultQuery() => 1,
+          })
+      .sum;
+
   /// Whether a new class needs to be written to store the result of this query.
   ///
   /// We don't need to introduce result classes for queries which
@@ -691,23 +701,12 @@ class MappedNestedListQuery extends ArgumentForQueryRowType {
 /// We still need to handle column aliases.
 class MatchingDriftTable implements ArgumentForQueryRowType {
   final DriftElementWithResultSet table;
-  final Map<String, DriftColumn> aliasToColumn;
+  final Map<DriftColumn, ScalarResultColumn> columnToSource;
 
-  MatchingDriftTable(this.table, this.aliasToColumn);
+  MatchingDriftTable(this.table, this.columnToSource);
 
   @override
-  // Mapping from tables is currently asynchronous because the existing data
-  // class could be an asynchronous factory.
-  bool get requiresAsynchronousContext => true;
-
-  /// Whether the column alias can be ignored.
-  ///
-  /// This is the case if each result column name maps to a drift column with
-  /// the same SQL name.
-  bool get effectivelyNoAlias {
-    return !aliasToColumn.entries
-        .any((entry) => entry.key != entry.value.nameInSql);
-  }
+  bool get requiresAsynchronousContext => false;
 }
 
 sealed class ResultColumn {
@@ -724,6 +723,8 @@ sealed class ResultColumn {
 
 final class ScalarResultColumn extends ResultColumn
     implements HasType, ArgumentForQueryRowType {
+  final int index;
+
   final String name;
   @override
   final ColumnType sqlType;
@@ -736,7 +737,7 @@ final class ScalarResultColumn extends ResultColumn
   /// The analyzed column from the `sqlparser` package.
   final Column? sqlParserColumn;
 
-  ScalarResultColumn(this.name, this.sqlType, this.nullable,
+  ScalarResultColumn(this.index, this.name, this.sqlType, this.nullable,
       {this.typeConverter, this.sqlParserColumn});
 
   @override

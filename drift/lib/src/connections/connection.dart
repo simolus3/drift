@@ -1,5 +1,6 @@
 import '../query_builder/compiler.dart';
 import '../query_builder/dialect.dart';
+import '../query_builder/results.dart';
 import '../query_builder/types.dart';
 import 'result_set.dart';
 
@@ -55,16 +56,19 @@ final class StatementInfo {
   final String sql;
   final bool needsResultSet;
   final List<TypedNullableValue> variables;
+  final ResultSetStructure? resultSetStructure;
 
   StatementInfo(CompiledStatement this.generated)
       : sql = generated.buffer.toString(),
         needsResultSet = generated.resultSetStructure != null,
-        variables = generated.variables;
+        variables = generated.variables,
+        resultSetStructure = generated.resultSetStructure;
 
   StatementInfo.fromText(
     this.sql, {
     this.variables = const [],
     this.needsResultSet = false,
+    this.resultSetStructure,
   }) : generated = null;
 
   Iterable<Object?> sqlVariables(DriftDialect dialect) =>

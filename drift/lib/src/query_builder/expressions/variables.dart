@@ -77,6 +77,12 @@ final class Variable<T extends Object> extends Expression<T> {
   void compileWith(StatementCompiler compiler) {
     return compiler.addVariable(this);
   }
+
+  /// Resolves the type of this variable and uses that type implementation to
+  /// map [value] into the underlying representation for the SQL implementation.
+  TypedNullableValue resolveValue(DriftDialect dialect) {
+    return (resolveType(dialect), value);
+  }
 }
 
 /// An expression that represents the value of a dart object encoded to sql

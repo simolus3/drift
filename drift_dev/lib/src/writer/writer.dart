@@ -285,7 +285,7 @@ abstract class _NodeOrWriter {
           // Also specify the custom type since it can't be inferred from the
           // value passed to the variable.
           b
-            ..addText(', ')
+            ..addText(', (_) => ')
             ..addCode(custom.expression);
       }
 

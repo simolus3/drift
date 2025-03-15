@@ -185,7 +185,8 @@ final class VersionedTable extends Table
   VersionedTable asSelfType() => this;
 
   @override
-  DriftRow? Function(DriftRow p1) createMapperToDart(DriftResultSet resultSet) {
+  DriftRow? Function(DriftRow p1) createMapperFromPositions(
+      List<ColumnPosition> positions) {
     return (row) => row;
   }
 

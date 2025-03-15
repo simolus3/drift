@@ -205,7 +205,7 @@ class QueryAnalyzer {
 
       if (columns != null) {
         final syntacticSource = root.returning?.columns;
-        resultSet = _inferResultSet(queryContext, columns, syntacticSource);
+        resultSet = _inferResultSet(queryContext, columns, syntacticSource, 0);
       }
     }
 
@@ -266,7 +266,7 @@ class QueryAnalyzer {
       queryContext.foundElements,
       queryContext.elementReferences,
       driftEntities,
-      _inferResultSet(queryContext, resolvedColumns, syntacticColumns),
+      _inferResultSet(queryContext, resolvedColumns, syntacticColumns, 0),
       queryContext.requestedResultClass,
       queryContext.nestedScope,
     );
@@ -276,7 +276,9 @@ class QueryAnalyzer {
     _QueryHandlerContext queryContext,
     List<Column> rawColumns,
     List<sql.ResultColumn>? syntacticColumns,
+    int? columnOffset,
   ) {
+    var currentColumnIndex = columnOffset ?? 0;
     final candidatesForSingleTable = {..._foundTables, ..._foundViews};
     final columns = <ResultColumn>[];
 
@@ -310,8 +312,13 @@ class QueryAnalyzer {
       }
 
       columns.add(ScalarResultColumn(
-          column.name, driftType, type?.nullable ?? true,
-          typeConverter: converter, sqlParserColumn: column));
+        currentColumnIndex++,
+        column.name,
+        driftType,
+        type?.nullable ?? true,
+        typeConverter: converter,
+        sqlParserColumn: column,
+      ));
 
       final resultSet = _resultSetOfColumn(column);
       candidatesForSingleTable.removeWhere((t) => t != resultSet);
@@ -332,6 +339,8 @@ class QueryAnalyzer {
           final resolved = _resolveNestedResultTable(queryContext, column);
 
           if (resolved != null) {
+            currentColumnIndex += resolved.innerResultSet.underlyingColumnCount;
+
             // The single table optimization doesn't make sense when nested result
             // sets are present.
             candidatesForSingleTable.clear();
@@ -372,7 +381,7 @@ class QueryAnalyzer {
       }
 
       final resultEntryToColumn = <ResultColumn, String>{};
-      final resultColumnNameToDrift = <String, DriftColumn>{};
+      final columnToSource = <DriftColumn, ScalarResultColumn>{};
       var matches = true;
 
       // go trough all columns of the table in question
@@ -388,8 +397,7 @@ class QueryAnalyzer {
           final columnIndex = rawColumns.indexOf(inResultSet.single);
           final resultColumn = columns[columnIndex] as ScalarResultColumn;
 
-          resultEntryToColumn[resultColumn] = column.nameInDart;
-          resultColumnNameToDrift[resultColumn.name] = column;
+          columnToSource[column] = resultColumn;
         } else {
           // it's not, so no match
           matches = false;
@@ -404,7 +412,7 @@ class QueryAnalyzer {
       }
 
       if (matches) {
-        final match = MatchingDriftTable(driftTable, resultColumnNameToDrift);
+        final match = MatchingDriftTable(driftTable, columnToSource);
         resultSet = InferredResultSet(match, columns)
           ..forceDartNames(resultEntryToColumn);
       }
@@ -433,7 +441,7 @@ class QueryAnalyzer {
 
   /// Resolves a "nested star" column.
   ///
-  /// Nested star columns refer to an existing result set, but instructs drift
+  /// Nested star columns refer to an existing result set, but instruct drift
   /// that this result set should be handled as a nested type in Dart. For an
   /// example, see https://drift.simonbinder.eu/docs/using-sql/drift_files/#nested-results
   NestedResultTable? _resolveNestedResultTable(
@@ -457,6 +465,7 @@ class QueryAnalyzer {
       ),
       rawColumns,
       null,
+      0,
     );
 
     final analysis = JoinModel.of(column);

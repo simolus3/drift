@@ -11,11 +11,17 @@ import 'types.dart';
 final class ResultSetStructure {
   /// For [Expression] instances added to a query, the position of the column
   /// added for that expression.
-  final Map<Expression, ColumnPosition> expressions = {};
+  final Map<Expression, ColumnPosition> expressions;
 
   /// For each [ResultSet] that has been added to a query in its entirety, the
   /// a list of [ColumnPosition]s for each column in the result set.
-  final Map<ResultSet, List<ColumnPosition>> tables = {};
+  final Map<ResultSet, List<ColumnPosition>> tables;
+
+  ResultSetStructure(
+      {Map<Expression, ColumnPosition>? expressions,
+      Map<ResultSet, List<ColumnPosition>>? tables})
+      : expressions = expressions ?? {},
+        tables = tables ?? {};
 }
 
 final class DriftResultSet
