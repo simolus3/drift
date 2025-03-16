@@ -226,6 +226,11 @@ abstract class TableOrViewWriter {
 
     expressionBuffer
       ..write(type)
+      // Use ViewColumn.forDriftFile constructor if we don't have a Dart
+      // expression backing the column (which is the case for SQL-defined
+      // views).
+      ..write(
+          !isForTable && column.viewExpression == null ? '.forDriftFile' : '')
       ..write('(');
 
     var first = true;

@@ -492,7 +492,7 @@ extension SqliteMigrator on Migrator {
       // in a very recent version (3.33.0)
       final schemaQuery = await database.customSelect(
         'SELECT type, name, sql FROM sqlite_master WHERE tbl_name = ?;',
-        variables: [Variable<String>(tableName)],
+        variables: [(database.dialect.textType, tableName)],
       ).get();
 
       final createAffected = <String>[];
@@ -585,7 +585,7 @@ extension SqliteMigrator on Migrator {
           // existing users (e.g. if the new table references a view somehow).
           final allViews = await database.customSelect(
             'SELECT name, sql FROM sqlite_master WHERE type = ?;',
-            variables: [Variable<String>('view')],
+            variables: [(database.dialect.textType, 'view')],
           ).get();
 
           for (final row in allViews) {

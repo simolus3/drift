@@ -10,14 +10,17 @@ final class DriftDatabaseImplementation {
   final DriftDialect dialect;
   final Future<DriftRootSession> Function() _openConnection;
 
-  DriftDatabaseImplementation(
-      {required this.dialect,
-      required Future<DriftRootSession> Function() openConnection})
-      : _openConnection = openConnection;
+  final StreamQueryStore? streamQueries;
+
+  DriftDatabaseImplementation({
+    required this.dialect,
+    required Future<DriftRootSession> Function() openConnection,
+    this.streamQueries,
+  }) : _openConnection = openConnection;
 
   Future<(DriftRootSession, StreamQueryStore)> open() async {
     final session = await _openConnection();
-    return (session, LocalStreamQueryStore());
+    return (session, streamQueries ?? LocalStreamQueryStore());
   }
 }
 

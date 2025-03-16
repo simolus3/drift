@@ -14,6 +14,6 @@ Object? transportRoundtrip(Object? source) {
   throw UnsupportedError('Stub, should resolve to web or vm');
 }
 
-DatabaseConnection testInMemoryDatabase() {
+DriftDatabaseImplementation testInMemoryDatabase() {
   throw UnsupportedError('Stub, should resolve to web or vm');
 }

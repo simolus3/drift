@@ -207,7 +207,7 @@ abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
     return customSelectMapped<double?>(
         query:
             'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = ?1',
-        variables: [Variable<int>(var1)],
+        variables: [(dialect.intType, var1)],
         readsFrom: {
           geopolyTest,
         },

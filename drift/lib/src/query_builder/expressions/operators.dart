@@ -26,6 +26,17 @@ final class BinaryExpression<T extends Object> extends Expression<T> {
   Precedence get precedence => operator.precedence;
 
   @override
+  int get hashCode => Object.hash(left, operator, right);
+
+  @override
+  bool operator ==(Object other) {
+    return other is BinaryExpression &&
+        other.operator == operator &&
+        other.left == left &&
+        other.right == right;
+  }
+
+  @override
   SqlType<T> resolveType(DriftDialect dialect) {
     return _resolveType?.call(dialect) ?? dialect.resolveType<T>();
   }

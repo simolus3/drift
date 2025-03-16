@@ -1,5 +1,6 @@
 import '../../runtime/type_converter.dart';
 import '../compiler.dart';
+import '../expressions/custom.dart';
 import '../expressions/expression.dart';
 import '../statements/select.dart';
 import 'column.dart';
@@ -9,6 +10,10 @@ import 'result_set.dart';
 abstract interface class GeneratedView<Row extends Object,
     Self extends GeneratedView<Row, Self>> implements ResultSet<Row, Self> {
   SelectStatement? get query;
+  CustomComponent? get sqlDefinition;
+
+  /// The names of tables that this view is reading from.
+  Set<String> get readsFrom;
 }
 
 final class ViewColumn<T extends Object> extends SchemaColumn<T> {
@@ -20,6 +25,12 @@ final class ViewColumn<T extends Object> extends SchemaColumn<T> {
     super.isNullable,
     required this.expression,
   });
+
+  ViewColumn.forDriftFile({
+    required super.name,
+    required super.type,
+    super.isNullable,
+  }) : expression = const CustomExpression(CustomComponent(''));
 
   /// Applies a type converter to this column.
   ///

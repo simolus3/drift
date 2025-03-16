@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show BuiltinDriftType;
 import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -266,17 +267,7 @@ abstract class _NodeOrWriter {
             variableTypeCode(column, nullable: false, ignoreArray: ignoreArray))
         ..addText('>(');
 
-      final converter = column.typeConverter;
-      if (converter != null) {
-        // apply type converter before writing the variable
-        b
-          ..addCode(readConverter(converter, forNullable: column.nullable))
-          ..addText('.toSql(')
-          ..addCode(expression)
-          ..addText(')');
-      } else {
-        b.addCode(expression);
-      }
+      _applyTypeConverterToSqlIfAny(b, column, expression);
 
       switch (column.sqlType) {
         case ColumnDriftType():
@@ -287,6 +278,79 @@ abstract class _NodeOrWriter {
           b
             ..addText(', (_) => ')
             ..addCode(custom.expression);
+      }
+
+      b.addText(')');
+    });
+  }
+
+  void _applyTypeConverterToSqlIfAny(AnnotatedDartCodeBuilder b, HasType column,
+      AnnotatedDartCode expression) {
+    final converter = column.typeConverter;
+    if (converter != null) {
+      // apply type converter before writing the variable
+      b
+        ..addCode(readConverter(converter, forNullable: column.nullable))
+        ..addText('.toSql(')
+        ..addCode(expression)
+        ..addText(')');
+    } else {
+      b.addCode(expression);
+    }
+  }
+
+  String builtinType(BuiltinDriftType type) {
+    // This is an inlined implementation of BuiltinDriftType.resolveIn, it
+    // calls e.g. this.dialect.intType
+    return 'dialect.${type.name}Type';
+  }
+
+  AnnotatedDartCode loadType(ColumnType type) {
+    return AnnotatedDartCode.build((b) {
+      switch (type) {
+        case ColumnDriftType(:final builtin):
+          b.addText(builtinType(builtin));
+        case ColumnCustomType(:final custom):
+          b.addCode(custom.expression);
+      }
+    });
+  }
+
+  /// Wraps [expression] in a (type, value) pair.
+  AnnotatedDartCode wrapAsTypedValue(
+      HasType column, AnnotatedDartCode expression) {
+    return AnnotatedDartCode.build((b) {
+      b
+        ..addText('(')
+        ..addCode(loadType(column.sqlType))
+        ..addText(',');
+      _applyTypeConverterToSqlIfAny(b, column, expression);
+      b.addText(')');
+    });
+  }
+
+  AnnotatedDartCode customComponent(sql.AstNode node) {
+    final dialects = writer.options.dialects;
+
+    return AnnotatedDartCode.build((b) {
+      final defaultText = StringBuffer();
+      SqlWriter(writer.options,
+              dialect: dialects.values.first,
+              buffer: defaultText,
+              escapeForDart: false)
+          .writeSql(node);
+      final dialectSpecific = StringBuffer();
+      _writeSqlByDialectMap(node, dialectSpecific);
+
+      b
+        ..addSymbol('CustomComponent', AnnotatedDartCode.drift)
+        ..addText('(')
+        ..addText(asDartLiteral(defaultText.toString()));
+
+      if (dialects.length > 1) {
+        b
+          ..addText(', dialectSpecificSql: ')
+          ..addText(dialectSpecific.toString());
       }
 
       b.addText(')');
@@ -336,45 +400,20 @@ abstract class _NodeOrWriter {
         .writeSql(node);
   }
 
-  /// Builds a Dart expression writing the [node] into a Dart string.
-  ///
-  /// If the code for [node] depends on the dialect, the code returned evaluates
-  /// to a `Map<SqlDialect, String>`. Otherwise, the code is a direct string
-  /// literal.
-  ///
-  /// The boolean component in the record describes whether the code will be
-  /// dialect specific.
-  (String, bool) sqlByDialect(sql.AstNode node) {
-    final dialects = writer.options.dialects;
-
-    if (dialects case [final DriftSqliteDialect sqlite]) {
-      // Even if we only have a single dialect enabled, we should generate a
-      // dialect-specific map if that dialect is not sqlite3. The reason is that
-      // APIs in drift that aren't dialect-specific all assume sqlite3.
-      return (
-        SqlWriter(writer.options, dialect: sqlite)
-            .writeNodeIntoStringLiteral(node),
-        false
-      );
-    }
-
-    final buffer = StringBuffer();
-    _writeSqlByDialectMap(node, buffer);
-    return (buffer.toString(), true);
-  }
-
   void _writeSqlByDialectMap(sql.AstNode node, StringBuffer buffer) {
     buffer.write('{');
 
     for (final dialect in writer.options.dialects.values) {
-      buffer
-        ..write(drift('SqlDialect'))
-        ..write(".${dialect.name}: '");
+      if (dialect.known case final knownType?) {
+        buffer
+          ..write(drift('KnownSqlDialect'))
+          ..write(".${knownType.name}: '");
 
-      SqlWriter(writer.options, dialect: dialect, buffer: buffer)
-          .writeSql(node);
+        SqlWriter(writer.options, dialect: dialect, buffer: buffer)
+            .writeSql(node);
 
-      buffer.writeln("',");
+        buffer.writeln("',");
+      }
     }
 
     buffer.write('}');

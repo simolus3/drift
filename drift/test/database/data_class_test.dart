@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
@@ -205,7 +207,7 @@ class _MySerializer extends ValueSerializer {
   }
 }
 
-class _MyInsertable extends Insertable<void> {
+class _MyInsertable implements Insertable<void> {
   const _MyInsertable();
 
   @override

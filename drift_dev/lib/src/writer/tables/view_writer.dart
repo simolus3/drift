@@ -74,6 +74,11 @@ class ViewWriter extends TableOrViewWriter {
           ..writeDart(emitter.referenceElement(ref.table, '_attachedDatabase'))
           ..writeln('.withAlias($alias);');
       }
+    } else {
+      emitter
+        ..writeln('@override')
+        ..writeDriftRef('BaseSelectStatement')
+        ..write(' as() => throw UnimplementedError();');
     }
 
     writeGetColumnsOverride();
@@ -90,16 +95,18 @@ class ViewWriter extends TableOrViewWriter {
 
     _writeAliasGenerator();
     _writeQuery();
+    _writeDefinition();
 
     final readTables = view.transitiveTableReferences
         .map((e) => asDartLiteral(e.schemaName))
         .join(', ');
     buffer.writeln('''
       @override
-      Set<String> get readTables => const {$readTables};
+      Set<String> get readsFrom => const {$readTables};
     ''');
 
     writeConvertersAsStaticFields();
+
     buffer.writeln('}');
   }
 
@@ -111,6 +118,24 @@ class ViewWriter extends TableOrViewWriter {
       ..write('$typeName withAlias(String alias) {\n')
       ..write('return $typeName(_attachedDatabase, alias);')
       ..write('}');
+  }
+
+  void _writeDefinition() {
+    final source = view.source;
+
+    emitter
+      ..writeln('@override')
+      ..write(emitter.drift('CustomComponent'))
+      ..write(source is! SqlViewSource ? '?' : '')
+      ..write(' get sqlDefinition => ');
+
+    if (source case final SqlViewSource sql) {
+      emitter.writeDart(emitter.customComponent(sql.parsedStatement!));
+    } else {
+      emitter.write('null');
+    }
+
+    emitter.writeln(';');
   }
 
   void _writeQuery() {

@@ -80,21 +80,16 @@ final class CreateIndexStatement extends CreateStatement<Index> {
   }
 }
 
-/// An index on a table.
+/// A query defined in a drift file that should run when the database is
+/// created.
 final class OnCreateQuery extends DatabaseSchemaEntity {
   @override
-  final String entityName;
+  String get entityName => '@create';
 
-  /// A function responsible for writing the query to run when creating the
-  /// database.
-  final void Function(StatementCompiler) generateDefinition;
+  /// The dialect-specific SQL text to write when creating the database.
+  final CustomComponent definition;
 
   /// Creates a trigger from its name and the (possibly dialect-specific)
   /// definition generator.
-  OnCreateQuery(this.entityName, this.generateDefinition);
-
-  /// Creates an index backed by an [sql] string that's not dialect-specific.
-  OnCreateQuery.simpleSql(this.entityName, String sql)
-      : generateDefinition =
-            ((compiler) => compiler.statement.buffer.write(sql));
+  OnCreateQuery(this.definition);
 }

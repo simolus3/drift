@@ -1,3 +1,5 @@
+export 'query_builder/clauses/order_by.dart';
+export 'query_builder/compiler.dart';
 export 'query_builder/dialect.dart';
 
 export 'query_builder/expressions/aggregate.dart';

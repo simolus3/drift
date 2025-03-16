@@ -92,7 +92,7 @@ final class Migrator {
       await createIndex(entity);
     } else if (entity is OnCreateQuery) {
       final stmt = database.dialect.createCompiler();
-      entity.generateDefinition(stmt);
+      entity.definition.compileWith(stmt);
       await (await database.currentSession())
           .execute(StatementInfo(stmt.statement));
     } else if (entity is GeneratedView) {

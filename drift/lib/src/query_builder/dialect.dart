@@ -4,6 +4,7 @@ import 'types.dart';
 enum KnownSqlDialect {
   sqlite,
   postgres,
+  mariadb,
 }
 
 abstract base class DriftDialect implements TypeProvider {

@@ -1,120 +1,99 @@
 import 'package:drift/drift.dart';
+import 'package:drift/src/connections/sqlite3/connection.dart';
+import 'package:sqlite3/common.dart' as sqlite3;
 import 'package:mockito/mockito.dart';
 
-class MockExecutor extends Mock implements QueryExecutor {
-  late final MockTransactionExecutor transactions = MockTransactionExecutor();
-  late final MockExecutor exclusive = this;
-  final OpeningDetails? openingDetails;
-  bool opened = false;
+final class MockSession extends Mock
+    implements
+        DriftRootSession,
+        DriftTransactionParent,
+        DriftSessionWithInternalLocks {
+  late final MockTransactionSession transactions = MockTransactionSession();
+  late final MockSession exclusiveExecutor = this;
 
-  MockExecutor([this.openingDetails]) {
-    when(dialect).thenReturn(SqlDialect.sqlite);
-    when(runSelect(any, any)).thenAnswer((_) {
-      assert(opened);
-      return Future.value([]);
-    });
-    when(runUpdate(any, any)).thenAnswer((_) {
-      assert(opened);
-      return Future.value(0);
-    });
-    when(runDelete(any, any)).thenAnswer((_) {
-      assert(opened);
-      return Future.value(0);
-    });
-    when(runInsert(any, any)).thenAnswer((_) {
-      assert(opened);
-      return Future.value(0);
-    });
-    when(runCustom(any, any)).thenAnswer((_) {
-      assert(opened);
-      return Future.value();
-    });
-    when(runBatched(any)).thenAnswer((_) {
-      assert(opened);
-      return Future.value();
-    });
+  var open = true;
 
-    when(ensureOpen(any)).thenAnswer((i) async {
-      if (!opened && openingDetails != null) {
-        opened = true;
-        await (i.positionalArguments.single as QueryExecutorUser)
-            .beforeOpen(this, openingDetails!);
+  MockSession() {
+    when(execute(any)).thenAnswer((i) async {
+      assert(open);
+      final statement = i.positionalArguments[0] as StatementInfo;
+      if (statement.needsResultSet) {
+        return QueryResult(
+          resultSet: SqliteResultSet(
+            resultSet: sqlite3.ResultSet(const [], const [], const []),
+          ),
+        );
+      } else {
+        return QueryResult(resultSet: null);
       }
-
-      opened = true;
-
-      return true;
+    });
+    when(executeBatch(any)).thenAnswer((i) async {
+      assert(open);
+      return const [];
+    });
+    when(close()).thenAnswer((_) async {
+      assert(open);
+      open = false;
     });
 
-    when(close()).thenAnswer((_) async {
-      opened = false;
+    when(schemaVersion).thenAnswer((i) async {
+      assert(open);
+      return 0;
+    });
+    when(writeSchemaVersion(any)).thenAnswer((i) async {
+      assert(open);
+    });
+    when(exclusive()).thenAnswer((i) async {
+      assert(open);
+      return exclusiveExecutor;
+    });
+    when(begin(any)).thenAnswer((i) async {
+      assert(open);
+      return transactions;
     });
   }
 
   @override
-  SqlDialect get dialect =>
-      _nsm(Invocation.getter(#dialect), SqlDialect.sqlite);
+  Future<QueryResult> execute(StatementInfo? statement) => _nsm(
+      Invocation.method(#execute, [statement]),
+      Future.value(QueryResult(resultSet: null)));
 
   @override
-  Future<bool> ensureOpen(QueryExecutorUser? user) =>
-      _nsm(Invocation.method(#ensureOpen, [user]), Future.value(true));
-
-  @override
-  Future<List<Map<String, Object?>>> runSelect(
-          String? statement, List<Object?>? args) =>
-      _nsm(Invocation.method(#runSelect, [statement, args]),
-          Future.value(<Map<String, Object?>>[]));
-
-  @override
-  Future<int> runInsert(String? statement, List<Object?>? args) =>
-      _nsm(Invocation.method(#runInsert, [statement, args]), Future.value(0));
-
-  @override
-  Future<int> runUpdate(String? statement, List<Object?>? args) =>
-      _nsm(Invocation.method(#runUpdate, [statement, args]), Future.value(0));
-
-  @override
-  Future<int> runDelete(String? statement, List<Object?>? args) =>
-      _nsm(Invocation.method(#runDelete, [statement, args]), Future.value(0));
-
-  @override
-  Future<void> runCustom(String? statement, [List<Object?>? args]) => _nsm(
-      Invocation.method(#runCustom, [statement, args]), Future.value(null));
-
-  @override
-  Future<void> runBatched(BatchedStatements? statements) =>
-      _nsm(Invocation.method(#runBatched, [statements]), Future.value(null));
-
-  @override
-  TransactionExecutor beginTransaction() =>
-      _nsm(Invocation.method(#beginTransaction, []), transactions) ??
-      transactions;
-
-  @override
-  QueryExecutor beginExclusive() =>
-      _nsm(Invocation.method(#beginExclusive, []), exclusive) ?? exclusive;
+  Future<List<QueryResult>> executeBatch(List<StatementBatch>? statement) =>
+      _nsm(Invocation.method(#executeBatch, [statement]),
+          Future.value(const []));
 
   @override
   Future<void> close() =>
-      _nsm(Invocation.method(#close, []), Future.value(null));
+      _nsm(Invocation.method(#close, []), Future<void>.value());
+
+  @override
+  Future<int> get schemaVersion =>
+      _nsm(Invocation.getter(#schemaVersion), Future.value(0));
+
+  @override
+  Future<void> writeSchemaVersion(int? version) => _nsm(
+      Invocation.method(#writeSchemaVersion, [version]), Future<void>.value());
+
+  @override
+  Future<DriftSession> exclusive() =>
+      _nsm(Invocation.method(#exclusive, []), Future.value(exclusiveExecutor));
+
+  @override
+  Future<DriftTransactionSession> begin(TransactionOptions? options) =>
+      _nsm(Invocation.method(#begin, [options]), Future.value(transactions));
 }
 
-class MockTransactionExecutor extends MockExecutor
-    implements TransactionExecutor {
-  MockTransactionExecutor() {
-    when(supportsNestedTransactions).thenReturn(true);
-    when(send()).thenAnswer((_) => Future.value(null));
+final class MockTransactionSession extends MockSession
+    implements DriftTransactionSession {
+  MockTransactionSession() {
+    when(commit()).thenAnswer((_) => Future.value(null));
     when(rollback()).thenAnswer((_) => Future.value(null));
   }
 
   @override
-  bool get supportsNestedTransactions {
-    return _nsm(Invocation.getter(#supportsNestedTransactions), true);
-  }
-
-  @override
-  Future<void> send() {
-    return _nsm(Invocation.method(#send, []), Future.value(null));
+  Future<void> commit() {
+    return _nsm(Invocation.method(#commit, []), Future.value(null));
   }
 
   @override

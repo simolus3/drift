@@ -2,7 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
+import 'package:drift/src/connections/sqlite3/connection.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:sqlite3/open.dart';
 import 'package:path/path.dart' as p;
@@ -53,9 +53,8 @@ Version get sqlite3Version {
   return sqlite3.version;
 }
 
-DatabaseConnection testInMemoryDatabase() {
+DriftDatabaseImplementation testInMemoryDatabase() {
   preferLocalSqlite3();
-  return DatabaseConnection(NativeDatabase.memory(setup: (rawDb) {
-    rawDb.config.doubleQuotedStringLiterals = false;
-  }));
+
+  return SqliteConnection.synchronous(open: () => sqlite3.openInMemory());
 }

@@ -236,37 +236,24 @@ class DatabaseWriter {
   }
 
   static String createTrigger(Scope scope, DriftTrigger entity) {
-    final (sql, dialectSpecific) = scope.sqlByDialect(entity.parsedStatement!);
     final trigger = scope.drift('Trigger');
+    final arg = scope.dartCode(scope.customComponent(entity.parsedStatement!));
 
-    if (dialectSpecific) {
-      return '$trigger.byDialect(${asDartLiteral(entity.schemaName)}, $sql)';
-    } else {
-      return '$trigger($sql, ${asDartLiteral(entity.schemaName)})';
-    }
+    return '$trigger(${asDartLiteral(entity.schemaName)}, $arg)';
   }
 
   static String createIndex(Scope scope, DriftIndex entity) {
-    final (sql, dialectSpecific) = scope.sqlByDialect(entity.parsedStatement!);
     final index = scope.drift('Index');
+    final arg = scope.dartCode(scope.customComponent(entity.parsedStatement!));
 
-    if (dialectSpecific) {
-      return '$index.byDialect(${asDartLiteral(entity.schemaName)}, $sql)';
-    } else {
-      return '$index(${asDartLiteral(entity.schemaName)}, $sql)';
-    }
+    return '$index(${asDartLiteral(entity.schemaName)}, $arg)';
   }
 
   static String createOnCreate(
       Scope scope, DefinedSqlQuery query, SqlQuery resolved) {
-    final (sql, dialectSpecific) = scope.sqlByDialect(resolved.root!);
     final onCreate = scope.drift('OnCreateQuery');
-
-    if (dialectSpecific) {
-      return '$onCreate.byDialect($sql)';
-    } else {
-      return '$onCreate($sql)';
-    }
+    final arg = scope.dartCode(scope.customComponent(resolved.root!));
+    return '$onCreate($arg)';
   }
 }
 

@@ -1558,6 +1558,8 @@ class MyView extends View
   final _$CustomTablesDb _attachedDatabase;
   MyView(this._attachedDatabase, [this.alias]);
   @override
+  BaseSelectStatement as() => throw UnimplementedError();
+  @override
   List<SchemaColumn> get columns =>
       [configKey, configValue, syncState, syncStateImplicit];
   @override
@@ -1584,19 +1586,20 @@ class MyView extends View
     };
   }
 
-  late final ViewColumn<String> configKey = ViewColumn<String>(
+  late final ViewColumn<String> configKey = ViewColumn<String>.forDriftFile(
       name: 'config_key', type: BuiltinDriftType.text, isNullable: false)
     ..owningResultSet = this;
-  late final ViewColumn<DriftAny> configValue = ViewColumn<DriftAny>(
-      name: 'config_value', type: SqliteDialect.anyType(), isNullable: true)
-    ..owningResultSet = this;
+  late final ViewColumn<DriftAny> configValue =
+      ViewColumn<DriftAny>.forDriftFile(
+          name: 'config_value', type: SqliteDialect.anyType(), isNullable: true)
+        ..owningResultSet = this;
   late final ViewColumnWithTypeConverter<SyncType?, int> syncState =
-      ViewColumn<int>(
+      ViewColumn<int>.forDriftFile(
               name: 'sync_state', type: BuiltinDriftType.int, isNullable: true)
           .withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
         ..owningResultSet = this;
   late final ViewColumnWithTypeConverter<SyncType?, int> syncStateImplicit =
-      ViewColumn<int>(
+      ViewColumn<int>.forDriftFile(
               name: 'sync_state_implicit',
               type: BuiltinDriftType.int,
               isNullable: true)
@@ -1610,7 +1613,10 @@ class MyView extends View
   @override
   SelectStatement? get query => null;
   @override
-  Set<String> get readTables => const {'config'};
+  CustomComponent get sqlDefinition => CustomComponent(
+      'CREATE VIEW my_view AS SELECT * FROM config WHERE sync_state = 2');
+  @override
+  Set<String> get readsFrom => const {'config'};
 }
 
 abstract base class _$CustomTablesDb extends GeneratedDatabase {
@@ -1619,25 +1625,22 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   late final WithDefaults withDefaults = WithDefaults();
   late final WithConstraints withConstraints = WithConstraints();
   late final ConfigTable config = ConfigTable();
-  late final Index valueIdx = Index.byDialect('value_idx', {
-    SqlDialect.sqlite:
-        'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)',
-  });
+  late final Index valueIdx = Index(
+      'value_idx',
+      CustomComponent(
+          'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)'));
   late final Mytable mytable = Mytable();
   late final Email email = Email();
   late final WeirdTable weirdTable = WeirdTable();
-  late final Trigger myTrigger = Trigger.byDialect('my_trigger', {
-    SqlDialect.sqlite:
-        'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
-  });
+  late final Trigger myTrigger = Trigger(
+      'my_trigger',
+      CustomComponent(
+          'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END'));
   late final MyView myView = MyView(this);
   Future<int> writeConfig({required String key, DriftAny? value}) {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
-      variables: [
-        Variable<String>(key),
-        Variable<DriftAny>(value, (_) => SqliteDialect.anyType())
-      ],
+      variables: [(dialect.textType, key), (SqliteDialect.anyType(), value)],
       updates: {config},
     );
   }
@@ -1646,7 +1649,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customSelectMapped<Config>(
         query:
             'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?1',
-        variables: [Variable<String>(var1)],
+        variables: [(dialect.textType, var1)],
         readsFrom: {
           config,
         },
@@ -1675,8 +1678,8 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         query:
             'SELECT config_key AS _c0, config_value AS _c1, sync_state AS _c2, sync_state_implicit AS _c3 FROM config WHERE config_key IN ($expandedvar1) ${generatedclause.sql}',
         variables: [
-          for (var $ in var1) Variable<String>($),
-          ...generatedclause.introducedVariables
+          for (var $ in var1) (dialect.textType, $),
+          ...generatedclause.variables
         ],
         readsFrom: {
           config,
@@ -1698,15 +1701,13 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     var $arrayStartIndex = 1;
     final generatedpredicate = $write(
         predicate?.call(this.config) ??
-            const CustomExpression.dialectSpecific({
-              SqlDialect.sqlite: '(TRUE)',
-            }),
+            const CustomExpression(CustomComponent('(TRUE)')),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
     return customSelectMapped<Config>(
         query:
             'SELECT config_key AS _c0, config_value AS _c1, sync_state AS _c2, sync_state_implicit AS _c3 FROM config WHERE ${generatedpredicate.sql}',
-        variables: [...generatedpredicate.introducedVariables],
+        variables: [...generatedpredicate.variables],
         readsFrom: {
           config,
           ...generatedpredicate.watchedTables,
@@ -1728,9 +1729,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     var $arrayStartIndex = 2;
     final generatedpred = $write(
         pred?.call(this.config) ??
-            const CustomExpression.dialectSpecific({
-              SqlDialect.sqlite: '(TRUE)',
-            }),
+            const CustomExpression(CustomComponent('(TRUE)')),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
@@ -1739,10 +1738,10 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         query:
             'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         variables: [
-          Variable<int>(ConfigTable.$convertersyncStaten.toSql(var1)),
-          ...generatedpred.introducedVariables,
+          (dialect.intType, ConfigTable.$convertersyncStaten.toSql(var1)),
+          ...generatedpred.variables,
           for (var $ in var2)
-            Variable<int>(ConfigTable.$convertersyncStateImplicitn.toSql($))
+            (dialect.intType, ConfigTable.$convertersyncStateImplicitn.toSql($))
         ],
         readsFrom: {
           config,
@@ -1806,7 +1805,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customSelectMapped<MultipleResult>(
         query:
             'SELECT d.a AS _c0, d.b AS _c1,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
-        variables: [...generatedpredicate.introducedVariables],
+        variables: [...generatedpredicate.variables],
         readsFrom: {
           withDefaults,
           withConstraints,
@@ -1834,7 +1833,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customSelectMapped<EMail>(
         query:
             'SELECT sender AS _c0, title AS _c1, body AS _c2 FROM email WHERE email MATCH ?1 ORDER BY rank',
-        variables: [Variable<String>(term)],
+        variables: [(dialect.textType, term)],
         readsFrom: {
           email,
         },
@@ -1857,7 +1856,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customSelectMapped<ReadRowIdResult>(
         query:
             'SELECT oid, config_key AS _c0, config_value AS _c1, sync_state AS _c2, sync_state_implicit AS _c3 FROM config WHERE _rowid_ = ${generatedexpr.sql}',
-        variables: [...generatedexpr.introducedVariables],
+        variables: [...generatedexpr.variables],
         readsFrom: {
           config,
           ...generatedexpr.watchedTables,
@@ -1889,15 +1888,13 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     var $arrayStartIndex = 1;
     final generatedwhere = $write(
         where?.call(this.myView) ??
-            const CustomExpression.dialectSpecific({
-              SqlDialect.sqlite: '(TRUE)',
-            }),
+            const CustomExpression(CustomComponent('(TRUE)')),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedwhere.amountOfVariables;
     return customSelectMapped<MyViewData>(
         query:
             'SELECT config_key AS _c0, config_value AS _c1, sync_state AS _c2, sync_state_implicit AS _c3 FROM my_view WHERE ${generatedwhere.sql}',
-        variables: [...generatedwhere.introducedVariables],
+        variables: [...generatedwhere.variables],
         readsFrom: {
           config,
           ...generatedwhere.watchedTables,
@@ -1948,29 +1945,26 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     final generatedvalue =
         $writeInsertable(this.config, value, startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedvalue.amountOfVariables;
-    return customWriteReturning('INSERT INTO config ${generatedvalue.sql} RETURNING *',
-        variables: [
-          ...generatedvalue.introducedVariables
-        ],
-        updates: {
-          config
-        }).then((rows) => rows.map((DriftResultSet resultSet) {
-          final map_0 = config.createMapperFromPositions(const [
-            (index: 0, name: 'config_key'),
-            (index: 1, name: 'config_value'),
-            (index: 2, name: 'sync_state'),
-            (index: 3, name: 'sync_state_implicit'),
-          ]);
+    return customWriteReturning(
+        'INSERT INTO config ${generatedvalue.sql} RETURNING *',
+        variables: [...generatedvalue.variables],
+        updates: {config}).then((rows) {
+      final map_0 = config.createMapperFromPositions(const [
+        (index: 0, name: 'config_key'),
+        (index: 1, name: 'config_value'),
+        (index: 2, name: 'sync_state'),
+        (index: 3, name: 'sync_state_implicit'),
+      ]);
 
-          return (DriftRow row) => map_0(row)!;
-        }).toList());
+      return rows.map((row) => map_0(row)!).toList();
+    });
   }
 
   Selectable<NestedResult> nested(String? var1) {
     return customSelectMapped<NestedResult>(
         query:
             'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
-        variables: [Variable<String>(var1, (_) => const CustomTextType())],
+        variables: [(const CustomTextType(), var1)],
         readsFrom: {
           withConstraints,
           withDefaults,
@@ -2036,10 +2030,8 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         weirdTable,
         myTrigger,
         myView,
-        OnCreateQuery.byDialect({
-          SqlDialect.sqlite:
-              'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')',
-        })
+        OnCreateQuery(CustomComponent(
+            'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')'))
       ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(

@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
-import '../../generated/todos.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
@@ -21,9 +20,9 @@ void main() {
 
   test('constant hash and equals', () {
     // these shouldn't be identical, so no const constructor
-    final first = Constant('hi'); // ignore: prefer_const_constructors
-    final alsoFirst = Constant('hi'); // ignore: prefer_const_constructors
-    const second = Constant(3);
+    final first = Literal('hi'); // ignore: prefer_const_constructors
+    final alsoFirst = Literal('hi'); // ignore: prefer_const_constructors
+    const second = Literal(3);
 
     expectEquals(first, alsoFirst);
     expectNotEquals(first, second);
@@ -31,10 +30,5 @@ void main() {
 }
 
 void testStringMapping(String dart, String expectedLiteral) {
-  final ctx = GenerationContext.fromDb(TodoDb());
-  final constant = Constant(dart);
-
-  constant.writeInto(ctx);
-
-  expect(ctx.sql, expectedLiteral);
+  expect(Literal(dart), generates(expectedLiteral));
 }

@@ -7,6 +7,7 @@ import '../../connections/result_set.dart';
 import '../../query_builder.dart';
 import '../../query_builder/dialect.dart';
 import '../../query_builder/statements/statement.dart';
+import '../data_class.dart';
 import '../exceptions.dart';
 import '../selectable.dart';
 import '../streams/scoped.dart';
@@ -329,7 +330,7 @@ abstract base class DatabaseConnectionUser {
   /// If you use variables in your query (for instance with "?"), they will be
   /// bound to the [variables] you specify on this query.
   Selectable<CustomRow> customSelect(String query,
-      {List<Variable> variables = const [],
+      {List<TypedNullableValue> variables = const [],
       Set<ResultSet> readsFrom = const {}}) {
     return CustomSelectStatement.unmapped(query, variables, readsFrom, this);
   }
@@ -337,7 +338,7 @@ abstract base class DatabaseConnectionUser {
   Selectable<T> customSelectMapped<T>({
     required String query,
     required T Function(DriftRow) Function(DriftResultSet) createMapper,
-    List<Variable> variables = const [],
+    List<TypedNullableValue> variables = const [],
     Set<ResultSet> readsFrom = const {},
   }) {
     return CustomSelectStatement(
@@ -366,12 +367,12 @@ abstract base class DatabaseConnectionUser {
   /// query updates, especially when using triggers.
   Future<int> customUpdate(
     String query, {
-    List<Variable> variables = const [],
+    List<TypedNullableValue> variables = const [],
     Set<ResultSet>? updates,
     UpdateKind? updateKind,
   }) async {
     final result =
-        await _customWrite(query, variables, updates, UpdateKind.update);
+        await _customWrite(query, variables, updates, UpdateKind.update, false);
     return result.affectedRows ?? 0;
   }
 
@@ -381,9 +382,10 @@ abstract base class DatabaseConnectionUser {
   /// [updates] parameter. Query-streams running on any of these tables will
   /// then be re-run.
   Future<int> customInsert(String query,
-      {List<Variable> variables = const [], Set<ResultSet>? updates}) async {
+      {List<TypedNullableValue> variables = const [],
+      Set<ResultSet>? updates}) async {
     final result =
-        await _customWrite(query, variables, updates, UpdateKind.insert);
+        await _customWrite(query, variables, updates, UpdateKind.insert, false);
     return result.lastInsertRowId ?? 0;
   }
 
@@ -395,16 +397,15 @@ abstract base class DatabaseConnectionUser {
   /// you can also set the [updateKind] parameter.
   /// This is optional, but can improve the accuracy of query updates,
   /// especially when using triggers.
-  Future<List<CustomRow>> customWriteReturning(
+  Future<DriftResultSet> customWriteReturning(
     String query, {
-    List<Variable> variables = const [],
+    List<TypedNullableValue> variables = const [],
     Set<ResultSet>? updates,
     UpdateKind? updateKind,
   }) async {
-    final result = await _customWrite(query, variables, updates, updateKind);
-    return [
-      for (final row in result.resultSet!) CustomRow(row, this),
-    ];
+    final result =
+        await _customWrite(query, variables, updates, updateKind, true);
+    return DriftResultSet(ResultSetStructure(), result.resultSet!, dialect);
   }
 
   /// Common logic for [customUpdate] and [customInsert] which takes care of
@@ -412,18 +413,15 @@ abstract base class DatabaseConnectionUser {
   /// stream-queries.
   Future<QueryResult> _customWrite(
     String query,
-    List<Variable> variables,
+    List<TypedNullableValue> variables,
     Set<ResultSet>? updates,
     UpdateKind? updateKind,
+    bool needsResultSet,
   ) async {
     final session = await currentSession();
     final result = await session.execute(
-      StatementInfo.fromText(
-        query,
-        variables: [
-          for (final variable in variables) variable.resolveValue(dialect),
-        ],
-      ),
+      StatementInfo.fromText(query,
+          variables: variables, needsResultSet: needsResultSet),
     );
 
     if (updates != null) {
@@ -449,6 +447,39 @@ abstract base class DatabaseConnectionUser {
     }
 
     return compiler.statement.buffer.toString();
+  }
+
+  /// Will be used by generated code to resolve inline Dart components in sql by
+  /// writing the [component].
+  @protected
+  CompiledStatement $write(SqlComponent component,
+      {bool? hasMultipleTables, int? startIndex}) {
+    final compiler = dialect.createCompiler();
+    compiler.statement
+      ..variableOffset = startIndex ?? 0
+      ..hasMultipleTables = hasMultipleTables ?? false;
+
+    component.compileWith(compiler);
+    return compiler.statement;
+  }
+
+  /// Writes column names and `VALUES` for an insert statement.
+  ///
+  /// Used by generated code.
+  @protected
+  CompiledStatement $writeInsertable(
+      GeneratedTable table, Insertable insertable,
+      {int? startIndex}) {
+    /*
+    final context = GenerationContext.fromDb(this)
+      ..explicitVariableIndex = startIndex;
+
+    table.validateIntegrity(insertable, isInserting: true);
+    InsertStatement(this, table)
+        .writeInsertable(context, insertable.toColumns(true));
+
+    return context;*/
+    throw 'todo';
   }
 }
 

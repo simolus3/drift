@@ -162,21 +162,30 @@ class QueryWriter {
     _buffer.write('return customWriteReturning(${_queryCode(update)},');
     _writeCommonUpdateParameters(update);
 
-    _buffer.write(').then((rows) => ');
+    _buffer.write(').then((rows) { ');
 
     final resultSet = update.resultSet!;
     final rowType = update.queryRowType(options);
 
+    final mappingWriter = _MappingCodeWriter(this)
+      .._writeArgumentExpression(
+          rowType, resultSet, (isNullable: false, sqlPrefix: null));
+    _buffer
+      ..writeln(mappingWriter._outerSetup)
+      ..writeln('return ');
+
     if (rowType.requiresAsynchronousContext) {
-      _buffer.write('Future.wait(rows.map(');
-      _writeMappingLambda(resultSet, rowType);
-      _buffer.write('))');
+      _buffer
+        ..write('Future.wait(rows.map((row) => ')
+        ..write(mappingWriter._innerMapper)
+        ..write('))');
     } else {
-      _buffer.write('rows.map(');
-      _writeMappingLambda(resultSet, rowType);
-      _buffer.write(').toList()');
+      _buffer
+        ..write('rows.map((row) => ')
+        ..write(mappingWriter._innerMapper)
+        ..write(').toList()');
     }
-    _buffer.write(');\n}');
+    _buffer.writeln(';});\n}');
   }
 
   void _writeUpdatingQuery(UpdatingQuery update) {
@@ -423,11 +432,7 @@ class _MappingCodeWriter {
     return _obtainedTypes.putIfAbsent(type, () {
       final variableName = 'type\$${type.name}';
       _outerSetup
-        ..writeln('final $variableName = dialect.')
-        // This is an inlined implementation of BuiltinDriftType.resolveIn, it
-        // calls e.g. this.dialect.intType
-        ..write('${type.name}Type')
-        ..writeln(';');
+          .writeln('final $variableName = ${_emitter.builtinType(type)};');
 
       return variableName;
     });
@@ -440,7 +445,7 @@ class _MappingCodeWriter {
           final variableName = 'type\$${_obtainedTypes.length}';
           _outerSetup
             ..writeln('final $variableName = ')
-            ..write(_writer._emitter.dartCode(custom.expression))
+            ..write(_emitter.dartCode(_emitter.loadType(type)))
             ..writeln(';');
 
           return variableName;
@@ -797,7 +802,7 @@ class _ExpandedVariableWriter {
             .any((e) => !e.supportsIndexedParameters) &&
         query.referencesAnyElementMoreThanOnce) {
       _buffer.write('executor.dialect.desugarDuplicateVariables([');
-      _writeNewVariables();
+      _writeVariableListElements();
       _buffer.write('],');
 
       // Every time a variable is used in the generated SQL text, we have to
@@ -818,15 +823,12 @@ class _ExpandedVariableWriter {
       _buffer.write('])');
     } else {
       _buffer.write('[');
-      _writeNewVariables();
+      _writeVariableListElements();
       _buffer.write(']');
     }
   }
 
-  void _writeNewVariables() {
-    // In the new generation mode, we first write all non-array variables in
-    // a continuous block, then we proceed to add arrays and other expanded
-    // declarations.
+  void _writeVariableListElements() {
     var first = true;
 
     for (final variable in query.variables) {
@@ -862,25 +864,21 @@ class _ExpandedVariableWriter {
     }
   }
 
+  /// Writes a `(type, value)` pair for each variable in [element].
+  ///
+  /// This can write more than one variable if the element is an array.
   void _writeVariable(FoundVariable element) {
-    // Variables without type converters are written as:
-    // `Variable<int>(x)`. When there's a type converter, we instead use
-    // `Variable<int>(typeConverter.toSql(x))`.
-    // Finally, if we're dealing with a list, we use a collection for to write
-    // all the variables sequentially.
     String constructVar(String dartExpr) {
       final capture = element.forCaptured;
       if (capture != null) {
         dartExpr = ('row.read(${asDartLiteral(capture.helperColumn)})');
       }
 
-      final code = _emitter.wrapInVariable(
+      final code = _emitter.wrapAsTypedValue(
         element,
         AnnotatedDartCode.text(dartExpr),
-        // No longer an array here, we apply a for loop below and run this on
-        // individual values only.
-        ignoreArray: true,
       );
+
       return _emitter.dartCode(code);
     }
 
@@ -895,7 +893,7 @@ class _ExpandedVariableWriter {
   }
 
   void _writeDartPlaceholder(FoundDartPlaceholder element) {
-    _buffer.write('...${placeholderContextName(element)}.introducedVariables');
+    _buffer.write('...${placeholderContextName(element)}.variables');
   }
 }
 
@@ -905,14 +903,8 @@ String? _defaultForDartPlaceholder(
   if (kind is ExpressionDartPlaceholderType && kind.defaultValue != null) {
     // Wrap the default expression in parentheses to avoid issues with
     // the surrounding precedence in SQL.
-    final (sql, dialectSpecific) =
-        scope.sqlByDialect(Parentheses(kind.defaultValue!));
-
-    if (dialectSpecific) {
-      return 'const ${scope.drift('CustomExpression')}.dialectSpecific($sql)';
-    } else {
-      return 'const ${scope.drift('CustomExpression')}($sql)';
-    }
+    final sql = scope.customComponent(Parentheses(kind.defaultValue!));
+    return 'const ${scope.drift('CustomExpression')}($sql)';
   } else if (kind is SimpleDartPlaceholderType &&
       kind.kind == SimpleDartPlaceholderKind.orderBy) {
     return 'const ${scope.drift('OrderBy')}.nothing()';

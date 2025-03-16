@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
-import 'package:mockito/annotations.dart';
 import 'package:uuid/uuid.dart';
 
 // Generate mocks for drift
@@ -52,12 +51,11 @@ class Users extends Table with AutoIncrement {
 
   BlobColumn get profilePicture => blob();
 
-  /*
   late final DateTimeColumn creationTime = dateTime()
       // ignore: recursive_getters
-      .check(creationTime.isBiggerThan(Constant(DateTime.utc(1950))))
-      .withDefault(currentDateAndTime);
-      */
+//      .check(creationTime.isBiggerThan(Constant(DateTime.utc(1950))))
+      //    .withDefault(currentDateAndTime);
+      ;
 }
 
 @DataClassName('Category')

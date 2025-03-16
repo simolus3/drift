@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 import '../statements/select.dart';
 import 'boolean.dart';
+import 'custom.dart';
 import '../compiler.dart';
 import '../dialect.dart';
 import '../types.dart';
@@ -19,6 +20,15 @@ sealed class FunctionParameter implements SqlComponent {}
 abstract base class Expression<T extends Object> implements FunctionParameter {
   /// Constant base constructor, allowing subclasses to be const.
   const Expression();
+
+  /// A custom expression that can appear in a sql statement.
+  ///
+  /// The [text] will be written into the query without any modification.
+  const factory Expression.custom(
+    CustomComponent text, {
+    Precedence precedence,
+    SqlType<T>? customType,
+  }) = CustomExpression;
 
   /// The precedence of this expression. This can be used to automatically put
   /// parentheses around expressions as needed.

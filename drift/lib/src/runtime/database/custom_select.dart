@@ -20,7 +20,7 @@ final class CustomSelectStatement<T> with Selectable<T> {
 
   /// The variables for the prepared statement, in the order they appear in
   /// [query]. Variables are denoted using a question mark in the query.
-  final List<Variable> variables;
+  final List<TypedNullableValue> variables;
 
   /// The function creating an optimized reader given the resolved result set.
   T Function(DriftRow) Function(DriftResultSet) createMapper;
@@ -39,7 +39,7 @@ final class CustomSelectStatement<T> with Selectable<T> {
 
   static CustomSelectStatement<CustomRow> unmapped(
     String query,
-    List<Variable> variables,
+    List<TypedNullableValue> variables,
     Set<ResultSet> tables,
     DatabaseConnectionUser db,
   ) {
@@ -55,14 +55,10 @@ final class CustomSelectStatement<T> with Selectable<T> {
   @override
   Future<List<T>> get() async {
     final session = await _db.currentSession();
-    final mappedVariables = [
-      for (final variable in variables)
-        (variable.resolveType(_db.dialect), variable.value)
-    ];
 
     final result = await session.execute(StatementInfo.fromText(
       query,
-      variables: mappedVariables,
+      variables: variables,
       needsResultSet: true,
     ));
 

@@ -1,7 +1,7 @@
 import 'package:charcode/ascii.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' hide JsonKey;
-import 'package:drift/drift.dart' show DriftDialect;
+import 'package:drift/drift.dart' show DriftDialect, KnownSqlDialect;
 import 'package:drift/dialect/sqlite.dart';
 import 'package:string_scanner/string_scanner.dart';
 
@@ -11,6 +11,8 @@ part '../generated/analysis/dialect.g.dart';
 sealed class RegisteredDriftDialect {
   /// A user-visible (and customizable) name of the dialect.
   String get name;
+
+  KnownSqlDialect? get known;
 
   bool get supportsIndexedParameters;
 
@@ -28,6 +30,9 @@ final class DriftSqliteDialect implements RegisteredDriftDialect {
 
   @override
   bool get supportsIndexedParameters => true;
+
+  @override
+  KnownSqlDialect get known => KnownSqlDialect.sqlite;
 
   final List<SqlModule> modules;
   final bool dateTimesAsText;
@@ -72,8 +77,12 @@ final class CustomDriftDialect implements RegisteredDriftDialect {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   final String name;
+
   @override
   bool get supportsIndexedParameters => true;
+
+  @override
+  KnownSqlDialect? get known => null;
 
   CustomDriftDialect(this.name);
 
@@ -97,6 +106,9 @@ final class DriftPostgresDialect implements RegisteredDriftDialect {
   bool get supportsIndexedParameters => true;
 
   @override
+  KnownSqlDialect get known => KnownSqlDialect.postgres;
+
+  @override
   Map<String, Object?> toJson() {
     return const {};
   }
@@ -114,6 +126,9 @@ final class DriftMariadbDialect implements RegisteredDriftDialect {
 
   @override
   bool get supportsIndexedParameters => false;
+
+  @override
+  KnownSqlDialect get known => KnownSqlDialect.mariadb;
 
   @override
   Map<String, Object?> toJson() {

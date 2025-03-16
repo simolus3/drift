@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 import 'clauses/order_by.dart';
 import 'clauses/where.dart';
 import 'dialect.dart';
@@ -14,6 +16,7 @@ import 'schema/column.dart';
 import 'schema/column_constraints.dart';
 import 'schema/drop.dart';
 import 'schema/entities.dart';
+import 'schema/result_set.dart';
 import 'schema/table.dart';
 import 'schema/view.dart';
 import 'statements/select.dart';
@@ -26,10 +29,16 @@ final class CompiledStatement {
 
   final List<TypedNullableValue> variables = [];
   final Map<Variable, int> _variableIndexes = {};
+  final Set<ResultSet> watchedTables = {};
 
+  int variableOffset = 0;
   bool hasMultipleTables = false;
 
   ResultSetStructure? resultSetStructure;
+
+  int get amountOfVariables => variables.length;
+
+  String get sql => buffer.toString();
 
   CompiledStatement(this.dialect);
 
@@ -51,7 +60,19 @@ final class CustomComponent implements SqlComponent {
   final String fallbackSql;
   final Map<KnownSqlDialect, String> dialectSpecifcSql;
 
-  const CustomComponent(this.fallbackSql, {this.dialectSpecifcSql = const {}});
+  /// Additional tables that this SQL construct is watching.
+  ///
+  /// When this component is used in a stream query, the stream will update
+  /// when any table in [watchedTables] changes.
+  /// Usually, custom components don't introduce new tables to watch. This field
+  /// is mainly used for view and subqueries used as expressions.
+  final Iterable<ResultSet> watchedTables;
+
+  const CustomComponent(
+    this.fallbackSql, {
+    this.dialectSpecifcSql = const {},
+    this.watchedTables = const [],
+  });
 
   String sqlFor(KnownSqlDialect? dialect) {
     return dialectSpecifcSql[dialect] ?? fallbackSql;
@@ -61,6 +82,19 @@ final class CustomComponent implements SqlComponent {
   void compileWith(StatementCompiler compiler) {
     compiler.addCustom(this);
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CustomComponent &&
+        other.fallbackSql == fallbackSql &&
+        _equality.equals(other.dialectSpecifcSql, dialectSpecifcSql);
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(fallbackSql, _equality.hash(dialectSpecifcSql));
+
+  static const _equality = MapEquality<Object?, Object?>();
 }
 
 abstract base class StatementCompiler {
@@ -139,7 +173,7 @@ abstract base class StatementCompiler {
       addPositionalVariable(index);
     } else {
       statement.variables.add(variable.resolveValue(dialect));
-      final sqlIndex = statement.variables.length;
+      final sqlIndex = statement.variableOffset + statement.variables.length;
       statement._variableIndexes[variable] = sqlIndex;
 
       addPositionalVariable(sqlIndex);
@@ -147,6 +181,8 @@ abstract base class StatementCompiler {
   }
 
   void addTableReference(TableReference reference) {
+    statement.watchedTables.add(reference.resultSet);
+
     addReference(reference.resultSet.entityName);
     if (reference.resultSet.alias case final alias?) {
       statement.buffer.write(' AS ');
@@ -354,7 +390,22 @@ abstract base class StatementCompiler {
   }
 
   void addOrderBy(OrderBy orderBy) {
+    if (orderBy.terms.isNotEmpty) {
+      statement.buffer.write('ORDER BY ');
+      addCommaSeparated(orderBy.terms);
+    }
+
     throw 'todo';
+  }
+
+  void addOrderingTerm(OrderingTerm term) {
+    term.expression.compileWith(this);
+    statement.space();
+    statement.buffer.write(term.mode.lexeme);
+    if (term.nulls case final nullsOrder?) {
+      statement.space();
+      statement.buffer.write(nullsOrder.lexeme);
+    }
   }
 
   void writeExpression(Expression expression, void Function() write) {
@@ -383,9 +434,9 @@ abstract base class StatementCompiler {
       if (expr.operator.isPrefix) {
         addUnaryOperator(expr.operator);
         statement.space();
-        expr.compileWith(this);
+        expr.operand.compileWith(this);
       } else {
-        expr.compileWith(this);
+        expr.operand.compileWith(this);
         statement.space();
         addUnaryOperator(expr.operator);
       }
@@ -488,6 +539,7 @@ abstract base class StatementCompiler {
   }
 
   void addCustom(CustomComponent component) {
+    statement.watchedTables.addAll(component.watchedTables);
     statement.buffer.write(component.sqlFor(dialect.known));
   }
 }

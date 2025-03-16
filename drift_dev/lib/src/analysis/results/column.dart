@@ -141,8 +141,8 @@ class DriftColumn implements HasType {
   static AnnotatedDartCode defaultFromParser(Default constraint) {
     return AnnotatedDartCode.build((b) => b
       ..addText('const ')
-      ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
-      ..addText('(')
+      ..addSymbol('Expression', AnnotatedDartCode.drift)
+      ..addText('.custom(')
       ..addText(asDartLiteral(constraint.expression.toSql()))
       ..addText(')'));
   }
@@ -303,8 +303,8 @@ class ColumnGeneratedAs extends DriftColumnConstraint {
     return ColumnGeneratedAs(
         AnnotatedDartCode.build((b) => b
           ..addText('const ')
-          ..addSymbol('CustomExpression', AnnotatedDartCode.drift)
-          ..addText('(')
+          ..addSymbol('Epression', AnnotatedDartCode.drift)
+          ..addText('.custom(')
           ..addText(asDartLiteral(constraint.expression.toSql()))
           ..addText(')')),
         constraint.stored);

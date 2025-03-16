@@ -547,7 +547,9 @@ class $TodoCategoryItemCountView extends TodoCategoryItemCount
           .innerJoin(todoItems,
               on: todoItems.categoryId.equalsExp(todoCategories.id));
   @override
-  Set<String> get readTables => const {'todo_items', 'todo_categories'};
+  CustomComponent? get sqlDefinition => null;
+  @override
+  Set<String> get readsFrom => const {'todo_items', 'todo_categories'};
 }
 
 class TodoItemWithCategoryNameViewData extends LegacyDataClass {
@@ -663,7 +665,9 @@ class $TodoItemWithCategoryNameViewView extends TodoItemWithCategoryNameView
           todoCategories,
           on: todoCategories.id.equalsExp(todoItems.categoryId));
   @override
-  Set<String> get readTables => const {'todo_items', 'todo_categories'};
+  CustomComponent? get sqlDefinition => null;
+  @override
+  Set<String> get readsFrom => const {'todo_items', 'todo_categories'};
 }
 
 abstract base class _$Database extends GeneratedDatabase {

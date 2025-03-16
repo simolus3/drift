@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' as sqlite;
 
 import '../../dialect/sqlite.dart';
@@ -27,7 +28,7 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
     RawResultSet? resultSet;
 
     if (statement.needsResultSet) {
-      resultSet = _SqliteResultSet(resultSet: database.select(sql, variables));
+      resultSet = SqliteResultSet(resultSet: database.select(sql, variables));
     } else {
       database.execute(sql, variables);
     }
@@ -64,10 +65,11 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   }
 }
 
-final class _SqliteResultSet extends RawResultSet {
+@internal
+final class SqliteResultSet extends RawResultSet {
   final sqlite.ResultSet resultSet;
 
-  _SqliteResultSet({required this.resultSet});
+  SqliteResultSet({required this.resultSet});
 
   @override
   RawRow operator [](int index) {

@@ -1,7 +1,6 @@
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
-
-import 'test_utils.dart';
 
 void expectEquals(dynamic a, dynamic expected) {
   expect(a, equals(expected));
@@ -13,44 +12,32 @@ void expectNotEquals(dynamic a, dynamic expected) {
   expect(a.hashCode, isNot(equals(expected.hashCode)));
 }
 
-/// Matcher for [Component]-subclasses. Expect that a component generates the
+/// Matcher for [SqlComponent]-subclasses. Expect that a component generates the
 /// matching [sql] and, optionally, the matching [variables].
 Matcher generates(dynamic sql, [dynamic variables = isEmpty]) {
   return _GeneratesSqlMatcher(
     wrapMatcher(sql),
     wrapMatcher(variables),
-    const DriftDatabaseOptions(),
-    SqlDialect.sqlite,
+    const SqliteDialect(),
   );
 }
 
 Matcher generatesWithOptions(
   dynamic sql, {
   dynamic variables = isEmpty,
-  DriftDatabaseOptions options = const DriftDatabaseOptions(),
-  SqlDialect dialect = SqlDialect.sqlite,
+  DriftDialect dialect = const SqliteDialect(),
 }) {
   return _GeneratesSqlMatcher(
-    wrapMatcher(sql),
-    wrapMatcher(variables),
-    options,
-    dialect,
-  );
+      wrapMatcher(sql), wrapMatcher(variables), dialect);
 }
 
 class _GeneratesSqlMatcher extends Matcher {
   final Matcher _matchSql;
   final Matcher? _matchVariables;
 
-  final DriftDatabaseOptions options;
-  final SqlDialect dialect;
+  final DriftDialect dialect;
 
-  _GeneratesSqlMatcher(
-    this._matchSql,
-    this._matchVariables,
-    this.options,
-    this.dialect,
-  );
+  _GeneratesSqlMatcher(this._matchSql, this._matchVariables, this.dialect);
 
   @override
   Description describe(Description description) {
@@ -90,27 +77,26 @@ class _GeneratesSqlMatcher extends Matcher {
 
   @override
   bool matches(dynamic item, Map matchState) {
-    if (item is! Component) {
+    if (item is! SqlComponent) {
       matchState['wrong_type'] = true;
       return false;
     }
 
-    final ctx = stubContext(options: options, dialect: dialect);
-    item.writeInto(ctx);
+    final statement = dialect.compile(item);
 
     var matches = true;
 
     final sqlMatchState = <String, Object?>{};
-    if (!_matchSql.matches(ctx.sql, sqlMatchState)) {
-      matchState['sql'] = ctx.sql;
+    if (!_matchSql.matches(statement.sql, sqlMatchState)) {
+      matchState['sql'] = statement.sql;
       matchState['sql_match'] = sqlMatchState;
       matches = false;
     }
 
     final argsMatchState = <Object?, Object?>{};
     if (_matchVariables != null &&
-        !_matchVariables.matches(ctx.boundVariables, argsMatchState)) {
-      matchState['vars'] = ctx.boundVariables;
+        !_matchVariables.matches(statement.variables, argsMatchState)) {
+      matchState['vars'] = statement.variables;
       matchState['vars_match'] = argsMatchState;
       matches = false;
     }

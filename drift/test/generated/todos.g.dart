@@ -630,6 +630,13 @@ class $UsersTable extends Users
       ]).withConverter<RowId>($UsersTable.$converterid)
     ..owningResultSet = this;
   @override
+  late final TableColumn<DateTime> creationTime = TableColumn<DateTime>(
+      name: 'creation_time',
+      type: BuiltinDriftType.dateTime,
+      isNullable: false,
+      requiredDuringInsert: true)
+    ..owningResultSet = this;
+  @override
   late final TableColumn<String> name = TableColumn<String>(
       name: 'name',
       type: BuiltinDriftType.text,
@@ -653,7 +660,8 @@ class $UsersTable extends Users
       requiredDuringInsert: true)
     ..owningResultSet = this;
   @override
-  List<TableColumn> get columns => [id, name, isAwesome, profilePicture];
+  List<TableColumn> get columns =>
+      [id, creationTime, name, isAwesome, profilePicture];
   @override
   String get entityName => $name;
   static const String $name = 'users';
@@ -673,10 +681,12 @@ class $UsersTable extends Users
       return User(
         id: $UsersTable.$converterid
             .fromSql(row.readWithType(positions[0], BuiltinDriftType.int)!),
-        name: row.readWithType(positions[1], BuiltinDriftType.text)!,
-        isAwesome: row.readWithType(positions[2], BuiltinDriftType.bool)!,
+        creationTime:
+            row.readWithType(positions[1], BuiltinDriftType.dateTime)!,
+        name: row.readWithType(positions[2], BuiltinDriftType.text)!,
+        isAwesome: row.readWithType(positions[3], BuiltinDriftType.bool)!,
         profilePicture:
-            row.readWithType(positions[3], BuiltinDriftType.byteArray)!,
+            row.readWithType(positions[4], BuiltinDriftType.byteArray)!,
       );
     };
   }
@@ -692,11 +702,13 @@ class $UsersTable extends Users
 
 class User extends LegacyDataClass implements Insertable<User> {
   final RowId id;
+  final DateTime creationTime;
   final String name;
   final bool isAwesome;
   final Uint8List profilePicture;
   const User(
       {required this.id,
+      required this.creationTime,
       required this.name,
       required this.isAwesome,
       required this.profilePicture});
@@ -706,6 +718,7 @@ class User extends LegacyDataClass implements Insertable<User> {
     {
       map['id'] = Variable<int>($UsersTable.$converterid.toSql(id));
     }
+    map['creation_time'] = Variable<DateTime>(creationTime);
     map['name'] = Variable<String>(name);
     map['is_awesome'] = Variable<bool>(isAwesome);
     map['profile_picture'] = Variable<Uint8List>(profilePicture);
@@ -715,6 +728,7 @@ class User extends LegacyDataClass implements Insertable<User> {
   UsersCompanion toCompanion(bool nullToAbsent) {
     return UsersCompanion(
       id: Value(id),
+      creationTime: Value(creationTime),
       name: Value(name),
       isAwesome: Value(isAwesome),
       profilePicture: Value(profilePicture),
@@ -727,6 +741,7 @@ class User extends LegacyDataClass implements Insertable<User> {
     return User(
       id: $UsersTable.$converterid
           .fromJson(serializer.fromJson<int>(json['id'])),
+      creationTime: serializer.fromJson<DateTime>(json['creationTime']),
       name: serializer.fromJson<String>(json['name']),
       isAwesome: serializer.fromJson<bool>(json['isAwesome']),
       profilePicture: serializer.fromJson<Uint8List>(json['profilePicture']),
@@ -742,6 +757,7 @@ class User extends LegacyDataClass implements Insertable<User> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>($UsersTable.$converterid.toJson(id)),
+      'creationTime': serializer.toJson<DateTime>(creationTime),
       'name': serializer.toJson<String>(name),
       'isAwesome': serializer.toJson<bool>(isAwesome),
       'profilePicture': serializer.toJson<Uint8List>(profilePicture),
@@ -750,11 +766,13 @@ class User extends LegacyDataClass implements Insertable<User> {
 
   User copyWith(
           {RowId? id,
+          DateTime? creationTime,
           String? name,
           bool? isAwesome,
           Uint8List? profilePicture}) =>
       User(
         id: id ?? this.id,
+        creationTime: creationTime ?? this.creationTime,
         name: name ?? this.name,
         isAwesome: isAwesome ?? this.isAwesome,
         profilePicture: profilePicture ?? this.profilePicture,
@@ -762,6 +780,9 @@ class User extends LegacyDataClass implements Insertable<User> {
   User copyWithCompanion(UsersCompanion data) {
     return User(
       id: data.id.present ? data.id.value : this.id,
+      creationTime: data.creationTime.present
+          ? data.creationTime.value
+          : this.creationTime,
       name: data.name.present ? data.name.value : this.name,
       isAwesome: data.isAwesome.present ? data.isAwesome.value : this.isAwesome,
       profilePicture: data.profilePicture.present
@@ -774,6 +795,7 @@ class User extends LegacyDataClass implements Insertable<User> {
   String toString() {
     return (StringBuffer('User(')
           ..write('id: $id, ')
+          ..write('creationTime: $creationTime, ')
           ..write('name: $name, ')
           ..write('isAwesome: $isAwesome, ')
           ..write('profilePicture: $profilePicture')
@@ -782,13 +804,14 @@ class User extends LegacyDataClass implements Insertable<User> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, isAwesome, $driftBlobEquality.hash(profilePicture));
+  int get hashCode => Object.hash(id, creationTime, name, isAwesome,
+      $driftBlobEquality.hash(profilePicture));
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User &&
           other.id == this.id &&
+          other.creationTime == this.creationTime &&
           other.name == this.name &&
           other.isAwesome == this.isAwesome &&
           $driftBlobEquality.equals(other.profilePicture, this.profilePicture));
@@ -796,30 +819,36 @@ class User extends LegacyDataClass implements Insertable<User> {
 
 class UsersCompanion extends UpdateCompanion<User> {
   final Value<RowId> id;
+  final Value<DateTime> creationTime;
   final Value<String> name;
   final Value<bool> isAwesome;
   final Value<Uint8List> profilePicture;
   const UsersCompanion({
     this.id = const Value.absent(),
+    this.creationTime = const Value.absent(),
     this.name = const Value.absent(),
     this.isAwesome = const Value.absent(),
     this.profilePicture = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
+    required DateTime creationTime,
     required String name,
     this.isAwesome = const Value.absent(),
     required Uint8List profilePicture,
-  })  : name = Value(name),
+  })  : creationTime = Value(creationTime),
+        name = Value(name),
         profilePicture = Value(profilePicture);
   static Insertable<User> custom({
     Expression<int>? id,
+    Expression<DateTime>? creationTime,
     Expression<String>? name,
     Expression<bool>? isAwesome,
     Expression<Uint8List>? profilePicture,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (creationTime != null) 'creation_time': creationTime,
       if (name != null) 'name': name,
       if (isAwesome != null) 'is_awesome': isAwesome,
       if (profilePicture != null) 'profile_picture': profilePicture,
@@ -828,11 +857,13 @@ class UsersCompanion extends UpdateCompanion<User> {
 
   UsersCompanion copyWith(
       {Value<RowId>? id,
+      Value<DateTime>? creationTime,
       Value<String>? name,
       Value<bool>? isAwesome,
       Value<Uint8List>? profilePicture}) {
     return UsersCompanion(
       id: id ?? this.id,
+      creationTime: creationTime ?? this.creationTime,
       name: name ?? this.name,
       isAwesome: isAwesome ?? this.isAwesome,
       profilePicture: profilePicture ?? this.profilePicture,
@@ -844,6 +875,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>($UsersTable.$converterid.toSql(id.value));
+    }
+    if (creationTime.present) {
+      map['creation_time'] = Variable<DateTime>(creationTime.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -861,6 +895,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   String toString() {
     return (StringBuffer('UsersCompanion(')
           ..write('id: $id, ')
+          ..write('creationTime: $creationTime, ')
           ..write('name: $name, ')
           ..write('isAwesome: $isAwesome, ')
           ..write('profilePicture: $profilePicture')
@@ -3028,7 +3063,9 @@ class $CategoryTodoCountViewView extends CategoryTodoCountView
       (_attachedDatabase.selectOnly(categories)..addColumns(columns))
           .innerJoin(todos, on: todos.category.equalsExp(categories.id));
   @override
-  Set<String> get readTables => const {'todos', 'categories'};
+  CustomComponent? get sqlDefinition => null;
+  @override
+  Set<String> get readsFrom => const {'todos', 'categories'};
 }
 
 class TodoWithCategoryViewData extends LegacyDataClass {
@@ -3134,7 +3171,9 @@ class $TodoWithCategoryViewView extends TodoWithCategoryView
       (_attachedDatabase.selectOnly(todos)..addColumns(columns))
           .innerJoin(categories, on: categories.id.equalsExp(todos.category));
   @override
-  Set<String> get readTables => const {'todos', 'categories'};
+  CustomComponent? get sqlDefinition => null;
+  @override
+  Set<String> get readsFrom => const {'todos', 'categories'};
 }
 
 abstract base class _$TodoDb extends GeneratedDatabase {
@@ -3197,7 +3236,7 @@ abstract base class _$TodoDb extends GeneratedDatabase {
   Future<int> deleteTodoById(RowId var1) {
     return customUpdate(
       'DELETE FROM todos WHERE id = ?1',
-      variables: [Variable<int>($TodosTableTable.$converterid.toSql(var1))],
+      variables: [(dialect.intType, $TodosTableTable.$converterid.toSql(var1))],
       updates: {todosTable},
       updateKind: UpdateKind.delete,
     );
@@ -3211,10 +3250,10 @@ abstract base class _$TodoDb extends GeneratedDatabase {
         query:
             'SELECT id AS _c0, title AS _c1, content AS _c2, target_date AS _c3, category AS _c4, status AS _c5 FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
         variables: [
-          Variable<String>(var1),
-          Variable<String>(var2),
+          (dialect.textType, var1),
+          (dialect.textType, var2),
           for (var $ in var3)
-            Variable<int>($TodosTableTable.$converterid.toSql($))
+            (dialect.intType, $TodosTableTable.$converterid.toSql($))
         ],
         readsFrom: {
           todosTable,
@@ -3237,7 +3276,7 @@ abstract base class _$TodoDb extends GeneratedDatabase {
     return customSelectMapped<TodoEntry>(
         query:
             'SELECT id AS _c0, title AS _c1, content AS _c2, target_date AS _c3, category AS _c4, status AS _c5 FROM todos WHERE CASE WHEN -1 = ?1 THEN 1 ELSE id = ?1 END',
-        variables: [Variable<int>($TodosTableTable.$converterid.toSql(id))],
+        variables: [(dialect.intType, $TodosTableTable.$converterid.toSql(id))],
         readsFrom: {
           todosTable,
         },
