@@ -3,6 +3,8 @@ export 'query_builder/compiler.dart';
 export 'query_builder/dialect.dart';
 
 export 'query_builder/expressions/aggregate.dart';
+export 'query_builder/expressions/algebra.dart';
+export 'query_builder/expressions/bitwise.dart';
 export 'query_builder/expressions/boolean.dart';
 export 'query_builder/expressions/expression.dart';
 export 'query_builder/expressions/functions.dart';

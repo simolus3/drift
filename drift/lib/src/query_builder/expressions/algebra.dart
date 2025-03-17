@@ -1,34 +1,32 @@
-part of '../query_builder.dart';
+import 'expression.dart';
+import 'functions.dart';
+import 'operators.dart';
 
 /// Defines the `-`, `*` and `/` operators on sql expressions that support it.
 extension ArithmeticExpr<DT extends num> on Expression<DT> {
   /// Performs an addition (`this` + [other]) in sql.
   Expression<DT> operator +(Expression<DT> other) {
-    return BaseInfixOperator(this, '+', other,
-        precedence: Precedence.plusMinus);
+    return BinaryExpression(this, BinaryOperator.plus, other);
   }
 
   /// Performs a subtraction (`this` - [other]) in sql.
   Expression<DT> operator -(Expression<DT> other) {
-    return BaseInfixOperator(this, '-', other,
-        precedence: Precedence.plusMinus);
+    return BinaryExpression(this, BinaryOperator.minus, other);
   }
 
   /// Returns the negation of this value.
   Expression<DT> operator -() {
-    return _UnaryMinus(this);
+    return UnaryExpression(UnaryOperator.minus, this);
   }
 
   /// Performs a multiplication (`this` * [other]) in sql.
   Expression<DT> operator *(Expression<DT> other) {
-    return BaseInfixOperator(this, '*', other,
-        precedence: Precedence.mulDivide);
+    return BinaryExpression(this, BinaryOperator.multiply, other);
   }
 
   /// Performs a division (`this` / [other]) in sql.
   Expression<DT> operator /(Expression<DT> other) {
-    return BaseInfixOperator(this, '/', other,
-        precedence: Precedence.mulDivide);
+    return BinaryExpression(this, BinaryOperator.divide, other);
   }
 
   /// Calculates the absolute value of this number.

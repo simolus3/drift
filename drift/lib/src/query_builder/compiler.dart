@@ -33,6 +33,7 @@ final class CompiledStatement {
 
   int variableOffset = 0;
   bool hasMultipleTables = false;
+  bool supportsVariables = true;
 
   ResultSetStructure? resultSetStructure;
 
@@ -169,6 +170,10 @@ abstract base class StatementCompiler {
   }
 
   void addVariable(Variable variable) {
+    if (!statement.supportsVariables) {
+      return addLiteral(Literal(variable.value, variable.resolveType));
+    }
+
     if (statement._variableIndexes[variable] case final index?) {
       addPositionalVariable(index);
     } else {
@@ -433,11 +438,11 @@ abstract base class StatementCompiler {
     writeExpression(expr, () {
       if (expr.operator.isPrefix) {
         addUnaryOperator(expr.operator);
-        statement.space();
+        if (expr.operator.needsSpace) statement.space();
         expr.operand.compileWith(this);
       } else {
         expr.operand.compileWith(this);
-        statement.space();
+        if (expr.operator.needsSpace) statement.space();
         addUnaryOperator(expr.operator);
       }
     });

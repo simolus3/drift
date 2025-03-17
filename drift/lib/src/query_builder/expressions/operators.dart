@@ -161,7 +161,7 @@ final class UnaryExpression<T extends Object> extends Expression<T> {
 /// Unary SQL operators supported by drift.
 enum UnaryOperator implements SqlComponent {
   /// A `NOT` operation in SQL.
-  not(Precedence.not, true, 'NOT'),
+  not(Precedence.not, true, 'NOT', needsSpace: true),
 
   /// A bitwise not operation in SQL.
   bitwiseNot(Precedence.unary, true, '~'),
@@ -176,12 +176,17 @@ enum UnaryOperator implements SqlComponent {
   /// expression it is applied to in SQL.
   final bool isPrefix;
 
+  /// Whether this operator needs a space character between itself and the
+  /// operand.
+  final bool needsSpace;
+
   /// The default text to generate for this operator.
   ///
   /// Some dialects may chose to override this.
   final String defaultLexeme;
 
-  const UnaryOperator(this.precedence, this.isPrefix, this.defaultLexeme);
+  const UnaryOperator(this.precedence, this.isPrefix, this.defaultLexeme,
+      {this.needsSpace = false});
 
   @override
   void compileWith(StatementCompiler compiler) {

@@ -153,6 +153,11 @@ final class _BoolType extends _SqlTypeWithoutMapping<bool> {
   bool dartValue(DriftDialect dialect, Object databaseValue) {
     return databaseValue != 0 && databaseValue != false;
   }
+
+  @override
+  Object sqlParameter(DriftDialect dialect, bool value) {
+    return value ? 1 : 0;
+  }
 }
 
 final class _DoubleType extends _SqlTypeWithoutMapping<double> {

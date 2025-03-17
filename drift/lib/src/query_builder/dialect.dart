@@ -14,7 +14,8 @@ abstract base class DriftDialect implements TypeProvider {
 
   @override
   SqlType<T> resolveType<T extends Object>() {
-    return BuiltinDriftType.forType<T>().resolveIn(this);
+    return BuiltinDriftType.forType<T>()?.resolveIn(this) ??
+        (throw ArgumentError('Unknown type parameter for builtin type: $T'));
   }
 
   StatementCompiler createCompiler();

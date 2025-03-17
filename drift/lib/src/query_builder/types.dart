@@ -129,11 +129,11 @@ enum BuiltinDriftType<T extends Object>
   ///
   /// The [Dart] type must be the type of the instance _after_ applying type
   /// converters.
-  static BuiltinDriftType<Dart> forType<Dart extends Object>() {
+  static BuiltinDriftType<Dart>? forType<Dart extends Object>() {
     final type = _dartToDrift[Dart];
 
     if (type == null) {
-      throw ArgumentError('Could not find a matching SQL type for $Dart');
+      return null;
     }
 
     return type as BuiltinDriftType<Dart>;
@@ -143,7 +143,7 @@ enum BuiltinDriftType<T extends Object>
   ///
   /// Using [forType] should pretty much always be preferred over this method,
   /// this one just exists for backwards compatibility.
-  static BuiltinDriftType forNullableType<Dart>() {
+  static BuiltinDriftType? forNullableType<Dart>() {
     // Lookup the type in the map first for faster lookups. Go back to a full
     // typecheck where that doesn't work (which can be the case for complex
     // type like `forNullableType<FutureOr<int?>>`).
@@ -151,10 +151,18 @@ enum BuiltinDriftType<T extends Object>
         values.whereType<_BuiltinDriftTypeWithoutBound<Dart>>().singleOrNull;
 
     if (type == null) {
-      throw ArgumentError('Could not find a matching SQL type for $Dart');
+      return null;
     }
 
     return type as BuiltinDriftType;
+  }
+
+  /// Attempts to resolve a [BuiltinDriftType] for the type of [value].
+  ///
+  /// The static variants ([forType] and [forNullableType] should almost always
+  /// be preferred to this because they can assign types to null values too).
+  static BuiltinDriftType? forValue(Object? value) {
+    return _dartToDrift[value.runtimeType];
   }
 
   @override

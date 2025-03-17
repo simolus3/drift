@@ -28,7 +28,7 @@ abstract base class Expression<T extends Object> implements FunctionParameter {
     CustomComponent text, {
     Precedence precedence,
     SqlType<T>? customType,
-  }) = CustomExpression;
+  }) = CustomExpression<T>;
 
   /// The precedence of this expression. This can be used to automatically put
   /// parentheses around expressions as needed.
@@ -285,6 +285,22 @@ abstract base class Expression<T extends Object> implements FunctionParameter {
 
     return predicates.reduce((value, element) => value & element);
   }
+}
+
+/// Evaluates to the first expression in [expressions] that's not null, or
+/// null if all [expressions] evaluate to null.
+Expression<T> coalesce<T extends Object>(List<Expression<T>> expressions) {
+  assert(expressions.length >= 2,
+      'expressions must be of length >= 2, got ${expressions.length}');
+
+  return FunctionCallExpression<T>('COALESCE', expressions);
+}
+
+/// Evaluates to the first expression that's not null, or null if both evaluate
+/// to null. See [coalesce] if you need more than 2.
+Expression<T> ifNull<T extends Object>(
+    Expression<T> first, Expression<T> second) {
+  return FunctionCallExpression<T>('IFNULL', [first, second]);
 }
 
 /// Used to order the precedence of sql expressions so that we can avoid

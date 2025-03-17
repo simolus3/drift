@@ -70,7 +70,14 @@ final class Variable<T extends Object> extends Expression<T> {
 
   @override
   SqlType<T> resolveType(DriftDialect dialect) {
-    return _resolveType?.call(dialect) ?? dialect.resolveType<T>();
+    if (_resolveType case final resolve?) {
+      return resolve(dialect);
+    }
+
+    final builtin = BuiltinDriftType.forType<T>() ??
+        BuiltinDriftType.forValue(value) ??
+        BuiltinDriftType.text;
+    return (builtin as BuiltinDriftType<T>).resolveIn(dialect);
   }
 
   @override

@@ -16,22 +16,22 @@ void main() {
   });
 
   test('generates COALESCE expressions', () {
-    final expr = drift.coalesce([const Constant<int>(null), const Constant(3)]);
+    final expr = coalesce([const Literal<int>(null), const Literal(3)]);
 
-    expect(expr, generates('COALESCE(NULL, 3)'));
+    expect(expr, generates('COALESCE(NULL,3)'));
   });
 
   test('generates IFNULL expressions', () {
     expect(
-      drift.ifNull<int>(const Constant<int>(null), Constant(3)),
-      generates('IFNULL(NULL, 3)'),
+      ifNull<int>(const Literal<int>(null), Literal(3)),
+      generates('IFNULL(NULL,3)'),
     );
   });
 
   test('generates NULLIF expressions', () {
     expect(
-      Constant(3).nullIf(Constant(3)),
-      generates('NULLIF(3, 3)'),
+      Literal(3).nullIf(Literal(3)),
+      generates('NULLIF(3,3)'),
     );
   });
 }

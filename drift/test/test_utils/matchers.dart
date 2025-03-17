@@ -94,9 +94,15 @@ class _GeneratesSqlMatcher extends Matcher {
     }
 
     final argsMatchState = <Object?, Object?>{};
+    final variables = statement.variables
+        .map((e) => switch (e.$2) {
+              null => null,
+              var other => e.$1.sqlParameter(dialect, other),
+            })
+        .toList();
     if (_matchVariables != null &&
-        !_matchVariables.matches(statement.variables, argsMatchState)) {
-      matchState['vars'] = statement.variables;
+        !_matchVariables.matches(variables, argsMatchState)) {
+      matchState['vars'] = variables;
       matchState['vars_match'] = argsMatchState;
       matches = false;
     }
