@@ -5,27 +5,27 @@ import '../../generated/todos.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const expression =
-      CustomExpression<int>('col', precedence: Precedence.primary);
+  const expression = Expression<int>.custom(CustomComponent('col'),
+      precedence: Precedence.primary);
   final db = TodoDb();
 
   final comparisons = {
-    expression.isSmallerThan: '<',
-    expression.isSmallerOrEqual: '<=',
-    expression.isBiggerOrEqual: '>=',
-    expression.isBiggerThan: '>'
+    expression.isLessThan: '<',
+    expression.isLessOrEqual: '<=',
+    expression.isGreaterOrEqual: '>=',
+    expression.isGreaterThan: '>'
   };
 
   final comparisonsVal = {
-    expression.isSmallerThanValue: '<',
-    expression.isSmallerOrEqualValue: '<=',
-    expression.isBiggerOrEqualValue: '>=',
-    expression.isBiggerThanValue: '>'
+    expression.isLessThanValue: '<',
+    expression.isLessOrEqualValue: '<=',
+    expression.isGreaterOrEqualValue: '>=',
+    expression.isGreaterThanValue: '>'
   };
 
   group('can compare with other expressions', () {
-    const compare =
-        CustomExpression<int>('compare', precedence: Precedence.primary);
+    const compare = Expression<int>.custom(CustomComponent('compare'),
+        precedence: Precedence.primary);
 
     comparisons.forEach((fn, value) {
       test('for operator $value', () {
@@ -35,6 +35,7 @@ void main() {
 
         expect(ctx.sql, 'col $value compare');
 
+  expec
         expectEquals(fn(compare), fn(compare));
       });
     });

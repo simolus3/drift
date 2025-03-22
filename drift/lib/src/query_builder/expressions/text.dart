@@ -1,3 +1,7 @@
+import 'package:drift/src/query_builder/compiler.dart';
+import 'package:drift/src/query_builder/dialect.dart';
+import 'package:drift/src/query_builder/types.dart';
+
 import 'functions.dart';
 import 'expression.dart';
 import 'operators.dart';
@@ -31,8 +35,7 @@ extension StringExpressionOperators on Expression<String> {
   /// Uses the given [collate] sequence when comparing this column to other
   /// values.
   Expression<String> collate(Collate collate) {
-    return BinaryExpression(
-        this, BinaryOperator.collate, Variable.withString(collate.name));
+    return CollateExpression._(this, collate);
   }
 
   /// Performs a string concatenation in sql by appending [other] to `this`.
@@ -116,6 +119,39 @@ extension StringExpressionOperators on Expression<String> {
       start,
       if (length != null) length,
     ]);
+  }
+}
+
+/// An expression that changes the collation used to e.g. compare texts.
+///
+/// Created with [StringExpressionOperators.collate].
+final class CollateExpression extends Expression<String> {
+  /// The inner text expression.
+  final Expression<String> source;
+
+  /// The collation to use.
+  final Collate collation;
+
+  CollateExpression._(this.source, this.collation);
+
+  @override
+  int get hashCode => Object.hash(source, collation);
+
+  @override
+  bool operator ==(Object other) {
+    return other is CollateExpression &&
+        other.source == source &&
+        other.collation == collation;
+  }
+
+  @override
+  SqlType<String> resolveType(DriftDialect dialect) {
+    return dialect.textType;
+  }
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    return compiler.addCollateExpression(this);
   }
 }
 

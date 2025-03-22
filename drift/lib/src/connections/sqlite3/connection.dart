@@ -4,12 +4,15 @@ import 'package:sqlite3/common.dart' as sqlite;
 import '../../dialect/sqlite.dart';
 import '../connection.dart';
 import '../result_set.dart';
+import 'native_functions.dart';
 
 final class SqliteConnection implements DriftSession, DriftRootSession {
   final sqlite.CommonDatabase database;
   final SqliteDialect dialect;
 
-  SqliteConnection(this.dialect, this.database);
+  SqliteConnection(this.dialect, this.database) {
+    database.useNativeFunctions();
+  }
 
   static DriftDatabaseImplementation synchronous(
       {required sqlite.CommonDatabase Function() open}) {

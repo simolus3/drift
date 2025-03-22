@@ -49,9 +49,6 @@ final class BinaryExpression<T extends Object> extends Expression<T> {
 
 /// Binary operators supported by drift.
 enum BinaryOperator implements SqlComponent {
-  /// A `COLLATE` operator in SQL.
-  collate(Precedence.collate, 'COLLATE'),
-
   /// A `||` operator in SQL.
   stringConcatenation(Precedence.stringConcatenation, '||'),
 
@@ -75,6 +72,18 @@ enum BinaryOperator implements SqlComponent {
 
   /// A `|` operator in SQL.
   bitwiseOr(Precedence.bitwise, '|'),
+
+  /// A `<` operator in SQL.
+  less(Precedence.comparison, '<'),
+
+  /// A `<=` operator in SQL.
+  lessOrEqual(Precedence.comparison, '<='),
+
+  /// A `>` operator in SQL.
+  greater(Precedence.comparison, '>'),
+
+  /// A `>=` operator in SQL.
+  greaterOrEqual(Precedence.comparison, '>'),
 
   /// A `=` operator in SQL.
   equals(Precedence.comparisonEq, '='),

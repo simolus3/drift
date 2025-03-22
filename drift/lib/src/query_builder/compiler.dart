@@ -5,10 +5,12 @@ import 'clauses/where.dart';
 import 'dialect.dart';
 import 'expressions/aggregate.dart';
 import 'expressions/case_when.dart';
+import 'expressions/comparable.dart';
 import 'expressions/expression.dart';
 import 'expressions/functions.dart';
 import 'expressions/operators.dart';
 import 'expressions/subquery.dart';
+import 'expressions/text.dart';
 import 'expressions/tuple.dart';
 import 'expressions/variables.dart';
 import 'results.dart';
@@ -183,6 +185,19 @@ abstract base class StatementCompiler {
 
       addPositionalVariable(sqlIndex);
     }
+  }
+
+  void addBetweenExpression(BetweenExpression expression) {
+    writeExpression(expression, () {
+      expression.writeInto(this);
+
+      if (expression.not) statement.buffer.write(' NOT');
+      statement.buffer.write(' BETWEEN ');
+
+      expression.lower.compileWith(this);
+      statement.buffer.write(' AND ');
+      expression.higher.compileWith(this);
+    });
   }
 
   void addTableReference(TableReference reference) {
@@ -434,6 +449,14 @@ abstract base class StatementCompiler {
     });
   }
 
+  void addCollateExpression(CollateExpression expr) {
+    writeExpression(expr, () {
+      expr.source.compileWith(this);
+      statement.buffer.write(' COLLATE ');
+      statement.buffer.write(expr.collation.name);
+    });
+  }
+
   void addUnaryExpression(UnaryExpression expr) {
     writeExpression(expr, () {
       if (expr.operator.isPrefix) {
@@ -469,6 +492,7 @@ abstract base class StatementCompiler {
     writeExpression(expression, () {
       addFunctionName(expression, expression.functionName);
       statement.buffer.write('(');
+      _expressionPrecedence = null;
       addCommaSeparated(expression.arguments);
       statement.buffer.write(')');
     });

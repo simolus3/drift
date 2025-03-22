@@ -1,21 +1,22 @@
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const expression =
-      CustomExpression<String>('col', precedence: Precedence.primary);
+  const expression = Expression<String>.custom(CustomComponent('col'),
+      precedence: Precedence.primary);
 
   test('generates like expressions', () {
-    expect(expression.like('pattern'), generates('col LIKE ?', ['pattern']));
+    expect(expression.like('pattern'), generates('col LIKE ?1', ['pattern']));
     expect(expression.likeExp(expression), generates('col LIKE col'));
   });
 
   test('generates regexp expressions', () {
     expect(
       expression.regexp('fo+'),
-      generates('col REGEXP ?', ['fo+']),
+      generates('col REGEXP ?1', ['fo+']),
     );
   });
 
@@ -28,8 +29,8 @@ void main() {
   });
 
   test('can use contains', () {
-    expect(
-        expression.contains('foo bar'), generates('col LIKE ?', ['%foo bar%']));
+    expect(expression.contains('foo bar'),
+        generates('col LIKE ?1', ['%foo bar%']));
   });
 
   group('can use string functions', () {
@@ -50,10 +51,10 @@ void main() {
   });
 
   test('substr', () {
-    expect(expression.substr(10), generates('SUBSTR(col, 10)'));
-    expect(expression.substr(10, 2), generates('SUBSTR(col, 10, 2)'));
+    expect(expression.substr(10), generates('SUBSTR(col,10)'));
+    expect(expression.substr(10, 2), generates('SUBSTR(col,10,2)'));
 
     expect(expression.substrExpr(Variable(1), expression.length - Variable(5)),
-        generates('SUBSTR(col, ?, LENGTH(col) - ?)', [1, 5]));
+        generates('SUBSTR(col,?1,LENGTH(col) - ?2)', [1, 5]));
   });
 }

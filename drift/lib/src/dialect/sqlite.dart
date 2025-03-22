@@ -9,7 +9,6 @@ import '../connections/connection.dart';
 import '../dsl/columns.dart';
 import '../dsl/table.dart';
 import '../query_builder.dart';
-import '../query_builder/compiler.dart';
 import '../runtime/migrations.dart';
 
 extension DriftAnyColumnBuilder on Table {
@@ -105,6 +104,46 @@ final class _SqliteCompiler extends StatementCompiler {
         ..write(' ')
         ..write(options);
     }
+  }
+
+  bool _needsToMakeDateTimeComparable(Expression inner) {
+    return dialect.options.storeDateTimesAsText &&
+        inner.resolveType(dialect) is _DateTimeType;
+  }
+
+  Expression<double> _makeDateTimeComparable(Expression inner) {
+    // When we're storing date time values as text, comparison operators need to
+    // use the julianday() format to be comparable.
+    return FunctionCallExpression('julianday', [inner]);
+  }
+
+  @override
+  void addBinaryExpression(BinaryExpression<Object> expr) {
+    if (expr.precedence == Precedence.comparison &&
+        _needsToMakeDateTimeComparable(expr.left)) {
+      return super.addBinaryExpression(BinaryExpression(
+        _makeDateTimeComparable(expr.left),
+        expr.operator,
+        _makeDateTimeComparable(expr.right),
+      ));
+    }
+
+    super.addBinaryExpression(expr);
+  }
+
+  @override
+  void addBetweenExpression(BetweenExpression expression) {
+    if (_needsToMakeDateTimeComparable(expression.target)) {
+      return super.addBetweenExpression(
+        _makeDateTimeComparable(expression.target).isBetween(
+          _makeDateTimeComparable(expression.lower),
+          _makeDateTimeComparable(expression.higher),
+          not: expression.not,
+        ),
+      );
+    }
+
+    super.addBetweenExpression(expression);
   }
 }
 
@@ -380,7 +419,7 @@ extension SqliteSpecificStringOperators on Expression<String> {
 
     if (flags != 0) {
       return FunctionCallExpression<bool>(
-        'regexp_moor_ffi',
+        'regexp_drift',
         [
           Variable.withString(regex),
           this,
