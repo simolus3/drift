@@ -59,7 +59,7 @@ ExistingRowClass? validateExistingClass(
     ctor = instantiation.lookUpConstructor2(constructor, desiredClass.library2);
   } else {
     ctor = desiredClass.getNamedConstructor2(constructor);
-    instantiation = library.typeSystem.instantiateInterfaceToBounds(
+    instantiation = library.typeSystem.instantiateInterfaceToBounds2(
         element: desiredClass, nullabilitySuffix: NullabilitySuffix.none);
   }
 

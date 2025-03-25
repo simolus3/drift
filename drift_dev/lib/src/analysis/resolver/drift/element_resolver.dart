@@ -112,11 +112,11 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       return null;
     } else if (element is InterfaceElement2) {
       final library = element.library2;
-      return library.typeSystem.instantiateInterfaceToBounds(
+      return library.typeSystem.instantiateInterfaceToBounds2(
           element: element, nullabilitySuffix: NullabilitySuffix.none);
     } else if (element is TypeAliasElement2) {
       final library = element.library2;
-      return library.typeSystem.instantiateTypeAliasToBounds(
+      return library.typeSystem.instantiateTypeAliasToBounds2(
           element: element, nullabilitySuffix: NullabilitySuffix.none);
     } else {
       reportError(DriftAnalysisError.inDriftFile(

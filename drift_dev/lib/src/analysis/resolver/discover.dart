@@ -2,7 +2,6 @@ import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/dart/element/visitor.dart';
 import 'package:analyzer/dart/element/visitor2.dart';
 import 'package:drift/drift.dart' show TableIndex;
 import 'package:source_gen/source_gen.dart';
@@ -186,9 +185,8 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
   static TypeChecker _checker(InterfaceType type) {
     // Workaround for https://github.com/dart-lang/build/issues/3796, the
     // analysis sessions for _knownTypes and this type might be different.
-    final definition = type.element.librarySource;
-    return TypeChecker.fromUrl(
-        definition.uri.replace(fragment: type.element.name));
+    final uri = type.element3.library2.uri;
+    return TypeChecker.fromUrl(uri.replace(fragment: type.element3.name3));
   }
 
   Future<void> find() async {
@@ -202,16 +200,16 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
     // weird errors for the Table class itself. In weird cases where we iterate
     // over generated code (standalone tool), don't report existing
     // implementations as tables.
-    return _isTable.isAssignableFrom(element) &&
-        !_isTable.isExactly(element) &&
-        !_isTableInfo.isAssignableFrom(element) &&
+    return _isTable.isAssignableFrom2(element) &&
+        !_isTable.isExactly2(element) &&
+        !_isTableInfo.isAssignableFrom2(element) &&
         // Temporary workaround until https://github.com/dart-lang/source_gen/pull/628
         // gets merged.
         !element.mixins.any((e) => e.nameIfInterfaceType == 'TableInfo');
   }
 
   bool _isDslView(ClassElement2 element) {
-    return _isView.isAssignableFrom(element) && !_isView.isExactly(element);
+    return _isView.isAssignableFrom2(element) && !_isView.isExactly2(element);
   }
 
   @override
@@ -247,8 +245,8 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
     } else {
       // Check if this class declares a database or a database accessor.
 
-      final firstDb = _isDatabase.firstAnnotationOf(element);
-      final firstDao = _isDao.firstAnnotationOf(element);
+      final firstDb = _isDatabase.firstAnnotationOf2(element);
+      final firstDao = _isDao.firstAnnotationOf2(element);
       final id = _discoverStep._id(element.name3!);
 
       if (firstDb != null) {
