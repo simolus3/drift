@@ -278,7 +278,7 @@ class _DriftBuildRun {
   /// minimal version constraints.
   Future<void> _checkForLanguageVersions() async {
     if (mode.isPartFile) {
-      final library = await buildStep.inputLibrary;
+      final library = await buildStep.inputLibrary2;
       overriddenLanguageVersion = library.languageVersion.override;
 
       final effectiveVersion =
@@ -467,7 +467,7 @@ class _DriftBuildRun {
   Future<void> _createWriter() async {
     if (mode.isMonolithic) {
       final generationOptions = GenerationOptions(
-        imports: ImportManagerForPartFiles(await buildStep.inputLibrary),
+        imports: ImportManagerForPartFiles(await buildStep.inputLibrary2),
       );
       writer = Writer(options, generationOptions: generationOptions);
     } else {

@@ -35,7 +35,7 @@ class DriftBuildBackend extends DriftBackend {
 
   @override
   Future<Uri> uriOfDart(Element2 element) async {
-    final id = await _buildStep.resolver.assetIdForElement(element);
+    final id = await _buildStep.resolver.assetIdForElement2(element);
     return id.uri;
   }
 
@@ -46,7 +46,7 @@ class DriftBuildBackend extends DriftBackend {
   Future<LibraryElement2> readDart(Uri uri) async {
     if (uri.scheme == 'dart') {
       final name = 'dart.${uri.path}';
-      final library = await _buildStep.resolver.findLibraryByName(name);
+      final library = await _buildStep.resolver.findLibraryByName2(name);
 
       if (library == null) {
         throw NotALibraryException(uri);
@@ -56,7 +56,7 @@ class DriftBuildBackend extends DriftBackend {
     }
 
     try {
-      return await _buildStep.resolver.libraryFor(AssetId.resolve(uri));
+      return await _buildStep.resolver.libraryFor2(AssetId.resolve(uri));
     } on NonLibraryAssetException {
       throw NotALibraryException(uri);
     }
@@ -64,7 +64,10 @@ class DriftBuildBackend extends DriftBackend {
 
   @override
   Future<AstNode?> loadElementDeclaration(Element2 element) {
-    return _buildStep.resolver.astNodeFor(element, resolve: true);
+    return _buildStep.resolver.astNodeFor2(
+      element.firstFragment,
+      resolve: true,
+    );
   }
 
   @override
@@ -93,10 +96,13 @@ class DriftBuildBackend extends DriftBackend {
       throw CannotReadExpressionException('No field for $dartExpression');
     }
 
-    final library = await _buildStep.resolver.libraryFor(tempDart);
-    final field = library.units.first.topLevelVariables
-        .firstWhere((element) => element.name == getter);
-    final fieldAst = await _buildStep.resolver.astNodeFor(field, resolve: true);
+    final library = await _buildStep.resolver.libraryFor2(tempDart);
+    final field = library.firstFragment.topLevelVariables2
+        .firstWhere((element) => element.name2 == getter);
+    final fieldAst = await _buildStep.resolver.astNodeFor2(
+      field,
+      resolve: true,
+    );
 
     final initializer = (fieldAst as VariableDeclaration).initializer;
     if (initializer == null) {
@@ -107,14 +113,14 @@ class DriftBuildBackend extends DriftBackend {
   }
 
   @override
-  Future<Element?> resolveTopLevelElement(
+  Future<Element2?> resolveTopLevelElement(
       Uri context, String reference, Iterable<Uri> imports) async {
     final original = AssetId.resolve(context);
     final tempDart = original.changeExtension('.expr.temp.dart');
 
     if (await _buildStep.canRead(tempDart)) {
-      final library = await _buildStep.resolver.libraryFor(tempDart);
-      return library.definingCompilationUnit.scope.lookup(reference).getter;
+      final library = await _buildStep.resolver.libraryFor2(tempDart);
+      return library.firstFragment.scope.lookup(reference).getter2;
     } else {
       // If there's no temporary file whose imports we can use, then that means
       // that there aren't any Dart imports in [context] at all. So we just need
@@ -122,10 +128,10 @@ class DriftBuildBackend extends DriftBackend {
       // For that, resolve a library we know exists and likely has been resolved
       // already.
       final libraryWeKnowExists = await _buildStep.resolver
-          .libraryFor(AssetId.resolve(KnownDriftTypes.uri));
-      final dartCore = libraryWeKnowExists.typeProvider.objectElement.library;
+          .libraryFor2(AssetId.resolve(KnownDriftTypes.uri));
+      final dartCore = libraryWeKnowExists.typeProvider.objectElement2.library2;
 
-      return dartCore.exportNamespace.get(reference);
+      return dartCore.exportNamespace.get2(reference);
     }
   }
 }
@@ -192,7 +198,7 @@ class BuildCacheReader implements AnalysisResultCacheReader {
   Future<LibraryElement2?> readTypeHelperFor(Uri uri) async {
     final assetId = AssetId.resolve(uri).addExtension('.types.temp.dart');
     if (await _buildStep.canRead(assetId)) {
-      return _buildStep.resolver.libraryFor(assetId, allowSyntaxErrors: true);
+      return _buildStep.resolver.libraryFor2(assetId, allowSyntaxErrors: true);
     }
 
     return null;
