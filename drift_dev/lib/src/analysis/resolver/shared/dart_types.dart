@@ -29,6 +29,10 @@ ExistingRowClass? validateExistingClass(
   LocalElementResolver step,
   KnownDriftTypes knownTypes,
 ) {
+  if (constructor == '') {
+    constructor = 'new';
+  }
+
   final desiredClass = dartClass.classElement;
   final library = desiredClass.library2;
   var isAsyncFactory = false;
@@ -95,7 +99,7 @@ ExistingRowClass? validateExistingClass(
   }
 
   if (ctor == null) {
-    final msg = constructor == ''
+    final msg = constructor == 'new'
         ? 'The desired data class must have an unnamed constructor'
         : 'The desired data class does not have a constructor named '
             '$constructor';

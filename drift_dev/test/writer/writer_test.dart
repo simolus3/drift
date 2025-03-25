@@ -2,7 +2,6 @@ import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:test/test.dart';
 
-import '../analysis/test_utils.dart';
 import '../utils.dart';
 
 void main() {
@@ -78,25 +77,17 @@ class Database {}
         ),
         contains(r'''
     return (
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}id'],
-          )!,
-      name:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}name'],
-          )!,
-      birthDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}birth_date'],
-      ),
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      birthDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date']),
     );
 '''),
       ))
     }, result.dartOutputs, result.writer);
-  }, skip: requireDart('3.0.0-dev'));
+  });
 
   test(
     'references nullable variant of converter on non-nullable column',
@@ -265,9 +256,8 @@ class Database {}
 
       checkOutputs(
         {
-          'a|lib/a.drift.dart': decodedMatches(contains('Index(\n'
-              "    'users_name',\n"
-              "    'CREATE INDEX users_name ON users (name)',"))
+          'a|lib/a.drift.dart': decodedMatches(contains("Index('users_name', "
+              "'CREATE INDEX users_name ON users (name)'"))
         },
         result.dartOutputs,
         result.writer,

@@ -199,8 +199,8 @@ class MatchExistingTypeForQuery {
         // into the classes' default constructor.
         final element = desiredType.element3;
 
-        final constructor = desiredType.lookUpConstructor2(
-            constructorName ?? '', element.library2);
+        final constructor =
+            desiredType.lookUpConstructor2(constructorName, element.library2);
         if (constructor == null) {
           if (constructorName == null) {
             reportError(

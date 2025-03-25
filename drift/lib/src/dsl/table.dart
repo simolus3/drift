@@ -509,7 +509,7 @@ class UseRowClass {
   ///
   /// For details, see the class documentation on [UseRowClass].
   const UseRowClass(this.type,
-      {this.constructor = '', this.generateInsertable = false});
+      {this.constructor = 'new', this.generateInsertable = false});
 }
 
 /// An annotation specifying view properties

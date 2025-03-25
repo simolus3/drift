@@ -7,7 +7,6 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
 import 'package:analyzer/dart/element/type_system.dart';
 import 'package:collection/collection.dart';
-import 'package:path/path.dart' as p;
 
 import '../../backend.dart';
 import '../../driver/error.dart';

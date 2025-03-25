@@ -169,7 +169,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
       return null;
     } else {
       return validateExistingClass(columns, foundDartClass,
-          source.constructorName ?? '', false, this, knownTypes);
+          source.constructorName ?? 'new', false, this, knownTypes);
     }
   }
 
