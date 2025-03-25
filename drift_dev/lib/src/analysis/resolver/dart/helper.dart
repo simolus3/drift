@@ -184,12 +184,8 @@ bool isColumnBuilder(DartType type) {
 bool isFromDrift(DartType type) {
   if (type is! InterfaceType) return false;
 
-  final firstComponent = p.url
-      .split(type.element3.library2.firstFragment.source.fullName)
-      .firstOrNull;
-  if (firstComponent == null) return false;
-
-  return firstComponent.contains('drift');
+  final uri = type.element3.library2.uri;
+  return uri.scheme == 'package' && uri.pathSegments[0] == 'drift';
 }
 
 extension IsFromDrift on Element2 {
