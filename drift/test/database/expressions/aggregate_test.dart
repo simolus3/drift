@@ -213,6 +213,35 @@ void main() {
       );
     });
 
+    test('with order by', () {
+      expect(
+        foo.groupConcat(orderBy: OrderBy([OrderingTerm.asc(foo)])),
+        generates('GROUP_CONCAT(foo ORDER BY foo ASC)', isEmpty),
+      );
+
+      expect(
+        foo.groupConcat(
+          orderBy: OrderBy([OrderingTerm.desc(foo)]),
+          filter: foo.isSmallerThan(const Variable(3)),
+        ),
+        generates(
+          'GROUP_CONCAT(foo ORDER BY foo DESC) FILTER (WHERE foo < ?)',
+          [3],
+        ),
+      );
+
+      expect(
+        s1.groupConcat(
+          orderBy: OrderBy([OrderingTerm.asc(s1)]),
+          separator: ' - ',
+        ),
+        generates(
+          'GROUP_CONCAT(s1, ? ORDER BY s1 ASC)',
+          [' - '],
+        ),
+      );
+    });
+
     test('does not allow distinct with a custom separator', () {
       expect(() => foo.groupConcat(distinct: true, separator: ' and '),
           throwsArgumentError);
