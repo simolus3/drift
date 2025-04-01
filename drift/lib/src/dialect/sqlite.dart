@@ -197,6 +197,11 @@ final class _BoolType extends _SqlTypeWithoutMapping<bool> {
   Object sqlParameter(DriftDialect dialect, bool value) {
     return value ? 1 : 0;
   }
+
+  @override
+  String sqlLiteral(DriftDialect dialect, bool value) {
+    return value ? '1' : '0';
+  }
 }
 
 final class _DoubleType extends _SqlTypeWithoutMapping<double> {

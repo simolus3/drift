@@ -1,3 +1,4 @@
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
@@ -7,39 +8,39 @@ import '../../test_utils/test_utils.dart';
 void main() {
   final db = TodoDb();
 
-  const innerExpression =
-      CustomExpression<String>('name', precedence: Precedence.primary);
+  const innerExpression = Expression<String>.custom(CustomComponent('name'),
+      precedence: Precedence.primary);
   group('values', () {
     test('in expressions are generated', () {
       final isInExpression = innerExpression.isIn(['Max', 'Tobias']);
 
-      expect(isInExpression, generates('name IN (?, ?)', ['Max', 'Tobias']));
+      expect(isInExpression, generates('name IN (?1,?2)', ['Max', 'Tobias']));
     });
 
     test('not in expressions are generated', () {
       final isNotIn = innerExpression.isNotIn(['Max', 'Tobias']);
 
-      expect(isNotIn, generates('name NOT IN (?, ?)', ['Max', 'Tobias']));
+      expect(isNotIn, generates('name NOT IN (?1,?2)', ['Max', 'Tobias']));
     });
   });
 
   group('expressions', () {
     test('in', () {
-      final isInExpression = innerExpression.isInExp([
-        CustomExpression('a'),
-        CustomExpression('b'),
+      final isInExpression = innerExpression.isInExp(const [
+        Expression.custom(CustomComponent('a')),
+        Expression.custom(CustomComponent('b')),
       ]);
 
-      expect(isInExpression, generates('name IN (a, b)'));
+      expect(isInExpression, generates('name IN (a,b)'));
     });
 
     test('not in', () {
-      final isNotInExpression = innerExpression.isNotInExp([
-        CustomExpression('a'),
-        CustomExpression('b'),
+      final isNotInExpression = innerExpression.isNotInExp(const [
+        Expression.custom(CustomComponent('a')),
+        Expression.custom(CustomComponent('b')),
       ]);
 
-      expect(isNotInExpression, generates('name NOT IN (a, b)'));
+      expect(isNotInExpression, generates('name NOT IN (a,b)'));
     });
   });
 
@@ -48,24 +49,19 @@ void main() {
       final isInExpression = innerExpression
           .isInQuery(db.selectOnly(db.users)..addColumns([db.users.name]));
 
-      expect(
-          isInExpression,
-          generates(
-              'name IN (SELECT "users"."name" AS "users.name" FROM "users")'));
+      expect(isInExpression,
+          generates('name IN (SELECT "name" AS "c0" FROM "users")'));
 
-      final ctx = stubContext();
-      isInExpression.writeInto(ctx);
-      expect(ctx.watchedTables, contains(db.users));
+      final compiled = const SqliteDialect().compile(isInExpression);
+      expect(compiled.watchedTables, {db.users});
     });
 
     test('not in expressions are generated', () {
       final isInExpression = innerExpression
           .isNotInQuery(db.selectOnly(db.users)..addColumns([db.users.name]));
 
-      expect(
-          isInExpression,
-          generates(
-              'name NOT IN (SELECT "users"."name" AS "users.name" FROM "users")'));
+      expect(isInExpression,
+          generates('name NOT IN (SELECT "name" AS "c0" FROM "users")'));
     });
 
     test('avoids generating empty tuples', () {

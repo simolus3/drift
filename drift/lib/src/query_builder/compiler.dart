@@ -189,7 +189,7 @@ abstract base class StatementCompiler {
 
   void addBetweenExpression(BetweenExpression expression) {
     writeExpression(expression, () {
-      expression.writeInto(this);
+      expression.target.compileWith(this);
 
       if (expression.not) statement.buffer.write(' NOT');
       statement.buffer.write(' BETWEEN ');
