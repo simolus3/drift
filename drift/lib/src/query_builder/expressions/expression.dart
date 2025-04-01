@@ -237,7 +237,8 @@ abstract base class Expression<T extends Object> implements FunctionParameter {
     );
   }
 
-  /// Evaluates to `this` if [predicate] is true, otherwise evaluates to [ifFalse].
+  /// Evaluates to `this` if [predicate] is true, otherwise evaluates to
+  /// [ifFalse].
   Expression<T> iif(Expression<bool> predicate, Expression<T> ifFalse) {
     return FunctionCallExpression('IIF', [predicate, this, ifFalse]);
   }

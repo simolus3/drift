@@ -4,15 +4,15 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const x = CustomExpression<String>('x');
-  const y = CustomExpression<int>('y');
+  const x = Expression<String>.custom(CustomComponent('x'));
+  const y = Expression<int>.custom(CustomComponent('y'));
 
   group('CASE WHEN with base expression', () {
     test('WHEN without ELSE', () {
       expect(
         x.caseMatch<int>(when: {
-          const Constant('a'): const Constant(1),
-          const Constant('b'): const Constant(2),
+          const Literal('a'): const Literal(1),
+          const Literal('b'): const Literal(2),
         }),
         generates("CASE x WHEN 'a' THEN 1 WHEN 'b' THEN 2 END"),
       );
@@ -22,7 +22,7 @@ void main() {
       expect(
         x.caseMatch<int>(
           when: {
-            const Constant('a'): const Constant(1),
+            const Literal('a'): const Literal(1),
           },
           orElse: y,
         ),
@@ -39,9 +39,15 @@ void main() {
   group('CASE WHEN without base expression', () {
     test('WHEN without ELSE', () {
       expect(
-        CaseWhenExpression<int>(cases: [
-          const CaseWhen(CustomExpression("'id' IS 1"), then: Constant(1)),
-          const CaseWhen(CustomExpression("'id' IS 2"), then: Constant(2)),
+        CaseWhenExpression.conditional<int>(cases: [
+          (
+            when: Expression.custom(CustomComponent("'id' IS 1")),
+            then: Literal(1)
+          ),
+          (
+            when: Expression.custom(CustomComponent("'id' IS 2")),
+            then: Literal(2)
+          ),
         ]),
         generates("CASE WHEN 'id' IS 1 THEN 1 WHEN 'id' IS 2 THEN 2 END"),
       );
@@ -49,9 +55,12 @@ void main() {
 
     test('WHEN with ELSE', () {
       expect(
-        CaseWhenExpression<int>(
-          cases: [
-            const CaseWhen(CustomExpression("'id' IS 1"), then: Constant(1)),
+        CaseWhenExpression.conditional<int>(
+          cases: const [
+            (
+              when: Expression.custom(CustomComponent("'id' IS 1")),
+              then: Literal(1),
+            )
           ],
           orElse: y,
         ),
@@ -60,15 +69,16 @@ void main() {
     });
 
     test('does not allow empty WHEN map', () {
-      expect(() => CaseWhenExpression<Object>(cases: const []),
+      expect(() => CaseWhenExpression.conditional<int>(cases: const []),
           throwsA(isA<ArgumentError>()));
     });
   });
 
   test('IIF', () {
     expect(
-      x.iif<String>(CustomExpression<bool>('1 = 1'), const Constant('y')),
-      generates("IIF(1 = 1, x, 'y')"),
+      x.iif(Expression<bool>.custom(CustomComponent('1 = 1')),
+          const Literal('y')),
+      generates("IIF(1 = 1,x,'y')"),
     );
   });
 }
