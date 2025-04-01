@@ -6,6 +6,7 @@ import 'dialect.dart';
 import 'expressions/aggregate.dart';
 import 'expressions/case_when.dart';
 import 'expressions/comparable.dart';
+import 'expressions/exists.dart';
 import 'expressions/expression.dart';
 import 'expressions/functions.dart';
 import 'expressions/operators.dart';
@@ -103,6 +104,8 @@ final class CustomComponent implements SqlComponent {
 abstract base class StatementCompiler {
   late final CompiledStatement statement = CompiledStatement(dialect);
   Precedence? _expressionPrecedence;
+
+  bool _ignoreResultSet = false;
 
   DriftDialect get dialect;
 
@@ -272,19 +275,25 @@ abstract base class StatementCompiler {
   void addSelectStatement(BaseSelectStatement select) {
     statement.buffer.write('SELECT ');
     statement.resultSetStructure = select.structure;
-    statement.hasMultipleTables = select.from.length > 1;
+    statement.hasMultipleTables |= select.from.length > 1;
 
     var first = true;
-    select.structure.expressions.forEach((expr, position) {
-      if (!first) {
-        statement.comma();
-      }
-      first = false;
+    if (!_ignoreResultSet) {
+      select.structure.expressions.forEach((expr, position) {
+        if (!first) {
+          statement.comma();
+        }
+        first = false;
 
-      expr.compileWith(this);
-      statement.buffer.write(' AS ');
-      addReference(position.name);
-    });
+        expr.compileWith(this);
+        statement.buffer.write(' AS ');
+        addReference(position.name);
+      });
+    } else {
+      statement.buffer.write('1');
+    }
+
+    _ignoreResultSet = false;
 
     if (select.from case [final first, ...final rest]) {
       statement.buffer.write(' FROM ');
@@ -299,6 +308,11 @@ abstract base class StatementCompiler {
 
         entry.compileWith(this);
       }
+    }
+
+    if (select.whereClause case final where?) {
+      statement.space();
+      where.compileWith(this);
     }
   }
 
@@ -354,6 +368,30 @@ abstract base class StatementCompiler {
     statement.buffer.write('(');
     e.statement.compileWith(this);
     statement.buffer.write(')');
+  }
+
+  void addExistsExpression(ExistsExpression e) {
+    final outerHasMultipleTables = statement.hasMultipleTables;
+    final outerIgnoreResultSet = _ignoreResultSet;
+    // Inside this subquery, we want to reference columns with their table
+    // to avoid ambiguities when an outer table is referenced.
+    statement.hasMultipleTables = true;
+
+    writeExpression(e, () {
+      if (e.not) {
+        statement.buffer.write('NOT ');
+      }
+      statement.buffer.write('EXISTS ');
+
+      statement.buffer.write('(');
+      _expressionPrecedence = null; // No longer an expression context
+      _ignoreResultSet = true;
+      e.select.compileWith(this);
+      statement.buffer.write(')');
+    });
+
+    statement.hasMultipleTables = outerHasMultipleTables;
+    _ignoreResultSet = outerIgnoreResultSet;
   }
 
   void addColumnReference(SchemaColumn column) {
