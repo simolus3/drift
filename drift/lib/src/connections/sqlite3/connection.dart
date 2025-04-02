@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' as sqlite;
 
-import '../../dialect/sqlite.dart';
+import '../../dialect/sqlite/dialect.dart';
 import '../connection.dart';
 import '../result_set.dart';
 import 'native_functions.dart';

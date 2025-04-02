@@ -6,6 +6,7 @@ import 'dialect.dart';
 import 'expressions/aggregate.dart';
 import 'expressions/case_when.dart';
 import 'expressions/comparable.dart';
+import 'expressions/datetime.dart';
 import 'expressions/exists.dart';
 import 'expressions/expression.dart';
 import 'expressions/functions.dart';
@@ -609,4 +610,15 @@ abstract base class StatementCompiler {
     statement.watchedTables.addAll(component.watchedTables);
     statement.buffer.write(component.sqlFor(dialect.known));
   }
+
+  void addCurrentDateOrTimeExpression(CurrentDateOrTimeExpression e) {
+    writeExpression(e, () {
+      statement.buffer
+          .write(e.includeTime ? 'CURRENT_TIMESTAMP' : 'CURRENT_DATE');
+    });
+  }
+
+  void addUnixTimestampToDateTime(UnixTimestampToDateTime e);
+
+  void addDateExtractionOperator(DateExtractionOperator e);
 }

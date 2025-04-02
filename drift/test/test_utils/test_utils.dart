@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:drift/src/dialect/sqlite.dart';
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/src/runtime/streams/store.dart';
 import 'package:mockito/annotations.dart';
 

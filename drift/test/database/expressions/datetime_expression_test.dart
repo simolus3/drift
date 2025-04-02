@@ -1,3 +1,4 @@
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
@@ -12,11 +13,11 @@ final _expectedResultsTimestamp = <_Extractor, String>{
   (d) => d.hour: "CAST(strftime('%H', val, 'unixepoch') AS INTEGER)",
   (d) => d.minute: "CAST(strftime('%M', val, 'unixepoch') AS INTEGER)",
   (d) => d.second: "CAST(strftime('%S', val, 'unixepoch') AS INTEGER)",
-  (d) => d.date: "DATE(val, 'unixepoch')",
-  (d) => d.datetime: "DATETIME(val, 'unixepoch')",
-  (d) => d.time: "TIME(val, 'unixepoch')",
+  (d) => d.date: "DATE(val,'unixepoch')",
+  (d) => d.datetime: "DATETIME(val,'unixepoch')",
+  (d) => d.time: "TIME(val,'unixepoch')",
   (d) => d.unixepoch: 'val',
-  (d) => d.julianday: "JULIANDAY(val, 'unixepoch')",
+  (d) => d.julianday: "JULIANDAY(val,'unixepoch')",
 };
 
 final _expectedResultsText = <_Extractor, String>{
@@ -34,14 +35,15 @@ final _expectedResultsText = <_Extractor, String>{
 };
 
 void main() {
-  const column =
-      CustomExpression<DateTime>('val', precedence: Precedence.primary);
+  const column = Expression<DateTime>.custom(CustomComponent('val'),
+      precedence: Precedence.primary);
 
   for (final useText in [false, true]) {
     final desc = useText ? 'text' : 'timestamp';
 
     group('storing datetime values as $desc', () {
-      final options = DriftDatabaseOptions(storeDateTimeAsText: useText);
+      final dialect =
+          SqliteDialect(options: SqliteOptions(storeDateTimesAsText: useText));
 
       group('extracting information via top-level method', () {
         final expectedResults =
@@ -49,19 +51,19 @@ void main() {
 
         expectedResults.forEach((key, value) {
           test('should extract field', () {
-            expect(key(column), generatesWithOptions(value, options: options));
+            expect(key(column), generatesWithOptions(value, dialect: dialect));
             expectEquals(key(column), key(column));
           });
         });
       });
 
       test('can cast datetimes to unix timestamps without rewriting', () {
-        final expr = currentDateAndTime.unixepoch + const Constant(10);
+        final expr = currentDateAndTime.unixepoch + const Literal(10);
         final expectedSql = useText
             ? 'UNIXEPOCH(CURRENT_TIMESTAMP) + 10'
-            : 'CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER) + 10';
+            : 'CAST(strftime(\'%s\',CURRENT_TIMESTAMP) AS INTEGER) + 10';
 
-        expect(expr, generatesWithOptions(expectedSql, options: options));
+        expect(expr, generatesWithOptions(expectedSql, dialect: dialect));
       });
 
       test('plus and minus durations', () {
@@ -74,24 +76,26 @@ void main() {
             expr,
             anyOf(
               generatesWithOptions(
-                "datetime(datetime(CURRENT_TIMESTAMP, '259200.0 seconds'), "
+                "datetime(datetime(CURRENT_TIMESTAMP,'259200.0 seconds'),"
                 "'-5.0 seconds')",
-                options: options,
+                dialect: dialect,
               ),
               // emits a whole number on the web which is fine too
               generatesWithOptions(
-                "datetime(datetime(CURRENT_TIMESTAMP, '259200 seconds'), "
+                "datetime(datetime(CURRENT_TIMESTAMP,'259200 seconds'),"
                 "'-5 seconds')",
-                options: options,
+                dialect: dialect,
               ),
             ),
           );
         } else {
           expect(
             expr,
-            generates(
-                '(CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER) + ?) - ?',
-                [259200, 5]),
+            generatesWithOptions(
+              '(CAST(strftime(\'%s\',CURRENT_TIMESTAMP) AS INTEGER) + ?1) - ?2',
+              variables: [259200, 5],
+              dialect: dialect,
+            ),
           );
         }
       });
@@ -102,10 +106,10 @@ void main() {
 
         if (useText) {
           expect(
-              left.isSmallerThan(right),
+              left.isLessThan(right),
               generatesWithOptions(
-                'JULIANDAY(?) < JULIANDAY(?)',
-                options: options,
+                'julianday(?1) < julianday(?2)',
+                dialect: dialect,
                 variables: [
                   '2022-07-22T00:00:00.000Z',
                   '2022-07-23T00:00:00.000Z'
@@ -113,10 +117,10 @@ void main() {
               ));
         } else {
           expect(
-              left.isSmallerThan(right),
+              left.isLessThan(right),
               generatesWithOptions(
-                '? < ?',
-                options: options,
+                '?1 < ?2',
+                dialect: dialect,
                 variables: [1658448000, 1658534400],
               ));
         }
@@ -126,8 +130,8 @@ void main() {
         expect(
           DateTimeExpressions.fromUnixEpoch(column.dartCast()),
           generatesWithOptions(
-            useText ? "datetime(val, 'unixepoch')" : 'val',
-            options: options,
+            useText ? "datetime(val,'unixepoch')" : 'val',
+            dialect: dialect,
           ),
         );
       });
