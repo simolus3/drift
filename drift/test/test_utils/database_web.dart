@@ -32,7 +32,7 @@ Future<WasmSqlite3> get sqlite3 {
   });
 }
 
-DatabaseConnection testInMemoryDatabase() {
+DatabaseConnection testInMemoryDatabase([DriftDialect? dialect]) {
   return DatabaseConnection(LazyDatabase(() async {
     final sqlite = await sqlite3;
     return WasmDatabase.inMemory(sqlite);

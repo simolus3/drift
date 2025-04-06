@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/sqlite3/connection.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -53,8 +54,14 @@ Version get sqlite3Version {
   return sqlite3.version;
 }
 
-DriftDatabaseImplementation testInMemoryDatabase() {
+DriftDatabaseImplementation testInMemoryDatabase([DriftDialect? dialect]) {
   preferLocalSqlite3();
 
-  return SqliteConnection.synchronous(open: () => sqlite3.openInMemory());
+  final resolvedDialect = (dialect ?? const SqliteDialect()) as SqliteDialect;
+
+  return DriftDatabaseImplementation(
+    dialect: resolvedDialect,
+    openConnection: () async =>
+        SqliteConnection(resolvedDialect, sqlite3.openInMemory()),
+  );
 }

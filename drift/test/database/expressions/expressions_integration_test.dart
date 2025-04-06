@@ -1,4 +1,7 @@
-import 'package:drift/drift.dart' hide isNull;
+import 'dart:typed_data';
+
+import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import '../../generated/todos.dart';
@@ -9,11 +12,11 @@ void main() {
     _testDateTimes(() => TodoDb(testInMemoryDatabase()));
   });
 
-  group('storing date times as text', () {
+  group('storing date times as timestamps', () {
     _testDateTimes(
-      () => TodoDb(testInMemoryDatabase())
-        ..options = const DriftDatabaseOptions(storeDateTimeAsText: true),
-      dateTimeAsText: true,
+      () => TodoDb(testInMemoryDatabase(
+          SqliteDialect(options: SqliteOptions(storeDateTimesAsText: false)))),
+      dateTimeAsText: false,
     );
   });
 
@@ -31,7 +34,7 @@ void main() {
     tearDown(() => db.close());
 
     Future<T?> eval<T extends Object>(Expression<T> expr,
-        {TableInfo? onTable}) {
+        {GeneratedTable? onTable}) {
       if (onTable == null) {
         return db
             .selectExpressions([expr])
@@ -89,7 +92,7 @@ void main() {
           expect(
             eval(
                 db.users.id
-                    .groupConcat(filter: db.users.id.isBiggerThanValue(3)),
+                    .groupConcat(filter: db.users.id.isGreaterThanValue(3)),
                 onTable: db.users),
             completion('4,5,6'),
           );
@@ -105,7 +108,7 @@ void main() {
         expect(
           eval(
             db.tableWithoutPK.someFloat.sum(
-                filter: db.tableWithoutPK.someFloat.isBiggerOrEqualValue(3)),
+                filter: db.tableWithoutPK.someFloat.isGreaterOrEqualValue(3)),
             onTable: db.tableWithoutPK,
           ),
           completion(7),
@@ -115,29 +118,29 @@ void main() {
 
     group('text', () {
       test('contains', () {
-        const stringLiteral = Constant('Some sql string literal');
+        const stringLiteral = Literal('Some sql string literal');
         final containsSql = stringLiteral.contains('sql');
 
         expect(eval(containsSql), completion(isTrue));
       });
 
       test('trim()', () {
-        const literal = Constant('  hello world    ');
+        const literal = Literal('  hello world    ');
         expect(eval(literal.trim()), completion('hello world'));
       });
 
       test('trimLeft()', () {
-        const literal = Constant('  hello world    ');
+        const literal = Literal('  hello world    ');
         expect(eval(literal.trimLeft()), completion('hello world    '));
       });
 
       test('trimRight()', () {
-        const literal = Constant('  hello world    ');
+        const literal = Literal('  hello world    ');
         expect(eval(literal.trimRight()), completion('  hello world'));
       });
 
       test('substring', () {
-        final input = Constant('hello world');
+        final input = Literal('hello world');
         expect(eval(input.substr(7)), completion('world'));
 
         expect(eval(input.substrExpr(Variable(1), input.length - Variable(6))),
@@ -146,7 +149,7 @@ void main() {
     });
 
     test('coalesce', () async {
-      final expr = coalesce<int>([const Constant(null), const Constant(3)]);
+      final expr = coalesce<int>([const Literal(null), const Literal(3)]);
 
       expect(eval(expr), completion(3));
     });
@@ -196,8 +199,8 @@ void main() {
     });
 
     test('custom expressions can introduces new tables to watch', () async {
-      final custom =
-          CustomExpression<int>('1', watchedTables: [db.sharedTodos]);
+      final custom = Expression<int>.custom(
+          CustomComponent('1', watchedTables: [db.sharedTodos]));
       final stream = (db.selectOnly(db.users)..addColumns([custom]))
           .map((row) => row.read(custom))
           .watchSingle();
@@ -230,22 +233,22 @@ void main() {
         expect(await eval(Variable.withInt(3).isNotIn([2, 4])), isTrue);
         expect(await eval(Variable.withInt(3).isNotIn([3, 5])), isFalse);
 
-        expect(await eval(const Constant<int>(null).isIn([2, 4])), isNull);
-        expect(await eval(const Constant<int>(null).isNotIn([2, 4])), isNull);
+        expect(await eval(const Literal<int>(null).isIn([2, 4])), isNull);
+        expect(await eval(const Literal<int>(null).isNotIn([2, 4])), isNull);
       });
 
       test('empty', () async {
         expect(await eval(Variable.withInt(3).isIn([])), isFalse);
         expect(await eval(Variable.withInt(3).isNotIn([])), isTrue);
 
-        expect(await eval(const Constant<int>(null).isIn([])), isFalse);
-        expect(await eval(const Constant<int>(null).isNotIn([])), isTrue);
+        expect(await eval(const Literal<int>(null).isIn([])), isFalse);
+        expect(await eval(const Literal<int>(null).isNotIn([])), isTrue);
       });
     });
   });
 }
 
-void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
+void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = true}) {
   late TodoDb db;
 
   setUp(() async {
@@ -258,7 +261,8 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
   });
   tearDown(() => db.close());
 
-  Future<T?> eval<T extends Object>(Expression<T> expr, {TableInfo? onTable}) {
+  Future<T?> eval<T extends Object>(Expression<T> expr,
+      {GeneratedTable? onTable}) {
     final query = db.selectOnly(onTable ?? db.users)..addColumns([expr]);
     return query.getSingle().then((row) => row.read(expr));
   }
@@ -310,7 +314,7 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = false}) {
         expect(eval(expr.second), completion(0));
 
         expect(eval(expr.date), completion('2020-09-03'));
-        expect(eval(expr.modify(const DateTimeModifier.days(3)).date),
+        expect(eval(expr.modify(DateTimeModifier.days(3)).date),
             completion('2020-09-06'));
         expect(eval(expr.time), completion('23:55:00'));
         expect(eval(expr.datetime), completion('2020-09-03 23:55:00'));

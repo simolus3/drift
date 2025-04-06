@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:drift/drift.dart';
-import 'package:drift/src/dialect/sqlite.dart';
+import 'package:drift/dialect/sqlite.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils/test_utils.dart';

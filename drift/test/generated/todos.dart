@@ -53,9 +53,8 @@ class Users extends Table with AutoIncrement {
 
   late final DateTimeColumn creationTime = dateTime()
       // ignore: recursive_getters
-//      .check(creationTime.isBiggerThan(Constant(DateTime.utc(1950))))
-      //    .withDefault(currentDateAndTime);
-      ;
+      .check(creationTime.isGreaterThan(Literal(DateTime.utc(1950))))
+      .withDefault(currentDateAndTime);
 }
 
 @DataClassName('Category')
