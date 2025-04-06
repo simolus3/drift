@@ -16,14 +16,14 @@ class GeopolyTest extends Table
       type: const GeopolyPolygonType(),
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<DriftAny> a = TableColumn<DriftAny>(
       name: 'a',
       type: SqliteDialect.anyType(),
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [shape, a];

@@ -38,7 +38,11 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
   /// definition for this column in SQL. For instance, a single-column primary
   /// key defined by overriding the [Table.primaryKey] getter will _not_ add a
   /// [ColumnPrimaryKeyConstraint] to this column.
-  final List<ColumnConstraint> constraints;
+  late final List<ColumnConstraint> constraints = _generateConstraints();
+
+  /// Lazily generate constraints because some constraints (e.g. `CHECK`) are
+  /// self-referential.
+  final List<ColumnConstraint> Function() _generateConstraints;
 
   /// A function that yields a default column for inserts if no value has been
   /// set. This is different to [defaultValue] since the function is written in
@@ -53,9 +57,11 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
     required super.type,
     super.isNullable,
     this.requiredDuringInsert = true,
-    this.constraints = const [],
+    List<ColumnConstraint> Function() constraints = _noConstraints,
     this.clientDefault,
-  });
+  }) : _generateConstraints = constraints;
+
+  static List<ColumnConstraint> _noConstraints() => const [];
 
   /// Applies a type converter to this column.
   ///
@@ -86,7 +92,7 @@ final class TableColumnWithTypeConverter<D, S extends Object>
           type: base.type,
           isNullable: base.isNullable,
           requiredDuringInsert: base.requiredDuringInsert,
-          constraints: base.constraints,
+          constraints: () => base.constraints,
           clientDefault: base.clientDefault,
         );
 }

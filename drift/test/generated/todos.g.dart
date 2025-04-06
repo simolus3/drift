@@ -15,9 +15,9 @@ class $CategoriesTable extends Categories
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [
-        const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)
-      ]).withConverter<RowId>($CategoriesTable.$converterid)
+      constraints: () => [
+            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)
+          ]).withConverter<RowId>($CategoriesTable.$converterid)
     ..owningResultSet = this;
   @override
   late final TableColumn<String> description = TableColumn<String>(
@@ -25,7 +25,7 @@ class $CategoriesTable extends Categories
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('NOT NULL UNIQUE')])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL UNIQUE')])
     ..owningResultSet = this;
   @override
   late final TableColumnWithTypeConverter<CategoryPriority, int> priority =
@@ -34,7 +34,8 @@ class $CategoriesTable extends Categories
               type: BuiltinDriftType.int,
               isNullable: false,
               requiredDuringInsert: false,
-              constraints: [ColumnDefaultConstraint(const Literal(0))])
+              constraints: () =>
+                  [ColumnDefaultConstraint<int>(const Literal(0))])
           .withConverter<CategoryPriority>($CategoriesTable.$converterpriority)
         ..owningResultSet = this;
   @override
@@ -43,10 +44,10 @@ class $CategoriesTable extends Categories
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [
-        ColumnGeneratedAs(StringExpressionOperators(description).upper(),
-            stored: false)
-      ])
+      constraints: () => [
+            ColumnGeneratedAs(StringExpressionOperators(description).upper(),
+                stored: false)
+          ])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns =>
@@ -265,9 +266,9 @@ class $TodosTableTable extends TodosTable
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [
-        const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)
-      ]).withConverter<RowId>($TodosTableTable.$converterid)
+      constraints: () => [
+            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)
+          ]).withConverter<RowId>($TodosTableTable.$converterid)
     ..owningResultSet = this;
   @override
   late final TableColumn<String> title = TableColumn<String>(
@@ -289,7 +290,7 @@ class $TodosTableTable extends TodosTable
       type: BuiltinDriftType.dateTime,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [const ColumnUniqueConstraint()])
+      constraints: () => [const ColumnUniqueConstraint()])
     ..owningResultSet = this;
   @override
   late final TableColumnWithTypeConverter<RowId?, int> category =
@@ -298,13 +299,13 @@ class $TodosTableTable extends TodosTable
           type: BuiltinDriftType.int,
           isNullable: true,
           requiredDuringInsert: false,
-          constraints: [
-        const ColumnForeignKeyConstraint(
-          otherTableName: 'categories',
-          otherColumnName: 'id',
-          initiallyDeferred: true,
-        )
-      ]).withConverter<RowId?>($TodosTableTable.$convertercategoryn)
+          constraints: () => [
+                const ColumnForeignKeyConstraint(
+                  otherTableName: 'categories',
+                  otherColumnName: 'id',
+                  initiallyDeferred: true,
+                )
+              ]).withConverter<RowId?>($TodosTableTable.$convertercategoryn)
         ..owningResultSet = this;
   @override
   late final TableColumnWithTypeConverter<TodoStatus?, String> status =
@@ -625,9 +626,9 @@ class $UsersTable extends Users
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [
-        const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)
-      ]).withConverter<RowId>($UsersTable.$converterid)
+      constraints: () => [
+            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)
+          ]).withConverter<RowId>($UsersTable.$converterid)
     ..owningResultSet = this;
   @override
   late final TableColumn<DateTime> creationTime = TableColumn<DateTime>(
@@ -635,11 +636,11 @@ class $UsersTable extends Users
       type: BuiltinDriftType.dateTime,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [
-        const ColumnCheckConstraint(ComparableExpr(creationTime)
-            .isGreaterThan(Literal(DateTime.utc(1950)))),
-        ColumnDefaultConstraint(currentDateAndTime)
-      ])
+      constraints: () => [
+            ColumnCheckConstraint(ComparableExpr(creationTime)
+                .isGreaterThan(Literal(DateTime.utc(1950)))),
+            ColumnDefaultConstraint<DateTime>(currentDateAndTime)
+          ])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> name = TableColumn<String>(
@@ -647,7 +648,7 @@ class $UsersTable extends Users
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [const ColumnUniqueConstraint()])
+      constraints: () => [const ColumnUniqueConstraint()])
     ..owningResultSet = this;
   @override
   late final TableColumn<bool> isAwesome = TableColumn<bool>(
@@ -655,7 +656,7 @@ class $UsersTable extends Users
       type: BuiltinDriftType.bool,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [ColumnDefaultConstraint(const Literal(true))])
+      constraints: () => [ColumnDefaultConstraint<bool>(const Literal(true))])
     ..owningResultSet = this;
   @override
   late final TableColumn<Uint8List> profilePicture = TableColumn<Uint8List>(
@@ -1609,9 +1610,9 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [
-        const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)
-      ]).withConverter<RowId>($TableWithEveryColumnTypeTable.$converterid)
+      constraints: () => [
+            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)
+          ]).withConverter<RowId>($TableWithEveryColumnTypeTable.$converterid)
     ..owningResultSet = this;
   @override
   late final TableColumn<bool> aBool = TableColumn<bool>(
@@ -2124,7 +2125,8 @@ class $DepartmentTable extends Department
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
+      constraints: () =>
+          [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> name = TableColumn<String>(
@@ -2316,12 +2318,12 @@ class $ProductTable extends Product
       type: BuiltinDriftType.int,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [
-        const ColumnForeignKeyConstraint(
-          otherTableName: 'department',
-          otherColumnName: 'id',
-        )
-      ])
+      constraints: () => [
+            const ColumnForeignKeyConstraint(
+              otherTableName: 'department',
+              otherColumnName: 'id',
+            )
+          ])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [sku, name, department];
@@ -2532,7 +2534,8 @@ class $StoreTable extends Store
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
+      constraints: () =>
+          [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> name = TableColumn<String>(
@@ -2706,7 +2709,8 @@ class $ListingTable extends Listing
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
+      constraints: () =>
+          [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> product = TableColumn<String>(
@@ -2714,12 +2718,12 @@ class $ListingTable extends Listing
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [
-        const ColumnForeignKeyConstraint(
-          otherTableName: 'product',
-          otherColumnName: 'sku',
-        )
-      ])
+      constraints: () => [
+            const ColumnForeignKeyConstraint(
+              otherTableName: 'product',
+              otherColumnName: 'sku',
+            )
+          ])
     ..owningResultSet = this;
   @override
   late final TableColumn<int> store = TableColumn<int>(
@@ -2727,12 +2731,12 @@ class $ListingTable extends Listing
       type: BuiltinDriftType.int,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [
-        const ColumnForeignKeyConstraint(
-          otherTableName: 'store',
-          otherColumnName: 'id',
-        )
-      ])
+      constraints: () => [
+            const ColumnForeignKeyConstraint(
+              otherTableName: 'store',
+              otherColumnName: 'id',
+            )
+          ])
     ..owningResultSet = this;
   @override
   late final TableColumn<double> price = TableColumn<double>(

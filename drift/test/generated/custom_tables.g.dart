@@ -14,7 +14,7 @@ class NoIds extends Table
       type: BuiltinDriftType.byteArray,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [payload];
@@ -104,14 +104,14 @@ class WithDefaults extends Table
       type: const CustomTextType(),
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('DEFAULT \'something\'')])
+      constraints: () => [ColumnConstraint.customSql('DEFAULT \'something\'')])
     ..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
       name: 'b',
       type: BuiltinDriftType.int,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('UNIQUE NULL')])
+      constraints: () => [ColumnConstraint.customSql('UNIQUE NULL')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [a, b];
@@ -291,21 +291,21 @@ class WithConstraints extends Table
       type: BuiltinDriftType.text,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
       name: 'b',
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('NOT NULL')])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<double> c = TableColumn<double>(
       name: 'c',
       type: BuiltinDriftType.double,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [a, b, c];
@@ -519,14 +519,14 @@ class ConfigTable extends Table
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')])
     ..owningResultSet = this;
   late final TableColumn<DriftAny> configValue = TableColumn<DriftAny>(
       name: 'config_value',
       type: SqliteDialect.anyType(),
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumnWithTypeConverter<SyncType?, int> syncState =
       TableColumn<int>(
@@ -534,7 +534,7 @@ class ConfigTable extends Table
               type: BuiltinDriftType.int,
               isNullable: true,
               requiredDuringInsert: false,
-              constraints: [ColumnConstraint.customSql('')])
+              constraints: () => [ColumnConstraint.customSql('')])
           .withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
         ..owningResultSet = this;
   late final TableColumnWithTypeConverter<SyncType?, int> syncStateImplicit =
@@ -543,7 +543,7 @@ class ConfigTable extends Table
               type: BuiltinDriftType.int,
               isNullable: true,
               requiredDuringInsert: false,
-              constraints: [ColumnConstraint.customSql('')])
+              constraints: () => [ColumnConstraint.customSql('')])
           .withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn)
         ..owningResultSet = this;
   @override
@@ -819,28 +819,28 @@ class Mytable extends Table
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('NOT NULL')])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<String> sometext = TableColumn<String>(
       name: 'sometext',
       type: BuiltinDriftType.text,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<bool> isInserting = TableColumn<bool>(
       name: 'is_inserting',
       type: BuiltinDriftType.bool,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<DateTime> somedate = TableColumn<DateTime>(
       name: 'somedate',
       type: BuiltinDriftType.dateTime,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [someid, sometext, isInserting, somedate];
@@ -1078,21 +1078,21 @@ class Email extends Table
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<String> title = TableColumn<String>(
       name: 'title',
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   late final TableColumn<String> body = TableColumn<String>(
       name: 'body',
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('')])
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [sender, title, body];
@@ -1298,14 +1298,14 @@ class WeirdTable extends Table
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('NOT NULL')])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<String> textColumn = TableColumn<String>(
       name: 'text',
       type: BuiltinDriftType.text,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [ColumnConstraint.customSql('NOT NULL')])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [sqlClass, textColumn];

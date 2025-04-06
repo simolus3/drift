@@ -1,7 +1,31 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/sqlite3/connection.dart';
 import 'package:sqlite3/common.dart' as sqlite3;
 import 'package:mockito/mockito.dart';
+import 'package:test/test.dart';
+
+QueryResult queryResult(
+  List<Map<String, Object?>> rows, {
+  int? affectedRows,
+}) {
+  sqlite3.ResultSet raw;
+
+  if (rows.isEmpty) {
+    raw = sqlite3.ResultSet(const [], const [], const []);
+  } else {
+    final keys = rows[0].keys;
+
+    raw = sqlite3.ResultSet(
+        keys.toList(), const [], rows.map((e) => e.values.toList()).toList());
+  }
+
+  return QueryResult(
+    resultSet: SqliteResultSet(resultSet: raw),
+    affectedRows: affectedRows,
+  );
+}
 
 final class MockSession extends Mock
     implements
@@ -22,9 +46,12 @@ final class MockSession extends Mock
           resultSet: SqliteResultSet(
             resultSet: sqlite3.ResultSet(const [], const [], const []),
           ),
+          affectedRows: 0,
+          lastInsertRowId: 0,
         );
       } else {
-        return QueryResult(resultSet: null);
+        return QueryResult(
+            resultSet: null, affectedRows: 0, lastInsertRowId: 0);
       }
     });
     when(executeBatch(any)).thenAnswer((i) async {
@@ -61,7 +88,7 @@ final class MockSession extends Mock
   @override
   Future<List<QueryResult>> executeBatch(List<StatementBatch>? statement) =>
       _nsm(Invocation.method(#executeBatch, [statement]),
-          Future.value(const []));
+          Future.value(const <QueryResult>[]));
 
   @override
   Future<void> close() =>
@@ -77,11 +104,24 @@ final class MockSession extends Mock
 
   @override
   Future<DriftSession> exclusive() =>
-      _nsm(Invocation.method(#exclusive, []), Future.value(exclusiveExecutor));
+      _nsm(Invocation.method(#exclusive, []), _neverComplete<DriftSession>());
 
   @override
-  Future<DriftTransactionSession> begin(TransactionOptions? options) =>
-      _nsm(Invocation.method(#begin, [options]), Future.value(transactions));
+  Future<DriftTransactionSession> begin(TransactionOptions? options) => _nsm(
+      Invocation.method(#begin, [options]),
+      _neverComplete<DriftTransactionSession>());
+
+  /// Utility for asserting that a given SQL statement was executed.
+  Future<QueryResult> executeSql(String sql, [Object? variables = isEmpty]) =>
+      execute(
+        argThat(
+          isA<StatementInfo>()
+              .having((e) => e.sql, 'sql', sql)
+              .having((e) => e.variables, 'variables', variables),
+        ),
+      );
+
+  static Future<T> _neverComplete<T>() => Completer<T>().future;
 }
 
 final class MockTransactionSession extends MockSession

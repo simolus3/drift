@@ -285,9 +285,11 @@ abstract base class StatementCompiler {
     }
 
     if (delete.returning case final returning?) {
+      statement.resultSetStructure = returning.structure;
       statement.space();
       returning.compileWith(this);
     }
+    statement.buffer.write(';');
   }
 
   void addReturningClause(ReturningClause returning) {

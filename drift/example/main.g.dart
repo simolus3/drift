@@ -15,7 +15,8 @@ class $TodoCategoriesTable extends TodoCategories
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
+      constraints: () =>
+          [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> name = TableColumn<String>(
@@ -186,7 +187,8 @@ class $TodoItemsTable extends TodoItems
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
+      constraints: () =>
+          [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> title = TableColumn<String>(
@@ -208,12 +210,12 @@ class $TodoItemsTable extends TodoItems
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: true,
-      constraints: [
-        const ColumnForeignKeyConstraint(
-          otherTableName: 'todo_categories',
-          otherColumnName: 'id',
-        )
-      ])
+      constraints: () => [
+            const ColumnForeignKeyConstraint(
+              otherTableName: 'todo_categories',
+              otherColumnName: 'id',
+            )
+          ])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> generatedText = TableColumn<String>(
@@ -221,11 +223,11 @@ class $TodoItemsTable extends TodoItems
       type: BuiltinDriftType.text,
       isNullable: true,
       requiredDuringInsert: false,
-      constraints: [
-        ColumnGeneratedAs(
-            title + const Literal(' (') + content + const Literal(')'),
-            stored: false)
-      ])
+      constraints: () => [
+            ColumnGeneratedAs(
+                title + const Literal(' (') + content + const Literal(')'),
+                stored: false)
+          ])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns =>

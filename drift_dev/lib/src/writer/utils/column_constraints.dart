@@ -51,8 +51,7 @@ List<String> columnConstraints(TextEmitter emitter, DriftColumn column) {
     } else if (feature is DartCheckExpression) {
       final dartCheck = emitter.dartCode(feature.dartExpression);
 
-      entries
-          .add('const ${emitter.drift('ColumnCheckConstraint')}($dartCheck)');
+      entries.add('${emitter.drift('ColumnCheckConstraint')}($dartCheck)');
     } else if (feature is ColumnGeneratedAs) {
       final dartCode = emitter.dartCode(feature.dartExpression);
       entries.add(

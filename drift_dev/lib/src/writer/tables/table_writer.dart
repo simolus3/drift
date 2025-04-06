@@ -200,17 +200,20 @@ abstract class TableOrViewWriter {
     }
 
     if (column.defaultArgument case final columnDefault?) {
+      final type = emitter.dartCode(emitter.innerColumnType(column.sqlType));
+
       constraints.add(
-          '${emitter.drift('ColumnDefaultConstraint')}(${emitter.dartCode(columnDefault)})');
+          '${emitter.drift('ColumnDefaultConstraint')}<$type>(${emitter.dartCode(columnDefault)})');
     }
 
     if (column.customConstraints != null) {
-      namedParameters['constraints'] =
-          '[${emitter.drift('ColumnConstraint.customSql')}'
+      final list = '[${emitter.drift('ColumnConstraint.customSql')}'
           '(${asDartLiteral(column.customConstraints!)})]';
+
+      namedParameters['constraints'] = '() => $list';
     } else if (constraints.isNotEmpty) {
       // Use the default constraints supported by drift
-      namedParameters['constraints'] = '[${constraints.join(', ')}]';
+      namedParameters['constraints'] = '() => [${constraints.join(', ')}]';
     }
 
     if (column.clientDefaultCode != null &&

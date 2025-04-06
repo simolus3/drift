@@ -25,11 +25,12 @@ final class ColumnPrimaryKeyConstraint extends ColumnConstraint {
 }
 
 /// A `DEFAULT` constraint in SQL.
-final class ColumnDefaultConstraint extends ColumnConstraint {
+final class ColumnDefaultConstraint<T extends Object> extends ColumnConstraint {
   /// The default expression to use for the column when no value is given for
   /// inserts.
-  final Expression defaultExpression;
+  final Expression<T> defaultExpression;
 
+  /// Creates a `DEFAULT` constraint from the [defaultExpression].
   const ColumnDefaultConstraint(this.defaultExpression) : super._();
 
   @override

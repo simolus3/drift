@@ -15,7 +15,8 @@ class $_SomeTableTable extends _SomeTable
       type: BuiltinDriftType.int,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
+      constraints: () =>
+          [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> name = TableColumn<String>(
