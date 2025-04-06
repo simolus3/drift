@@ -83,7 +83,7 @@ enum BinaryOperator implements SqlComponent {
   greater(Precedence.comparison, '>'),
 
   /// A `>=` operator in SQL.
-  greaterOrEqual(Precedence.comparison, '>'),
+  greaterOrEqual(Precedence.comparison, '>='),
 
   /// A `=` operator in SQL.
   equals(Precedence.comparisonEq, '='),

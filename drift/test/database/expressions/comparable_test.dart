@@ -1,13 +1,12 @@
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
-import '../../generated/todos.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
   const expression = Expression<int>.custom(CustomComponent('col'),
       precedence: Precedence.primary);
-  final db = TodoDb();
 
   final comparisons = {
     expression.isLessThan: '<',
@@ -29,13 +28,7 @@ void main() {
 
     comparisons.forEach((fn, value) {
       test('for operator $value', () {
-        final ctx = GenerationContext.fromDb(db);
-
-        fn(compare).writeInto(ctx);
-
-        expect(ctx.sql, 'col $value compare');
-
-  expec
+        expect(fn(compare), generates('col $value compare'));
         expectEquals(fn(compare), fn(compare));
       });
     });
@@ -44,65 +37,54 @@ void main() {
   group('can compare with values', () {
     comparisonsVal.forEach((fn, value) {
       test('for operator $value', () {
-        final ctx = GenerationContext.fromDb(db);
-
-        fn(12).writeInto(ctx);
-
-        expect(ctx.sql, 'col $value ?');
-        expect(ctx.boundVariables, [12]);
+        expect(fn(12), generates('col $value ?1', [12]));
       });
     });
   });
 
   group('between', () {
     test('other expressions', () {
-      const low = CustomExpression<int>('low', precedence: Precedence.primary);
-      const high =
-          CustomExpression<int>('high', precedence: Precedence.primary);
+      const low = Expression<int>.custom(CustomComponent('low'),
+          precedence: Precedence.primary);
+      const high = Expression<int>.custom(CustomComponent('high'),
+          precedence: Precedence.primary);
 
-      final ctx = GenerationContext.fromDb(db);
-      expression.isBetween(low, high).writeInto(ctx);
-
-      expect(ctx.sql, 'col BETWEEN low AND high');
+      expect(expression.isBetween(low, high),
+          generates('col BETWEEN low AND high'));
     });
 
     test('values', () {
-      final ctx = GenerationContext.fromDb(db);
-      expression.isBetweenValues(3, 15).writeInto(ctx);
-
-      expect(ctx.sql, 'col BETWEEN ? AND ?');
-      expect(ctx.boundVariables, [3, 15]);
+      expect(expression.isBetweenValues(3, 15),
+          generates('col BETWEEN ?1 AND ?2', [3, 15]));
     });
   });
 
   group('special case for date time values as text', () {
-    const a = CustomExpression<DateTime>('a', precedence: Precedence.primary);
-    const b = CustomExpression<DateTime>('b', precedence: Precedence.primary);
-    const c = CustomExpression<DateTime>('c', precedence: Precedence.primary);
+    const a = Expression<DateTime>.custom(CustomComponent('a'),
+        precedence: Precedence.primary);
+    const b = Expression<DateTime>.custom(CustomComponent('b'),
+        precedence: Precedence.primary);
+    const c = Expression<DateTime>.custom(CustomComponent('c'),
+        precedence: Precedence.primary);
 
     test('disabled for datetimes as timestamps', () {
-      expect(a.isSmallerThan(b), generates('a < b'));
-      expect(a.isBiggerOrEqual(b), generates('a >= b'));
-      expect(a.isBetween(b, c), generates('a BETWEEN b AND c'));
+      const dialect = SqliteDialect(
+          options: SqliteOptions(
+        storeDateTimesAsText: false,
+      ));
+
+      expect(a.isLessThan(b), generatesWithOptions('a < b', dialect: dialect));
+      expect(a.isGreaterOrEqual(b),
+          generatesWithOptions('a >= b', dialect: dialect));
+      expect(a.isBetween(b, c),
+          generatesWithOptions('a BETWEEN b AND c', dialect: dialect));
     });
 
     test('enabled for datetimes as timestamps', () {
-      const options = DriftDatabaseOptions(storeDateTimeAsText: true);
-
-      expect(
-          a.isSmallerThan(b),
-          generatesWithOptions('JULIANDAY(a) < JULIANDAY(b)',
-              options: options));
-      expect(
-          a.isBiggerOrEqual(b),
-          generatesWithOptions('JULIANDAY(a) >= JULIANDAY(b)',
-              options: options));
-      expect(
-          a.isBetween(b, c),
-          generatesWithOptions(
-            'JULIANDAY(a) BETWEEN JULIANDAY(b) AND JULIANDAY(c)',
-            options: options,
-          ));
+      expect(a.isLessThan(b), generates('julianday(a) < julianday(b)'));
+      expect(a.isGreaterOrEqual(b), generates('julianday(a) >= julianday(b)'));
+      expect(a.isBetween(b, c),
+          generates('julianday(a) BETWEEN julianday(b) AND julianday(c)'));
     });
   });
 }
