@@ -310,6 +310,37 @@ abstract base class DatabaseConnectionUser {
     return statement;
   }
 
+  /// Creates a select statement without a `FROM` clause selecting [columns].
+  ///
+  /// In SQL, select statements without a table will return a single row where
+  /// all the [columns] are evaluated. Of course, columns cannot refer to
+  /// columns from a table as these are unavailable without a `FROM` clause.
+  ///
+  /// To run or watch the select statement, call [Selectable.get] or
+  /// [Selectable.watch]. Each returns a list of [TypedResult] rows, for which
+  /// a column can be read with [TypedResult.read].
+  ///
+  /// This example uses [selectExpressions] to query the current time set on the
+  /// database server:
+  ///
+  /// ```dart
+  /// final row = await selectExpressions([currentDateAndTime]).getSingle();
+  /// final databaseTime = row.read(currentDateAndTime)!;
+  /// ```
+  SelectStatement selectExpressions(Iterable<Expression> columns) {
+    return SelectStatement(this)..addColumns(columns);
+  }
+
+  /// Starts a [DeleteStatement] that can be used to delete rows from a table.
+  ///
+  /// See the [documentation](https://drift.simonbinder.eu/docs/dart-api/writes/#updates-and-deletes)
+  /// for more details and example on how delete statements work.
+  DeleteStatement<Row, RS>
+      delete<Row extends Object, RS extends GeneratedTable<Row, RS>>(
+          GeneratedTable<Row, RS> table) {
+    return DeleteStatement<Row, RS>(this, table);
+  }
+
   Future<QueryResult> runStatement(SqlStatement statement) async {
     final info = StatementInfo(dialect.compile(statement));
     return (await currentSession()).execute(info);

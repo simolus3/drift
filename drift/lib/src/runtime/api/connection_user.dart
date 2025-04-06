@@ -189,14 +189,6 @@ abstract class DatabaseConnectionUser {
     return SelectWithoutTables(this, columns);
   }
 
-  /// Starts a [DeleteStatement] that can be used to delete rows from a table.
-  ///
-  /// See the [documentation](https://drift.simonbinder.eu/docs/dart-api/writes/#updates-and-deletes)
-  /// for more details and example on how delete statements work.
-  DeleteStatement<T, D> delete<T extends Table, D>(TableInfo<T, D> table) {
-    return DeleteStatement<T, D>(this, table);
-  }
-
   /// Executes a custom delete or update statement and returns the amount of
   /// rows that have been changed.
   /// You can use the [updates] parameter so that drift knows which tables are

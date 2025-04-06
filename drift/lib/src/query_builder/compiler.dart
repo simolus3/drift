@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 
 import 'clauses/order_by.dart';
+import 'clauses/returning.dart';
 import 'clauses/where.dart';
 import 'dialect.dart';
 import 'expressions/aggregate.dart';
@@ -23,6 +24,7 @@ import 'schema/entities.dart';
 import 'schema/result_set.dart';
 import 'schema/table.dart';
 import 'schema/view.dart';
+import 'statements/delete.dart';
 import 'statements/select.dart';
 import 'statements/transactions.dart';
 import 'types.dart';
@@ -271,6 +273,27 @@ abstract base class StatementCompiler {
 
   void addJoinOperator(JoinOperator operator) {
     statement.buffer.write(operator.defaultLexeme);
+  }
+
+  void addDeleteStatement(DeleteStatement delete) {
+    statement.buffer.write('DELETE FROM ');
+    addReference(delete.resultSet.aliasOrName);
+
+    if (delete.whereClause case final where?) {
+      statement.space();
+      where.compileWith(this);
+    }
+
+    if (delete.returning case final returning?) {
+      statement.space();
+      returning.compileWith(this);
+    }
+  }
+
+  void addReturningClause(ReturningClause returning) {
+    // We currently only support the `RETURNING *` format without arbitrary
+    // columns.
+    statement.buffer.write('RETURNING *');
   }
 
   void addSelectStatement(BaseSelectStatement select) {

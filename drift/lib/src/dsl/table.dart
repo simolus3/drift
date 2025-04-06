@@ -77,7 +77,6 @@ abstract class Table extends ResultSetDsl {
   /// [BuildIntColumn.autoIncrement] column and a custom primary key.
   /// As an auto-incremented `IntColumn` is recognized by drift to be the
   /// primary key, doing so will result in an exception thrown at runtime.
-  @visibleForOverriding
   Set<Column>? get primaryKey => null;
 
   /// Unique constraints in this table.

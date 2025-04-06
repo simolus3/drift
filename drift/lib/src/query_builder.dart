@@ -2,6 +2,8 @@ export 'query_builder/clauses/order_by.dart';
 export 'query_builder/compiler.dart';
 export 'query_builder/dialect.dart';
 
+export 'query_builder/clauses/returning.dart';
+
 export 'query_builder/expressions/aggregate.dart';
 export 'query_builder/expressions/algebra.dart';
 export 'query_builder/expressions/bitwise.dart';
@@ -26,6 +28,7 @@ export 'query_builder/schema/result_set.dart';
 export 'query_builder/schema/table.dart';
 export 'query_builder/schema/view.dart';
 
+export 'query_builder/statements/delete.dart';
 export 'query_builder/statements/select.dart';
 
 export 'query_builder/results.dart';
