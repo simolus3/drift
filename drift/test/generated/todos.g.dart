@@ -634,7 +634,12 @@ class $UsersTable extends Users
       name: 'creation_time',
       type: BuiltinDriftType.dateTime,
       isNullable: false,
-      requiredDuringInsert: true)
+      requiredDuringInsert: false,
+      constraints: [
+        const ColumnCheckConstraint(ComparableExpr(creationTime)
+            .isGreaterThan(Literal(DateTime.utc(1950)))),
+        ColumnDefaultConstraint(currentDateAndTime)
+      ])
     ..owningResultSet = this;
   @override
   late final TableColumn<String> name = TableColumn<String>(
@@ -832,12 +837,11 @@ class UsersCompanion extends UpdateCompanion<User> {
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
-    required DateTime creationTime,
+    this.creationTime = const Value.absent(),
     required String name,
     this.isAwesome = const Value.absent(),
     required Uint8List profilePicture,
-  })  : creationTime = Value(creationTime),
-        name = Value(name),
+  })  : name = Value(name),
         profilePicture = Value(profilePicture);
   static Insertable<User> custom({
     Expression<int>? id,

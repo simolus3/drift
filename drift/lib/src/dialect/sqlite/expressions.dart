@@ -278,3 +278,25 @@ final class _DependingOnDateTimeExpression<D extends Object>
         other.forIsoString == forIsoString;
   }
 }
+
+/// Extension to use the `rowid` of a table in Dart queries.
+
+extension RowIdExtension on GeneratedTable {
+  /// In sqlite, each table that isn't virtual and hasn't been created with the
+  /// `WITHOUT ROWID` modified has a [row id](https://www.sqlite.org/rowidtable.html).
+  /// When the table has a single primary key column which is an integer, that
+  /// column is an _alias_ to the row id in sqlite3.
+  ///
+  /// If the row id has not explicitly been declared as a column aliasing it,
+  /// the [rowId] will not be part of a drift-generated data class. In this
+  /// case, the [rowId] getter can be used to refer to a table's row id in a
+  /// query.
+  Expression<int> get rowId {
+    if (withoutRowId || this is VirtualTableInfo) {
+      throw ArgumentError('Cannot use rowId on a table without a rowid!');
+    }
+
+    return TableColumn<int>(
+        name: '_rowid_', type: BuiltinDriftType.int, isNullable: false);
+  }
+}

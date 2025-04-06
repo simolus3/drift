@@ -349,18 +349,18 @@ void _testDateTimes(TodoDb Function() openDb, {bool dateTimeAsText = true}) {
       test('modifiers', () {
         final expr = Variable.withDateTime(DateTime.utc(2022, 07, 05));
 
-        expect(eval(expr.modify(const DateTimeModifier.days(2))),
+        expect(eval(expr.modify(DateTimeModifier.days(2))),
             completion(result(DateTime.utc(2022, 07, 07))));
-        expect(eval(expr.modify(const DateTimeModifier.months(-2))),
+        expect(eval(expr.modify(DateTimeModifier.months(-2))),
             completion(result(DateTime.utc(2022, 05, 05))));
-        expect(eval(expr.modify(const DateTimeModifier.years(1))),
+        expect(eval(expr.modify(DateTimeModifier.years(1))),
             completion(result(DateTime.utc(2023, 07, 05))));
 
-        expect(eval(expr.modify(const DateTimeModifier.hours(12))),
+        expect(eval(expr.modify(DateTimeModifier.hours(12))),
             completion(result(DateTime.utc(2022, 07, 05, 12))));
-        expect(eval(expr.modify(const DateTimeModifier.minutes(30))),
+        expect(eval(expr.modify(DateTimeModifier.minutes(30))),
             completion(result(DateTime.utc(2022, 07, 05, 0, 30))));
-        expect(eval(expr.modify(const DateTimeModifier.seconds(30))),
+        expect(eval(expr.modify(DateTimeModifier.seconds(30))),
             completion(result(DateTime.utc(2022, 07, 05, 0, 0, 30))));
 
         expect(eval(expr.modify(const DateTimeModifier.startOfDay())),
