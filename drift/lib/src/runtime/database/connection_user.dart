@@ -331,6 +331,15 @@ abstract base class DatabaseConnectionUser {
     return SelectStatement(this)..addColumns(columns);
   }
 
+  /// Starts an [UpdateStatement] for the given table. You can use that
+  /// statement to update individual rows in that table by setting a where
+  /// clause on that table and then use [UpdateStatement.write].
+  UpdateStatement<Row, RS>
+      update<Row extends Object, RS extends GeneratedTable<Row, RS>>(
+          GeneratedTable<Row, RS> table) {
+    return UpdateStatement<Row, RS>(this, table);
+  }
+
   /// Starts a [DeleteStatement] that can be used to delete rows from a table.
   ///
   /// See the [documentation](https://drift.simonbinder.eu/docs/dart-api/writes/#updates-and-deletes)

@@ -27,6 +27,7 @@ import 'schema/view.dart';
 import 'statements/delete.dart';
 import 'statements/select.dart';
 import 'statements/transactions.dart';
+import 'statements/update.dart';
 import 'types.dart';
 
 final class CompiledStatement {
@@ -285,6 +286,37 @@ abstract base class StatementCompiler {
     }
 
     if (delete.returning case final returning?) {
+      statement.resultSetStructure = returning.structure;
+      statement.space();
+      returning.compileWith(this);
+    }
+    statement.buffer.write(';');
+  }
+
+  void addUpdateStatement(UpdateStatement update) {
+    statement.buffer.write('UPDATE ');
+    addReference(update.resultSet.aliasOrName);
+    statement.buffer.write(' SET ');
+
+    var first = true;
+    update.updatedColumns.forEach((name, variable) {
+      if (!first) {
+        statement.comma();
+      } else {
+        first = false;
+      }
+
+      addReference(name);
+      statement.buffer.write(' = ');
+      variable.compileWith(this);
+    });
+
+    if (update.whereClause case final where?) {
+      statement.space();
+      where.compileWith(this);
+    }
+
+    if (update.returning case final returning?) {
       statement.resultSetStructure = returning.structure;
       statement.space();
       returning.compileWith(this);

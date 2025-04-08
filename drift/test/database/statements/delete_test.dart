@@ -26,8 +26,9 @@ void main() {
     });
 
     test('for complex components', () async {
-      await (db.delete(db.users)
-            ..where((u) => u.isAwesome.not() | u.id.isLessThanValue(100)))
+      await db
+          .delete(db.users)
+          .where((u) => u.isAwesome.not() | u.id.isLessThanValue(100))
           .go();
 
       verify(executor.executeSql(

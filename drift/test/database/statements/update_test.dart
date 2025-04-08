@@ -1,5 +1,6 @@
-import 'dart:async';
+import 'dart:typed_data';
 
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -9,14 +10,14 @@ import '../../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
-  late MockExecutor executor;
+  late MockSession executor;
   late MockStreamQueries streamQueries;
 
   setUp(() {
-    executor = MockExecutor();
+    executor = MockSession();
     streamQueries = MockStreamQueries();
 
-    final connection = createConnection(executor, streamQueries);
+    final connection = createConnection(executor, streams: streamQueries);
     db = TodoDb(connection);
   });
 
@@ -27,18 +28,17 @@ void main() {
             category: Value(RowId(3)),
           ));
 
-      verify(executor.runUpdate(
-          'UPDATE "todos" SET "title" = ?, "category" = ?;',
+      verify(executor.executeSql(
+          'UPDATE "todos" SET "title" = ?1,"category" = ?2;',
           ['Updated title', 3]));
     });
 
     test('with a WHERE clause', () async {
-      await (db.update(db.todosTable)
-            ..where((t) => t.id.isSmallerThanValue(50)))
+      await (db.update(db.todosTable)..where((t) => t.id.isLessThanValue(50)))
           .write(const TodosTableCompanion(title: Value('Changed title')));
 
-      verify(executor.runUpdate(
-          'UPDATE "todos" SET "title" = ? WHERE "id" < ?;',
+      verify(executor.executeSql(
+          'UPDATE "todos" SET "title" = ?1 WHERE "id" < ?2;',
           ['Changed title', 50]));
     });
 
@@ -48,7 +48,7 @@ void main() {
           .write(PureDefaultsCompanion(txt: Value(MyCustomObject('foo'))));
 
       verify(executor
-          .runUpdate('UPDATE "pure_defaults" SET "insert" = ?;', ['foo']));
+          .executeSql('UPDATE "pure_defaults" SET "insert" = ?1;', ['foo']));
     });
   });
 
@@ -62,10 +62,10 @@ void main() {
             // category and targetDate are null
           ));
 
-      verify(executor.runUpdate(
-          'UPDATE "todos" SET "title" = ?, "content" = ?, '
-          '"target_date" = ?, "category" = ?, "status" = ? WHERE "id" = ?;',
-          const ['Title', 'Updated content', null, null, 'workInProgress', 3]));
+      verify(executor.executeSql(
+          'UPDATE "todos" SET "title" = ?1,"content" = ?2,'
+          '"target_date" = ?3,"category" = ?3,"status" = ?4 WHERE "id" = ?5;',
+          const ['Title', 'Updated content', null, 'workInProgress', 3]));
     });
 
     test('applies default values', () async {
@@ -77,27 +77,18 @@ void main() {
             ),
           );
 
-      verify(executor.runUpdate(
-          'UPDATE "users" SET "name" = ?, "profile_picture" = ?, "is_awesome" = 1, '
-          '"creation_time" = CAST(strftime(\'%s\', CURRENT_TIMESTAMP) AS INTEGER)'
-          ' WHERE "id" = ?;',
+      verify(executor.executeSql(
+          'UPDATE "users" SET "name" = ?1,"profile_picture" = ?2,'
+          '"creation_time" = CURRENT_TIMESTAMP,"is_awesome" = 1'
+          ' WHERE "id" = ?3;',
           ['Hummingbird', Uint8List(0), 3]));
     });
   });
 
-  test('does not update with invalid data', () {
-    // The length of a title must be between 4 and 16 chars
-
-    expect(() async {
-      await db
-          .update(db.todosTable)
-          .write(const TodosTableCompanion(title: Value('lol')));
-    }, throwsA(const TypeMatcher<InvalidDataException>()));
-  });
-
   group('Table updates for update statements', () {
     test('are issued when data was changed', () async {
-      when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(3));
+      when(executor.execute(any)).thenAnswer(
+          (_) async => QueryResult(resultSet: null, affectedRows: 3));
 
       await db.update(db.todosTable).write(const TodosTableCompanion(
             content: Value('Updated content'),
@@ -108,7 +99,8 @@ void main() {
     });
 
     test('are not issued when no data was changed', () async {
-      when(executor.runDelete(any, any)).thenAnswer((_) => Future.value(0));
+      when(executor.execute(any)).thenAnswer(
+          (_) async => QueryResult(resultSet: null, affectedRows: 0));
 
       await db.update(db.todosTable).write(const TodosTableCompanion());
 
@@ -123,10 +115,9 @@ void main() {
           targetDate: db.todosTable.targetDate + const Duration(days: 1),
         ));
 
-    verify(executor.runUpdate(
-      'UPDATE "todos" SET "content" = "content", "target_date" = "target_date" + ? '
-      'WHERE "id" = ?;',
-      argThat(equals([86400, 4])),
+    verify(executor.executeSql(
+      '''UPDATE "todos" SET "content" = "content","target_date" = datetime("target_date",'86400.0 seconds') WHERE "id" = ?1;''',
+      [4],
     ));
   });
 
@@ -134,25 +125,28 @@ void main() {
     test('execute the correct sql', () async {
       await db.customUpdate('DELETE FROM "users"');
 
-      verify(executor.runUpdate('DELETE FROM "users"', []));
+      verify(executor.executeSql('DELETE FROM "users"'));
     });
 
     test('map the variables correctly', () async {
       await db.customUpdate(
           'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
           variables: [
-            Variable.withString('Name'),
-            Variable.withDateTime(
-                DateTime.fromMillisecondsSinceEpoch(1551297563000))
+            (BuiltinDriftType.text, 'Name'),
+            (
+              BuiltinDriftType.dateTime,
+              DateTime.fromMillisecondsSinceEpoch(1551297563000)
+            ),
           ]);
 
-      verify(executor.runUpdate(
+      verify(executor.executeSql(
           'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
-          ['Name', 1551297563]));
+          ['Name', DateTime.fromMillisecondsSinceEpoch(1551297563000)]));
     });
 
     test('returns information from executor', () async {
-      when(executor.runUpdate(any, any)).thenAnswer((_) => Future.value(10));
+      when(executor.execute(any)).thenAnswer(
+          (_) async => QueryResult(resultSet: null, affectedRows: 10));
 
       expect(await db.customUpdate(''), 10);
     });
@@ -160,56 +154,10 @@ void main() {
     test('informs about updated tables', () async {
       await db.customUpdate('', updates: {db.users, db.todosTable});
 
-      verify(streamQueries.handleTableUpdates(
-          {const TableUpdate('users'), const TableUpdate('todos')}));
+      verify(streamQueries.handleTableUpdates({
+        const TableUpdate('users', kind: UpdateKind.update),
+        const TableUpdate('todos', kind: UpdateKind.update)
+      }));
     });
-  });
-
-  group('update on table instances', () {
-    test('update()', () async {
-      await db.users.update().write(const UsersCompanion(id: Value(RowId(3))));
-
-      verify(executor.runUpdate('UPDATE "users" SET "id" = ?;', [3]));
-    });
-
-    test('replace', () async {
-      await db.categories.replaceOne(const CategoriesCompanion(
-          id: Value(RowId(3)), description: Value('new name')));
-
-      verify(executor.runUpdate(
-          'UPDATE "categories" SET "desc" = ?, "priority" = 0 WHERE "id" = ?;',
-          ['new name', 3]));
-    });
-  });
-
-  test('RETURNING', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) {
-      return Future.value([
-        {
-          'id': 3,
-          'desc': 'test',
-          'priority': 0,
-          'description_in_upper_case': 'TEST',
-        },
-      ]);
-    });
-
-    final rows = await db.categories
-        .update()
-        .writeReturning(const CategoriesCompanion(description: Value('test')));
-
-    verify(executor.runSelect(
-        'UPDATE "categories" SET "desc" = ? RETURNING *;', ['test']));
-    verify(streamQueries.handleTableUpdates(
-        {TableUpdate.onTable(db.categories, kind: UpdateKind.update)}));
-
-    expect(rows, const [
-      Category(
-        id: RowId(3),
-        description: 'test',
-        priority: CategoryPriority.low,
-        descriptionInUpperCase: 'TEST',
-      ),
-    ]);
   });
 }

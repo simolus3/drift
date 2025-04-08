@@ -16,8 +16,8 @@ final class DeleteStatement<Row extends Object,
   @override
   final GeneratedTable<Row, RS> resultSet;
 
-  /// An optional `RETURNING` claus part of this statement.
-  ReturningClause<Row, RS>? returning = null;
+  /// An optional `RETURNING` clause part of this statement.
+  ReturningClause<Row, RS>? returning;
 
   final DatabaseConnectionUser _database;
 
