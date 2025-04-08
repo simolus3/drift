@@ -81,6 +81,11 @@ final class StatementInfo {
       variables.map((value) {
         return value.$1.sqlParameter(dialect, value);
       });
+
+  @override
+  String toString() {
+    return '$sql, $variables';
+  }
 }
 
 final class TransactionOptions {}

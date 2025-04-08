@@ -115,9 +115,8 @@ final class MockSession extends Mock
   Future<QueryResult> executeSql(String sql, [Object? variables = isEmpty]) =>
       execute(
         argThat(
-          isA<StatementInfo>()
-              .having((e) => e.sql, 'sql', sql)
-              .having((e) => e.variables, 'variables', variables),
+          isA<StatementInfo>().having((e) => e.sql, 'sql', sql).having(
+              (e) => e.variables.map((e) => e.$2), 'variables', variables),
         ),
       );
 

@@ -41,7 +41,7 @@ void main() {
           .delete(const SharedTodo(todo: 3, user: 2));
 
       verify(executor.executeSql(
-        'DELETE FROM "shared_todos" WHERE "todo" = ? AND "user" = ?;',
+        'DELETE FROM "shared_todos" WHERE "todo" = ?1 AND "user" = ?2;',
         const [3, 2],
       ));
     });
@@ -49,8 +49,15 @@ void main() {
     group('RETURNING', () {
       test('for one row', () async {
         when(executor.execute(any)).thenAnswer((_) async {
-          return queryResult([
-            {'id': 10, 'content': 'Content'}
+          return queryResult(affectedRows: 1, [
+            {
+              for (final column in db.todosTable.columns)
+                column.name: switch (column.name) {
+                  'id' => 10,
+                  'content' => 'Content',
+                  _ => null,
+                },
+            },
           ]);
         });
 
@@ -59,7 +66,7 @@ void main() {
             .deleteReturning(const TodosTableCompanion(id: Value(RowId(10))));
 
         verify(executor.executeSql(
-            'DELETE FROM "todos" WHERE "id" = ? RETURNING *;', [10]));
+            'DELETE FROM "todos" WHERE "id" = ?1 RETURNING *;', [10]));
         verify(streamQueries.handleTableUpdates(
             {TableUpdate.onTable(db.todosTable, kind: UpdateKind.delete)}));
         expect(
