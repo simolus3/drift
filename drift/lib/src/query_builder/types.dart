@@ -26,6 +26,15 @@ abstract interface class SqlType<T extends Object> {
   T dartValue(DriftDialect dialect, Object databaseValue);
 }
 
+extension TypeExtension<T extends Object> on SqlType<T> {
+  Object? sqlParameterOrNull(DriftDialect dialect, T? value) {
+    return switch (value) {
+      null => null,
+      var other => sqlParameter(dialect, other),
+    };
+  }
+}
+
 /// Provides access types that every drift dialect implementation must support.
 abstract interface class TypeProvider {
   /// Returns a type implementation suitable for storing UTF-8 texts without

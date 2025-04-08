@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:drift/src/connections/result_set.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
@@ -6,11 +7,11 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
-  late MockExecutor executor;
+  late MockSession executor;
 
   setUp(() {
-    executor = MockExecutor();
-    db = TodoDb(executor);
+    executor = MockSession();
+    db = TodoDb(createConnection(executor));
   });
 
   test('aliased tables implement equals correctly', () {
@@ -40,7 +41,7 @@ void main() {
       user: Value(4),
     );
 
-    final user = await db.sharedTodos.mapFromCompanion(companion, db);
+    final user = db.sharedTodos.mapFromCompanion(companion, db);
     expect(
       user,
       const SharedTodo(todo: 3, user: 4),
@@ -55,7 +56,16 @@ void main() {
       'target_date': null,
       'category': null,
     };
-    final todo = await db.todosTable.mapFromRowOrNull(QueryRow(rowData, db));
+
+    final structure = ResultSetStructure()
+      ..addSelectStarFromSingleTable(db.todosTable);
+    final resultSet = DriftResultSet(
+        structure,
+        RawResultSet.generate(
+            1, (_, rs) => RawRow.byMap(resultSet: rs, values: rowData)),
+        db.dialect);
+
+    final todo = resultSet.single.readTable(db.todosTable);
     expect(
       todo,
       const TodoEntry(

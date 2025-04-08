@@ -155,14 +155,7 @@ final class SingleTableSelectStatement<Row extends Object,
 
   SingleTableSelectStatement(super._database, this.resultSet,
       {super.distinct}) {
-    final positions = <ColumnPosition>[];
-    for (final (i, column) in resultSet.columns.indexed) {
-      final position = (name: column.name, index: i);
-      structure.expressions[column] = position;
-      positions.add(position);
-    }
-
-    structure.tables[resultSet] = positions;
+    structure.addSelectStarFromSingleTable(resultSet);
     from.add(TableReference(resultSet));
   }
 

@@ -22,6 +22,17 @@ final class ResultSetStructure {
       Map<ResultSet, List<ColumnPosition>>? tables})
       : expressions = expressions ?? {},
         tables = tables ?? {};
+
+  void addSelectStarFromSingleTable(ResultSet resultSet) {
+    final positions = <ColumnPosition>[];
+    for (final (i, column) in resultSet.columns.indexed) {
+      final position = (name: column.name, index: i);
+      expressions[column] = position;
+      positions.add(position);
+    }
+
+    tables[resultSet] = positions;
+  }
 }
 
 final class DriftResultSet

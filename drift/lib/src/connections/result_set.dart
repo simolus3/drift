@@ -26,6 +26,11 @@ abstract base class RawResultSet
     with ListMixin<RawRow>, NonGrowableListMixin<RawRow> {
   RawResultSet();
 
+  factory RawResultSet.generate(
+    int length,
+    RawRow Function(int index, RawResultSet resultSet) generate,
+  ) = _GeneratedResultSet;
+
   @override
   void operator []=(int index, RawRow value) {
     throw UnsupportedError("Can't change rows from a result set");
@@ -37,7 +42,57 @@ abstract base class RawRow {
 
   RawRow({required this.resultSet});
 
+  factory RawRow.by({
+    required RawResultSet resultSet,
+    required Object? Function(ColumnPosition) byPosition,
+    required Object? Function(String) byName,
+  }) = _CallbackRow;
+
+  factory RawRow.byMap({
+    required RawResultSet resultSet,
+    required Map<String, Object?> values,
+  }) {
+    return RawRow.by(
+      resultSet: resultSet,
+      byPosition: (pos) => values[pos.name],
+      byName: (name) => values[name],
+    );
+  }
+
   Object? rawValue(ColumnPosition position);
 
   Object? byName(String name);
+}
+
+final class _GeneratedResultSet extends RawResultSet {
+  @override
+  final int length;
+  final RawRow Function(int, RawResultSet) _generate;
+
+  _GeneratedResultSet(this.length, this._generate);
+
+  @override
+  RawRow operator [](int index) => _generate(index, this);
+}
+
+final class _CallbackRow extends RawRow {
+  final Object? Function(ColumnPosition) _byPosition;
+  final Object? Function(String) _byName;
+
+  _CallbackRow(
+      {required super.resultSet,
+      required Object? Function(ColumnPosition) byPosition,
+      required Object? Function(String) byName})
+      : _byPosition = byPosition,
+        _byName = byName;
+
+  @override
+  Object? byName(String name) {
+    return _byName(name);
+  }
+
+  @override
+  Object? rawValue(ColumnPosition position) {
+    return _byPosition(position);
+  }
 }
