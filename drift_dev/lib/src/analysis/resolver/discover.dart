@@ -200,16 +200,16 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
     // weird errors for the Table class itself. In weird cases where we iterate
     // over generated code (standalone tool), don't report existing
     // implementations as tables.
-    return _isTable.isAssignableFrom2(element) &&
-        !_isTable.isExactly2(element) &&
-        !_isTableInfo.isAssignableFrom2(element) &&
+    return _isTable.isAssignableFrom(element) &&
+        !_isTable.isExactly(element) &&
+        !_isTableInfo.isAssignableFrom(element) &&
         // Temporary workaround until https://github.com/dart-lang/source_gen/pull/628
         // gets merged.
         !element.mixins.any((e) => e.nameIfInterfaceType == 'TableInfo');
   }
 
   bool _isDslView(ClassElement2 element) {
-    return _isView.isAssignableFrom2(element) && !_isView.isExactly2(element);
+    return _isView.isAssignableFrom(element) && !_isView.isExactly(element);
   }
 
   @override
@@ -245,8 +245,8 @@ class _FindDartElements extends RecursiveElementVisitor2<void> {
     } else {
       // Check if this class declares a database or a database accessor.
 
-      final firstDb = _isDatabase.firstAnnotationOf2(element);
-      final firstDao = _isDao.firstAnnotationOf2(element);
+      final firstDb = _isDatabase.firstAnnotationOf(element);
+      final firstDao = _isDao.firstAnnotationOf(element);
       final id = _discoverStep._id(element.name3!);
 
       if (firstDb != null) {
