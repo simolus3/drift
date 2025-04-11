@@ -88,7 +88,7 @@ Future<void> _downloadAndCompile(String name, SqliteVersion version,
     exit(0);
   }
 
-  await _run('curl ${version.autoconfUrl} --output sqlite.tar.gz',
+  await _run('curl -L ${version.autoconfUrl} --output sqlite.tar.gz',
       workingDirectory: temporaryDirPath);
   await _run('tar zxvf sqlite.tar.gz', workingDirectory: temporaryDirPath);
 
