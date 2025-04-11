@@ -202,7 +202,7 @@ If you want to use another constructor, set the `constructor` parameter on the
 
 In most cases, generated companion classes are the right tool for updates and inserts.
 If you prefer to use your custom row class for inserts, just make it implement `Insertable<T>`, where
-`T` is the tye of your row class itself.
+`T` is the type of your row class itself.
 For instance, the previous class could be changed like this:
 
 ```dart
