@@ -25,6 +25,7 @@ import 'schema/result_set.dart';
 import 'schema/table.dart';
 import 'schema/view.dart';
 import 'statements/delete.dart';
+import 'statements/insert.dart';
 import 'statements/select.dart';
 import 'statements/transactions.dart';
 import 'statements/update.dart';
@@ -110,6 +111,7 @@ abstract base class StatementCompiler {
   Precedence? _expressionPrecedence;
 
   bool _ignoreResultSet = false;
+  InsertStatement? _currentInsertStatement;
 
   DriftDialect get dialect;
 
@@ -207,8 +209,10 @@ abstract base class StatementCompiler {
     });
   }
 
-  void addTableReference(TableReference reference) {
-    statement.watchedTables.add(reference.resultSet);
+  void addTableReference(TableReference reference, {bool isWatching = true}) {
+    if (isWatching) {
+      statement.watchedTables.add(reference.resultSet);
+    }
 
     addReference(reference.resultSet.entityName);
     if (reference.resultSet.alias case final alias?) {
@@ -295,7 +299,7 @@ abstract base class StatementCompiler {
 
   void addUpdateStatement(UpdateStatement update) {
     statement.buffer.write('UPDATE ');
-    addReference(update.resultSet.aliasOrName);
+    addTableReference(TableReference(update.resultSet), isWatching: false);
     statement.buffer.write(' SET ');
 
     var first = true;
@@ -322,6 +326,70 @@ abstract base class StatementCompiler {
       returning.compileWith(this);
     }
     statement.buffer.write(';');
+  }
+
+  void addInsertStatementMode(InsertStatement insert) {
+    statement.buffer.write('INSERT INTO');
+  }
+
+  void addInsertColumnNames(InsertStatement insert) {
+    switch (insert.source) {
+      case null:
+      case InsertDefaultValues():
+        return;
+      case InsertFromValues fromValues:
+        statement.buffer.write('(');
+        for (final (i, entry) in fromValues.values.keys.indexed) {
+          if (i != 0) statement.comma();
+          addReference(entry);
+        }
+        statement.buffer.write(')');
+      case InsertFromSelect fromSelect:
+        statement.buffer.write('(');
+        for (final (i, entry)
+            in fromSelect.columnNameToSelectColumnName.keys.indexed) {
+          if (i != 0) statement.comma();
+          addReference(entry);
+        }
+        statement.buffer.write(')');
+    }
+  }
+
+  void addInsertStatement(InsertStatement insert) {
+    _currentInsertStatement = insert;
+    // For INSERT FROM SELECT statements, we move the select statement into a
+    // CTE. This allows re-ordering columns from the select statement into the
+    // right columns for the insert. The final SQL statement will look like
+    // this:
+    // WITH _source AS $select INSERT INTO $table (...) SELECT ... FROM _source
+    if (insert.source case InsertFromSelect(:final select)) {
+      statement.buffer.write('WITH _source AS (');
+      select.compileWith(this);
+      statement.buffer.write(')');
+    }
+
+    addInsertStatementMode(insert);
+    addTableReference(TableReference(insert.table), isWatching: false);
+
+    addInsertColumnNames(insert);
+    (insert.source ?? InsertDefaultValues()).compileWith(this);
+
+    if (insert.upsertClause case final upsert?) {
+      if (insert.source is InsertFromSelect) {
+        // Resolve parsing ambiguity (a `ON` from the conflict clause could also
+        // be parsed as a join).
+        statement.buffer.write(' WHERE TRUE');
+      } else {
+        statement.space();
+      }
+
+      upsert.compileWith(this);
+    }
+
+    if (insert.returning case final returning?) {
+      statement.space();
+      returning.compileWith(this);
+    }
   }
 
   void addReturningClause(ReturningClause returning) {
@@ -673,6 +741,96 @@ abstract base class StatementCompiler {
       statement.buffer
           .write(e.includeTime ? 'CURRENT_TIMESTAMP' : 'CURRENT_DATE');
     });
+  }
+
+  void addUpsertMultiple(UpsertMultiple multiple) {
+    for (final entry in multiple.clauses) {
+      entry.compileWith(this);
+    }
+  }
+
+  void addDoNothing(DoNothing clause) {
+    addOnConflictConstraint(target: clause.target);
+    statement.buffer.write(' DO NOTHING');
+  }
+
+  void addDoUpdate(DoUpdate clause) {
+    statement.hasMultipleTables |= clause.usesExcludedTable;
+    final table = _currentInsertStatement!.table;
+
+    addOnConflictConstraint(target: clause.target);
+    statement.buffer.write(' DO UPDATE SET ');
+
+    final updateSet = clause.createInsertable(table).toColumns(true);
+    for (final (i, update) in updateSet.entries.indexed) {
+      if (i != 0) statement.comma();
+
+      addReference(update.key);
+      statement.buffer.write(' = ');
+      update.value.compileWith(this);
+    }
+
+    if (clause.where case final where?) {
+      statement.space();
+
+      where(table, table.withAlias('excluded')).compileWith(this);
+    }
+  }
+
+  void addOnConflictConstraint(
+      {List<TableColumn>? target, Expression<bool>? where}) {
+    statement.buffer.write('ON CONFLICT');
+
+    if (target != null && target.isEmpty) {
+      // An empty list indicates that no explicit target should be generated
+      // by drift, the default rules by the database will apply instead.
+      return;
+    }
+
+    statement.buffer.write('(');
+    final conflictTarget =
+        target ?? _currentInsertStatement!.table.primaryKey!.toList();
+
+    if (conflictTarget.isEmpty) {
+      throw ArgumentError(
+          'Table has no primary key, so a conflict target is needed.');
+    }
+
+    var first = true;
+    for (final target in conflictTarget) {
+      if (!first) statement.comma();
+
+      addReference(target.name);
+      first = false;
+    }
+
+    statement.buffer.write(')');
+
+    if (where != null) {
+      WhereClause(where).compileWith(this);
+    }
+  }
+
+  void addInsertDefaultValues(InsertDefaultValues source) {
+    statement.buffer.write('DEFAULT VALUES');
+  }
+
+  void addInsertFromValues(InsertFromValues source) {
+    statement.buffer.write('VALUES (');
+    addCommaSeparated(source.values.values);
+    statement.buffer.write(')');
+  }
+
+  void addInsertFromSelect(InsertFromSelect source) {
+    // We're moving the select statement to a CTE, see [addInsertStatement].
+    statement.buffer.write('SELECT ');
+    for (final (i, value)
+        in source.columnNameToSelectColumnName.values.indexed) {
+      if (i != 0) statement.comma();
+
+      statement.buffer.write('_source.');
+      addReference(value.name);
+    }
   }
 
   void addUnixTimestampToDateTime(UnixTimestampToDateTime e);

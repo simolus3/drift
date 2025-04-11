@@ -29,6 +29,7 @@ export 'query_builder/schema/table.dart';
 export 'query_builder/schema/view.dart';
 
 export 'query_builder/statements/delete.dart';
+export 'query_builder/statements/insert.dart';
 export 'query_builder/statements/select.dart';
 export 'query_builder/statements/update.dart';
 

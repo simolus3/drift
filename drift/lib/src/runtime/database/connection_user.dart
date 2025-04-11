@@ -5,7 +5,6 @@ import 'package:meta/meta.dart';
 import '../../connections/connection.dart';
 import '../../connections/result_set.dart';
 import '../../query_builder.dart';
-import '../../query_builder/dialect.dart';
 import '../../query_builder/statements/statement.dart';
 import '../data_class.dart';
 import '../exceptions.dart';
@@ -329,6 +328,14 @@ abstract base class DatabaseConnectionUser {
   /// ```
   SelectStatement selectExpressions(Iterable<Expression> columns) {
     return SelectStatement(this)..addColumns(columns);
+  }
+
+  /// Starts an [InsertStatement] for a given table. You can use that statement
+  /// to write data into the [table] by using [InsertStatement.insert].
+  InsertStatement<Row, RS>
+      into<Row extends Object, RS extends GeneratedTable<Row, RS>>(
+          GeneratedTable<Row, RS> table) {
+    return InsertStatement<Row, RS>(this, table);
   }
 
   /// Starts an [UpdateStatement] for the given table. You can use that
