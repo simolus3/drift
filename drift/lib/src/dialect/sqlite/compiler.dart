@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 
 import 'dialect.dart';
 import 'statements.dart';
+import 'table_valued_function.dart';
 import 'types.dart';
 
 @internal
@@ -155,6 +156,24 @@ final class SqliteCompiler extends StatementCompiler {
     statement.buffer
       ..write(_insertKeywords[mode])
       ..write(' INTO');
+  }
+
+  void addTableValuedFunction(TableValuedFunction function) {
+    statement.buffer
+      ..write(function.functionName)
+      ..write('(');
+
+    var first = true;
+    for (final argument in function.arguments) {
+      if (!first) {
+        statement.comma();
+      }
+
+      argument.compileWith(this);
+      first = false;
+    }
+
+    statement.buffer.write(')');
   }
 }
 

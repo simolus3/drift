@@ -1,7 +1,7 @@
-part of '../query_builder.dart';
+import '../compiler.dart';
 
 /// A limit clause inside a select, update or delete statement.
-class Limit extends Component {
+final class Limit implements SqlComponent {
   /// The maximum amount of rows that should be returned by the query.
   final int amount;
 
@@ -14,11 +14,7 @@ class Limit extends Component {
   Limit(this.amount, this.offset);
 
   @override
-  void writeInto(GenerationContext context) {
-    if (offset != null) {
-      context.buffer.write('LIMIT $amount OFFSET $offset');
-    } else {
-      context.buffer.write('LIMIT $amount');
-    }
+  void compileWith(StatementCompiler compiler) {
+    compiler.addLimit(this);
   }
 }

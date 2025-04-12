@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:drift/drift.dart' hide isNull;
-import 'package:drift/extensions/json1.dart';
+import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -24,37 +24,37 @@ const _todoEntry = TodoEntry(
 
 void main() {
   late TodoDb db;
-  late MockExecutor executor;
+  late MockSession executor;
 
   setUp(() async {
-    executor = MockExecutor();
-    db = TodoDb(executor);
+    executor = MockSession();
+    db = TodoDb(createConnection(executor));
+
+    await db.initialize();
+    clearInteractions(executor);
   });
 
   group('SELECT statements are generated', () {
     test('for simple statements', () async {
       await db.select(db.users, distinct: true).get();
-      verify(executor.runSelect(
-          'SELECT DISTINCT * FROM "users";', argThat(isEmpty)));
+      verify(executor.executeSql('SELECT DISTINCT * FROM "users";'));
     });
 
     test('with limit statements', () async {
-      await (db.select(db.users)..limit(10, offset: 0)).get();
-      verify(executor.runSelect(
-          'SELECT * FROM "users" LIMIT 10 OFFSET 0;', argThat(isEmpty)));
+      await db.select(db.users).limit(10, offset: 0).get();
+      verify(executor.executeSql('SELECT * FROM "users" LIMIT 10 OFFSET 0;'));
     });
 
     test('with simple limits', () async {
-      await (db.select(db.users)..limit(10)).get();
+      await db.select(db.users).limit(10).get();
 
-      verify(executor.runSelect(
-          'SELECT * FROM "users" LIMIT 10;', argThat(isEmpty)));
+      verify(executor.executeSql('SELECT * FROM "users" LIMIT 10;'));
     });
 
     test('with like expressions', () async {
-      await (db.select(db.users)..where((u) => u.name.like('Dash%'))).get();
+      await db.select(db.users).where((u) => u.name.like('Dash%')).get();
       verify(executor
-          .runSelect('SELECT * FROM "users" WHERE "name" LIKE ?;', ['Dash%']));
+          .executeSql('SELECT * FROM "users" WHERE "name" LIKE ?;', ['Dash%']));
     });
 
     test('with order-by clauses', () async {
@@ -65,27 +65,25 @@ void main() {
             ]))
           .get();
 
-      verify(executor.runSelect(
-          'SELECT * FROM "users" ORDER BY '
-          '"is_awesome" DESC, "id" ASC;',
-          argThat(isEmpty)));
+      verify(executor.executeSql('SELECT * FROM "users" ORDER BY '
+          '"is_awesome" DESC, "id" ASC;'));
     });
 
     test('with random order by clause', () async {
       await (db.select(db.users)..orderBy([(u) => OrderingTerm.random()]))
           .get();
 
-      verify(executor.runSelect(
-          'SELECT * FROM "users" ORDER BY random() ASC;', argThat(isEmpty)));
+      verify(
+          executor.executeSql('SELECT * FROM "users" ORDER BY random() ASC;'));
     });
 
     test('with complex predicates', () async {
       await (db.select(db.users)
             ..where((u) =>
-                u.name.equals('Dash').not() & u.id.isBiggerThanValue(12)))
+                u.name.equals('Dash').not() & u.id.isGreaterThanValue(12)))
           .get();
 
-      verify(executor.runSelect(
+      verify(executor.executeSql(
           'SELECT * FROM "users" WHERE NOT ("name" = ?) AND "id" > ?;',
           ['Dash', 12]));
     });
@@ -93,25 +91,22 @@ void main() {
     test('with expressions from boolean columns', () async {
       await (db.select(db.users)..where((u) => u.isAwesome)).get();
 
-      verify(executor.runSelect(
-          'SELECT * FROM "users" WHERE "is_awesome";', argThat(isEmpty)));
+      verify(executor.executeSql('SELECT * FROM "users" WHERE "is_awesome";'));
     });
 
     test('with aliased tables', () async {
       final users = db.alias(db.users, 'u');
-      await (db.select(users)
-            ..where((u) => u.id.isSmallerThan(const Constant(5))))
+      await (db.select(users)..where((u) => u.id.isLessThan(const Literal(5))))
           .get();
 
-      verify(
-          executor.runSelect('SELECT * FROM "users" "u" WHERE "id" < 5;', []));
+      verify(executor.executeSql('SELECT * FROM "users" "u" WHERE "id" < 5;'));
     });
   });
 
   group('SELECT results are parsed', () {
     test('when all fields are non-null', () {
-      when(executor.runSelect('SELECT * FROM "todos";', any))
-          .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
+      when(executor.execute(any))
+          .thenAnswer((_) async => queryResult([_dataOfTodoEntry]));
 
       expect(db.select(db.todosTable).get(), completion([_todoEntry]));
     });
@@ -132,8 +127,7 @@ void main() {
         category: null,
       );
 
-      when(executor.runSelect('SELECT * FROM "todos";', any))
-          .thenAnswer((_) => Future.value(data));
+      when(executor.execute(any)).thenAnswer((_) async => queryResult(data));
 
       expect(db.select(db.todosTable).get(), completion([resolved]));
     });
@@ -141,14 +135,13 @@ void main() {
 
   group('queries for a single row', () {
     test('get once', () {
-      when(executor.runSelect('SELECT * FROM "todos";', any))
-          .thenAnswer((_) => Future.value([_dataOfTodoEntry]));
+      when(executor.execute(any))
+          .thenAnswer((_) async => queryResult([_dataOfTodoEntry]));
       expect(db.select(db.todosTable).getSingle(), completion(_todoEntry));
     });
 
     test('get once without rows', () {
-      when(executor.runSelect('SELECT * FROM "todos";', any))
-          .thenAnswer((_) => Future.value([]));
+      when(executor.execute(any)).thenAnswer((_) async => queryResult([]));
 
       expect(db.select(db.todosTable).getSingle(), throwsA(anything));
       expect(db.select(db.todosTable).getSingleOrNull(), completion(isNull));
@@ -162,8 +155,8 @@ void main() {
       ];
       var currentRow = 0;
 
-      when(executor.runSelect('SELECT * FROM "todos";', any)).thenAnswer((_) {
-        return Future.value(resultRows[currentRow++]);
+      when(executor.execute(any)).thenAnswer((_) {
+        return Future.value(queryResult(resultRows[currentRow++]));
       });
 
       expectLater(
@@ -182,8 +175,8 @@ void main() {
   });
 
   test('applies implicit type converter', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) {
-      return Future.value([
+    when(executor.execute(any)).thenAnswer((_) async {
+      return queryResult([
         {
           'id': 1,
           'desc': 'description',
@@ -207,8 +200,6 @@ void main() {
   });
 
   test('watching a view will update when a referenced table updates', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
-
     final stream = db.select(db.categoryTodoCountView).watch();
     expect(stream, emitsInOrder([isEmpty, isEmpty]));
 
@@ -225,7 +216,7 @@ void main() {
         'category': null,
       }
     ];
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value(data));
+    when(executor.execute(any)).thenAnswer((_) async => queryResult(data));
 
     final subquery = Subquery(db.todosTable.select(), 's');
     final rows = await db.select(subquery).get();
@@ -243,15 +234,15 @@ void main() {
   });
 
   test('select from table-valued function', () async {
-    final each = db.todosTable.content.jsonEach(db, r'$.foo');
+    final each = db.todosTable.content.jsonEach(r'$.foo');
 
     final query = db
         .select(db.todosTable)
-        .join([innerJoin(each, each.atom.isNotNull(), useColumns: false)]);
+        .innerJoin(each, on: each.atom.isNotNull(), includeInResult: false);
 
     await query.get();
 
-    verify(executor.runSelect(
+    verify(executor.executeSql(
       'SELECT "todos"."id" AS "todos.id", "todos"."title" AS "todos.title", "todos"."content" AS "todos.content", "todos"."target_date" AS "todos.target_date", "todos"."category" AS "todos.category", "todos"."status" AS "todos.status" FROM "todos" INNER JOIN json_each("todos"."content", ?) ON "json_each"."atom" IS NOT NULL;',
       [r'$.foo'],
     ));

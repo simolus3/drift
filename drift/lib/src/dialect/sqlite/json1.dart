@@ -1,14 +1,18 @@
-/// Experimental bindings to the [json1](https://www.sqlite.org/json1.html)
+/// Bindings to the [json1](https://www.sqlite.org/json1.html)
 /// sqlite extension.
 ///
 /// Note that the json1 extension might not be available on all runtimes.
 /// When using this library, it is recommended to use a `NativeDatabase` with
 /// a dependency on `sqlite3_flutter_libs`.
-@experimental
 library;
 
-import 'package:meta/meta.dart';
-import '../drift.dart';
+import 'dart:typed_data';
+
+import 'package:drift/drift.dart';
+
+import 'dialect.dart';
+import 'table_valued_function.dart';
+import 'types.dart';
 
 /// Defines extensions on string expressions to support the json1 api from Dart.
 extension JsonExtensions on Expression<String> {
@@ -60,7 +64,7 @@ extension JsonExtensions on Expression<String> {
   /// format or `this` isn't well-formatted json.
   ///
   /// Note that the [T] type parameter has to be set if this function is used
-  /// in [JoinedSelectStatement.addColumns] or compared via [Expression.equals].
+  /// in [SelectStatement.addColumns] or compared via [Expression.equals].
   /// The [T] parameter denotes the mapped Dart type for this expression,
   /// such as [String].
   Expression<T> jsonExtract<T extends Object>(String path) {
@@ -78,8 +82,8 @@ extension JsonExtensions on Expression<String> {
   ///
   /// See also: The [sqlite3 documentation](https://sqlite.org/json1.html#jeach)
   /// and [JsonTableFunction].
-  JsonTableFunction jsonEach(DatabaseConnectionUser database, [String? path]) {
-    return JsonTableFunction._(database, functionName: 'json_each', arguments: [
+  JsonTableFunction jsonEach([String? path]) {
+    return JsonTableFunction._(functionName: 'json_each', arguments: [
       this,
       if (path != null) Variable(path),
     ]);
@@ -93,8 +97,8 @@ extension JsonExtensions on Expression<String> {
   ///
   /// See also: The [sqlite3 documentation](https://sqlite.org/json1.html#jeach)
   /// and [JsonTableFunction].
-  JsonTableFunction jsonTree(DatabaseConnectionUser database, [String? path]) {
-    return JsonTableFunction._(database, functionName: 'json_tree', arguments: [
+  JsonTableFunction jsonTree([String? path]) {
+    return JsonTableFunction._(functionName: 'json_tree', arguments: [
       this,
       if (path != null) Variable(path),
     ]);
@@ -274,16 +278,16 @@ extension JsonbExtensions on Expression<Uint8List> {
   /// optionally using [path] as the root path.
   ///
   /// See [JsonTableFunction] and [JsonExtensions.jsonEach] for more details.
-  JsonTableFunction jsonEach(DatabaseConnectionUser database, [String? path]) {
-    return dartCast<String>().jsonEach(database, path);
+  JsonTableFunction jsonEach([String? path]) {
+    return dartCast<String>().jsonEach(path);
   }
 
   /// Calls the `json_tree` table-valued function on `this` binary JSON buffer,
   /// optionally using [path] as the root path.
   ///
   /// See [JsonTableFunction] and [JsonExtensions.jsonTree] for more details.
-  JsonTableFunction jsonTree(DatabaseConnectionUser database, [String? path]) {
-    return dartCast<String>().jsonTree(database, path);
+  JsonTableFunction jsonTree([String? path]) {
+    return dartCast<String>().jsonTree(path);
   }
 }
 
@@ -295,29 +299,28 @@ extension JsonbExtensions on Expression<Uint8List> {
 ///
 /// For an example and more details, see the [drift documentation](https://drift.simonbinder.eu/docs/advanced-features/joins/#json-support)
 final class JsonTableFunction extends TableValuedFunction<JsonTableFunction> {
-  JsonTableFunction._(
-    super.attachedDatabase, {
+  JsonTableFunction._({
     required super.functionName,
     required super.arguments,
     super.alias,
   }) : super(
           columns: [
-            GeneratedColumn<DriftAny>('key', alias ?? functionName, true,
-                type: DriftSqlType.any),
-            GeneratedColumn<DriftAny>('value', alias ?? functionName, true,
-                type: DriftSqlType.any),
-            GeneratedColumn<String>('type', alias ?? functionName, true,
-                type: DriftSqlType.string),
-            GeneratedColumn<DriftAny>('atom', alias ?? functionName, true,
-                type: DriftSqlType.any),
-            GeneratedColumn<int>('id', alias ?? functionName, true,
-                type: DriftSqlType.int),
-            GeneratedColumn<int>('parent', alias ?? functionName, true,
-                type: DriftSqlType.int),
-            GeneratedColumn<String>('fullkey', alias ?? functionName, true,
-                type: DriftSqlType.string),
-            GeneratedColumn<String>('path', alias ?? functionName, true,
-                type: DriftSqlType.string),
+            SchemaColumn<DriftAny>(
+                name: 'key', isNullable: true, type: SqliteDialect.anyType()),
+            SchemaColumn<DriftAny>(
+                name: 'value', isNullable: true, type: SqliteDialect.anyType()),
+            SchemaColumn<String>(
+                name: 'type', isNullable: true, type: BuiltinDriftType.text),
+            SchemaColumn<DriftAny>(
+                name: 'atom', isNullable: true, type: SqliteDialect.anyType()),
+            SchemaColumn<int>(
+                name: 'id', isNullable: true, type: BuiltinDriftType.int),
+            SchemaColumn<int>(
+                name: 'parent', isNullable: true, type: BuiltinDriftType.int),
+            SchemaColumn<String>(
+                name: 'fullkey', isNullable: true, type: BuiltinDriftType.text),
+            SchemaColumn<String>(
+                name: 'path', isNullable: true, type: BuiltinDriftType.text),
           ],
         );
 
@@ -361,10 +364,8 @@ final class JsonTableFunction extends TableValuedFunction<JsonTableFunction> {
   Expression<String> get path => _col('path');
 
   @override
-  ResultSetImplementation<JsonTableFunction, TypedResult> createAlias(
-      String alias) {
+  JsonTableFunction withAlias(String alias) {
     return JsonTableFunction._(
-      attachedDatabase,
       functionName: entityName,
       arguments: arguments,
       alias: alias,

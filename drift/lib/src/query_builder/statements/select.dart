@@ -6,6 +6,7 @@ import '../../dsl/table.dart';
 import '../../runtime/database/connection_user.dart';
 import '../../runtime/selectable.dart';
 import '../clauses/group_by.dart';
+import '../clauses/limit.dart';
 import '../clauses/order_by.dart';
 import '../clauses/where.dart';
 import '../compiler.dart';
@@ -29,6 +30,10 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
 
   /// The optional `ORDER BY` clause for this select statement.
   OrderBy? orderByClause;
+
+  /// The optional `LIMIT` clause restricting the amount of rows returned by
+  /// this statement.
+  Limit? limitClause;
 
   /// The database this statement should be sent to.
   DatabaseConnectionUser _database;
@@ -93,6 +98,14 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   /// An optional [having] attribute can be set to exclude certain groups.
   Self groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
     groupByClause = GroupBy(expressions.toList(), having: having);
+    return _asSelf();
+  }
+
+  /// Limits the amount of rows returned by capping them at [limit]. If [offset]
+  /// is provided as well, the first [offset] rows will be skipped and not
+  /// included in the result.
+  Self limit(int limit, {int? offset}) {
+    limitClause = Limit(limit, offset);
     return _asSelf();
   }
 

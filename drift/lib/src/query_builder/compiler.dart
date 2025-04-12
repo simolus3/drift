@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 
 import 'clauses/group_by.dart';
+import 'clauses/limit.dart';
 import 'clauses/order_by.dart';
 import 'clauses/returning.dart';
 import 'clauses/where.dart';
@@ -637,6 +638,14 @@ abstract base class StatementCompiler {
         statement.buffer.write(')');
       }
     });
+  }
+
+  void addLimit(Limit limit) {
+    statement.buffer.write('LIMIT ${limit.amount}');
+
+    if (limit.offset case final offset?) {
+      statement.buffer.write(' OFFSET $offset');
+    }
   }
 
   void addOrderBy(OrderBy orderBy) {
