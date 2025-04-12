@@ -230,81 +230,67 @@ class VersionedVirtualTable extends VersionedTable
       alias: alias,
     );
   }
-}
-
+}*/
 
 /// A constructed from individual fields instead of being generated with a
 /// dedicated class.
-class VersionedView implements ViewInfo<HasResultSet, QueryRow>, HasResultSet {
+final class VersionedView
+    with ResultSet<DriftRow, VersionedView>
+    implements GeneratedView<DriftRow, VersionedView> {
   @override
   final String entityName;
-  final String? _alias;
-
   @override
+  final String? alias;
+
+  /// The `CREATE VIEW` statement to run when creating this view.
   final String createViewStmt;
 
   @override
-  Map<SqlDialect, String>? get createViewStatements =>
-      {SqlDialect.sqlite: createViewStmt};
-
-  @override
-  final List<GeneratedColumn> $columns;
-
-  @override
-  late final Map<String, GeneratedColumn> columnsByName = {
-    for (final column in $columns) column.name: column,
-  };
+  final List<SchemaColumn> columns;
 
   /// List of columns, represented as a function that returns the generated
   /// column when given the resolved table name.
-  final List<GeneratedColumn Function(String)> _columnFactories;
-
-  @override
-  final DatabaseConnectionUser attachedDatabase;
+  final List<SchemaColumn Function(String)> _columnFactories;
 
   /// Create a view from the individual fields on [ViewInfo].
   VersionedView({
     required this.entityName,
-    required this.attachedDatabase,
     required this.createViewStmt,
-    required List<GeneratedColumn Function(String)> columns,
-    String? alias,
+    required List<SchemaColumn Function(String)> columns,
+    this.alias,
   })  : _columnFactories = columns,
-        $columns = [for (final column in columns) column(alias ?? entityName)],
-        _alias = alias;
+        columns = [for (final column in columns) column(alias ?? entityName)];
 
   /// Copy an alias to a [source] view.
-  VersionedView.aliased({required VersionedView source, required String? alias})
+  VersionedView.aliased({required VersionedView source, required this.alias})
       : entityName = source.entityName,
-        attachedDatabase = source.attachedDatabase,
         createViewStmt = source.createViewStmt,
         _columnFactories = source._columnFactories,
-        $columns = [
+        columns = [
           for (final column in source._columnFactories)
             column(alias ?? source.entityName)
-        ],
-        _alias = alias;
+        ];
 
   @override
-  String get aliasedName => _alias ?? entityName;
+  CustomComponent? get sqlDefinition => CustomComponent(createViewStmt);
 
   @override
-  HasResultSet get asDslTable => this;
+  DriftRow? Function(DriftRow p1) createMapperFromPositions(
+      List<ColumnPosition> positions) {
+    return (row) => row;
+  }
 
   @override
-  VersionedView createAlias(String alias) {
+  VersionedView asSelfType() => this;
+
+  @override
+  VersionedView withAlias(String alias) {
     return VersionedView.aliased(source: this, alias: alias);
   }
 
   @override
-  QueryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
-    return QueryRow(data, attachedDatabase);
-  }
+  Set<String> get readsFrom => const {};
 
   @override
-  Query<HasResultSet, dynamic>? get query => null;
-
-  @override
-  Set<String> get readTables => const {};
+  SelectStatement? get query => null;
 }
-*/

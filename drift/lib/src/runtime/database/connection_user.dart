@@ -35,6 +35,16 @@ abstract base class DatabaseConnectionUser {
     }
   }
 
+  /// Waits for the database to be initialized, meaning that all connections are
+  /// fully set up and migrations ran.
+  ///
+  /// It is not required to call this method before using the database, drift
+  /// calls it internally where necessary. However, it can be useful to
+  /// explicitly await migrations.
+  Future<void> initialize() async {
+    await currentSession();
+  }
+
   StreamQueryStore _currentStreamQueryStore() {
     if (Zone.current[_zoneRootUserKey] case final scoped?) {
       return (scoped as _ScopedDatabaseSession)._streamQueries;

@@ -104,7 +104,7 @@ final class MockSession extends Mock
       _neverComplete<DriftTransactionSession>());
 
   /// Utility for asserting that a given SQL statement was executed.
-  Future<QueryResult> executeSql(String sql, [Object? variables = isEmpty]) =>
+  Future<QueryResult> executeSql(Object? sql, [Object? variables = isEmpty]) =>
       execute(
         argThat(
           isA<StatementInfo>().having((e) => e.sql, 'sql', sql).having(

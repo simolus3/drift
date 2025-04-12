@@ -50,7 +50,7 @@ final class BlobType extends _SqliteType<Uint8List> {
 }
 
 final class BoolType extends _SqlTypeWithoutMapping<bool> {
-  const BoolType() : super('BOOLEAN');
+  const BoolType() : super('INTEGER');
 
   @override
   bool dartValue(DriftDialect dialect, Object databaseValue) {

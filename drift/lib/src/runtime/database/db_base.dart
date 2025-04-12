@@ -106,6 +106,10 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
         OpeningDetails(oldVersion == 0 ? null : oldVersion, schemaVersion));
   }
 
+  /// Creates a [Migrator] instance useful for running schema-altering
+  /// statements against this database.
+  Migrator createMigrator() => Migrator(this);
+
   /// Closes this drift database and releases associated resources.
   Future<void> close() async {
     if (_openingSession case final opening?) {

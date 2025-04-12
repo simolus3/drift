@@ -1,3 +1,5 @@
+import 'package:drift/dialect/postgres.dart';
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/internal/versioned_schema.dart';
 import 'package:mockito/mockito.dart';
@@ -8,19 +10,24 @@ import '../../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
-  late QueryExecutor mockExecutor;
+  late MockSession mockExecutor;
 
   setUp(() {
-    mockExecutor = MockExecutor();
-    db = TodoDb(mockExecutor);
+    mockExecutor = MockSession();
+    db = TodoDb(createConnection(mockExecutor));
+
+    // Disable migrations by default
+    when(mockExecutor.schemaVersion)
+        .thenAnswer((_) => Future.value(db.schemaVersion));
   });
 
   group('Migrations', () {
     test('creates all tables', () async {
-      await db.beforeOpen(mockExecutor, const OpeningDetails(null, 1));
+      when(mockExecutor.schemaVersion).thenAnswer((_) => Future.value(0));
+      await db.initialize();
 
       // should create todos, categories, users and shared_todos table
-      verify(mockExecutor.runCustom(
+      verify(mockExecutor.executeSql(
           'CREATE TABLE IF NOT EXISTS "todos" '
           '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "title" TEXT NULL, '
           '"content" TEXT NOT NULL, "target_date" INTEGER NULL UNIQUE, '
@@ -29,7 +36,7 @@ void main() {
           'UNIQUE ("title", "category"), UNIQUE ("title", "target_date"));',
           []));
 
-      verify(mockExecutor.runCustom(
+      verify(mockExecutor.executeSql(
           'CREATE TABLE IF NOT EXISTS "categories" '
           '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           '"desc" TEXT NOT NULL UNIQUE, '
@@ -39,7 +46,7 @@ void main() {
           ');',
           []));
 
-      verify(mockExecutor.runCustom(
+      verify(mockExecutor.executeSql(
           'CREATE TABLE IF NOT EXISTS "users" ('
           '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
           '"name" TEXT NOT NULL UNIQUE, '
@@ -51,7 +58,7 @@ void main() {
           ');',
           []));
 
-      verify(mockExecutor.runCustom(
+      verify(mockExecutor.executeSql(
           'CREATE TABLE IF NOT EXISTS "shared_todos" ('
           '"todo" INTEGER NOT NULL, '
           '"user" INTEGER NOT NULL, '
@@ -61,7 +68,7 @@ void main() {
           ');',
           []));
 
-      verify(mockExecutor.runCustom(
+      verify(mockExecutor.executeSql(
           'CREATE TABLE IF NOT EXISTS '
           '"table_without_p_k" ('
           '"not_really_an_id" INTEGER NOT NULL, '
@@ -71,7 +78,7 @@ void main() {
           ');',
           []));
 
-      verify(mockExecutor.runCustom(
+      verify(mockExecutor.executeSql(
           'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
           '("category_id", "description", "item_count") AS SELECT '
           '"t1"."id" AS "category_id", '
@@ -83,7 +90,7 @@ void main() {
           'GROUP BY "t1"."id"',
           []));
 
-      verify(mockExecutor.runCustom(
+      verify(mockExecutor.executeSql(
           'CREATE VIEW IF NOT EXISTS "todo_with_category_view" '
           '("title", "desc") AS SELECT '
           '"t0"."title" AS "title", '
@@ -97,45 +104,44 @@ void main() {
     test('creates individual tables', () async {
       await db.createMigrator().createTable(db.users);
 
-      verify(mockExecutor.runCustom(
-          'CREATE TABLE IF NOT EXISTS "users" '
-          '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          '"name" TEXT NOT NULL UNIQUE, '
-          '"is_awesome" INTEGER NOT NULL DEFAULT 1 CHECK ("is_awesome" IN (0, 1)), '
-          '"profile_picture" BLOB NOT NULL, '
-          '"creation_time" INTEGER NOT NULL '
-          "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
-          'CHECK("creation_time" > -631152000)'
-          ');',
-          []));
+      verify(mockExecutor.executeSql(
+        'CREATE TABLE IF NOT EXISTS "users" '
+        '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+        '"creation_time" TEXT NOT NULL '
+        'DEFAULT CURRENT_TIMESTAMP '
+        'CHECK("creation_time" > \'1950-01-01T00:00:00.000Z\'),'
+        '"name" TEXT NOT NULL UNIQUE,'
+        '"is_awesome" INTEGER NOT NULL DEFAULT 1 CHECK ("is_awesome" IN (0, 1)),'
+        '"profile_picture" BLOB NOT NULL'
+        ');',
+      ));
     });
 
     group('creates tables with custom types', () {
       test('sqlite3', () async {
         await db.createMigrator().createTable(db.withCustomType);
 
-        verify(mockExecutor.runCustom(
+        verify(mockExecutor.executeSql(
             'CREATE TABLE IF NOT EXISTS "with_custom_type" ("id" text NOT NULL);',
             []));
       });
 
       test('postgres', () async {
-        when(mockExecutor.dialect).thenReturn(SqlDialect.postgres);
+        db = TodoDb(createConnection(mockExecutor, dialect: PostgresDialect()));
+
         await db.createMigrator().createTable(db.withCustomType);
-        verify(mockExecutor.runCustom(
+        verify(mockExecutor.executeSql(
             'CREATE TABLE IF NOT EXISTS "with_custom_type" ("id" uuid NOT NULL);',
             []));
       });
     });
 
-    test('creates tables with custom types', () async {});
-
     test('creates views through create()', () async {
       await db.createMigrator().create(db.categoryTodoCountView);
 
-      verify(mockExecutor.runCustom(
-          'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
-          '("category_id", "description", "item_count") AS SELECT '
+      verify(mockExecutor.executeSql(
+          'CREATE VIEW IF NOT EXISTS "category_todo_count_view"'
+          '("category_id","description","item_count") AS SELECT '
           '"t1"."id" AS "category_id", '
           '"t1"."desc" || \'!\' AS "description", '
           'COUNT("t0"."id") AS "item_count" '
@@ -149,25 +155,27 @@ void main() {
     test('drops tables', () async {
       await db.createMigrator().deleteTable('users');
 
-      verify(mockExecutor.runCustom('DROP TABLE IF EXISTS "users";'));
+      verify(mockExecutor.executeSql('DROP TABLE IF EXISTS "users";'));
     });
 
     test('drops indices', () async {
-      await db.createMigrator().drop(Index('desc', 'foo'));
+      await db.createMigrator().drop(Index('desc', CustomComponent('foo')));
 
-      verify(mockExecutor.runCustom('DROP INDEX IF EXISTS "desc";'));
+      verify(mockExecutor.executeSql('DROP INDEX IF EXISTS "desc";'));
     });
 
     test('drops triggers', () async {
-      await db.createMigrator().drop(Trigger('foo', 'my_trigger'));
+      await db
+          .createMigrator()
+          .drop(Trigger('my_trigger', CustomComponent('foo')));
 
-      verify(mockExecutor.runCustom('DROP TRIGGER IF EXISTS "my_trigger";'));
+      verify(mockExecutor.executeSql('DROP TRIGGER IF EXISTS "my_trigger";'));
     });
 
     test('adds columns', () async {
       await db.createMigrator().addColumn(db.users, db.users.isAwesome);
 
-      verify(mockExecutor.runCustom('ALTER TABLE "users" ADD COLUMN '
+      verify(mockExecutor.executeSql('ALTER TABLE "users" ADD COLUMN '
           '"is_awesome" INTEGER NOT NULL DEFAULT 1 '
           'CHECK ("is_awesome" IN (0, 1));'));
     });
@@ -177,89 +185,94 @@ void main() {
           .createMigrator()
           .renameColumn(db.users, 'my name', db.users.name);
 
-      verify(mockExecutor
-          .runCustom('ALTER TABLE "users" RENAME COLUMN "my name" TO "name";'));
+      verify(mockExecutor.executeSql(
+          'ALTER TABLE "users" RENAME COLUMN "my name" TO "name";'));
     });
   });
 
   test('custom statements', () async {
     await db.customStatement('some custom statement');
-    verify(mockExecutor.runCustom('some custom statement'));
+    verify(mockExecutor.executeSql('some custom statement'));
   });
 
   test('upgrading a database without schema migration throws', () async {
-    final db = _DefaultDb(MockExecutor());
-    expect(
-      () => db.beforeOpen(db.executor, const OpeningDetails(2, 3)),
-      throwsA(const TypeMatcher<Exception>()),
-    );
+    when(mockExecutor.schemaVersion).thenAnswer((_) => Future.value(1));
+    final db = _DefaultDb(createConnection(mockExecutor));
+
+    expect(() => db.initialize(), throwsA(const TypeMatcher<Exception>()));
   });
 
-  test('can use migrations inside schema callbacks', () async {
-    final executor = MockExecutor();
-    late TodoDb db;
-    db = TodoDb(executor)
+  test('can use transactions inside schema callbacks', () async {
+    when(mockExecutor.schemaVersion).thenAnswer((_) => Future.value(2));
+
+    db
+      ..schemaVersion = 3
       ..migration = MigrationStrategy(onUpgrade: (m, from, to) async {
         await db.transaction(() async {
           await m.createTable(db.users);
         });
       });
 
-    await db.beforeOpen(executor, const OpeningDetails(2, 3));
-
-    verify(executor.beginTransaction());
-    verify(executor.transactions.runCustom(any, any));
-    verifyNever(executor.runCustom(any, any));
+    await db.initialize();
+    verify(mockExecutor.begin(any));
+    verify(mockExecutor.transactions.execute(any));
+    verifyNever(mockExecutor.execute(any));
   });
 
   test('removes variables in `CREATE TABLE` statements', () async {
-    final executor = MockExecutor();
-    final db = _DefaultDb(executor);
+    final executor = MockSession();
+    final db = _DefaultDb(createConnection(executor));
 
-    late GeneratedColumn<int> column;
-    column = GeneratedColumn<int>(
-      'foo',
-      'foo',
-      true,
-      type: DriftSqlType.int,
-      check: () => column.isSmallerThan(const Variable(3)),
+    late TableColumn<int> column;
+    column = TableColumn<int>(
+      name: 'foo',
+      isNullable: true,
+      type: BuiltinDriftType.int,
+      constraints: () =>
+          [ColumnCheckConstraint(column.isLessThan(const Variable(3)))],
     );
-    final table = CustomTable('foo', db, [column]);
+    final table = VersionedTable(
+      entityName: 'foo',
+      isStrict: false,
+      withoutRowId: false,
+      columns: [(_) => column],
+      tableConstraints: [],
+    );
 
     await db.createMigrator().createTable(table);
     await db.close();
 
     // This should not attempt to generate a parameter (`?`)
     // https://github.com/simolus3/drift/discussions/1936
-    verify(executor.runCustom(argThat(contains('CHECK("foo" < 3)')), []));
+    verify(executor.executeSql(contains('CHECK("foo" < 3)'), []));
   });
 
   group('respects schema version', () {
-    late MockExecutor executor;
+    late MockSession executor;
     late _DefaultDb db;
 
     setUp(() async {
-      executor = MockExecutor();
-      db = _DefaultDb(executor);
+      executor = MockSession();
+      db = _DefaultDb(createConnection(executor));
     });
 
     tearDown(() {
-      db.close();
+      return db.close();
     });
 
     test('in createAll', () async {
       final defaultMigrator = db.createMigrator();
       await defaultMigrator.createAll();
-      verifyNever(executor.runCustom(any));
+      verifyNever(executor.execute(any));
 
       final fixedMigrator =
           Migrator(db, _FakeSchemaVersion(database: db, version: 2));
       await fixedMigrator.createAll();
-      verify(executor.runCustom(
+      verify(executor.executeSql(
         'CREATE TABLE IF NOT EXISTS "my_table" ("foo" INTEGER NOT NULL);',
         [],
       ));
-      verify(executor.runCustom(
+      verify(executor.executeSql(
         'CREATE VIEW my_view AS SELECT 2',
         [],
       ));
@@ -268,13 +281,13 @@ void main() {
     test('in recreateViews', () async {
       final defaultMigrator = db.createMigrator();
       await defaultMigrator.recreateAllViews();
-      verifyNever(executor.runCustom(any));
+      verifyNever(executor.execute(any));
 
       final fixedMigrator =
           Migrator(db, _FakeSchemaVersion(database: db, version: 2));
       await fixedMigrator.recreateAllViews();
 
-      verify(executor.runCustom(
+      verify(executor.executeSql(
         'CREATE VIEW my_view AS SELECT 2',
         [],
       ));
@@ -282,27 +295,29 @@ void main() {
   });
 
   group('dialect-specific', () {
-    Map<SqlDialect, String> statements(String base) {
-      return {
-        for (final dialect in SqlDialect.values) dialect: '$base $dialect',
-      };
+    final dialects = [
+      ('sqlite', SqliteDialect()),
+      ('postgres', PostgresDialect()),
+    ];
+
+    CustomComponent statements(String base) {
+      return CustomComponent('fallback', dialectSpecifcSql: {
+        for (final dialect in KnownSqlDialect.values) dialect: '$base $dialect',
+      });
     }
 
-    for (final dialect in [SqlDialect.sqlite, SqlDialect.postgres]) {
-      test('with dialect $dialect', () async {
-        final executor = MockExecutor();
-        when(executor.dialect).thenReturn(dialect);
-
-        final db = TodoDb(executor);
+    for (final (name, dialect) in dialects) {
+      test('with dialect $name', () async {
+        final db = TodoDb(createConnection(mockExecutor, dialect: dialect));
         final migrator = db.createMigrator();
 
-        await migrator.create(Trigger.byDialect('a', statements('trigger')));
-        await migrator.create(Index.byDialect('a', statements('index')));
-        await migrator.create(OnCreateQuery.byDialect(statements('@')));
+        await migrator.create(Trigger('a', statements('trigger')));
+        await migrator.create(Index('a', statements('index')));
+        await migrator.create(OnCreateQuery(statements('@')));
 
-        verify(executor.runCustom('trigger $dialect', []));
-        verify(executor.runCustom('index $dialect', []));
-        verify(executor.runCustom('@ $dialect', []));
+        verify(mockExecutor.executeSql('trigger ${dialect.known}', []));
+        verify(mockExecutor.executeSql('index ${dialect.known}', []));
+        verify(mockExecutor.executeSql('@ ${dialect.known}', []));
       });
     }
   });
@@ -315,10 +330,12 @@ final class _FakeSchemaVersion extends VersionedSchema {
   Iterable<DatabaseSchemaEntity> get entities => [
         VersionedTable(
           entityName: 'my_table',
-          attachedDatabase: database,
           columns: [
-            (name) => GeneratedColumn<int>('foo', name, false,
-                type: DriftSqlType.int),
+            (name) => TableColumn<int>(
+                  name: 'foo',
+                  type: BuiltinDriftType.int,
+                  isNullable: false,
+                ),
           ],
           tableConstraints: [],
           isStrict: false,
@@ -326,18 +343,14 @@ final class _FakeSchemaVersion extends VersionedSchema {
         ),
         VersionedView(
           entityName: 'my_view',
-          attachedDatabase: database,
           createViewStmt: 'CREATE VIEW my_view AS SELECT $version',
           columns: [],
         ),
       ];
 }
 
-class _DefaultDb extends GeneratedDatabase {
+final class _DefaultDb extends GeneratedDatabase {
   _DefaultDb(super.executor);
-
-  @override
-  List<TableInfo<Table, DataClass>> get allTables => [];
 
   @override
   Iterable<DatabaseSchemaEntity> get allSchemaEntities => [];

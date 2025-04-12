@@ -22,7 +22,7 @@ void main() {
 
     // Run migrations and clear interactions to make verifying generated
     // statements easier.
-    await db.currentSession();
+    await db.initialize();
     clearInteractions(executor);
   });
 

@@ -637,9 +637,9 @@ class $UsersTable extends Users
       isNullable: false,
       requiredDuringInsert: false,
       constraints: () => [
+            ColumnDefaultConstraint<DateTime>(currentDateAndTime),
             ColumnCheckConstraint(ComparableExpr(creationTime)
-                .isGreaterThan(Literal(DateTime.utc(1950)))),
-            ColumnDefaultConstraint<DateTime>(currentDateAndTime)
+                .isGreaterThan(Literal(DateTime.utc(1950))))
           ])
     ..owningResultSet = this;
   @override
@@ -656,7 +656,12 @@ class $UsersTable extends Users
       type: BuiltinDriftType.bool,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: () => [ColumnDefaultConstraint<bool>(const Literal(true))])
+      constraints: () => [
+            ColumnDefaultConstraint<bool>(const Literal(true)),
+            ColumnConstraint.custom(
+                CustomComponent('CHECK ("is_awesome" IN (0, 1))'),
+                onlyOnDialect: KnownSqlDialect.sqlite)
+          ])
     ..owningResultSet = this;
   @override
   late final TableColumn<Uint8List> profilePicture = TableColumn<Uint8List>(
@@ -1619,7 +1624,12 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
       name: 'a_bool',
       type: BuiltinDriftType.bool,
       isNullable: true,
-      requiredDuringInsert: false)
+      requiredDuringInsert: false,
+      constraints: () => [
+            ColumnConstraint.custom(
+                CustomComponent('CHECK ("a_bool" IN (0, 1))'),
+                onlyOnDialect: KnownSqlDialect.sqlite)
+          ])
     ..owningResultSet = this;
   @override
   late final TableColumn<DateTime> aDateTime = TableColumn<DateTime>(

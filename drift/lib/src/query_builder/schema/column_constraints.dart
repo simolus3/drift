@@ -1,11 +1,12 @@
 import '../compiler.dart';
+import '../dialect.dart';
 import '../expressions/expression.dart';
 
 abstract base class ColumnConstraint implements SqlComponent {
   const ColumnConstraint._();
 
-  const factory ColumnConstraint.custom(CustomComponent custom) =
-      _CustomColumnConstraint;
+  const factory ColumnConstraint.custom(CustomComponent custom,
+      {KnownSqlDialect? onlyOnDialect}) = CustomColumnConstraint;
 
   factory ColumnConstraint.customSql(String sql) {
     return ColumnConstraint.custom(CustomComponent(sql));
@@ -118,10 +119,12 @@ final class ColumnCheckConstraint extends ColumnConstraint {
   }
 }
 
-final class _CustomColumnConstraint extends ColumnConstraint {
+final class CustomColumnConstraint extends ColumnConstraint {
   final CustomComponent component;
+  final KnownSqlDialect? onlyOnDialect;
 
-  const _CustomColumnConstraint(this.component) : super._();
+  const CustomColumnConstraint(this.component, {this.onlyOnDialect})
+      : super._();
 
   @override
   void compileWith(StatementCompiler compiler) {

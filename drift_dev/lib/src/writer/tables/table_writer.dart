@@ -199,13 +199,6 @@ abstract class TableOrViewWriter {
       namedParameters['requiredDuringInsert'] = isRequiredForInsert.toString();
     }
 
-    if (column.defaultArgument case final columnDefault?) {
-      final type = emitter.dartCode(emitter.innerColumnType(column.sqlType));
-
-      constraints.add(
-          '${emitter.drift('ColumnDefaultConstraint')}<$type>(${emitter.dartCode(columnDefault)})');
-    }
-
     if (column.customConstraints != null) {
       final list = '[${emitter.drift('ColumnConstraint.customSql')}'
           '(${asDartLiteral(column.customConstraints!)})]';

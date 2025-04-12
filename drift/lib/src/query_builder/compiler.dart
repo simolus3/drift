@@ -135,6 +135,12 @@ abstract base class StatementCompiler {
     }
 
     for (final constraint in column.constraints) {
+      if (constraint case CustomColumnConstraint(:final onlyOnDialect?)) {
+        if (onlyOnDialect != dialect.known) {
+          continue;
+        }
+      }
+
       if (hadConstraint) {
         statement.space();
       }
@@ -145,10 +151,11 @@ abstract base class StatementCompiler {
   }
 
   void addAddColumnStatement(AddColumnStatement stmt) {
-    statement.buffer.write('ALTER TABLE');
+    statement.buffer.write('ALTER TABLE ');
     addReference(stmt.table.aliasOrName);
     statement.buffer.write(' ADD COLUMN ');
     addTableColumnDefinition(stmt.column);
+    statement.buffer.write(';');
   }
 
   void addDropColumnStatement(DropColumnStatement stmt) {
@@ -156,6 +163,7 @@ abstract base class StatementCompiler {
     addReference(stmt.table.aliasOrName);
     statement.buffer.write(' DROP COLUMN ');
     addReference(stmt.columnName);
+    statement.buffer.write(';');
   }
 
   void addRenameColumnStatement(RenameColumnStatement stmt) {
@@ -165,6 +173,7 @@ abstract base class StatementCompiler {
     addReference(stmt.oldName);
     statement.buffer.write(' TO ');
     addReference(stmt.column.name);
+    statement.buffer.write(';');
   }
 
   void addRenameTableStatement(RenameTableStatement stmt) {
@@ -172,6 +181,7 @@ abstract base class StatementCompiler {
     addReference(stmt.oldName);
     statement.buffer.write(' RENAME TO ');
     addReference(stmt.table.entityName);
+    statement.buffer.write(';');
   }
 
   void addReference(String name) {
@@ -223,13 +233,14 @@ abstract base class StatementCompiler {
   }
 
   void addCreateTableStatement(CreateTableStatement stmt) {
+    statement.supportsVariables = false;
     final table = stmt.entity;
     statement.buffer.write('CREATE TABLE ');
     if (stmt.ifNotExists) {
       statement.buffer.write('IF NOT EXISTS ');
     }
     addReference(table.entityName);
-    statement.buffer.write('(');
+    statement.buffer.write(' (');
 
     for (final (i, column) in table.columns.indexed) {
       if (i != 0) {
@@ -251,13 +262,44 @@ abstract base class StatementCompiler {
     }
 
     statement.buffer.write(')');
+    addTableModifiers(stmt);
+    statement.buffer.write(';');
   }
 
-  void addCreateViewStatement(CreateViewStatement statement) {}
+  void addTableModifiers(CreateTableStatement stmt) {}
 
-  void addCreateIndexStatement(CreateIndexStatement statement) {}
+  void addCreateViewStatement(CreateViewStatement create) {
+    final view = create.entity;
+    if (view.sqlDefinition case final sql?) {
+      sql.compileWith(this);
+    } else {
+      statement.supportsVariables = false;
+      statement.buffer.write('CREATE VIEW ');
+      if (create.ifNotExists) {
+        statement.buffer.write('IF NOT EXISTS ');
+      }
 
-  void addCreateTriggerStatement(CreateTriggerStatement statement) {}
+      addReference(view.entityName);
+      statement.buffer.write('(');
+
+      for (final (i, column) in view.columns.indexed) {
+        if (i != 0) statement.comma();
+
+        addReference(column.name);
+      }
+
+      statement.buffer.write(') AS ');
+      view.query!.compileWith(this);
+    }
+  }
+
+  void addCreateIndexStatement(CreateIndexStatement statement) {
+    statement.entity.definition.compileWith(this);
+  }
+
+  void addCreateTriggerStatement(CreateTriggerStatement statement) {
+    statement.entity.definition.compileWith(this);
+  }
 
   void addDropStatement(DropStatement stmt) {
     statement.buffer
@@ -265,6 +307,7 @@ abstract base class StatementCompiler {
       ..write(stmt.kind)
       ..write(' IF EXISTS ');
     addReference(stmt.name);
+    statement.buffer.write(';');
   }
 
   void addJoin(Join join) {
@@ -736,7 +779,7 @@ abstract base class StatementCompiler {
   }
 
   void addColumnCheckConstraint(ColumnCheckConstraint constraint) {
-    statement.buffer.write('CHECK (');
+    statement.buffer.write('CHECK(');
     constraint.check.compileWith(this);
     statement.buffer.write(')');
   }
