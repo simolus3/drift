@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:drift/drift.dart';
 
+import '../common_types.dart';
 import 'compiler.dart';
 
 final class PostgresDialect extends DriftDialect {
@@ -14,11 +15,10 @@ final class PostgresDialect extends DriftDialect {
   StatementCompiler createCompiler() => PostgresCompiler(this);
 
   @override
-  SqlType<bool> get boolType => const _SimplePostgresType('BOOLEAN');
+  SqlType<bool> get boolType => const _BoolType();
 
   @override
-  SqlType<Uint8List> get byteArrayType =>
-      const _SimplePostgresType('BYTEARRAY');
+  SqlType<Uint8List> get byteArrayType => blobType;
 
   @override
   SqlType<DateTime> get dateTimeType => const _SimplePostgresType('TIMESTAMP');
@@ -39,6 +39,8 @@ final class PostgresDialect extends DriftDialect {
   SqlType<String> get textType => const _SimplePostgresType('TEXT');
 }
 
+const blobType = CommonByteArrayType('bytea');
+
 final class _SimplePostgresType<T extends Object> implements SqlType<T> {
   final String name;
 
@@ -57,4 +59,13 @@ final class _SimplePostgresType<T extends Object> implements SqlType<T> {
 
   @override
   String typeName(DriftDialect dialect) => name;
+}
+
+final class _BoolType extends _SimplePostgresType<bool> {
+  const _BoolType() : super('boolean');
+
+  @override
+  String sqlLiteral(DriftDialect dialect, bool value) {
+    return value.toString();
+  }
 }

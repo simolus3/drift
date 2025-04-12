@@ -2,13 +2,12 @@
 library;
 
 import 'dart:convert';
-import 'dart:typed_data';
 
-import 'package:convert/convert.dart' show hex;
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' show jsonb;
 
+import '../common_types.dart';
 import 'dialect.dart';
 
 abstract base class _SqliteType<T extends Object> implements SqlType<T> {
@@ -36,16 +35,6 @@ final class _SqlTypeWithoutMapping<T extends Object> extends _SqliteType<T> {
   @override
   String sqlLiteral(DriftDialect dialect, T value) {
     return value.toString();
-  }
-}
-
-final class BlobType extends _SqliteType<Uint8List> {
-  const BlobType() : super('BLOB');
-
-  @override
-  String sqlLiteral(DriftDialect dialect, Uint8List value) {
-    final String hexString = hex.encode(value);
-    return "x'$hexString'";
   }
 }
 
@@ -174,6 +163,8 @@ final class DateTimeType extends _SqliteType<DateTime> {
   }
 }
 
+const blobType = CommonByteArrayType('BLOB');
+
 final class JsonType extends _SqliteType<DatabaseJson> {
   const JsonType() : super('BLOB');
 
@@ -185,8 +176,7 @@ final class JsonType extends _SqliteType<DatabaseJson> {
   String sqlLiteral(DriftDialect dialect, DatabaseJson value) {
     final binary = _useBinary(dialect);
     if (binary) {
-      return const BlobType()
-          .sqlLiteral(dialect, jsonb.encode(value.dartValue));
+      return blobType.sqlLiteral(dialect, jsonb.encode(value.dartValue));
     } else {
       return const StringType()
           .sqlLiteral(dialect, json.encode(value.dartValue));
@@ -206,7 +196,7 @@ final class JsonType extends _SqliteType<DatabaseJson> {
   DatabaseJson dartValue(DriftDialect dialect, Object databaseValue) {
     if (_useBinary(dialect)) {
       return DatabaseJson(
-          jsonb.decode(const BlobType().dartValue(dialect, databaseValue)));
+          jsonb.decode(blobType.dartValue(dialect, databaseValue)));
     } else {
       return DatabaseJson(
           json.decode(const StringType().dartValue(dialect, databaseValue)));

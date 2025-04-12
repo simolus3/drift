@@ -48,7 +48,7 @@ final class SqliteDialect extends DriftDialect {
   SqlType<bool> get boolType => const BoolType();
 
   @override
-  SqlType<Uint8List> get byteArrayType => const BlobType();
+  SqlType<Uint8List> get byteArrayType => blobType;
 
   @override
   SqlType<DateTime> get dateTimeType => const DateTimeType();

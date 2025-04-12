@@ -6,6 +6,7 @@ import '../../dsl/table.dart';
 import '../../runtime/database/connection_user.dart';
 import '../../runtime/selectable.dart';
 import '../clauses/group_by.dart';
+import '../clauses/order_by.dart';
 import '../clauses/where.dart';
 import '../compiler.dart';
 import '../expressions/expression.dart';
@@ -25,6 +26,9 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
 
   /// The optional `GROUP BY` clause for this select statement.
   GroupBy? groupByClause;
+
+  /// The optional `ORDER BY` clause for this select statement.
+  OrderBy? orderByClause;
 
   /// The database this statement should be sent to.
   DatabaseConnectionUser _database;
@@ -84,6 +88,14 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     return _withAddedJoin(Join.cross(table, includeInResult: includeInResult));
   }
 
+  /// Groups the result by values in [expressions].
+  ///
+  /// An optional [having] attribute can be set to exclude certain groups.
+  Self groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
+    groupByClause = GroupBy(expressions.toList(), having: having);
+    return _asSelf();
+  }
+
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addSelectStatement(this);
@@ -107,14 +119,6 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     return resultSet.map(converter).toList();
   }
 
-  /// Groups the result by values in [expressions].
-  ///
-  /// An optional [having] attribute can be set to exclude certain groups.
-  Self groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
-    groupByClause = GroupBy(expressions.toList(), having: having);
-    return _asSelf();
-  }
-
   @override
   Stream<List<Row>> watch() {
     // TODO: implement watch
@@ -136,6 +140,13 @@ final class SelectStatement
     assert(distinct == other.distinct);
     from.addAll(other.from);
     whereClause = other.whereClause;
+    groupByClause = other.groupByClause;
+    orderByClause = other.orderByClause;
+  }
+
+  /// Orders the results of this statement by the ordering [terms].
+  void orderBy(List<OrderingTerm> terms) {
+    orderByClause = OrderBy(terms);
   }
 
   @override
@@ -156,6 +167,10 @@ final class SelectStatement
   }
 }
 
+/// Signature of a function that generates an [OrderingTerm] when provided with
+/// a table.
+typedef OrderClauseGenerator<T> = OrderingTerm Function(T tbl);
+
 final class SingleTableSelectStatement<Row extends Object,
         RS extends ResultSet<Row, RS>>
     extends BaseSelectStatement<SingleTableSelectStatement<Row, RS>, Row>
@@ -169,6 +184,28 @@ final class SingleTableSelectStatement<Row extends Object,
       {super.distinct}) {
     structure.addSelectStarFromSingleTable(resultSet);
     from.add(TableReference(resultSet));
+  }
+
+  /// Orders the result by the given clauses. The clauses coming first in the
+  /// list have a higher priority, the later clauses are only considered if the
+  /// first clause considers two rows to be equal.
+  ///
+  /// Example that first displays the users who are awesome and sorts users by
+  /// their id as a secondary criterion:
+  /// ```
+  /// (db.select(db.users)
+  ///    ..orderBy([
+  ///      (u) =>
+  ///        OrderingTerm(expression: u.isAwesome, mode: OrderingMode.desc),
+  ///      (u) => OrderingTerm(expression: u.id)
+  ///    ]))
+  ///  .get()
+  /// ```
+  SingleTableSelectStatement<Row, RS> orderBy(
+      List<OrderClauseGenerator<RS>> clauses) {
+    orderByClause =
+        OrderBy(clauses.map((t) => t(resultSet.asSelfType())).toList());
+    return this;
   }
 
   @override

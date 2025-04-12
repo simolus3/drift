@@ -55,6 +55,8 @@ final class CompiledStatement {
   void space() => buffer.write(' ');
 
   void comma() => buffer.write(',');
+
+  void semicolon() => buffer.write(';');
 }
 
 /// Base class for anything that can be compiled to SQL.
@@ -447,6 +449,8 @@ abstract base class StatementCompiler {
   }
 
   void addSelectStatement(BaseSelectStatement select) {
+    final isRoot = statement.buffer.isEmpty;
+
     statement.buffer.write('SELECT ');
     statement.resultSetStructure = select.structure;
     statement.hasMultipleTables |= select.from.length > 1;
@@ -492,6 +496,15 @@ abstract base class StatementCompiler {
     if (select.groupByClause case final groupBy?) {
       statement.space();
       groupBy.compileWith(this);
+    }
+
+    if (select.orderByClause case final orderBy?) {
+      statement.space();
+      orderBy.compileWith(this);
+    }
+
+    if (isRoot) {
+      statement.semicolon();
     }
   }
 
@@ -631,8 +644,6 @@ abstract base class StatementCompiler {
       statement.buffer.write('ORDER BY ');
       addCommaSeparated(orderBy.terms);
     }
-
-    throw 'todo';
   }
 
   void addOrderingTerm(OrderingTerm term) {
