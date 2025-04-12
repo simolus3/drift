@@ -24,6 +24,7 @@ import 'schema/column_constraints.dart';
 import 'schema/drop.dart';
 import 'schema/entities.dart';
 import 'schema/result_set.dart';
+import 'schema/subquery.dart';
 import 'schema/table.dart';
 import 'schema/view.dart';
 import 'statements/delete.dart';
@@ -223,13 +224,17 @@ abstract base class StatementCompiler {
     });
   }
 
-  void addTableReference(TableReference reference, {bool isWatching = true}) {
-    if (isWatching) {
-      statement.watchedTables.add(reference.resultSet);
+  void addFromResultSet(FromResultSet resultSet, {bool isWatching = true}) {
+    if (resultSet.resultSet case final SqlComponent component) {
+      return component.compileWith(this);
     }
 
-    addReference(reference.resultSet.entityName);
-    if (reference.resultSet.alias case final alias?) {
+    if (isWatching) {
+      statement.watchedTables.add(resultSet.resultSet);
+    }
+
+    addReference(resultSet.resultSet.entityName);
+    if (resultSet.resultSet.alias case final alias?) {
       statement.buffer.write(' AS ');
       addReference(alias);
     }
@@ -346,7 +351,7 @@ abstract base class StatementCompiler {
 
   void addUpdateStatement(UpdateStatement update) {
     statement.buffer.write('UPDATE ');
-    addTableReference(TableReference(update.resultSet), isWatching: false);
+    addFromResultSet(FromResultSet(update.resultSet), isWatching: false);
     statement.buffer.write(' SET ');
 
     var first = true;
@@ -419,7 +424,7 @@ abstract base class StatementCompiler {
 
     addInsertStatementMode(insert);
     statement.space();
-    addTableReference(TableReference(insert.table), isWatching: false);
+    addFromResultSet(FromResultSet(insert.table), isWatching: false);
     statement.space();
 
     addInsertColumnNames(insert);
@@ -453,6 +458,9 @@ abstract base class StatementCompiler {
     final isRoot = statement.buffer.isEmpty;
 
     statement.buffer.write('SELECT ');
+    if (select.distinct) {
+      statement.buffer.write('DISTINCT ');
+    }
     statement.resultSetStructure = select.structure;
     statement.hasMultipleTables |= select.from.length > 1;
 
@@ -502,6 +510,11 @@ abstract base class StatementCompiler {
     if (select.orderByClause case final orderBy?) {
       statement.space();
       orderBy.compileWith(this);
+    }
+
+    if (select.limitClause case final limit?) {
+      statement.space();
+      limit.compileWith(this);
     }
 
     if (isRoot) {
@@ -561,6 +574,13 @@ abstract base class StatementCompiler {
     statement.buffer.write('(');
     e.statement.compileWith(this);
     statement.buffer.write(')');
+  }
+
+  void addSubquery(Subquery e) {
+    statement.buffer.write('(');
+    e.select.compileWith(this);
+    statement.buffer.write(') ');
+    addReference(e.aliasOrName);
   }
 
   void addExistsExpression(ExistsExpression e) {

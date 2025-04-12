@@ -20,15 +20,15 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     for (final column in columns) column.name: column,
   };
 
-  Row? Function(DriftRow) createMapperToDart(DriftResultSet resultSet) {
-    return createMapperFromPositions(resultSet.structure.tables[this]!);
+  Row? Function(DriftRow) createMapperToDart(ResultSetStructure structure) {
+    return createMapperFromPositions(structure.tables[this]!);
   }
 
   Row? Function(DriftRow) createMapperFromPositions(
       List<ColumnPosition> positions);
 
   Row? mapToDart(DriftRow row) {
-    return createMapperToDart(row.resultSet)(row);
+    return createMapperToDart(row.resultSet.structure)(row);
   }
 
   /// Converts a [companion] to the real model class, [Row].
@@ -63,7 +63,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
 
     final mappedResultSet =
         DriftResultSet(structure, resultSet, database.dialect);
-    final mapper = createMapperToDart(mappedResultSet);
+    final mapper = createMapperToDart(structure);
     return mapper(mappedResultSet.first)!;
   }
 

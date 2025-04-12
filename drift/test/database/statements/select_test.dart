@@ -35,26 +35,33 @@ void main() {
   });
 
   group('SELECT statements are generated', () {
+    const usersColumns =
+        '"id" AS "id","creation_time" AS "creation_time","name" AS "name","is_awesome" AS "is_awesome","profile_picture" AS "profile_picture"';
+
     test('for simple statements', () async {
       await db.select(db.users, distinct: true).get();
-      verify(executor.executeSql('SELECT DISTINCT * FROM "users";'));
+      verify(
+          executor.executeSql('SELECT DISTINCT $usersColumns FROM "users";'));
     });
 
     test('with limit statements', () async {
       await db.select(db.users).limit(10, offset: 0).get();
-      verify(executor.executeSql('SELECT * FROM "users" LIMIT 10 OFFSET 0;'));
+      verify(executor
+          .executeSql('SELECT $usersColumns FROM "users" LIMIT 10 OFFSET 0;'));
     });
 
     test('with simple limits', () async {
       await db.select(db.users).limit(10).get();
 
-      verify(executor.executeSql('SELECT * FROM "users" LIMIT 10;'));
+      verify(
+          executor.executeSql('SELECT $usersColumns FROM "users" LIMIT 10;'));
     });
 
     test('with like expressions', () async {
       await db.select(db.users).where((u) => u.name.like('Dash%')).get();
-      verify(executor
-          .executeSql('SELECT * FROM "users" WHERE "name" LIKE ?;', ['Dash%']));
+      verify(executor.executeSql(
+          'SELECT $usersColumns FROM "users" WHERE "name" LIKE ?1;',
+          ['Dash%']));
     });
 
     test('with order-by clauses', () async {
@@ -65,16 +72,16 @@ void main() {
             ]))
           .get();
 
-      verify(executor.executeSql('SELECT * FROM "users" ORDER BY '
-          '"is_awesome" DESC, "id" ASC;'));
+      verify(executor.executeSql('SELECT $usersColumns FROM "users" ORDER BY '
+          '"is_awesome" DESC,"id" ASC;'));
     });
 
     test('with random order by clause', () async {
       await (db.select(db.users)..orderBy([(u) => OrderingTerm.random()]))
           .get();
 
-      verify(
-          executor.executeSql('SELECT * FROM "users" ORDER BY random() ASC;'));
+      verify(executor.executeSql(
+          'SELECT $usersColumns FROM "users" ORDER BY random() ASC;'));
     });
 
     test('with complex predicates', () async {
@@ -84,14 +91,15 @@ void main() {
           .get();
 
       verify(executor.executeSql(
-          'SELECT * FROM "users" WHERE NOT ("name" = ?) AND "id" > ?;',
+          'SELECT $usersColumns FROM "users" WHERE NOT ("name" = ?1) AND "id" > ?2;',
           ['Dash', 12]));
     });
 
     test('with expressions from boolean columns', () async {
       await (db.select(db.users)..where((u) => u.isAwesome)).get();
 
-      verify(executor.executeSql('SELECT * FROM "users" WHERE "is_awesome";'));
+      verify(executor
+          .executeSql('SELECT $usersColumns FROM "users" WHERE "is_awesome";'));
     });
 
     test('with aliased tables', () async {
@@ -99,7 +107,8 @@ void main() {
       await (db.select(users)..where((u) => u.id.isLessThan(const Literal(5))))
           .get();
 
-      verify(executor.executeSql('SELECT * FROM "users" "u" WHERE "id" < 5;'));
+      verify(executor.executeSql(
+          'SELECT $usersColumns FROM "users" AS "u" WHERE "id" < 5;'));
     });
   });
 
@@ -218,7 +227,7 @@ void main() {
     ];
     when(executor.execute(any)).thenAnswer((_) async => queryResult(data));
 
-    final subquery = Subquery(db.todosTable.select(), 's');
+    final subquery = Subquery(db.select(db.todosTable), 's');
     final rows = await db.select(subquery).get();
 
     expect(rows, [
@@ -230,7 +239,11 @@ void main() {
       )
     ]);
 
-    verify(executor.runSelect('SELECT * FROM (SELECT * FROM "todos") s;', []));
+    const columns =
+        '"id" AS "id","title" AS "title","content" AS "content","target_date" AS "target_date","category" AS "category","status" AS "status"';
+
+    verify(executor.executeSql(
+        'SELECT $columns FROM (SELECT $columns FROM "todos") "s";'));
   });
 
   test('select from table-valued function', () async {
@@ -243,50 +256,48 @@ void main() {
     await query.get();
 
     verify(executor.executeSql(
-      'SELECT "todos"."id" AS "todos.id", "todos"."title" AS "todos.title", "todos"."content" AS "todos.content", "todos"."target_date" AS "todos.target_date", "todos"."category" AS "todos.category", "todos"."status" AS "todos.status" FROM "todos" INNER JOIN json_each("todos"."content", ?) ON "json_each"."atom" IS NOT NULL;',
+      'SELECT "todos"."id" AS "c0","todos"."title" AS "c1","todos"."content" AS "c2","todos"."target_date" AS "c3","todos"."category" AS "c4","todos"."status" AS "c5" FROM "todos" INNER JOIN json_each("todos"."content",?1) ON "json_each"."atom" IS NOT NULL;',
       [r'$.foo'],
     ));
   });
 
   group('count', () {
     test('all', () async {
-      when(executor.runSelect(any, any)).thenAnswer((_) async => [
+      when(executor.execute(any)).thenAnswer((_) async => queryResult([
             {'c0': 3}
-          ]);
+          ]));
 
-      final result = await db.todosTable.count().getSingle();
+      final result = await db.count(db.todosTable).getSingle();
       expect(result, 3);
 
-      verify(executor.runSelect(
-          'SELECT COUNT(*) AS "c0" FROM "todos";', argThat(isEmpty)));
+      verify(executor.executeSql('SELECT COUNT(*) AS "c0" FROM "todos";'));
     });
 
     test('with filter', () async {
-      when(executor.runSelect(any, any)).thenAnswer((_) async => [
+      when(executor.execute(any)).thenAnswer((_) async => queryResult([
             {'c0': 2}
-          ]);
+          ]));
 
-      final result = await db.todosTable
-          .count(where: (row) => row.id.isBiggerThanValue(12))
+      final result = await db
+          .count(db.todosTable, where: (row) => row.id.isGreaterThanValue(12))
           .getSingle();
       expect(result, 2);
 
-      verify(executor.runSelect(
-          'SELECT COUNT(*) AS "c0" FROM "todos" WHERE "todos"."id" > ?;',
-          [12]));
+      verify(executor.executeSql(
+          'SELECT COUNT(*) AS "c0" FROM "todos" WHERE "id" > ?1;', [12]));
     });
   });
 
   test('select expressions', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) async => [
+    when(executor.execute(any)).thenAnswer((_) async => queryResult([
           {'c0': true}
-        ]);
+        ]));
 
     final exists = existsQuery(db.select(db.todosTable));
     final result = await db.selectExpressions([exists]).getSingle();
 
     verify(
-        executor.runSelect('SELECT EXISTS (SELECT * FROM "todos") "c0";', []));
+        executor.executeSql('SELECT EXISTS (SELECT 1 FROM "todos") AS "c0";'));
     expect(result.read(exists), isTrue);
   });
 }

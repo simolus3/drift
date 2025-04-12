@@ -166,8 +166,8 @@ sealed class TableUpdateQuery {
     return TableUpdateQuery.allOf(
       [
         for (final table in tables)
-          if (table is TableUpdateQuery)
-            for (final table in /* table.readTables */ const <String>[])
+          if (table is GeneratedView)
+            for (final table in table.readsFrom)
               TableUpdateQuery.onTableName(table)
           else
             TableUpdateQuery.onTable(table),

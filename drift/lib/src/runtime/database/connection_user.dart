@@ -315,8 +315,28 @@ abstract base class DatabaseConnectionUser {
       includeJoinsByDefault: false,
       distinct: distinct,
     );
-    statement.from.add(TableReference(table));
+    statement.from.add(FromResultSet(table));
     return statement;
+  }
+
+  /// Counts the amount of rows in a table.
+  ///
+  /// The optional [where] clause can be used to only count rows matching the
+  /// condition, similar to [SingleTableSelectStatement.where].
+  ///
+  /// The returned [Selectable] can be run once with [Selectable.getSingle] to
+  /// get the count once, or be watched as a stream with [Selectable.watchSingle].
+  SingleSelectable<int>
+      count<Row extends Object, RS extends ResultSet<Row, RS>>(
+          ResultSet<Row, RS> table,
+          {Expression<bool> Function(RS row)? where}) {
+    final count = countAll();
+    final stmt = selectOnly(table).addColumns([count]);
+    if (where != null) {
+      stmt.where(where(table.asSelfType()));
+    }
+
+    return stmt.map((row) => row.read(count)!);
   }
 
   /// Creates a select statement without a `FROM` clause selecting [columns].

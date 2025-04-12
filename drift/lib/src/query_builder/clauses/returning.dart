@@ -39,7 +39,7 @@ final class ReturningClause<Row extends Object,
   List<Row> interpretResults(
       DatabaseConnectionUser database, QueryResult result) {
     final rows = DriftResultSet(structure, result.resultSet!, database.dialect);
-    final mapper = _resultSet.createMapperToDart(rows);
+    final mapper = _resultSet.createMapperToDart(structure);
 
     return [
       for (final row in rows) mapper(row)!,

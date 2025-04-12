@@ -40,7 +40,11 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
     required this.arguments,
     required this.columns,
     this.alias,
-  });
+  }) {
+    for (final column in columns) {
+      column.owningResultSet = this;
+    }
+  }
 
   @override
   Self asSelfType() => this as Self;

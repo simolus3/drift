@@ -33,6 +33,24 @@ final class ResultSetStructure {
 
     tables[resultSet] = positions;
   }
+
+  /// Transforms this [ResultSetStructure] into a new one, mapping values in
+  /// [expressions] to the given [outerPositions].
+  ///
+  /// This is mainly used internally, e.g. used to obtain the result of
+  /// subqueries.
+  ResultSetStructure shift(List<ColumnPosition> outerPositions) {
+    assert(outerPositions.length == expressions.length);
+    ColumnPosition apply(ColumnPosition original) {
+      return outerPositions[original.index];
+    }
+
+    return ResultSetStructure(
+      expressions: expressions.map((e, pos) => MapEntry(e, apply(pos))),
+      tables: tables.map((resultSet, positions) =>
+          MapEntry(resultSet, positions.map(apply).toList())),
+    );
+  }
 }
 
 final class DriftResultSet
@@ -75,7 +93,7 @@ final class DriftResultSet
 
   Object? Function(DriftRow) _mapperFor(ResultSet resultSet) {
     return _createdMappers.putIfAbsent(
-        resultSet, () => resultSet.createMapperToDart(this));
+        resultSet, () => resultSet.createMapperToDart(structure));
   }
 }
 

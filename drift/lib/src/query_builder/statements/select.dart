@@ -5,11 +5,14 @@ import '../../connections/result_set.dart';
 import '../../dsl/table.dart';
 import '../../runtime/database/connection_user.dart';
 import '../../runtime/selectable.dart';
+import '../../runtime/streams/store.dart';
+import '../../runtime/streams/update_rules.dart';
 import '../clauses/group_by.dart';
 import '../clauses/limit.dart';
 import '../clauses/order_by.dart';
 import '../clauses/where.dart';
 import '../compiler.dart';
+import '../expressions/boolean.dart';
 import '../expressions/expression.dart';
 import '../results.dart';
 import '../schema/result_set.dart';
@@ -118,24 +121,43 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
 
   SelectStatement _withAddedJoin(Join join);
 
-  Row Function(DriftRow) _createMapper(DriftResultSet resultSet);
+  /// Creates a function that, given a [DriftRow], extracts the result set for
+  /// this [BaseSelectStatement].
+  @internal
+  Row Function(DriftRow) createMapper(ResultSetStructure structure);
+
+  List<Row> _mapResults(QueryResult result) {
+    final resultSet =
+        DriftResultSet(structure, result.resultSet!, _database.dialect);
+    final converter = createMapper(structure);
+    return resultSet.map(converter).toList();
+  }
 
   @override
   Future<List<Row>> get() async {
     final session = await _database.currentSession();
     final query = StatementInfo(_database.dialect.compile(this));
     final results = await session.execute(query);
-    final resultSet =
-        DriftResultSet(structure, results.resultSet!, _database.dialect);
-
-    final converter = _createMapper(resultSet);
-    return resultSet.map(converter).toList();
+    return _mapResults(results);
   }
 
   @override
   Stream<List<Row>> watch() {
-    // TODO: implement watch
-    throw UnimplementedError();
+    final stmt = _database.dialect.compile(this);
+
+    final streams = _database.currentStreamQueryStore();
+    final raw = streams.registerStream<QueryResult>(
+      QueryStreamFetcher(
+        readsFrom: TableUpdateQuery.onAllTables(stmt.watchedTables),
+        key: StreamKey(stmt.sql, stmt.variables),
+        fetchData: () async {
+          final currentSession = await _database.currentSession();
+          return currentSession.execute(StatementInfo(stmt));
+        },
+      ),
+      _database,
+    );
+    return raw.map(_mapResults);
   }
 }
 
@@ -157,6 +179,29 @@ final class SelectStatement
     orderByClause = other.orderByClause;
   }
 
+  /// Applies the [predicate] as the where clause, which will be used to filter
+  /// results.
+  ///
+  /// The clause should only refer to columns defined in one of the tables
+  /// specified during [SimpleSelectStatement.join].
+  ///
+  /// With the example of a todos table which refers to categories, we can write
+  /// something like
+  /// ```dart
+  /// final query = select(todos)
+  /// .join([
+  ///   leftOuterJoin(categories, categories.id.equalsExp(todos.category)),
+  /// ])
+  /// ..where(todos.name.like("%Important") & categories.name.equals("Work"));
+  /// ```
+  void where(Expression<bool> predicate) {
+    if (whereClause == null) {
+      whereClause = WhereClause(predicate);
+    } else {
+      whereClause = WhereClause(whereClause!.condition & predicate);
+    }
+  }
+
   /// Orders the results of this statement by the ordering [terms].
   void orderBy(List<OrderingTerm> terms) {
     orderByClause = OrderBy(terms);
@@ -175,7 +220,7 @@ final class SelectStatement
   }
 
   @override
-  DriftRow Function(DriftRow) _createMapper(DriftResultSet resultSet) {
+  DriftRow Function(DriftRow) createMapper(ResultSetStructure resultSet) {
     return (row) => row;
   }
 }
@@ -196,7 +241,7 @@ final class SingleTableSelectStatement<Row extends Object,
   SingleTableSelectStatement(super._database, this.resultSet,
       {super.distinct}) {
     structure.addSelectStarFromSingleTable(resultSet);
-    from.add(TableReference(resultSet));
+    from.add(FromResultSet(resultSet));
   }
 
   /// Orders the result by the given clauses. The clauses coming first in the
@@ -228,7 +273,7 @@ final class SingleTableSelectStatement<Row extends Object,
   SingleTableSelectStatement<Row, RS> _asSelf() => this;
 
   @override
-  Row Function(DriftRow p1) _createMapper(DriftResultSet resultSet) {
+  Row Function(DriftRow p1) createMapper(ResultSetStructure resultSet) {
     final inner = this.resultSet.createMapperToDart(resultSet);
     return (row) => inner(row)!;
   }
@@ -270,7 +315,7 @@ final class Join extends FromClauseElement {
   final JoinOperator operator;
 
   /// The [ResultSet] that will be added to the query.
-  final TableReference table;
+  final FromResultSet table;
 
   /// For joins that aren't [JoinOperator.cross], contains an additional predicate
   /// that must be matched for the join.
@@ -286,22 +331,22 @@ final class Join extends FromClauseElement {
 
   /// Create a join clause with the given [operator] and [table].
   Join(this.operator, ResultSetDsl table, {this.on, this.includeInResult})
-      : table = TableReference(ResultSet.fromDsl(table));
+      : table = FromResultSet(ResultSet.fromDsl(table));
 
   /// Create an `INNER JOIN` for the [table].
   Join.inner(ResultSetDsl table, {this.on, this.includeInResult})
       : operator = JoinOperator.inner,
-        table = TableReference(ResultSet.fromDsl(table));
+        table = FromResultSet(ResultSet.fromDsl(table));
 
   /// Create an `LEFT OUTER JOIN` for the [table].
   Join.leftOuter(ResultSetDsl table, {this.on, this.includeInResult})
       : operator = JoinOperator.leftOuter,
-        table = TableReference(ResultSet.fromDsl(table));
+        table = FromResultSet(ResultSet.fromDsl(table));
 
   /// Create a `CROSS JOIN` for the [table].
   Join.cross(ResultSetDsl table, {this.on, this.includeInResult})
       : operator = JoinOperator.cross,
-        table = TableReference(ResultSet.fromDsl(table));
+        table = FromResultSet(ResultSet.fromDsl(table));
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -309,13 +354,13 @@ final class Join extends FromClauseElement {
   }
 }
 
-final class TableReference extends FromClauseElement {
+final class FromResultSet extends FromClauseElement {
   final ResultSet resultSet;
 
-  TableReference(this.resultSet);
+  FromResultSet(this.resultSet);
 
   @override
   void compileWith(StatementCompiler compiler) {
-    compiler.addTableReference(this);
+    compiler.addFromResultSet(this);
   }
 }
