@@ -433,6 +433,21 @@ final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
         table.asSelfType(), table.withAlias('excluded').asSelfType());
   }
 
+  WhereClause? buildWhereClause(GeneratedTable<Row, RS> table) {
+    return switch (where) {
+      null => null,
+      final where =>
+        where(table.asSelfType(), table.withAlias('excluded').asSelfType()),
+    };
+  }
+
+  WhereClause? buildTargetCondition(GeneratedTable<Row, RS> table) {
+    return switch (targetCondition) {
+      null => null,
+      final condition => WhereClause(condition(table.asSelfType())),
+    };
+  }
+
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addDoUpdate(this);

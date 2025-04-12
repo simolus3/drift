@@ -1,9 +1,10 @@
 import '../../connections/result_set.dart';
 import '../../dsl/table.dart';
-import '../../query_builder.dart';
 import '../../runtime/data_class.dart';
 import '../../runtime/database/connection_user.dart';
+import '../expressions/variables.dart';
 import '../results.dart';
+import '../types.dart';
 import 'column.dart';
 import 'entities.dart';
 

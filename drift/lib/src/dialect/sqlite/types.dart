@@ -116,6 +116,16 @@ final class DateTimeType extends _SqliteType<DateTime> {
   }
 
   @override
+  DateTime dartValue(DriftDialect dialect, Object databaseValue) {
+    if (_dateTimesAsText(dialect)) {
+      return DateTime.parse(databaseValue.toString());
+    } else {
+      return DateTime.fromMillisecondsSinceEpoch(
+          1000 * const IntType().dartValue(dialect, databaseValue));
+    }
+  }
+
+  @override
   Object sqlParameter(DriftDialect dialect, DateTime value) {
     if (_dateTimesAsText(dialect)) {
       // sqlite3 assumes UTC by default, so we store the explicit UTC offset

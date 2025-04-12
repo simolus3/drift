@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 
+import 'clauses/group_by.dart';
 import 'clauses/order_by.dart';
 import 'clauses/returning.dart';
 import 'clauses/where.dart';
@@ -344,6 +345,7 @@ abstract base class StatementCompiler {
           addReference(entry);
         }
         statement.buffer.write(')');
+        statement.space();
       case InsertFromSelect fromSelect:
         statement.buffer.write('(');
         for (final (i, entry)
@@ -352,6 +354,7 @@ abstract base class StatementCompiler {
           addReference(entry);
         }
         statement.buffer.write(')');
+        statement.space();
     }
   }
 
@@ -369,7 +372,9 @@ abstract base class StatementCompiler {
     }
 
     addInsertStatementMode(insert);
+    statement.space();
     addTableReference(TableReference(insert.table), isWatching: false);
+    statement.space();
 
     addInsertColumnNames(insert);
     (insert.source ?? InsertDefaultValues()).compileWith(this);
@@ -378,7 +383,7 @@ abstract base class StatementCompiler {
       if (insert.source is InsertFromSelect) {
         // Resolve parsing ambiguity (a `ON` from the conflict clause could also
         // be parsed as a join).
-        statement.buffer.write(' WHERE TRUE');
+        statement.buffer.write(' WHERE TRUE ');
       } else {
         statement.space();
       }
@@ -439,6 +444,11 @@ abstract base class StatementCompiler {
     if (select.whereClause case final where?) {
       statement.space();
       where.compileWith(this);
+    }
+
+    if (select.groupByClause case final groupBy?) {
+      statement.space();
+      groupBy.compileWith(this);
     }
   }
 
@@ -744,7 +754,8 @@ abstract base class StatementCompiler {
   }
 
   void addUpsertMultiple(UpsertMultiple multiple) {
-    for (final entry in multiple.clauses) {
+    for (final (i, entry) in multiple.clauses.indexed) {
+      if (i != 0) statement.space();
       entry.compileWith(this);
     }
   }
@@ -758,7 +769,8 @@ abstract base class StatementCompiler {
     statement.hasMultipleTables |= clause.usesExcludedTable;
     final table = _currentInsertStatement!.table;
 
-    addOnConflictConstraint(target: clause.target);
+    addOnConflictConstraint(
+        target: clause.target, where: clause.buildTargetCondition(table));
     statement.buffer.write(' DO UPDATE SET ');
 
     final updateSet = clause.createInsertable(table).toColumns(true);
@@ -770,15 +782,14 @@ abstract base class StatementCompiler {
       update.value.compileWith(this);
     }
 
-    if (clause.where case final where?) {
+    if (clause.buildWhereClause(table) case final where?) {
       statement.space();
-
-      where(table, table.withAlias('excluded')).compileWith(this);
+      where.compileWith(this);
     }
   }
 
   void addOnConflictConstraint(
-      {List<TableColumn>? target, Expression<bool>? where}) {
+      {List<TableColumn>? target, WhereClause? where}) {
     statement.buffer.write('ON CONFLICT');
 
     if (target != null && target.isEmpty) {
@@ -807,7 +818,8 @@ abstract base class StatementCompiler {
     statement.buffer.write(')');
 
     if (where != null) {
-      WhereClause(where).compileWith(this);
+      statement.space();
+      where.compileWith(this);
     }
   }
 
@@ -830,6 +842,16 @@ abstract base class StatementCompiler {
 
       statement.buffer.write('_source.');
       addReference(value.name);
+    }
+  }
+
+  void addGroupBy(GroupBy groupBy) {
+    statement.buffer.write('GROUP BY ');
+    addCommaSeparated(groupBy.groupBy);
+
+    if (groupBy.having case final having?) {
+      statement.buffer.write(' HAVING ');
+      having.compileWith(this);
     }
   }
 

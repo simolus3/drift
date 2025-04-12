@@ -5,6 +5,7 @@ import '../../connections/result_set.dart';
 import '../../dsl/table.dart';
 import '../../runtime/database/connection_user.dart';
 import '../../runtime/selectable.dart';
+import '../clauses/group_by.dart';
 import '../clauses/where.dart';
 import '../compiler.dart';
 import '../expressions/expression.dart';
@@ -21,6 +22,9 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   final List<FromClauseElement> from = [];
 
   WhereClause? whereClause;
+
+  /// The optional `GROUP BY` clause for this select statement.
+  GroupBy? groupByClause;
 
   /// The database this statement should be sent to.
   DatabaseConnectionUser _database;
@@ -101,6 +105,14 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
 
     final converter = _createMapper(resultSet);
     return resultSet.map(converter).toList();
+  }
+
+  /// Groups the result by values in [expressions].
+  ///
+  /// An optional [having] attribute can be set to exclude certain groups.
+  Self groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
+    groupByClause = GroupBy(expressions.toList(), having: having);
+    return _asSelf();
   }
 
   @override

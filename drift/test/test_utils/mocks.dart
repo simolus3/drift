@@ -1,29 +1,23 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
-import 'package:drift/src/connections/sqlite3/connection.dart';
-import 'package:sqlite3/common.dart' as sqlite3;
+import 'package:drift/src/connections/result_set.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 QueryResult queryResult(
-  List<Map<String, Object?>> rows, {
+  List<Map<String, Object?>>? rows, {
   int? affectedRows,
+  int? lastInsertRowId,
 }) {
-  sqlite3.ResultSet raw;
-
-  if (rows.isEmpty) {
-    raw = sqlite3.ResultSet(const [], const [], const []);
-  } else {
-    final keys = rows[0].keys;
-
-    raw = sqlite3.ResultSet(
-        keys.toList(), const [], rows.map((e) => e.values.toList()).toList());
-  }
-
   return QueryResult(
-    resultSet: SqliteResultSet(resultSet: raw),
+    resultSet: switch (rows) {
+      null => null,
+      _ => RawResultSet.generate(
+          rows.length, (i, rs) => RawRow.byMap(resultSet: rs, values: rows[i]))
+    },
     affectedRows: affectedRows,
+    lastInsertRowId: lastInsertRowId,
   );
 }
 
@@ -43,9 +37,7 @@ final class MockSession extends Mock
       final statement = i.positionalArguments[0] as StatementInfo;
       if (statement.needsResultSet) {
         return QueryResult(
-          resultSet: SqliteResultSet(
-            resultSet: sqlite3.ResultSet(const [], const [], const []),
-          ),
+          resultSet: RawResultSet.generate(0, (_, __) => throw 'unreachable'),
           affectedRows: 0,
           lastInsertRowId: 0,
         );
