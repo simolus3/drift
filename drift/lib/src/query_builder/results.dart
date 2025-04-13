@@ -3,8 +3,10 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 
 import '../connections/result_set.dart';
+import '../runtime/type_converter.dart';
 import 'dialect.dart';
 import 'expressions/expression.dart';
+import 'schema/column.dart';
 import 'schema/result_set.dart';
 import 'types.dart';
 
@@ -115,6 +117,16 @@ final class DriftRow {
       resultSet._expressionPosition(expr),
       expr.resolveType(resultSet.dialect),
     );
+  }
+
+  /// Reads a column that has a type converter applied to it from the row.
+  ///
+  /// This calls [read] internally, which reads the column but without applying
+  /// a type converter.
+  D? readWithConverter<D, S extends Object>(
+      SchemaColumnWithTypeConverter<D, S> column) {
+    return NullAwareTypeConverter.wrapFromSql(
+        column.converter, read<S>(column));
   }
 
   Row? readTableOrNull<Row extends Object, RS extends ResultSet<Row, RS>>(

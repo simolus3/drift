@@ -38,6 +38,10 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   /// this statement.
   Limit? limitClause;
 
+  /// All [CompoundSelect] statements that have been added to this select
+  /// statement using [union], [unionAll], [except] and [intersect].
+  final List<CompoundSelect> compounds = [];
+
   /// The database this statement should be sent to.
   DatabaseConnectionUser _database;
 
@@ -48,16 +52,16 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     return (name: 'c$index', index: index);
   }
 
-  Self addColumn(Expression expression) {
+  SelectStatement addColumn(Expression expression) {
     structure.expressions[expression] ??= _nextPosition;
-    return _asSelf();
+    return _asSelectStatement();
   }
 
-  Self addColumns(Iterable<Expression> expressions) {
+  SelectStatement addColumns(Iterable<Expression> expressions) {
     for (final expression in expressions) {
       structure.expressions[expression] ??= _nextPosition;
     }
-    return _asSelf();
+    return _asSelectStatement();
   }
 
   @internal
@@ -112,6 +116,104 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     return _asSelf();
   }
 
+  /// Appends the [other] statement as a `UNION` clause after this query.
+  ///
+  /// The database will run both queries and return all rows involved in either
+  /// query, removing duplicates. For this to work, this and [other] must have
+  /// compatible columns.
+  ///
+  /// The [other] query must not include a `LIMIT` or a `ORDER BY` clause.
+  /// Compound statements can only contain a single `LIMIT` and `ORDER BY`
+  /// clause at the end, which is set on the first statement (on which
+  /// [union] is called). Also, the [other] statement must not contain compound
+  /// parts on its own.
+  ///
+  /// As an example, consider a `todos` table of todo items referencing a
+  /// `categories` table used to group them. With that structure, it's possible
+  /// to compute the amount of todo items in each category, as well as the
+  /// amount of todo items not in a category in a single query:
+  ///
+  /// ```dart
+  ///   final count = subqueryExpression<int>(selectOnly(todos)
+  ///    .addColumns([countAll()])
+  ///    .where(todos.category.equalsExp(categories.id)));
+  ///  final countWithoutCategory = subqueryExpression<int>(db.selectOnly(todos)
+  ///        .addColumns([countAll()])
+  ///        .where(todos.category.isNull()));
+  ///
+  ///  final query = db.selectOnly(db.categories)
+  ///    .addColumns([db.categories.description, count])
+  ///    .groupBy([categories.id]);
+  ///    .union(db.selectExpressions([const Constant<String>(null), countWithoutCategory]));
+  /// ```
+  SelectStatement union(BaseSelectStatement other) {
+    return _asSelectStatement().._addCompound(CompoundOperator.union, other);
+  }
+
+  /// Appends the [other] statement as a `UNION ALL` clause after this query.
+  ///
+  /// The database will run both queries and return all rows involved in either
+  /// query. For this to work, this and [other] must have compatible columns.
+  ///
+  /// The [other] query must not include a `LIMIT` or a `ORDER BY` clause.
+  /// Compound statements can only contain a single `LIMIT` and `ORDER BY`
+  /// clause at the end, which is set on the first statement (on which
+  /// [unionAll] is called). Also, the [other] statement must not contain
+  /// compound parts on its own.
+  ///
+  /// As an example, consider a `todos` table of todo items referencing a
+  /// `categories` table used to group them. With that structure, it's possible
+  /// to compute the amount of todo items in each category, as well as the
+  /// amount of todo items not in a category in a single query:
+  ///
+  /// ```dart
+  ///   final count = subqueryExpression<int>(selectOnly(todos)
+  ///    .addColumns([countAll()])
+  ///    .where(todos.category.equalsExp(categories.id)));
+  ///  final countWithoutCategory = subqueryExpression<int>(db.selectOnly(todos)
+  ///        .addColumns([countAll()])
+  ///        .where(todos.category.isNull()));
+  ///
+  ///  final query = db.selectOnly(db.categories)
+  ///    .addColumns([db.categories.description, count])
+  ///    .groupBy([categories.id]);
+  ///    .unionAll(db.selectExpressions([const Constant<String>(null), countWithoutCategory]));
+  /// ```
+  SelectStatement unionAll(BaseSelectStatement other) {
+    return _asSelectStatement().._addCompound(CompoundOperator.unionAll, other);
+  }
+
+  /// Appends the [other] statement as a `EXCEPT` clause after this query.
+  ///
+  /// The database will run both queries and return all rows of the first query
+  /// that were not returned by [other]. For this to work, this and [other] must
+  /// have compatible columns.
+  ///
+  /// The [other] query must not include a `LIMIT` or a `ORDER BY` clause.
+  /// Compound statements can only contain a single `LIMIT` and `ORDER BY`
+  /// clause at the end, which is set on the first statement (on which
+  /// [except] is called). Also, the [other] statement must not contain
+  /// compound parts on its own.
+  SelectStatement except(BaseSelectStatement other) {
+    return _asSelectStatement().._addCompound(CompoundOperator.except, other);
+  }
+
+  /// Appends the [other] statement as a `INTERSECT` clause after this query.
+  ///
+  /// The database will run both queries and return all rows that were returned
+  /// by both queries. For this to work, this and [other] must have compatible
+  /// columns.
+  ///
+  /// The [other] query must not include a `LIMIT` or a `ORDER BY` clause.
+  /// Compound statements can only contain a single `LIMIT` and `ORDER BY`
+  /// clause at the end, which is set on the first statement (on which
+  /// [intersect] is called). Also, the [other] statement must not contain
+  /// compound parts on its own.
+  SelectStatement intersect(BaseSelectStatement other) {
+    return _asSelectStatement()
+      .._addCompound(CompoundOperator.intersect, other);
+  }
+
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addSelectStatement(this);
@@ -119,7 +221,11 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
 
   Self _asSelf();
 
-  SelectStatement _withAddedJoin(Join join);
+  SelectStatement _withAddedJoin(Join join) {
+    return _asSelectStatement().._addJoin(join);
+  }
+
+  SelectStatement _asSelectStatement();
 
   /// Creates a function that, given a [DriftRow], extracts the result set for
   /// this [BaseSelectStatement].
@@ -177,6 +283,7 @@ final class SelectStatement
     whereClause = other.whereClause;
     groupByClause = other.groupByClause;
     orderByClause = other.orderByClause;
+    limitClause = other.limitClause;
   }
 
   /// Applies the [predicate] as the where clause, which will be used to filter
@@ -194,29 +301,78 @@ final class SelectStatement
   /// ])
   /// ..where(todos.name.like("%Important") & categories.name.equals("Work"));
   /// ```
-  void where(Expression<bool> predicate) {
+  SelectStatement where(Expression<bool> predicate) {
     if (whereClause == null) {
       whereClause = WhereClause(predicate);
     } else {
       whereClause = WhereClause(whereClause!.condition & predicate);
     }
+
+    return this;
   }
 
   /// Orders the results of this statement by the ordering [terms].
-  void orderBy(List<OrderingTerm> terms) {
+  SelectStatement orderBy(List<OrderingTerm> terms) {
     orderByClause = OrderBy(terms);
+    return this;
   }
 
   @override
   SelectStatement _asSelf() => this;
 
   @override
-  SelectStatement _withAddedJoin(Join join) {
+  SelectStatement _asSelectStatement() => this;
+
+  void _addJoin(Join join) {
     from.add(join);
     if (join.includeInResult ?? _includeJoinsByDefault) {
       addResultSet(join.table.resultSet);
     }
-    return this;
+  }
+
+  void _addCompound(CompoundOperator operator, BaseSelectStatement other) {
+    if (other.limitClause != null ||
+        other.orderByClause != null ||
+        other.compounds.isNotEmpty) {
+      throw ArgumentError(
+          "Can't add compound query that has a limit or an order-by clause. "
+          'Also, the added query must hot have its own compound parts. Add  '
+          'the clauses and parts to the top-level parts instead.');
+    }
+
+    final normalizedOther = other._asSelectStatement();
+    final dialect = _database.dialect;
+
+    var columnsHere = structure.expressions.keys.iterator;
+    var otherColumns = other.structure.expressions.keys.iterator;
+    var columnCount = 0;
+
+    while (columnsHere.moveNext()) {
+      if (!otherColumns.moveNext()) {
+        throw ArgumentError(
+            "Can't add select with fewer columns (added part has "
+            '$columnCount columns, the original source has more).');
+      }
+
+      var here = columnsHere.current;
+      var otherColumn = otherColumns.current;
+
+      if (here.resolveType(dialect) != otherColumn.resolveType(dialect)) {
+        throw ArgumentError(
+            "Can't add part because the column types at index $columnCount "
+            'differ.');
+      }
+
+      columnCount++;
+    }
+
+    if (otherColumns.moveNext()) {
+      throw ArgumentError(
+          "Can't add select with more columns (the original query has "
+          '$columnCount columns, the added part has more).');
+    }
+
+    compounds.add(CompoundSelect._(operator, normalizedOther));
   }
 
   @override
@@ -279,10 +435,8 @@ final class SingleTableSelectStatement<Row extends Object,
   }
 
   @override
-  SelectStatement _withAddedJoin(Join join) {
-    return SelectStatement(_database, distinct: distinct)
-      .._applyFrom(this)
-      .._withAddedJoin(join);
+  SelectStatement _asSelectStatement() {
+    return SelectStatement(_database, distinct: distinct).._applyFrom(this);
   }
 }
 
@@ -362,5 +516,49 @@ final class FromResultSet extends FromClauseElement {
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addFromResultSet(this);
+  }
+}
+
+/// A set operator used to combine the results of multiple select statement into
+/// one.
+enum CompoundOperator implements SqlComponent {
+  /// A `UNION` operator, returning rows from both select statements (removing
+  /// duplicates).
+  union('UNION'),
+
+  /// A `UNION ALL` operator, returning rows from both select statements without
+  /// filtering duplicates.
+  unionAll('UNION ALL'),
+
+  /// An `INTERSECT` operator, returning only rows that are present in both
+  /// select statements.
+  intersect('INTERSECT'),
+
+  /// An `EXCEPT` operator, returning rows that are present in the first select
+  /// statement but not the second.
+  except('EXCEPT');
+
+  /// The lexeme this operator has on most SQL dialects.
+  final String defaultLexeme;
+
+  const CompoundOperator(this.defaultLexeme);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addCompoundOperator(this);
+  }
+}
+
+/// A select statement that has been added to an existing [SelectStatement] by
+/// using a [CompoundOperator].
+final class CompoundSelect implements SqlComponent {
+  final CompoundOperator operator;
+  final SelectStatement statement;
+
+  CompoundSelect._(this.operator, this.statement);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addCompoundSelect(this);
   }
 }

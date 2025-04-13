@@ -118,7 +118,7 @@ final class Subquery<Row extends Object>
         name: entry.value.name,
         isNullable: true,
         type: BuiltinDriftType.text,
-      ),
+      )..owningResultSet = this,
   ];
 
   @override

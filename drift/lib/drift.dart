@@ -13,6 +13,7 @@ export 'src/runtime/data_class.dart';
 export 'src/runtime/database/connection_user.dart' hide InternalConnectionUser;
 export 'src/runtime/database/custom_select.dart' hide CustomSelectStatement;
 export 'src/runtime/database/db_base.dart' hide InternalGeneratedDatabase;
+export 'src/runtime/exceptions.dart';
 export 'src/runtime/migrations.dart';
 export 'src/runtime/streams/update_rules.dart'
     hide AnyUpdateQuery, MultipleUpdateQuery, SpecificUpdateQuery;

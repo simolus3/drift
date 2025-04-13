@@ -507,6 +507,10 @@ abstract base class StatementCompiler {
       groupBy.compileWith(this);
     }
 
+    for (final compound in select.compounds) {
+      compound.compileWith(this);
+    }
+
     if (select.orderByClause case final orderBy?) {
       statement.space();
       orderBy.compileWith(this);
@@ -936,6 +940,17 @@ abstract base class StatementCompiler {
       statement.buffer.write(' HAVING ');
       having.compileWith(this);
     }
+  }
+
+  void addCompoundOperator(CompoundOperator operator) {
+    statement.buffer.write(operator.defaultLexeme);
+  }
+
+  void addCompoundSelect(CompoundSelect select) {
+    statement.space();
+    select.operator.compileWith(this);
+    statement.space();
+    select.statement.compileWith(this);
   }
 
   void addUnixTimestampToDateTime(UnixTimestampToDateTime e);
