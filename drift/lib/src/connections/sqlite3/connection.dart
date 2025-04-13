@@ -39,6 +39,7 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
     return QueryResult(
       affectedRows: database.updatedRows,
       resultSet: resultSet,
+      lastInsertRowId: database.lastInsertRowId,
     );
   }
 

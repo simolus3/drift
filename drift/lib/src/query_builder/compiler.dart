@@ -818,7 +818,7 @@ abstract base class StatementCompiler {
     }
 
     if (constraint.initiallyDeferred) {
-      statement.buffer.write('INITIALLY DEFERRED');
+      statement.buffer.write('DEFERRABLE INITIALLY DEFERRED');
     }
   }
 

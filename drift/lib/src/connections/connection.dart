@@ -79,7 +79,7 @@ final class StatementInfo {
 
   Iterable<Object?> sqlVariables(DriftDialect dialect) =>
       variables.map((value) {
-        return value.$1.sqlParameter(dialect, value);
+        return value.$1.sqlParameterOrNull(dialect, value.$2);
       });
 
   @override

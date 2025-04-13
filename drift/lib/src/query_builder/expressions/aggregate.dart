@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/src/query_builder/compiler.dart';
 
 import '../clauses/order_by.dart';
+import 'datetime.dart';
 import 'expression.dart';
 import 'variables.dart';
 
@@ -175,14 +176,17 @@ extension BigIntAggregates on Expression<BigInt> {
       dartCast<int>().total(filter: filter);
 }
 
-/*
 /// Provides aggregate functions that are available on date time expressions.
 extension DateTimeAggregate on Expression<DateTime> {
+  Expression<DateTime> _byUnixEpoch(
+      Expression<int> Function(Expression<int>) transform) {
+    return DateTimeExpressions.fromUnixEpoch(transform(unixepoch));
+  }
+
   /// Return the average of all non-null values in this group.
   /// {@macro drift_aggregate_filter}
   Expression<DateTime> avg({Expression<bool>? filter}) {
-    final avgTimestamp = unixepoch.avg(filter: filter).roundToInt();
-    return DateTimeExpressions.fromUnixEpoch(avgTimestamp);
+    return _byUnixEpoch((e) => e.avg(filter: filter).dartCast());
   }
 
   /// Return the maximum of all non-null values in this group.
@@ -190,8 +194,7 @@ extension DateTimeAggregate on Expression<DateTime> {
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
   Expression<DateTime> max({Expression<bool>? filter}) {
-    final maxTimestamp = unixepoch.max(filter: filter);
-    return DateTimeExpressions.fromUnixEpoch(maxTimestamp);
+    return _byUnixEpoch((e) => e.max(filter: filter).dartCast());
   }
 
   /// Return the minimum of all non-null values in this group.
@@ -199,11 +202,9 @@ extension DateTimeAggregate on Expression<DateTime> {
   /// If there are no non-null values in the group, returns null.
   /// {@macro drift_aggregate_filter}
   Expression<DateTime> min({Expression<bool>? filter}) {
-    final minTimestamp = unixepoch.min(filter: filter);
-    return DateTimeExpressions.fromUnixEpoch(minTimestamp);
+    return _byUnixEpoch((e) => e.min(filter: filter).dartCast());
   }
 }
-*/
 
 /// An expression invoking an [aggregate function](https://www.sqlite.org/lang_aggfunc.html).
 ///
