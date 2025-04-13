@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const x = Expression<String>.custom(CustomComponent('x'));
-  const y = Expression<int>.custom(CustomComponent('y'));
+  const x = Expression<String>.customComponent(CustomComponent('x'));
+  const y = Expression<int>.customComponent(CustomComponent('y'));
 
   group('CASE WHEN with base expression', () {
     test('WHEN without ELSE', () {
@@ -41,11 +41,11 @@ void main() {
       expect(
         CaseWhenExpression.conditional<int>(cases: [
           (
-            when: Expression.custom(CustomComponent("'id' IS 1")),
+            when: Expression.customComponent(CustomComponent("'id' IS 1")),
             then: Literal(1)
           ),
           (
-            when: Expression.custom(CustomComponent("'id' IS 2")),
+            when: Expression.customComponent(CustomComponent("'id' IS 2")),
             then: Literal(2)
           ),
         ]),
@@ -58,7 +58,7 @@ void main() {
         CaseWhenExpression.conditional<int>(
           cases: const [
             (
-              when: Expression.custom(CustomComponent("'id' IS 1")),
+              when: Expression.customComponent(CustomComponent("'id' IS 1")),
               then: Literal(1),
             )
           ],
@@ -76,7 +76,7 @@ void main() {
 
   test('IIF', () {
     expect(
-      x.iif(Expression<bool>.custom(CustomComponent('1 = 1')),
+      x.iif(Expression<bool>.customComponent(CustomComponent('1 = 1')),
           const Literal('y')),
       generates("IIF(1 = 1,x,'y')"),
     );

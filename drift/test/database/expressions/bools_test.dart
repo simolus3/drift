@@ -4,13 +4,13 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const a = Expression<bool>.custom(CustomComponent('a'),
+  const a = Expression<bool>.customComponent(CustomComponent('a'),
       precedence: Precedence.primary);
-  const b = Expression<bool>.custom(CustomComponent('b'),
+  const b = Expression<bool>.customComponent(CustomComponent('b'),
       precedence: Precedence.primary);
-  const c = Expression<bool>.custom(CustomComponent('c'),
+  const c = Expression<bool>.customComponent(CustomComponent('c'),
       precedence: Precedence.primary);
-  const d = Expression<bool>.custom(CustomComponent('d'),
+  const d = Expression<bool>.customComponent(CustomComponent('d'),
       precedence: Precedence.primary);
 
   test('boolean expressions via operators', () {

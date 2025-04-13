@@ -35,7 +35,7 @@ final _expectedResultsText = <_Extractor, String>{
 };
 
 void main() {
-  const column = Expression<DateTime>.custom(CustomComponent('val'),
+  const column = Expression<DateTime>.customComponent(CustomComponent('val'),
       precedence: Precedence.primary);
 
   for (final useText in [false, true]) {

@@ -4,17 +4,17 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const i1 = Expression<int>.custom(CustomComponent('i1'),
+  const i1 = Expression<int>.customComponent(CustomComponent('i1'),
       precedence: Precedence.primary);
-  const i2 = Expression<int>.custom(CustomComponent('i2'),
+  const i2 = Expression<int>.customComponent(CustomComponent('i2'),
       precedence: Precedence.primary);
-  const b1 = Expression<BigInt>.custom(CustomComponent('b1'),
+  const b1 = Expression<BigInt>.customComponent(CustomComponent('b1'),
       precedence: Precedence.primary);
-  const b2 = Expression<BigInt>.custom(CustomComponent('b2'),
+  const b2 = Expression<BigInt>.customComponent(CustomComponent('b2'),
       precedence: Precedence.primary);
-  const s1 = Expression<String>.custom(CustomComponent('s1'),
+  const s1 = Expression<String>.customComponent(CustomComponent('s1'),
       precedence: Precedence.primary);
-  const s2 = Expression<String>.custom(CustomComponent('s2'),
+  const s2 = Expression<String>.customComponent(CustomComponent('s2'),
       precedence: Precedence.primary);
 
   test('arithmetic test', () {

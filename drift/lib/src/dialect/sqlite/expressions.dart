@@ -297,6 +297,7 @@ extension RowIdExtension on GeneratedTable {
     }
 
     return TableColumn<int>(
-        name: '_rowid_', type: BuiltinDriftType.int, isNullable: false);
+        name: '_rowid_', type: BuiltinDriftType.int, isNullable: false)
+      ..owningResultSet = this;
   }
 }

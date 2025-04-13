@@ -1701,7 +1701,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     var $arrayStartIndex = 1;
     final generatedpredicate = $write(
         predicate?.call(this.config) ??
-            const CustomExpression(CustomComponent('(TRUE)')),
+            const Expression.customComponent(CustomComponent('(TRUE)')),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpredicate.amountOfVariables;
     return customSelectMapped<Config>(
@@ -1729,7 +1729,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     var $arrayStartIndex = 2;
     final generatedpred = $write(
         pred?.call(this.config) ??
-            const CustomExpression(CustomComponent('(TRUE)')),
+            const Expression.customComponent(CustomComponent('(TRUE)')),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedpred.amountOfVariables;
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
@@ -1888,7 +1888,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     var $arrayStartIndex = 1;
     final generatedwhere = $write(
         where?.call(this.myView) ??
-            const CustomExpression(CustomComponent('(TRUE)')),
+            const Expression.customComponent(CustomComponent('(TRUE)')),
         startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedwhere.amountOfVariables;
     return customSelectMapped<MyViewData>(

@@ -5,9 +5,9 @@ import '../../test_utils/matchers.dart';
 
 void main() {
   group('int', () {
-    final a = Expression<int>.custom(CustomComponent('a'),
+    final a = Expression<int>.customComponent(CustomComponent('a'),
         precedence: Precedence.primary);
-    final b = Expression<int>.custom(CustomComponent('b'),
+    final b = Expression<int>.customComponent(CustomComponent('b'),
         precedence: Precedence.primary);
 
     test('not', () {
@@ -28,9 +28,9 @@ void main() {
   });
 
   group('BigInt', () {
-    final a = Expression<BigInt>.custom(CustomComponent('a'),
+    final a = Expression<BigInt>.customComponent(CustomComponent('a'),
         precedence: Precedence.primary);
-    final b = Expression<BigInt>.custom(CustomComponent('b'),
+    final b = Expression<BigInt>.customComponent(CustomComponent('b'),
         precedence: Precedence.primary);
 
     test('not', () {

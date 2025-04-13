@@ -1,10 +1,9 @@
-@internal
 library;
 
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
-import 'package:meta/meta.dart';
+
 import 'package:sqlite3/common.dart' show jsonb;
 
 import '../common_types.dart';

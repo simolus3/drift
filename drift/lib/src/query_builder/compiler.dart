@@ -571,7 +571,7 @@ abstract base class StatementCompiler {
 
   void addSubqueryExpression(SubqueryExpression e) {
     if (e.statement.structure.expressions.length != 1) {
-      throw StateError(
+      throw ArgumentError(
           'Error compiling subquery expression $e, inner query must have exactly one column.');
     }
 
@@ -646,6 +646,7 @@ abstract base class StatementCompiler {
     writeExpression(expr, () {
       addFunctionName(expr, expr.functionName);
       statement.buffer.write('(');
+      _expressionPrecedence = null; // We're inside of parentheses
       if (expr.distinct) {
         statement.buffer.write('DISTINCT ');
       }
@@ -657,7 +658,7 @@ abstract base class StatementCompiler {
       statement.buffer.write(')');
 
       if (expr.filter case final filter?) {
-        statement.buffer.write(' FILTER (');
+        statement.buffer.write(' FILTER (WHERE ');
         filter.compileWith(this);
         statement.buffer.write(')');
       }
@@ -793,7 +794,10 @@ abstract base class StatementCompiler {
 
   void addColumnDefaultConstraint(ColumnDefaultConstraint constraint) {
     statement.buffer.write('DEFAULT ');
+    final isLiteral = constraint.defaultExpression is Literal;
+    if (!isLiteral) statement.buffer.write('(');
     constraint.defaultExpression.compileWith(this);
+    if (!isLiteral) statement.buffer.write(')');
   }
 
   void addColumnGeneratedAs(ColumnGeneratedAs constraint) {

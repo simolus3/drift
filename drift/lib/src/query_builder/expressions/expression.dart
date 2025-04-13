@@ -24,11 +24,28 @@ abstract base class Expression<T extends Object> implements FunctionParameter {
   /// A custom expression that can appear in a sql statement.
   ///
   /// The [text] will be written into the query without any modification.
-  const factory Expression.custom(
+  const factory Expression.customComponent(
     CustomComponent text, {
     Precedence precedence,
     SqlType<T>? customType,
   }) = CustomExpression<T>;
+
+  /// A custom expression that can appear in a sql statement.
+  ///
+  /// The [sql] will be written into the query without any modification, and can
+  /// be combined with [dialectSpecific] overrides.
+  factory Expression.custom(
+    String sql, {
+    Map<KnownSqlDialect, String> dialectSpecific = const {},
+    Precedence precedence = Precedence.unknown,
+    SqlType<T>? customType,
+  }) {
+    return Expression.customComponent(
+      CustomComponent(sql, dialectSpecifcSql: dialectSpecific),
+      precedence: precedence,
+      customType: customType,
+    );
+  }
 
   /// The precedence of this expression. This can be used to automatically put
   /// parentheses around expressions as needed.

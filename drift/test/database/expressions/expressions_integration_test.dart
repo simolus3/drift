@@ -199,7 +199,7 @@ void main() {
     });
 
     test('custom expressions can introduces new tables to watch', () async {
-      final custom = Expression<int>.custom(
+      final custom = Expression<int>.customComponent(
           CustomComponent('1', watchedTables: [db.sharedTodos]));
       final stream = (db.selectOnly(db.users)..addColumns([custom]))
           .map((row) => row.read(custom))

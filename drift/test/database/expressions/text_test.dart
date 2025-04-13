@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const expression = Expression<String>.custom(CustomComponent('col'),
+  const expression = Expression<String>.customComponent(CustomComponent('col'),
       precedence: Precedence.primary);
 
   test('generates like expressions', () {

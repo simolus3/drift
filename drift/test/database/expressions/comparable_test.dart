@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const expression = Expression<int>.custom(CustomComponent('col'),
+  const expression = Expression<int>.customComponent(CustomComponent('col'),
       precedence: Precedence.primary);
 
   final comparisons = {
@@ -23,7 +23,7 @@ void main() {
   };
 
   group('can compare with other expressions', () {
-    const compare = Expression<int>.custom(CustomComponent('compare'),
+    const compare = Expression<int>.customComponent(CustomComponent('compare'),
         precedence: Precedence.primary);
 
     comparisons.forEach((fn, value) {
@@ -44,9 +44,9 @@ void main() {
 
   group('between', () {
     test('other expressions', () {
-      const low = Expression<int>.custom(CustomComponent('low'),
+      const low = Expression<int>.customComponent(CustomComponent('low'),
           precedence: Precedence.primary);
-      const high = Expression<int>.custom(CustomComponent('high'),
+      const high = Expression<int>.customComponent(CustomComponent('high'),
           precedence: Precedence.primary);
 
       expect(expression.isBetween(low, high),
@@ -60,11 +60,11 @@ void main() {
   });
 
   group('special case for date time values as text', () {
-    const a = Expression<DateTime>.custom(CustomComponent('a'),
+    const a = Expression<DateTime>.customComponent(CustomComponent('a'),
         precedence: Precedence.primary);
-    const b = Expression<DateTime>.custom(CustomComponent('b'),
+    const b = Expression<DateTime>.customComponent(CustomComponent('b'),
         precedence: Precedence.primary);
-    const c = Expression<DateTime>.custom(CustomComponent('c'),
+    const c = Expression<DateTime>.customComponent(CustomComponent('c'),
         precedence: Precedence.primary);
 
     test('disabled for datetimes as timestamps', () {

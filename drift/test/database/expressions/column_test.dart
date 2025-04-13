@@ -6,12 +6,12 @@ import '../../test_utils/test_utils.dart';
 
 void main() {
   // see ../data/tables/tables.drift
-  late MockExecutor mock;
+  late MockSession session;
   late CustomTablesDb db;
 
   setUp(() {
-    mock = MockExecutor();
-    db = CustomTablesDb(mock);
+    session = MockSession();
+    db = CustomTablesDb(createConnection(session));
   });
 
   tearDown(() => db.close());
@@ -24,7 +24,8 @@ void main() {
               SyncType.locallyCreated,
             ])),
       generates(
-          'SELECT * FROM "config" WHERE "sync_state" IN (?, ?) AND "sync_state" IS NOT NULL',
+          contains(
+              'FROM "config" WHERE "sync_state" IN (?1,?2) AND "sync_state" IS NOT NULL;'),
           [
             ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
             ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
@@ -38,7 +39,8 @@ void main() {
               null,
             ])),
       generates(
-          'SELECT * FROM "config" WHERE "sync_state" IN (?, ?) OR "sync_state" IS NULL',
+          contains(
+              'FROM "config" WHERE "sync_state" IN (?1,?2) OR "sync_state" IS NULL;'),
           [
             ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
             ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
@@ -54,7 +56,8 @@ void main() {
               SyncType.locallyCreated,
             ])),
       generates(
-          'SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) OR "sync_state" IS NULL',
+          contains(
+              'FROM "config" WHERE "sync_state" NOT IN (?1,?2) OR "sync_state" IS NULL'),
           [
             ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
             ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),
@@ -69,7 +72,8 @@ void main() {
               null,
             ])),
       generates(
-          'SELECT * FROM "config" WHERE "sync_state" NOT IN (?, ?) AND "sync_state" IS NOT NULL',
+          contains(
+              'FROM "config" WHERE "sync_state" NOT IN (?1,?2) AND "sync_state" IS NOT NULL;'),
           [
             ConfigTable.$convertersyncState.toSql(SyncType.synchronized),
             ConfigTable.$convertersyncState.toSql(SyncType.locallyCreated),

@@ -170,7 +170,7 @@ void main() {
     await db.into(db.users).insert(UsersCompanion.custom(
         isAwesome: const Literal(true),
         name: const Variable('User name'),
-        profilePicture: Expression.custom(CustomComponent('_custom_')),
+        profilePicture: Expression.customComponent(CustomComponent('_custom_')),
         creationTime: currentDateAndTime));
 
     verify(

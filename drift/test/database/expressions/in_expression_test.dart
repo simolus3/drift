@@ -8,7 +8,8 @@ import '../../test_utils/test_utils.dart';
 void main() {
   final db = TodoDb();
 
-  const innerExpression = Expression<String>.custom(CustomComponent('name'),
+  const innerExpression = Expression<String>.customComponent(
+      CustomComponent('name'),
       precedence: Precedence.primary);
   group('values', () {
     test('in expressions are generated', () {
@@ -27,8 +28,8 @@ void main() {
   group('expressions', () {
     test('in', () {
       final isInExpression = innerExpression.isInExp(const [
-        Expression.custom(CustomComponent('a')),
-        Expression.custom(CustomComponent('b')),
+        Expression.customComponent(CustomComponent('a')),
+        Expression.customComponent(CustomComponent('b')),
       ]);
 
       expect(isInExpression, generates('name IN (a,b)'));
@@ -36,8 +37,8 @@ void main() {
 
     test('not in', () {
       final isNotInExpression = innerExpression.isNotInExp(const [
-        Expression.custom(CustomComponent('a')),
-        Expression.custom(CustomComponent('b')),
+        Expression.customComponent(CustomComponent('a')),
+        Expression.customComponent(CustomComponent('b')),
       ]);
 
       expect(isNotInExpression, generates('name NOT IN (a,b)'));

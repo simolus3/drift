@@ -4,7 +4,8 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const innerExpression = Expression<int>.custom(CustomComponent('name'),
+  const innerExpression = Expression<int>.customComponent(
+      CustomComponent('name'),
       precedence: Precedence.primary);
 
   test('IS NULL expressions are generated', () {

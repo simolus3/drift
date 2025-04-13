@@ -904,7 +904,7 @@ String? _defaultForDartPlaceholder(
     // Wrap the default expression in parentheses to avoid issues with
     // the surrounding precedence in SQL.
     final sql = scope.customComponent(Parentheses(kind.defaultValue!));
-    return 'const ${scope.drift('CustomExpression')}($sql)';
+    return 'const ${scope.drift('Expression')}.customComponent($sql)';
   } else if (kind is SimpleDartPlaceholderType &&
       kind.kind == SimpleDartPlaceholderKind.orderBy) {
     return 'const ${scope.drift('OrderBy')}.nothing()';
