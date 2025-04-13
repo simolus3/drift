@@ -1,4 +1,6 @@
-import 'package:drift/drift.dart' hide isNull;
+import 'dart:typed_data';
+
+import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -9,15 +11,17 @@ import '../../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
-  late MockExecutor executor;
+  late MockSession executor;
   late MockStreamQueries streamQueries;
 
-  setUp(() {
-    executor = MockExecutor();
+  setUp(() async {
+    executor = MockSession();
     streamQueries = MockStreamQueries();
 
-    final connection = createConnection(executor, streamQueries);
+    final connection = createConnection(executor, streams: streamQueries);
     db = TodoDb(connection);
+    await db.initialize();
+    clearInteractions(executor);
   });
 
   group('compiled custom queries', () {
@@ -26,8 +30,9 @@ void main() {
       await db.withIn('one', 'two', [RowId(1), RowId(2), RowId(3)]).get();
 
       verify(
-        executor.runSelect(
-          'SELECT * FROM todos WHERE title = ?2 OR id IN (?3, ?4, ?5) OR title = ?1',
+        executor.executeSql(
+          contains(
+              'FROM todos WHERE title = ?2 OR id IN (?3,?4,?5) OR title = ?1'),
           ['one', 'two', 1, 2, 3],
         ),
       );
@@ -36,19 +41,18 @@ void main() {
 
   test('custom select reads values', () async {
     final time = DateTime(2019, 10, 1);
-    final unix = time.millisecondsSinceEpoch ~/ 1000;
 
-    when(executor.runSelect(any, any)).thenAnswer((i) {
-      return Future.value([
+    when(executor.execute(any)).thenAnswer((i) {
+      return Future.value(queryResult([
         <String, dynamic>{
           'bool': true,
           'int': 3,
           'double': 3.14,
-          'dateTime': unix,
+          'dateTime': time.toIso8601String(),
           'blob': Uint8List.fromList([1, 2, 3]),
           'null': null,
         }
-      ]);
+      ]));
     });
 
     final rows = await db.customSelect('').get();
@@ -70,32 +74,23 @@ void main() {
     expect(row.readNullable<DateTime>('null'), isNull);
     expect(row.readNullable<Uint8List>('blob'), Uint8List.fromList([1, 2, 3]));
     expect(row.readNullable<Uint8List>('null'), isNull);
-
-    expect(row.read<bool?>('bool'), isTrue);
-    expect(row.read<bool?>('null'), isNull);
-    expect(row.read<int?>('int'), 3);
-    expect(row.read<int?>('null'), isNull);
-    expect(row.read<double?>('double'), 3.14);
-    expect(row.read<double?>('null'), isNull);
-    expect(row.read<DateTime?>('dateTime'), time);
-    expect(row.read<DateTime?>('null'), isNull);
-    expect(row.read<Uint8List?>('blob'), Uint8List.fromList([1, 2, 3]));
-    expect(row.read<Uint8List?>('null'), isNull);
   });
 
   test('custom update informs stream queries', () async {
     await db.customUpdate('UPDATE tbl SET a = ?',
-        variables: [Variable.withString('hi')], updates: {db.users});
+        variables: [(BuiltinDriftType.text, 'hi')], updates: {db.users});
 
-    verify(executor.runUpdate('UPDATE tbl SET a = ?', ['hi']));
-    verify(streamQueries.handleTableUpdates({const TableUpdate('users')}));
+    verify(executor.executeSql('UPDATE tbl SET a = ?', ['hi']));
+    verify(streamQueries.handleTableUpdates(
+        {const TableUpdate('users', kind: UpdateKind.update)}));
   });
 
   test('custom insert', () async {
-    when(executor.runInsert(any, any)).thenAnswer((_) => Future.value(32));
+    when(executor.execute(any))
+        .thenAnswer((_) => Future.value(queryResult([], lastInsertRowId: 32)));
 
-    final id =
-        await db.customInsert('fake insert', variables: [Variable.withInt(3)]);
+    final id = await db
+        .customInsert('fake insert', variables: [(BuiltinDriftType.int, 3)]);
     expect(id, 32);
 
     // shouldn't call stream queries - we didn't set the updates parameter

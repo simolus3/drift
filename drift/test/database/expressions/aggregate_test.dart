@@ -4,10 +4,10 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const foo = CustomExpression<int>('foo', precedence: Precedence.primary);
-  const b1 = CustomExpression<BigInt>('b1', precedence: Precedence.primary);
-  const s1 = CustomExpression<String>('s1', precedence: Precedence.primary);
-  const p1 = CustomExpression<bool>('p1', precedence: Precedence.primary);
+  final foo = Expression<int>.custom('foo', precedence: Precedence.primary);
+  final b1 = Expression<BigInt>.custom('b1', precedence: Precedence.primary);
+  final s1 = Expression<String>.custom('s1', precedence: Precedence.primary);
+  final p1 = Expression<bool>.custom('p1', precedence: Precedence.primary);
 
   group('count', () {
     test('all', () {
@@ -16,20 +16,20 @@ void main() {
 
     test('all - filter', () {
       expect(
-        countAll(filter: foo.isBiggerOrEqualValue(3)),
-        generates('COUNT(*) FILTER (WHERE foo >= ?)', [3]),
+        countAll(filter: foo.isGreaterOrEqualValue(3)),
+        generates('COUNT(*) FILTER (WHERE foo >= ?1)', [3]),
       );
       expect(
-        countAll(filter: b1.isBiggerOrEqualValue(BigInt.from(3))),
-        generates('COUNT(*) FILTER (WHERE b1 >= ?)', [BigInt.from(3)]),
+        countAll(filter: b1.isGreaterOrEqualValue(BigInt.from(3))),
+        generates('COUNT(*) FILTER (WHERE b1 >= ?1)', [BigInt.from(3)]),
       );
       expect(
         countAll(filter: s1.equals('STRING_VALUE')),
-        generates('COUNT(*) FILTER (WHERE s1 = ?)', ['STRING_VALUE']),
+        generates('COUNT(*) FILTER (WHERE s1 = ?1)', ['STRING_VALUE']),
       );
       expect(
         countAll(filter: p1.equals(true)),
-        generates('COUNT(*) FILTER (WHERE p1 = ?)', [1]),
+        generates('COUNT(*) FILTER (WHERE p1 = ?1)', [1]),
       );
     });
 
@@ -49,41 +49,42 @@ void main() {
 
     test('single - filter', () {
       expect(
-        foo.count(filter: foo.isBiggerOrEqualValue(3)),
-        generates('COUNT(foo) FILTER (WHERE foo >= ?)', [3]),
+        foo.count(filter: foo.isGreaterOrEqualValue(3)),
+        generates('COUNT(foo) FILTER (WHERE foo >= ?1)', [3]),
       );
       expect(
-        b1.count(filter: b1.isBiggerOrEqualValue(BigInt.from(3))),
-        generates('COUNT(b1) FILTER (WHERE b1 >= ?)', [BigInt.from(3)]),
+        b1.count(filter: b1.isGreaterOrEqualValue(BigInt.from(3))),
+        generates('COUNT(b1) FILTER (WHERE b1 >= ?1)', [BigInt.from(3)]),
       );
       expect(
         s1.count(filter: s1.equals('STRING_VALUE')),
-        generates('COUNT(s1) FILTER (WHERE s1 = ?)', ['STRING_VALUE']),
+        generates('COUNT(s1) FILTER (WHERE s1 = ?1)', ['STRING_VALUE']),
       );
       expect(
         p1.count(filter: p1.equals(true)),
-        generates('COUNT(p1) FILTER (WHERE p1 = ?)', [1]),
+        generates('COUNT(p1) FILTER (WHERE p1 = ?1)', [1]),
       );
     });
 
     test('single - distinct and filter', () {
       expect(
-        foo.count(distinct: true, filter: foo.isBiggerOrEqualValue(3)),
-        generates('COUNT(DISTINCT foo) FILTER (WHERE foo >= ?)', [3]),
+        foo.count(distinct: true, filter: foo.isGreaterOrEqualValue(3)),
+        generates('COUNT(DISTINCT foo) FILTER (WHERE foo >= ?1)', [3]),
       );
       expect(
         b1.count(
-            distinct: true, filter: b1.isBiggerOrEqualValue(BigInt.from(3))),
+            distinct: true, filter: b1.isGreaterOrEqualValue(BigInt.from(3))),
         generates(
-            'COUNT(DISTINCT b1) FILTER (WHERE b1 >= ?)', [BigInt.from(3)]),
+            'COUNT(DISTINCT b1) FILTER (WHERE b1 >= ?1)', [BigInt.from(3)]),
       );
       expect(
         s1.count(distinct: true, filter: s1.equals('STRING_VALUE')),
-        generates('COUNT(DISTINCT s1) FILTER (WHERE s1 = ?)', ['STRING_VALUE']),
+        generates(
+            'COUNT(DISTINCT s1) FILTER (WHERE s1 = ?1)', ['STRING_VALUE']),
       );
       expect(
         p1.count(distinct: true, filter: p1.equals(true)),
-        generates('COUNT(DISTINCT p1) FILTER (WHERE p1 = ?)', [1]),
+        generates('COUNT(DISTINCT p1) FILTER (WHERE p1 = ?1)', [1]),
       );
     });
   });
@@ -92,10 +93,10 @@ void main() {
     expect(foo.avg(), generates('AVG(foo)'));
     expect(b1.avg(), generates('AVG(b1)'));
 
-    expect(foo.avg(filter: foo.isBiggerOrEqualValue(3)),
-        generates('AVG(foo) FILTER (WHERE foo >= ?)', [3]));
-    expect(b1.avg(filter: b1.isBiggerOrEqualValue(BigInt.from(3))),
-        generates('AVG(b1) FILTER (WHERE b1 >= ?)', [BigInt.from(3)]));
+    expect(foo.avg(filter: foo.isGreaterOrEqualValue(3)),
+        generates('AVG(foo) FILTER (WHERE foo >= ?1)', [3]));
+    expect(b1.avg(filter: b1.isGreaterOrEqualValue(BigInt.from(3))),
+        generates('AVG(b1) FILTER (WHERE b1 >= ?1)', [BigInt.from(3)]));
   });
 
   test('max', () {
@@ -137,28 +138,28 @@ void main() {
 
     test('with a custom separator', () {
       expect(foo.groupConcat(separator: ' and '),
-          generates('GROUP_CONCAT(foo, ?)', [' and ']));
+          generates('GROUP_CONCAT(foo,?1)', [' and ']));
       expect(b1.groupConcat(separator: ' and '),
-          generates('GROUP_CONCAT(b1, ?)', [' and ']));
+          generates('GROUP_CONCAT(b1,?1)', [' and ']));
       expect(s1.groupConcat(separator: ' and '),
-          generates('GROUP_CONCAT(s1, ?)', [' and ']));
+          generates('GROUP_CONCAT(s1,?1)', [' and ']));
       expect(p1.groupConcat(separator: ' and '),
-          generates('GROUP_CONCAT(p1, ?)', [' and ']));
+          generates('GROUP_CONCAT(p1,?1)', [' and ']));
     });
 
     test('with a filter', () {
-      expect(foo.groupConcat(filter: foo.isSmallerThan(const Variable(3))),
-          generates('GROUP_CONCAT(foo) FILTER (WHERE foo < ?)', [3]));
+      expect(foo.groupConcat(filter: foo.isLessThan(const Variable(3))),
+          generates('GROUP_CONCAT(foo) FILTER (WHERE foo < ?1)', [3]));
       expect(
-          b1.groupConcat(filter: b1.isSmallerThan(Variable(BigInt.from(3)))),
+          b1.groupConcat(filter: b1.isLessThan(Variable(BigInt.from(3)))),
           generates(
-              'GROUP_CONCAT(b1) FILTER (WHERE b1 < ?)', [BigInt.from(3)]));
+              'GROUP_CONCAT(b1) FILTER (WHERE b1 < ?1)', [BigInt.from(3)]));
       expect(
-          s1.groupConcat(filter: s1.isSmallerThan(Variable('STRING_VALUE'))),
+          s1.groupConcat(filter: s1.isLessThan(Variable('STRING_VALUE'))),
           generates(
-              'GROUP_CONCAT(s1) FILTER (WHERE s1 < ?)', ['STRING_VALUE']));
+              'GROUP_CONCAT(s1) FILTER (WHERE s1 < ?1)', ['STRING_VALUE']));
       expect(p1.groupConcat(filter: p1.equals(true)),
-          generates('GROUP_CONCAT(p1) FILTER (WHERE p1 = ?)', [1]));
+          generates('GROUP_CONCAT(p1) FILTER (WHERE p1 = ?1)', [1]));
     });
 
     test('with distinct', () {
@@ -174,30 +175,30 @@ void main() {
       expect(
         foo.groupConcat(
           distinct: true,
-          filter: foo.isSmallerThan(const Variable(3)),
+          filter: foo.isLessThan(const Variable(3)),
         ),
         generates(
-          'GROUP_CONCAT(DISTINCT foo) FILTER (WHERE foo < ?)',
+          'GROUP_CONCAT(DISTINCT foo) FILTER (WHERE foo < ?1)',
           [3],
         ),
       );
       expect(
         b1.groupConcat(
           distinct: true,
-          filter: b1.isSmallerThan(Variable(BigInt.from(3))),
+          filter: b1.isLessThan(Variable(BigInt.from(3))),
         ),
         generates(
-          'GROUP_CONCAT(DISTINCT b1) FILTER (WHERE b1 < ?)',
+          'GROUP_CONCAT(DISTINCT b1) FILTER (WHERE b1 < ?1)',
           [BigInt.from(3)],
         ),
       );
       expect(
         s1.groupConcat(
           distinct: true,
-          filter: s1.isSmallerThan(Variable('STRING_VALUE')),
+          filter: s1.isLessThan(Variable('STRING_VALUE')),
         ),
         generates(
-          'GROUP_CONCAT(DISTINCT s1) FILTER (WHERE s1 < ?)',
+          'GROUP_CONCAT(DISTINCT s1) FILTER (WHERE s1 < ?1)',
           ['STRING_VALUE'],
         ),
       );
@@ -207,7 +208,7 @@ void main() {
           filter: p1.equals(true),
         ),
         generates(
-          'GROUP_CONCAT(DISTINCT p1) FILTER (WHERE p1 = ?)',
+          'GROUP_CONCAT(DISTINCT p1) FILTER (WHERE p1 = ?1)',
           [1],
         ),
       );
@@ -227,7 +228,7 @@ void main() {
         () => foo.groupConcat(
           distinct: true,
           separator: ' and ',
-          filter: foo.isSmallerThan(const Variable(3)),
+          filter: foo.isLessThan(const Variable(3)),
         ),
         throwsArgumentError,
       );
@@ -235,7 +236,7 @@ void main() {
         () => b1.groupConcat(
           distinct: true,
           separator: ' and ',
-          filter: b1.isSmallerThan(Variable(BigInt.from(3))),
+          filter: b1.isLessThan(Variable(BigInt.from(3))),
         ),
         throwsArgumentError,
       );
@@ -243,7 +244,7 @@ void main() {
         () => s1.groupConcat(
           distinct: true,
           separator: ' and ',
-          filter: s1.isSmallerThan(Variable('STRING_VALUE')),
+          filter: s1.isLessThan(Variable('STRING_VALUE')),
         ),
         throwsArgumentError,
       );

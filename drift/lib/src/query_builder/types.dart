@@ -18,6 +18,13 @@ final class DatabaseJson {
 
 /// The base class for column types in databases.
 abstract interface class SqlType<T extends Object> {
+  /// Creates a [SqlType] implementation based on a [fallback] type
+  /// implementation used by default and [overrides] used as fallbacks.
+  const factory SqlType.dialectSpecific({
+    required SqlType<T> fallback,
+    required Map<KnownSqlDialect, SqlType<T>> overrides,
+  }) = _DialectAwareType;
+
   String typeName(DriftDialect dialect);
 
   Object sqlParameter(DriftDialect dialect, T value);
@@ -32,6 +39,37 @@ extension TypeExtension<T extends Object> on SqlType<T> {
       null => null,
       var other => sqlParameter(dialect, other),
     };
+  }
+}
+
+final class _DialectAwareType<T extends Object> implements SqlType<T> {
+  final SqlType<T> fallback;
+  final Map<KnownSqlDialect, SqlType<T>> overrides;
+
+  const _DialectAwareType({required this.fallback, required this.overrides});
+
+  SqlType<T> _implementationFor(DriftDialect dialect) {
+    return overrides[dialect.known] ?? fallback;
+  }
+
+  @override
+  T dartValue(DriftDialect dialect, Object databaseValue) {
+    return _implementationFor(dialect).dartValue(dialect, databaseValue);
+  }
+
+  @override
+  String sqlLiteral(DriftDialect dialect, T value) {
+    return _implementationFor(dialect).sqlLiteral(dialect, value);
+  }
+
+  @override
+  Object sqlParameter(DriftDialect dialect, T value) {
+    return _implementationFor(dialect).sqlParameter(dialect, value);
+  }
+
+  @override
+  String typeName(DriftDialect dialect) {
+    return _implementationFor(dialect).typeName(dialect);
   }
 }
 
