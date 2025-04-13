@@ -106,7 +106,39 @@ final class DateTimeType extends _SqliteType<DateTime> {
   @override
   DateTime dartValue(DriftDialect dialect, Object databaseValue) {
     if (_dateTimesAsText(dialect)) {
-      return DateTime.parse(databaseValue.toString());
+      final rawValue = databaseValue.toString();
+      DateTime result;
+
+      // We store date times like this:
+      //
+      //  - if it's in UTC, we call [DateTime.toIso8601String], so there's a
+      //    trailing `Z`. We can just use [DateTime.parse] and get an utc
+      //    datetime back.
+      //  - for local date times, we append the time zone offset, e.g.
+      //    `+02:00`. [DateTime.parse] respects this UTC offset and returns
+      //    the correct date, but it returns it in UTC. Since we only use
+      //    this format for local times, we need to transform it back to
+      //    local.
+      //
+      // Additionally, complex date time expressions are wrapped in a
+      // `datetime` sqlite call, which doesn't append a `Z` or a time zone
+      // offset. As sqlite3 always uses UTC for these computations
+      // internally, we'll return a UTC datetime as well.
+      if (_timeZoneInDateTime.hasMatch(rawValue)) {
+        // Case 2: Explicit time zone offset given, we do this for local
+        // dates.
+        result = DateTime.parse(rawValue).toLocal();
+      } else if (rawValue.endsWith('Z')) {
+        // Case 1: Date time in UTC, [DateTime.parse] will do the right
+        // thing.
+        result = DateTime.parse(rawValue);
+      } else {
+        // Result from complex date time transformation. Interpret as UTC,
+        // which is what sqlite3 does by default.
+        result = DateTime.parse('${rawValue}Z');
+      }
+
+      return result;
     } else {
       return DateTime.fromMillisecondsSinceEpoch(
           1000 * const IntType().dartValue(dialect, databaseValue));
@@ -160,6 +192,10 @@ final class DateTimeType extends _SqliteType<DateTime> {
   String typeName(DriftDialect dialect) {
     return _dateTimesAsText(dialect) ? 'TEXT' : 'INTEGER';
   }
+
+  // Stolen from DateTime._parseFormat
+  static final RegExp _timeZoneInDateTime =
+      RegExp(r' ?([-+])(\d\d)(?::?(\d\d))?$');
 }
 
 const blobType = CommonByteArrayType('BLOB');

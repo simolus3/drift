@@ -2,6 +2,8 @@ import 'dart:core';
 import 'dart:core' as core;
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
+
 import 'dialect.dart';
 
 typedef TypedValue<T extends Object> = (SqlType<T>, T);
