@@ -31,6 +31,11 @@ void main() {
       verify(executor.executeSql(
           'UPDATE "todos" SET "title" = ?1,"category" = ?2;',
           ['Updated title', 3]));
+
+      final stmt = db.update(db.users);
+      final compiled = db.dialect.compile(stmt);
+      expect(compiled.possibleUpdates,
+          [TableUpdate.onTable(db.users, kind: UpdateKind.update)]);
     });
 
     test('with a WHERE clause', () async {

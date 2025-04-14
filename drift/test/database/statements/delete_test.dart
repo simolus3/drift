@@ -20,8 +20,13 @@ void main() {
 
   group('Generates DELETE statements', () {
     test('without any constraints', () async {
-      await db.delete(db.users).go();
+      final stmt = db.delete(db.users);
 
+      final compiled = db.dialect.compile(stmt);
+      expect(compiled.possibleUpdates,
+          [TableUpdate.onTable(db.users, kind: UpdateKind.delete)]);
+
+      await stmt.go();
       verify(executor.executeSql('DELETE FROM "users";'));
     });
 

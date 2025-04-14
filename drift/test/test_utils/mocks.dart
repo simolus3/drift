@@ -30,6 +30,7 @@ final class MockSession extends Mock
   late final MockSession exclusiveExecutor = this;
 
   var open = true;
+  final Completer<void> closedCompleter = Completer();
 
   MockSession() {
     when(execute(any)).thenAnswer((i) async {
@@ -52,8 +53,12 @@ final class MockSession extends Mock
     });
     when(close()).thenAnswer((_) async {
       assert(open);
+
       open = false;
+      closedCompleter.complete();
     });
+    when(closed).thenAnswer((_) => closedCompleter.future);
+    when(isClosed).thenAnswer((_) => !open);
 
     when(schemaVersion).thenAnswer((i) async {
       assert(open);
@@ -85,6 +90,13 @@ final class MockSession extends Mock
   @override
   Future<void> close() =>
       _nsm(Invocation.method(#close, []), Future<void>.value());
+
+  @override
+  Future<void> get closed =>
+      _nsm(Invocation.getter(#closed), Future<void>.value());
+
+  @override
+  bool get isClosed => _nsm(Invocation.getter(#isClosed), false);
 
   @override
   Future<int> get schemaVersion =>

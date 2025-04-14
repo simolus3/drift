@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 
+import '../runtime/streams/update_rules.dart';
 import 'clauses/group_by.dart';
 import 'clauses/limit.dart';
 import 'clauses/order_by.dart';
@@ -41,6 +42,8 @@ final class CompiledStatement {
   final List<TypedNullableValue> variables = [];
   final Map<Variable, int> _variableIndexes = {};
   final Set<ResultSet> watchedTables = {};
+  final Set<TableUpdate> possibleUpdates = {};
+  bool isReadOnly = false;
 
   int variableOffset = 0;
   bool hasMultipleTables = false;
@@ -224,13 +227,19 @@ abstract base class StatementCompiler {
     });
   }
 
-  void addFromResultSet(FromResultSet resultSet, {bool isWatching = true}) {
-    if (resultSet.resultSet case final SqlComponent component) {
+  void addFromResultSet(FromResultSet resultSet,
+      {bool isWatching = true, UpdateKind? write}) {
+    final resolved = resultSet.resultSet;
+    if (resolved case final SqlComponent component) {
       return component.compileWith(this);
     }
 
     if (isWatching) {
       statement.watchedTables.add(resultSet.resultSet);
+    }
+    if (write != null && resolved is GeneratedTable) {
+      statement.isReadOnly = false;
+      statement.possibleUpdates.add(TableUpdate.onTable(resolved, kind: write));
     }
 
     addReference(resultSet.resultSet.entityName);
@@ -334,7 +343,8 @@ abstract base class StatementCompiler {
 
   void addDeleteStatement(DeleteStatement delete) {
     statement.buffer.write('DELETE FROM ');
-    addReference(delete.resultSet.aliasOrName);
+    addFromResultSet(FromResultSet(delete.resultSet),
+        isWatching: false, write: UpdateKind.delete);
 
     if (delete.whereClause case final where?) {
       statement.space();
@@ -351,7 +361,8 @@ abstract base class StatementCompiler {
 
   void addUpdateStatement(UpdateStatement update) {
     statement.buffer.write('UPDATE ');
-    addFromResultSet(FromResultSet(update.resultSet), isWatching: false);
+    addFromResultSet(FromResultSet(update.resultSet),
+        isWatching: false, write: UpdateKind.update);
     statement.buffer.write(' SET ');
 
     var first = true;
@@ -424,7 +435,8 @@ abstract base class StatementCompiler {
 
     addInsertStatementMode(insert);
     statement.space();
-    addFromResultSet(FromResultSet(insert.table), isWatching: false);
+    addFromResultSet(FromResultSet(insert.table),
+        isWatching: false, write: UpdateKind.insert);
     statement.space();
 
     addInsertColumnNames(insert);
@@ -456,6 +468,9 @@ abstract base class StatementCompiler {
 
   void addSelectStatement(BaseSelectStatement select) {
     final isRoot = statement.buffer.isEmpty;
+    if (isRoot) {
+      statement.isReadOnly = true;
+    }
 
     statement.buffer.write('SELECT ');
     if (select.distinct) {

@@ -8,7 +8,7 @@ import '../migrations.dart';
 import '../streams/delayed_stream_queries.dart';
 import '../streams/store.dart';
 import '../streams/update_rules.dart';
-import 'connection_compat.dart';
+import '../../connections/connection_compat.dart';
 import 'connection_user.dart';
 
 abstract base class GeneratedDatabase extends DatabaseConnectionUser {

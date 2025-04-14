@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' as sqlite;
 
@@ -9,6 +11,8 @@ import 'native_functions.dart';
 final class SqliteConnection implements DriftSession, DriftRootSession {
   final sqlite.CommonDatabase database;
   final SqliteDialect dialect;
+
+  final Completer<void> _closedCompleter = Completer();
 
   SqliteConnection(this.dialect, this.database) {
     database.useNativeFunctions();
@@ -56,8 +60,19 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   }
 
   @override
+  bool get isClosed => _closedCompleter.isCompleted;
+
+  @override
+  Future<void> get closed => _closedCompleter.future;
+
+  @override
   Future<void> close() async {
-    database.dispose();
+    if (!_closedCompleter.isCompleted) {
+      database.dispose();
+      _closedCompleter.complete();
+    }
+
+    return closed;
   }
 
   @override

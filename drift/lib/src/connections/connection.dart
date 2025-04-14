@@ -41,6 +41,8 @@ abstract interface class DriftSession {
   Future<QueryResult> execute(StatementInfo statement);
   Future<List<QueryResult>> executeBatch(List<StatementBatch> batch);
 
+  bool get isClosed;
+  Future<void> get closed;
   Future<void> close();
 }
 
@@ -62,19 +64,22 @@ final class StatementInfo {
   final String sql;
   final bool needsResultSet;
   final List<TypedNullableValue> variables;
-  final List<TableUpdate> expectedWrites;
+  final Set<TableUpdate> expectedWrites;
+  final bool isReadOnly;
 
   StatementInfo(CompiledStatement this.generated)
       : sql = generated.buffer.toString(),
         needsResultSet = generated.resultSetStructure != null,
         variables = generated.variables,
-        expectedWrites = const []; // TODO
+        expectedWrites = generated.possibleUpdates,
+        isReadOnly = generated.isReadOnly;
 
   StatementInfo.fromText(
     this.sql, {
     this.variables = const [],
     this.needsResultSet = false,
-    this.expectedWrites = const [],
+    this.expectedWrites = const {},
+    this.isReadOnly = false,
   }) : generated = null;
 
   Iterable<Object?> sqlVariables(DriftDialect dialect) =>
@@ -88,4 +93,7 @@ final class StatementInfo {
   }
 }
 
-final class TransactionOptions {}
+final class TransactionOptions {
+  // We might eventually use this to implement read-only transactions, which can
+  // be used to optimize connection pools.
+}

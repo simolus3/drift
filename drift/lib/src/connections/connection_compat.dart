@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
-import '../../connections/connection.dart';
-import '../../connections/result_set.dart';
-import '../../query_builder/dialect.dart';
-import '../../query_builder/statements/transactions.dart';
-import '../../utils/synchronized.dart';
-import '../cancellation_zone.dart';
+import 'connection.dart';
+import 'result_set.dart';
+import '../query_builder/dialect.dart';
+import '../query_builder/statements/transactions.dart';
+import '../utils/synchronized.dart';
+import '../runtime/cancellation_zone.dart';
 
 /// A [DriftSession] implementation that supports all features drift expects
 /// of underlying database implementations, even if the inner session doesn't.
@@ -30,7 +30,7 @@ final class DriftCompatibilitySession
 
   /// We use a shared lock when executing statements (since we provide no
   /// ordering guarantees for concurrent statements).
-  /// For transactions or [exclusive] blocks not implemented by the [inner]
+  /// For transactions or [exclusive] blocks not implemented by the [_inner]
   /// session, we use an exclusive lock to ensure that these blocks don't
   /// interleave with statements not supposed to run outside of them.
   final SharedOrExclusiveLock _lock = SharedOrExclusiveLock();
@@ -107,6 +107,12 @@ without awaiting every statement in it.''');
   Future<void> _closeInner() => _inner.close();
 
   @override
+  Future<void> get closed => _closed.future;
+
+  @override
+  bool get isClosed => _isClosed;
+
+  @override
   Future<void> close() async {
     await _synchronized(abortIfCancelled: false, () async {
       if (!_isClosed) {
@@ -150,6 +156,8 @@ without awaiting every statement in it.''');
   }
 }
 
+/// A [DriftCompatibilitySession] that is also acting as a
+/// [DriftTransactionSession].
 final class DriftCompatibilityTransaction extends DriftCompatibilitySession
     implements DriftTransactionSession {
   /// Whether this is using [inner] to drive the transaction.

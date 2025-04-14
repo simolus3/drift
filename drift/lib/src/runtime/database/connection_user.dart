@@ -171,8 +171,9 @@ abstract base class DatabaseConnectionUser {
   /// Obtains an exclusive lock on the current database context, runs [action]
   /// in it and then releases the lock.
   ///
-  /// This obtains a local lock on the underlying [executor] without starting a
-  /// transaction or coordinating with other processes on the same database.
+  /// This obtains a local lock on the underlying [currentSession] without
+  /// starting a transaction or coordinating with other processes on the same
+  /// database.
   /// It is possible to start a [transaction] within an [exclusively] block.
   /// When [exclusively] is called on a database connected to a remote isolate
   /// or a shared web worker, other isolates and tabs will be blocked on the

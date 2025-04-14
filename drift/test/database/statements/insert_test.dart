@@ -34,6 +34,11 @@ void main() {
 
     verify(executor.executeSql('INSERT INTO "todos" ("content") VALUES (?1)',
         ['Implement insert statements']));
+
+    final stmt = InsertStatement(db, db.todosTable);
+    final compiled = db.dialect.compile(stmt);
+    expect(compiled.possibleUpdates,
+        [TableUpdate.onTable(db.todosTable, kind: UpdateKind.insert)]);
   });
 
   test('can insert floating point values', () async {
