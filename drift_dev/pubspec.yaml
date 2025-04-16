@@ -39,7 +39,7 @@ dependencies:
   sqlparser: ^0.41.0
 
   # Dart analysis
-  analyzer: ^7.3.0
+  analyzer: ^7.4.0
   source_span: ^1.10.0
   package_config: ^2.1.0
   pub_semver: ^2.1.4
