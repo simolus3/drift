@@ -15,7 +15,7 @@ export 'mocks.dart';
 export 'test_utils.mocks.dart';
 
 DriftDatabaseImplementation createConnection(
-  DriftRootSession session, {
+  DriftSession session, {
   StreamQueryStore? streams,
   DriftDialect? dialect,
 }) {

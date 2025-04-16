@@ -18,15 +18,17 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
     database.useNativeFunctions();
   }
 
-  static DriftDatabaseImplementation synchronous(
-      {required sqlite.CommonDatabase Function() open}) {
-    final dialect = SqliteDialect();
+  @override
+  DriftRootSession? get root => this;
 
-    return DriftDatabaseImplementation(
-      dialect: dialect,
-      openConnection: () async => SqliteConnection(dialect, open()),
-    );
-  }
+  @override
+  DriftTransactionSession? get transaction => null;
+
+  @override
+  DriftTransactionParent? get transactionParent => null;
+
+  @override
+  DriftSessionWithInternalLocks? get locks => null;
 
   @override
   Future<QueryResult> execute(StatementInfo statement) async {
@@ -81,6 +83,16 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   @override
   Future<void> writeSchemaVersion(int version) async {
     database.userVersion = version;
+  }
+
+  static DriftDatabaseImplementation synchronous(
+      {required sqlite.CommonDatabase Function() open}) {
+    final dialect = SqliteDialect();
+
+    return DriftDatabaseImplementation(
+      dialect: dialect,
+      openConnection: () async => SqliteConnection(dialect, open()),
+    );
   }
 }
 

@@ -87,13 +87,25 @@ without awaiting every statement in it.''');
   }
 
   @override
+  DriftRootSession? get root => _inner.root;
+
+  @override
+  DriftTransactionSession? get transaction => null;
+
+  @override
+  DriftTransactionParent? get transactionParent => this;
+
+  @override
+  DriftSessionWithInternalLocks? get locks => this;
+
+  @override
   Future<DriftCompatibilityTransaction> begin(
       TransactionOptions options) async {
     _checkOpen();
 
-    if (_inner case DriftTransactionParent transaction) {
+    if (_inner.transactionParent case final supported?) {
       return DriftCompatibilityTransaction._(true,
-          await transaction.begin(options), _dialect, _transactionDepth + 1);
+          await supported.begin(options), _dialect, _transactionDepth + 1);
     } else {
       return _startNested(() async {
         await _inner.execute(StatementInfo(
@@ -170,6 +182,9 @@ final class DriftCompatibilityTransaction extends DriftCompatibilitySession
   DriftCompatibilityTransaction._(this._isUsingUnderlyingTransaction,
       super._inner, super._dialect, super._transactionDepth)
       : super._();
+
+  @override
+  DriftTransactionSession? get transaction => this;
 
   @override
   Future<void> close() async {

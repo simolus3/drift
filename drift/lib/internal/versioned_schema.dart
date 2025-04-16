@@ -113,8 +113,8 @@ abstract base class VersionedSchema {
       // schema versions happens at a lower layer and is not current exposed to
       // the query builder.
 
-      if (session is DriftRootSession) {
-        await session.writeSchemaVersion(newVersion);
+      if (session.root case final root?) {
+        await root.writeSchemaVersion(newVersion);
       }
 
       target = newVersion;

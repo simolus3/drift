@@ -7,6 +7,7 @@ import 'result_set.dart';
 
 abstract class _ConnectionPool
     implements
+        DriftSession,
         DriftTransactionParent,
         DriftRootSession,
         DriftSessionWithInternalLocks {
@@ -27,14 +28,26 @@ abstract class _ConnectionPool
   }
 
   @override
-  Future<DriftTransactionSession> begin(TransactionOptions options) async {
+  DriftTransactionParent? get transactionParent => this;
+
+  @override
+  DriftSessionWithInternalLocks? get locks => this;
+
+  @override
+  DriftRootSession? get root => this;
+
+  @override
+  DriftTransactionSession? get transaction => null;
+
+  @override
+  Future<DriftSession> begin(TransactionOptions options) async {
     final (session, returnSession) = await _acquireSession(forWrite: true);
     var needsToReturnSession = true;
 
     try {
       // DriftSessionPool wraps the writing session in a compat session if
       // necessary, they will always support starting transactions.
-      final parent = session as DriftTransactionParent;
+      final parent = session.transactionParent!;
       final transaction = await parent.begin(options);
 
       transaction.closed.whenComplete(returnSession);
@@ -161,7 +174,7 @@ final class _ReadSessionPool {
 /// sessions.
 final class DriftSessionPool extends _ConnectionPool {
   final _ReadSessionPool _reads;
-  final DriftRootSession _writes;
+  final DriftSession _writes;
   final DriftSession _compatWrites;
 
   final Completer<void> _closed = Completer();
@@ -174,8 +187,8 @@ final class DriftSessionPool extends _ConnectionPool {
   /// with [write]. Select statements outside of a transaction are executed
   /// on [reads].
   factory DriftSessionPool({
-    required DriftRootSession write,
-    required List<DriftRootSession> reads,
+    required DriftSession write,
+    required List<DriftSession> reads,
   }) {
     DriftSession compatWrites = write;
 
@@ -211,11 +224,11 @@ final class DriftSessionPool extends _ConnectionPool {
   }
 
   @override
-  Future<int> get schemaVersion => _writes.schemaVersion;
+  Future<int> get schemaVersion => _writes.root!.schemaVersion;
 
   @override
   Future<void> writeSchemaVersion(int version) =>
-      _writes.writeSchemaVersion(version);
+      _writes.root!.writeSchemaVersion(version);
 
   @override
   Future<void> get closed => _closed.future;

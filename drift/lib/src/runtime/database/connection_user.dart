@@ -137,6 +137,7 @@ abstract base class DatabaseConnectionUser {
     final resolved = await currentSession();
     final transaction = await (resolved as DriftTransactionParent)
         .begin(options ?? TransactionOptions());
+    final transactionControl = transaction.transaction!;
     final nestedStreams = ScopedStreamQueryStore(_currentStreamQueryStore());
 
     return _runConnectionZoned(
@@ -148,17 +149,17 @@ abstract base class DatabaseConnectionUser {
         success = true;
         return result;
       } catch (e, s) {
-        await transaction.rollbackAfterException(e, s);
+        await transactionControl.rollbackAfterException(e, s);
 
         // pass the exception on to the one who called transaction()
         rethrow;
       } finally {
         if (success) {
           try {
-            await transaction.commit();
+            await transactionControl.commit();
           } catch (e, s) {
             // Couldn't commit -> roll back then.
-            await transaction.rollbackAfterException(e, s);
+            await transactionControl.rollbackAfterException(e, s);
             rethrow;
           }
         }

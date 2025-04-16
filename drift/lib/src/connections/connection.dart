@@ -8,31 +8,31 @@ import 'result_set.dart';
 
 final class DriftDatabaseImplementation {
   final DriftDialect dialect;
-  final Future<DriftRootSession> Function() _openConnection;
+  final Future<DriftSession> Function() _openConnection;
 
   final StreamQueryStore? streamQueries;
 
   DriftDatabaseImplementation({
     required this.dialect,
-    required Future<DriftRootSession> Function() openConnection,
+    required Future<DriftSession> Function() openConnection,
     this.streamQueries,
   }) : _openConnection = openConnection;
 
-  Future<(DriftRootSession, StreamQueryStore)> open() async {
+  Future<(DriftSession, StreamQueryStore)> open() async {
     final session = await _openConnection();
     return (session, streamQueries ?? LocalStreamQueryStore());
   }
 }
 
-abstract interface class DriftTransactionParent implements DriftSession {
-  Future<DriftTransactionSession> begin(TransactionOptions options);
+abstract interface class DriftTransactionParent {
+  Future<DriftSession> begin(TransactionOptions options);
 }
 
-abstract interface class DriftSessionWithInternalLocks implements DriftSession {
+abstract interface class DriftSessionWithInternalLocks {
   Future<DriftSession> exclusive();
 }
 
-abstract interface class DriftTransactionSession implements DriftSession {
+abstract interface class DriftTransactionSession {
   Future<void> commit();
   Future<void> rollback();
 }
@@ -41,12 +41,32 @@ abstract interface class DriftSession {
   Future<QueryResult> execute(StatementInfo statement);
   Future<List<QueryResult>> executeBatch(List<StatementBatch> batch);
 
+  /// If this session has schema management method, a [DriftRootSession]
+  /// instance exposing them.
+  DriftRootSession? get root;
+
+  /// If this session represents a a transaction, returns a
+  /// [DriftTransactionSession] that can be used to commit or rollback the
+  /// transaction.
+  ///
+  /// This getter should always return the same value, existing session
+  /// instances can't start being a transaction after being open.
+  DriftTransactionSession? get transaction;
+
+  /// If this session can open transactions, a [DriftTransactionParent] through
+  /// which transactions can be started.
+  DriftTransactionParent? get transactionParent;
+
+  /// If this session can be locked, a [DriftSessionWithInternalLocks] instance
+  /// through which an exclusive lock on the session can be obtained.
+  DriftSessionWithInternalLocks? get locks;
+
   bool get isClosed;
   Future<void> get closed;
   Future<void> close();
 }
 
-abstract interface class DriftRootSession implements DriftSession {
+abstract interface class DriftRootSession {
   Future<int> get schemaVersion;
   Future<void> writeSchemaVersion(int version);
 }

@@ -75,11 +75,13 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
         // Run migrations in a scoped connection zone so that they can use the
         // database while calls outside of migrations are waiting on this future
         // to complete.
-        await runConnectionZoned(
-          inner,
-          streams,
-          () => _runMigrations(inner),
-        );
+        if (inner.root case final root?) {
+          await runConnectionZoned(
+            inner,
+            streams,
+            () => _runMigrations(root),
+          );
+        }
 
         return DriftCompatibilitySession(
           inner: inner,

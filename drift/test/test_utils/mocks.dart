@@ -23,10 +23,12 @@ QueryResult queryResult(
 
 final class MockSession extends Mock
     implements
+        DriftSession,
         DriftRootSession,
         DriftTransactionParent,
+        DriftTransactionSession,
         DriftSessionWithInternalLocks {
-  late final MockTransactionSession transactions = MockTransactionSession();
+  late final MockSession transactions = MockSession();
   late final MockSession exclusiveExecutor = this;
 
   var open = true;
@@ -75,6 +77,9 @@ final class MockSession extends Mock
       assert(open);
       return transactions;
     });
+
+    when(commit()).thenAnswer((_) => Future.value(null));
+    when(rollback()).thenAnswer((_) => Future.value(null));
   }
 
   @override
@@ -111,9 +116,17 @@ final class MockSession extends Mock
       _nsm(Invocation.method(#exclusive, []), _neverComplete<DriftSession>());
 
   @override
-  Future<DriftTransactionSession> begin(TransactionOptions? options) => _nsm(
-      Invocation.method(#begin, [options]),
-      _neverComplete<DriftTransactionSession>());
+  Future<DriftSession> begin(TransactionOptions? options) => _nsm(
+      Invocation.method(#begin, [options]), _neverComplete<DriftSession>());
+
+  @override
+  Future<void> commit() {
+    return _nsm(Invocation.method(#commit, []), Future.value(null));
+  }
+
+  @override
+  Future<void> rollback() =>
+      _nsm(Invocation.method(#rollback, []), Future.value(null));
 
   /// Utility for asserting that a given SQL statement was executed.
   Future<QueryResult> executeSql(Object? sql, [Object? variables = isEmpty]) =>
@@ -125,23 +138,6 @@ final class MockSession extends Mock
       );
 
   static Future<T> _neverComplete<T>() => Completer<T>().future;
-}
-
-final class MockTransactionSession extends MockSession
-    implements DriftTransactionSession {
-  MockTransactionSession() {
-    when(commit()).thenAnswer((_) => Future.value(null));
-    when(rollback()).thenAnswer((_) => Future.value(null));
-  }
-
-  @override
-  Future<void> commit() {
-    return _nsm(Invocation.method(#commit, []), Future.value(null));
-  }
-
-  @override
-  Future<void> rollback() =>
-      _nsm(Invocation.method(#rollback, []), Future.value(null));
 }
 
 extension on Mock {
