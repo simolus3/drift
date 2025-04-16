@@ -63,5 +63,39 @@ dev_dependencies:
   crypto: ^3.0.3
   glob: ^2.1.2
 
+dependency_overrides:
+  analyzer: ^7.3.0
+  # package:build with element2 APIs is not released yet.
+  build:
+    git:
+      url: https://github.com/dart-lang/build.git
+      path: build
+      ref: resolver-2-methods
+  build_resolvers:
+    git:
+      url: https://github.com/dart-lang/build.git
+      path: build_resolvers
+      ref: resolver-2-methods
+  build_runner:
+    git:
+      url: https://github.com/dart-lang/build.git
+      path: build_runner
+      ref: resolver-2-methods
+  build_runner_core:
+    git:
+      url: https://github.com/dart-lang/build.git
+      path: build_runner_core
+      ref: resolver-2-methods
+  build_test:
+    git:
+      url: https://github.com/dart-lang/build.git
+      path: build_test
+      ref: resolver-2-methods
+  source_gen:
+    git:
+      url: https://github.com/dart-lang/source_gen.git
+      path: source_gen
+      ref: analyzer-element2
+
 executables:
   drift_dev:

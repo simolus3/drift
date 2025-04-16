@@ -34,7 +34,7 @@ class DriftBuildBackend extends DriftBackend {
 
   @override
   Future<Uri> uriOfDart(Element2 element) async {
-    final id = await _buildStep.resolver.assetIdForElement2(element);
+    final id = await _buildStep.resolver.assetIdForElement(element);
     return id.uri;
   }
 
@@ -45,7 +45,7 @@ class DriftBuildBackend extends DriftBackend {
   Future<LibraryElement2> readDart(Uri uri) async {
     if (uri.scheme == 'dart') {
       final name = 'dart.${uri.path}';
-      final library = await _buildStep.resolver.findLibraryByName2(name);
+      final library = await _buildStep.resolver.findLibraryByName(name);
 
       if (library == null) {
         throw NotALibraryException(uri);
@@ -55,7 +55,7 @@ class DriftBuildBackend extends DriftBackend {
     }
 
     try {
-      return await _buildStep.resolver.libraryFor2(AssetId.resolve(uri));
+      return await _buildStep.resolver.libraryFor(AssetId.resolve(uri));
     } on NonLibraryAssetException {
       throw NotALibraryException(uri);
     }
@@ -63,7 +63,7 @@ class DriftBuildBackend extends DriftBackend {
 
   @override
   Future<AstNode?> loadElementDeclaration(Element2 element) {
-    return _buildStep.resolver.astNodeFor2(
+    return _buildStep.resolver.astNodeFor(
       element.firstFragment,
       resolve: true,
     );
@@ -95,10 +95,10 @@ class DriftBuildBackend extends DriftBackend {
       throw CannotReadExpressionException('No field for $dartExpression');
     }
 
-    final library = await _buildStep.resolver.libraryFor2(tempDart);
+    final library = await _buildStep.resolver.libraryFor(tempDart);
     final field = library.firstFragment.topLevelVariables2
         .firstWhere((element) => element.name2 == getter);
-    final fieldAst = await _buildStep.resolver.astNodeFor2(
+    final fieldAst = await _buildStep.resolver.astNodeFor(
       field,
       resolve: true,
     );
@@ -118,7 +118,7 @@ class DriftBuildBackend extends DriftBackend {
     final tempDart = original.changeExtension('.expr.temp.dart');
 
     if (await _buildStep.canRead(tempDart)) {
-      final library = await _buildStep.resolver.libraryFor2(tempDart);
+      final library = await _buildStep.resolver.libraryFor(tempDart);
       return library.firstFragment.scope.lookup(reference).getter2;
     } else {
       // If there's no temporary file whose imports we can use, then that means
@@ -127,7 +127,7 @@ class DriftBuildBackend extends DriftBackend {
       // For that, resolve a library we know exists and likely has been resolved
       // already.
       final libraryWeKnowExists = await _buildStep.resolver
-          .libraryFor2(AssetId.resolve(KnownDriftTypes.uri));
+          .libraryFor(AssetId.resolve(KnownDriftTypes.uri));
       final dartCore = libraryWeKnowExists.typeProvider.objectElement2.library2;
 
       return dartCore.exportNamespace.get2(reference);
@@ -197,7 +197,7 @@ class BuildCacheReader implements AnalysisResultCacheReader {
   Future<LibraryElement2?> readTypeHelperFor(Uri uri) async {
     final assetId = AssetId.resolve(uri).addExtension('.types.temp.dart');
     if (await _buildStep.canRead(assetId)) {
-      return _buildStep.resolver.libraryFor2(assetId, allowSyntaxErrors: true);
+      return _buildStep.resolver.libraryFor(assetId, allowSyntaxErrors: true);
     }
 
     return null;
