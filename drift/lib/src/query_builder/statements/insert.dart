@@ -1,6 +1,8 @@
 import 'dart:collection';
 
 import 'package:drift/src/query_builder/compiler.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:meta/meta.dart';
 
 import '../../connections/result_set.dart';
 import '../../runtime/data_class.dart';
@@ -15,6 +17,7 @@ import 'select.dart';
 import 'statement.dart';
 
 /// An `INSERT` statement in SQL.
+@immutable
 final class InsertStatement<Row extends Object,
     RS extends GeneratedTable<Row, RS>> extends SqlStatement {
   /// The table we're inserting into.
@@ -24,22 +27,48 @@ final class InsertStatement<Row extends Object,
   final DatabaseConnectionUser _database;
 
   /// The values to use for the rows being inserted.
-  InsertSource? source;
+  final InsertSource? source;
 
   /// An `ON CONFLICT DO UPDATE` clause added to this statement.
-  UpsertClause<Row, RS>? upsertClause;
+  final UpsertClause<Row, RS>? upsertClause;
 
   /// An optional `RETURNING` clause part of this statement.
-  ReturningClause<Row, RS>? returning;
+  final ReturningClause<Row, RS>? returning;
 
   /// Constructs an insert statement from the database and the table. Used
   /// internally by drift.
-  InsertStatement(this._database, this.table);
+  InsertStatement(this._database, this.table)
+      : source = null,
+        upsertClause = null,
+        returning = null;
 
-  void _checkNoSource() {
+  InsertStatement._(
+    this._database,
+    this.table, {
+    required this.source,
+    required this.upsertClause,
+    required this.returning,
+  });
+
+  InsertStatement<Row, RS> _copyWith({
+    InsertSource? source,
+    UpsertClause<Row, RS>? upsertClause,
+    ReturningClause<Row, RS>? returning,
+  }) {
     assert(
-      source == null,
+      this.source == null || source == null,
       'A source has already been set on this insert statement.',
+    );
+    assert(
+      this.upsertClause == null || upsertClause == null,
+      'An upsert clause has already been set on this insert statement.',
+    );
+    return InsertStatement<Row, RS>._(
+      _database,
+      table,
+      source: source ?? this.source,
+      upsertClause: upsertClause ?? this.upsertClause,
+      returning: returning ?? this.returning,
     );
   }
 
@@ -49,8 +78,6 @@ final class InsertStatement<Row extends Object,
   /// Typically, [row] is an instance of the companion class drift generates for
   /// tables, which allows specifying which columns to use.
   InsertStatement<Row, RS> values(Insertable<Row> row) {
-    _checkNoSource();
-
     final rawValues = row.toColumns(true);
 
     // apply default values for columns that have one
@@ -78,10 +105,12 @@ final class InsertStatement<Row extends Object,
     }
 
     if (map.isNotEmpty) {
-      source = InsertFromValues._(map);
+      return _copyWith(
+        source: InsertFromValues._(map),
+      );
+    } else {
+      return this;
     }
-
-    return this;
   }
 
   /// Inserts rows from the [select] statement.
@@ -99,8 +128,6 @@ final class InsertStatement<Row extends Object,
     BaseSelectStatement select, {
     required Map<TableColumn, Expression> columns,
   }) {
-    _checkNoSource();
-
     LinkedHashMap<String, ColumnPosition> columnNameToSelectColumnName =
         LinkedHashMap();
     columns.forEach((key, value) {
@@ -115,15 +142,13 @@ final class InsertStatement<Row extends Object,
 
       columnNameToSelectColumnName[key.name] = position;
     });
-
-    source = InsertFromSelect._(select, columnNameToSelectColumnName);
-    return this;
+    return _copyWith(
+      source: InsertFromSelect._(select, columnNameToSelectColumnName),
+    );
   }
 
   InsertStatement<Row, RS> onConflict(UpsertClause<Row, RS> upsert) {
-    assert(upsertClause == null, 'upsert clause already set');
-    upsertClause = upsert;
-    return this;
+    return _copyWith(upsertClause: upsert);
   }
 
   @override
@@ -141,8 +166,10 @@ final class InsertStatement<Row extends Object,
     return result;
   }
 
-  void _addReturning() {
-    returning = ReturningClause(table);
+  InsertStatement<Row, RS> _withReturning() {
+    return _copyWith(
+      returning: ReturningClause(table),
+    );
   }
 
   /// Runs this insert statement with a `RETURNING` clause, returning inserted
@@ -153,10 +180,10 @@ final class InsertStatement<Row extends Object,
   /// For a method that does all of this, use [insertReturning] or
   /// [insertReturningOrNull].
   Future<List<Row>> runReturning() async {
-    _addReturning();
+    var stmt = _withReturning();
 
-    final result = await _run();
-    return returning!.interpretResults(_database, result);
+    final result = await stmt._run();
+    return stmt.returning!.interpretResults(_database, result);
   }
 
   /// Inserts a row constructed from the fields in [entity].
@@ -206,12 +233,13 @@ final class InsertStatement<Row extends Object,
     Insertable<Row> entity, {
     UpsertClause<Row, RS>? onConflict,
   }) async {
-    values(entity);
+    var stmt = values(entity);
+
     if (onConflict != null) {
-      this.onConflict(onConflict);
+      stmt = stmt.onConflict(onConflict);
     }
 
-    final result = await _run();
+    final result = await stmt._run();
     return result.lastInsertRowId!;
   }
 
@@ -231,12 +259,12 @@ final class InsertStatement<Row extends Object,
     required Map<TableColumn, Expression> columns,
     UpsertClause<Row, RS>? onConflict,
   }) async {
-    fromSelect(select, columns: columns);
+    var stmt = fromSelect(select, columns: columns);
     if (onConflict != null) {
-      this.onConflict(onConflict);
+      stmt = stmt.onConflict(onConflict);
     }
 
-    return await _run();
+    return await stmt._run();
   }
 
   /// Inserts a row into the table and returns it.
@@ -267,12 +295,12 @@ final class InsertStatement<Row extends Object,
   /// added as an [upsertClause]). This method returns null in that case.
   Future<Row?> insertReturningOrNull(Insertable<Row> entity,
       {UpsertClause<Row, RS>? onConflict}) async {
-    values(entity);
+    var stmt = values(entity);
     if (onConflict != null) {
-      this.onConflict(onConflict);
+      stmt = stmt.onConflict(onConflict);
     }
 
-    final rows = await runReturning();
+    final rows = await stmt.runReturning();
     if (rows.isNotEmpty) {
       return rows.single;
     } else {
@@ -296,9 +324,11 @@ final class InsertStatement<Row extends Object,
 }
 
 /// Possible values for [InsertStatement.source].
+@immutable
 sealed class InsertSource implements SqlComponent {}
 
 /// Insert the default values for each column.
+@immutable
 final class InsertDefaultValues extends InsertSource {
   /// Insert `DEFAULT VALUES` for an insert statement.
   InsertDefaultValues();
@@ -310,11 +340,15 @@ final class InsertDefaultValues extends InsertSource {
 }
 
 /// Insert values from an [values] map.
+@immutable
 final class InsertFromValues extends InsertSource {
   /// An ordered map from column names to expressions for inserts.
-  final LinkedHashMap<String, Expression> values;
+  final LinkedHashMap<String, Expression> __values;
+  //TODO: Does this change the order?
+  UnmodifiableMapView<String, Expression> get values =>
+      UnmodifiableMapView(__values);
 
-  InsertFromValues._(this.values);
+  InsertFromValues._(this.__values);
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -323,6 +357,7 @@ final class InsertFromValues extends InsertSource {
 }
 
 /// Insert rows returned by a select statement.
+@immutable
 final class InsertFromSelect extends InsertSource {
   /// The select statement for which returning rows will be inserted into the
   /// table.
@@ -330,9 +365,13 @@ final class InsertFromSelect extends InsertSource {
 
   /// Map from column names in the table to insert to result positions in the
   /// used select statement.
-  final LinkedHashMap<String, ColumnPosition> columnNameToSelectColumnName;
+  final LinkedHashMap<String, ColumnPosition> __columnNameToSelectColumnName;
+  //TODO: Does this change the order?
+  UnmodifiableMapView<String, ColumnPosition>
+      get columnNameToSelectColumnName =>
+          UnmodifiableMapView(__columnNameToSelectColumnName);
 
-  InsertFromSelect._(this.select, this.columnNameToSelectColumnName);
+  InsertFromSelect._(this.select, this.__columnNameToSelectColumnName);
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -344,6 +383,7 @@ final class InsertFromSelect extends InsertSource {
 /// violated during an insert.
 ///
 /// Typically, one would use [DoUpdate] to run an update instead in this case.
+@immutable
 sealed class UpsertClause<Row extends Object,
     RS extends GeneratedTable<Row, RS>> implements SqlComponent {}
 
@@ -351,6 +391,7 @@ sealed class UpsertClause<Row extends Object,
 /// companion when the underlying companion already exists.
 ///
 /// For an example, see [InsertStatement.insert].
+@immutable
 final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
     extends UpsertClause<Row, RS> {
   final Insertable<Row> Function(RS old, RS excluded) _creator;
@@ -457,13 +498,14 @@ final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
 /// Upsert clause that consists of multiple [clauses].
 ///
 /// The first [DoUpdate.target] matched by this upsert will be run.
+@immutable
 final class UpsertMultiple<Row extends Object,
     RS extends GeneratedTable<Row, RS>> extends UpsertClause<Row, RS> {
   /// All [DoUpdate] and [DoNothing] clauses that are part of this upsert.
   ///
   /// The first clause with a matching [DoUpdate.target] or [DoNothing.target]
   /// will be considered.
-  final List<UpsertClause<Row, RS>> clauses;
+  final IList<UpsertClause<Row, RS>> clauses;
 
   /// Creates an upsert consisting of multiple [DoUpdate] and [DoNothing]
   /// clauses.
@@ -479,13 +521,14 @@ final class UpsertMultiple<Row extends Object,
 }
 
 /// Upsert clause that does nothing on conflict
+@immutable
 final class DoNothing<Row extends Object, RS extends GeneratedTable<Row, RS>>
     extends UpsertClause<Row, RS> {
   /// An optional list of columns to serve as an "conflict target", which
   /// specifies the uniqueness constraint that will trigger the upsert.
   ///
   /// By default, the primary key of the table will be used.
-  final List<TableColumn>? target;
+  final IList<TableColumn>? target;
 
   /// Creates an upsert clause that does nothing on conflict
   DoNothing({this.target});

@@ -7,7 +7,7 @@ final class WhereClause implements SqlComponent {
   final Expression<bool> condition;
 
   /// Creates a `WHERE` clause in SQL from the underlying [condition].
-  WhereClause(this.condition);
+  const WhereClause(this.condition);
 
   @override
   void compileWith(StatementCompiler compiler) {

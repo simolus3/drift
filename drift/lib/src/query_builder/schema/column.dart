@@ -18,12 +18,13 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
   /// `NOT NULL` constraint applied to it.
   final bool isNullable;
 
-  late ResultSet owningResultSet;
+  final ResultSet? owningResultSet;
 
-  SchemaColumn({
+  const SchemaColumn({
     required this.name,
     required this.type,
     this.isNullable = true,
+    this.owningResultSet,
   });
 
   @override
@@ -33,7 +34,7 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
 
   @override
   String toString() {
-    return '${owningResultSet.alias}.$name';
+    return '${owningResultSet?.alias}.$name';
   }
 
   @override

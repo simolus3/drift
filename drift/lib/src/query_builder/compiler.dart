@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 import '../runtime/streams/update_rules.dart';
 import 'clauses/group_by.dart';
@@ -65,14 +66,17 @@ final class CompiledStatement {
 }
 
 /// Base class for anything that can be compiled to SQL.
+@immutable
 abstract interface class SqlComponent {
   void compileWith(StatementCompiler compiler);
 }
 
+@immutable
 abstract mixin class DialectSpecificComponent implements SqlComponent {
   final Map<Symbol, Object?> dialectSpecificOptions = {};
 }
 
+@immutable
 final class CustomComponent implements SqlComponent {
   final String fallbackSql;
   final Map<KnownSqlDialect, String> dialectSpecifcSql;
@@ -497,7 +501,7 @@ abstract base class StatementCompiler {
 
     _ignoreResultSet = false;
 
-    if (select.from case [final first, ...final rest]) {
+    if (select.from.unlock case [final first, ...final rest]) {
       statement.buffer.write(' FROM ');
       first.compileWith(this);
 
@@ -629,7 +633,7 @@ abstract base class StatementCompiler {
   void addColumnReference(SchemaColumn column) {
     if (statement.hasMultipleTables) {
       final resultSet = column.owningResultSet;
-      addReference(resultSet.aliasOrName);
+      addReference(resultSet!.aliasOrName);
       statement.buffer.write('.');
     }
 
@@ -867,7 +871,7 @@ abstract base class StatementCompiler {
   }
 
   void addDoNothing(DoNothing clause) {
-    addOnConflictConstraint(target: clause.target);
+    addOnConflictConstraint(target: clause.target?.unlock);
     statement.buffer.write(' DO NOTHING');
   }
 

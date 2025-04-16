@@ -234,7 +234,7 @@ final class AggregateFunctionExpression<D extends Object>
   final Expression<bool>? filter;
 
   /// Creates an aggregate function expression from the syntactic components.
-  AggregateFunctionExpression(
+  const AggregateFunctionExpression(
     this.functionName,
     this.arguments, {
     this.filter,

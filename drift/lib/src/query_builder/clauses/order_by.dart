@@ -49,7 +49,7 @@ class OrderingTerm implements SqlComponent {
 
   /// Creates an ordering term by the [expression], the [mode] (defaults to
   /// ascending) and the [nulls].
-  OrderingTerm({
+  const OrderingTerm({
     required this.expression,
     this.mode = OrderingMode.asc,
     this.nulls,

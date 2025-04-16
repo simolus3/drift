@@ -44,7 +44,7 @@ final class UnixTimestampToDateTime extends Expression<DateTime> {
   /// The timestamp (in seconds) to convert.
   final Expression<int> timestamp;
 
-  UnixTimestampToDateTime._(this.timestamp);
+  const UnixTimestampToDateTime._(this.timestamp);
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -102,7 +102,7 @@ final class DateExtractionOperator<T extends Object> extends Expression<T> {
   /// The field to extract from the [value].
   final DateExtractionField<T> field;
 
-  DateExtractionOperator._(this.value, this.field);
+  const DateExtractionOperator._(this.value, this.field);
 
   @override
   int get hashCode => Object.hash(value, field);

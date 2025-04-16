@@ -1,3 +1,6 @@
+import 'package:drift/src/query_builder/clauses/where.dart';
+import 'package:meta/meta.dart';
+
 import '../../connections/result_set.dart';
 import '../../runtime/data_class.dart';
 import '../../runtime/database/connection_user.dart';
@@ -9,6 +12,7 @@ import 'query.dart';
 import 'statement.dart';
 
 /// A `DELETE` statement in SQL.
+@immutable
 final class DeleteStatement<Row extends Object,
         RS extends GeneratedTable<Row, RS>> extends SqlStatement
     with SingleTableStatementMixin<Row, RS, DeleteStatement<Row, RS>> {
@@ -17,25 +21,50 @@ final class DeleteStatement<Row extends Object,
   final GeneratedTable<Row, RS> resultSet;
 
   /// An optional `RETURNING` clause part of this statement.
-  ReturningClause<Row, RS>? returning;
+  final ReturningClause<Row, RS>? returning;
 
   final DatabaseConnectionUser _database;
 
+  @override
+  final WhereClause? whereClause;
+
   /// This constructor should be called by [DatabaseConnectionUser.delete] for
   /// you.
-  DeleteStatement(this._database, this.resultSet);
+  DeleteStatement(this._database, this.resultSet)
+      : returning = null,
+        whereClause = null;
+  DeleteStatement._(this._database,
+      {required this.resultSet,
+      required this.whereClause,
+      required this.returning});
 
-  void _prepareDeleteOne(Insertable<Row> entity) {
+  @override
+  DeleteStatement<Row, RS> withWhereClause(WhereClause whereClause) =>
+      _copyWith(whereClause: whereClause);
+
+  DeleteStatement<Row, RS> _withReturning() =>
+      _copyWith(returning: ReturningClause(resultSet));
+
+  DeleteStatement<Row, RS> _copyWith({
+    GeneratedTable<Row, RS>? resultSet,
+    WhereClause? whereClause,
+    ReturningClause<Row, RS>? returning,
+  }) {
+    return DeleteStatement._(
+      _database,
+      resultSet: resultSet ?? this.resultSet,
+      whereClause: whereClause ?? this.whereClause,
+      returning: returning ?? this.returning,
+    );
+  }
+
+  DeleteStatement<Row, RS> _withPrepareDeleteOne(Insertable<Row> entity) {
     assert(
         whereClause == null,
         'When deleting an entity, you may not use where(...)'
         'as well. The where clause will be determined automatically');
 
-    whereSamePrimaryKey(entity);
-  }
-
-  void _addReturning() {
-    returning = ReturningClause(resultSet);
+    return withWhereSamePrimaryKey(entity);
   }
 
   @override
@@ -49,17 +78,15 @@ final class DeleteStatement<Row extends Object,
   /// (not including additional rows that might be affected through triggers or
   /// foreign key constraints).
   Future<int> delete(Insertable<Row> entity) {
-    _prepareDeleteOne(entity);
-    return go();
+    return _withPrepareDeleteOne(entity).go();
   }
 
   /// Like [delete], but returns the deleted row from the database.
   ///
   /// If no matching row with the same primary key exists, `null` is returned.
   Future<Row?> deleteReturning(Insertable<Row> entity) async {
-    _prepareDeleteOne(entity);
-    _addReturning();
-    return (await _goReturning()).singleOrNull;
+    return (await _withPrepareDeleteOne(entity)._withReturning()._goReturning())
+        .singleOrNull;
   }
 
   Future<QueryResult> _run() async {
@@ -85,15 +112,11 @@ final class DeleteStatement<Row extends Object,
 
   /// Like [go], but it also returns all rows affected by this delete operation.
   Future<List<Row>> goAndReturn() {
-    _addReturning();
-    return _goReturning();
+    return _withReturning()._goReturning();
   }
 
   Future<List<Row>> _goReturning() async {
     final result = await _run();
     return returning!.interpretResults(_database, result);
   }
-
-  @override
-  DeleteStatement<Row, RS> asSelf() => this;
 }

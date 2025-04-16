@@ -1,9 +1,12 @@
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+
 import '../../connections/result_set.dart';
 import '../../runtime/database/connection_user.dart';
 import '../compiler.dart';
 import '../results.dart';
 import '../schema/result_set.dart';
 import '../schema/table.dart';
+import '../expressions/expression.dart';
 
 /// A `RETURNING *` clause that can appear as part of an `INSERT`, `UPDATE` or
 /// `DELETE` statement.
@@ -11,7 +14,7 @@ final class ReturningClause<Row extends Object,
     RS extends GeneratedTable<Row, RS>> implements SqlComponent {
   /// The generated [ResultSetStructure] representing columns for this
   /// `RETURNING` clause.
-  final ResultSetStructure structure = ResultSetStructure();
+  late final ResultSetStructure structure;
 
   final ResultSet<Row, RS> _resultSet;
 
@@ -20,13 +23,18 @@ final class ReturningClause<Row extends Object,
     // Note: We currently only generate `RETURNING *` clauses returning columns
     // for a single table.
     final columnPositions = <ColumnPosition>[];
+    final Map<Expression, ColumnPosition> expressions = {};
+    final Map<ResultSet, IList<ColumnPosition>> tables = {};
     for (final (i, column) in _resultSet.columns.indexed) {
       final position = (index: i, name: column.name);
-      structure.expressions[column] = position;
+      expressions[column] = position;
       columnPositions.add(position);
     }
-
-    structure.tables[_resultSet] = columnPositions;
+    tables[_resultSet] = columnPositions.lock;
+    structure = ResultSetStructure(
+      expressions: expressions.lock,
+      tables: tables.lock,
+    );
   }
 
   @override

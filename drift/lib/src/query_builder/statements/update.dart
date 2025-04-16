@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
+import 'package:drift/src/query_builder/clauses/where.dart';
 import 'package:drift/src/query_builder/compiler.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 
 import '../../connections/result_set.dart';
 import '../../runtime/data_class.dart';
@@ -22,17 +24,45 @@ final class UpdateStatement<Row extends Object,
   final DatabaseConnectionUser _database;
 
   /// An optional `RETURNING` clause part of this statement.
-  ReturningClause<Row, RS>? returning;
-
-  /// The columns set by this update statement.
-  final Map<String, Expression> updatedColumns = {};
-
-  /// Used internally by drift to construct an update statement
-  UpdateStatement(this._database, this.resultSet);
+  final ReturningClause<Row, RS>? returning;
 
   @override
-  UpdateStatement<Row, RS> asSelf() {
-    return this;
+  final WhereClause? whereClause;
+
+  /// The columns set by this update statement.
+  final IMap<String, Expression> updatedColumns;
+
+  /// Used internally by drift to construct an update statement
+  UpdateStatement(this._database, this.resultSet)
+      : returning = null,
+        updatedColumns = const IMap.empty(),
+        whereClause = null;
+
+  UpdateStatement._(this._database,
+      {required this.resultSet,
+      required this.whereClause,
+      required this.updatedColumns,
+      required this.returning});
+  @override
+  UpdateStatement<Row, RS> withWhereClause(WhereClause whereClause) =>
+      _copyWith(whereClause: whereClause);
+
+  UpdateStatement<Row, RS> _withReturning() =>
+      _copyWith(returning: ReturningClause(resultSet));
+
+  UpdateStatement<Row, RS> _copyWith({
+    GeneratedTable<Row, RS>? resultSet,
+    WhereClause? whereClause,
+    ReturningClause<Row, RS>? returning,
+    IMap<String, Expression>? updatedColumns,
+  }) {
+    return UpdateStatement._(
+      _database,
+      resultSet: resultSet ?? this.resultSet,
+      whereClause: whereClause ?? this.whereClause,
+      returning: returning ?? this.returning,
+      updatedColumns: updatedColumns ?? this.updatedColumns,
+    );
   }
 
   Future<QueryResult> _run() async {
@@ -45,10 +75,11 @@ final class UpdateStatement<Row extends Object,
     return result;
   }
 
-  void _applyColumns(Insertable<Row> entity, bool nullToAbsent) {
-    updatedColumns
-      ..clear()
-      ..addAll(entity.toColumns(nullToAbsent));
+  UpdateStatement<Row, RS> _withAppliedColumns(
+      Insertable<Row> entity, bool nullToAbsent) {
+    return _copyWith(
+      updatedColumns: entity.toColumns(nullToAbsent).lock,
+    );
   }
 
   /// Writes all non-null fields from [entity] into the columns of all rows
@@ -68,14 +99,14 @@ final class UpdateStatement<Row extends Object,
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
   Future<int> write(Insertable<Row> entity) async {
-    _applyColumns(entity, true);
+    var stmt = this._withAppliedColumns(entity, true);
 
-    if (updatedColumns.isEmpty) {
+    if (stmt.updatedColumns.isEmpty) {
       // nothing to update, we're done
       return Future.value(0);
     }
 
-    final result = await _run();
+    final result = await stmt._run();
     return result.affectedRows!;
   }
 
@@ -85,11 +116,9 @@ final class UpdateStatement<Row extends Object,
   /// For more details on writing entries, see [write].
   /// Note that this requires sqlite 3.35 or later.
   Future<List<Row>> writeReturning(Insertable<Row> entity) async {
-    _applyColumns(entity, true);
-    returning = ReturningClause(resultSet);
-
-    final result = await _run();
-    return returning!.interpretResults(_database, result);
+    var stmt = this._withAppliedColumns(entity, true)._withReturning();
+    final result = await stmt._run();
+    return stmt.returning!.interpretResults(_database, result);
   }
 
   /// Replaces the old version of [entity] that is stored in the database with
@@ -114,24 +143,31 @@ final class UpdateStatement<Row extends Object,
   ///    null values in the entity.
   ///  - [InsertStatement.insert] with the `orReplace` parameter, which behaves
   ///  similar to this method but creates a new row if none exists.
-  Future<bool> replace(Insertable<Row> entity) async {
+  Future<bool> replace(Insertable<Row> entity) => _replace(this, entity);
+
+  static Future<bool>
+      _replace<Row extends Object, RS extends GeneratedTable<Row, RS>>(
+          UpdateStatement<Row, RS> stmt, Insertable<Row> entity) async {
     // We don't turn nulls to absent values here (as opposed to a regular
     // update, where only non-null fields will be written).
-    _applyColumns(entity, false);
+    stmt = stmt._withAppliedColumns(entity, false);
     assert(
-        whereClause == null,
+        stmt.whereClause == null,
         'When using replace on an update statement, you may not use where(...)'
         'as well. The where clause will be determined automatically');
 
-    whereSamePrimaryKey(entity);
+    stmt = stmt.withWhereSamePrimaryKey(entity);
 
-    final primaryKeys = resultSet.primaryKey?.map((c) => c.name) ?? const [];
+    final primaryKeys =
+        stmt.resultSet.primaryKey?.map((c) => c.name) ?? const [];
+
+    final newUpdatedColumns = stmt.updatedColumns.unlock;
 
     // entityToSql doesn't include absent values, so we might have to apply the
     // default value here
-    for (final column in resultSet.columns) {
+    for (final column in stmt.resultSet.columns) {
       // if a default value exists and no value is set, apply the default
-      if (updatedColumns.containsKey(column.name)) {
+      if (newUpdatedColumns.containsKey(column.name)) {
         continue;
       }
 
@@ -140,15 +176,19 @@ final class UpdateStatement<Row extends Object,
           .firstOrNull
           ?.defaultExpression;
 
-      if (defaultValue != null && !updatedColumns.containsKey(column.name)) {
-        updatedColumns[column.name] = defaultValue;
+      if (defaultValue != null && !newUpdatedColumns.containsKey(column.name)) {
+        newUpdatedColumns[column.name] = defaultValue;
       }
     }
 
     // Don't update the primary key
-    updatedColumns.removeWhere((key, _) => primaryKeys.contains(key));
+    newUpdatedColumns.removeWhere((key, _) => primaryKeys.contains(key));
 
-    final result = await _run();
+    stmt = stmt._copyWith(
+      updatedColumns: newUpdatedColumns.lock,
+    );
+
+    final result = await stmt._run();
     return result.affectedRows! != 0;
   }
 

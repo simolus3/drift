@@ -6,6 +6,8 @@ import '../statements/statement.dart';
 abstract interface class DatabaseSchemaEntity {
   /// The (unalised) name of this entity in the database.
   String get entityName;
+
+  const DatabaseSchemaEntity();
 }
 
 /// A statement that creates a [DatabaseSchemaEntity] (such as tables, views,
@@ -66,7 +68,7 @@ final class Index extends DatabaseSchemaEntity {
 
   /// Creates a trigger from its name and the (possibly dialect-specific)
   /// definition generator.
-  Index(this.entityName, this.definition);
+  const Index(this.entityName, this.definition);
 }
 
 /// Represents a `CREATE INDEX` statement in SQL.
@@ -91,5 +93,5 @@ final class OnCreateQuery extends DatabaseSchemaEntity {
 
   /// Creates a trigger from its name and the (possibly dialect-specific)
   /// definition generator.
-  OnCreateQuery(this.definition);
+  const OnCreateQuery(this.definition);
 }

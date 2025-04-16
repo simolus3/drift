@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 /// Information about where we expect a high-level drift column to appear in the
 /// low-level result map returned by database implementation.
@@ -9,19 +10,21 @@ import 'package:collection/collection.dart';
 /// &lt;expr&gt; AS c1`) and also remembers its position ([index]).
 typedef ColumnPosition = ({String name, int index});
 
+@immutable
 final class QueryResult {
   final int? affectedRows;
   final int? lastInsertRowId;
 
   final RawResultSet? resultSet;
 
-  QueryResult({
+  const QueryResult({
     this.affectedRows,
     this.lastInsertRowId,
     required this.resultSet,
   });
 }
 
+@immutable
 abstract base class RawResultSet
     with ListMixin<RawRow>, NonGrowableListMixin<RawRow> {
   RawResultSet();
@@ -37,12 +40,13 @@ abstract base class RawResultSet
   }
 }
 
+@immutable
 abstract base class RawRow {
   final RawResultSet resultSet;
 
-  RawRow({required this.resultSet});
+  const RawRow({required this.resultSet});
 
-  factory RawRow.by({
+  const factory RawRow.by({
     required RawResultSet resultSet,
     required Object? Function(ColumnPosition) byPosition,
     required Object? Function(String) byName,
@@ -64,6 +68,7 @@ abstract base class RawRow {
   Object? byName(String name);
 }
 
+@immutable
 final class _GeneratedResultSet extends RawResultSet {
   @override
   final int length;
@@ -75,11 +80,12 @@ final class _GeneratedResultSet extends RawResultSet {
   RawRow operator [](int index) => _generate(index, this);
 }
 
+@immutable
 final class _CallbackRow extends RawRow {
   final Object? Function(ColumnPosition) _byPosition;
   final Object? Function(String) _byName;
 
-  _CallbackRow(
+  const _CallbackRow(
       {required super.resultSet,
       required Object? Function(ColumnPosition) byPosition,
       required Object? Function(String) byName})

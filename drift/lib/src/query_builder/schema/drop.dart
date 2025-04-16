@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import '../compiler.dart';
 import '../statements/statement.dart';
 import 'entities.dart';
@@ -5,6 +7,7 @@ import 'table.dart';
 import 'view.dart';
 
 /// Represents a `DROP TABLE` statement in SQL.
+@immutable
 final class DropStatement extends SqlStatement {
   /// The type of element to delete (either `TABLE`, `VIEW`, `TRIGGER` or
   /// `INDEX`).

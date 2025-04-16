@@ -101,7 +101,7 @@ final class BetweenExpression extends Expression<bool> {
   /// The upper bound to compare [target] against.
   final Expression higher;
 
-  BetweenExpression._(
+  const BetweenExpression._(
       {required this.target,
       required this.lower,
       required this.higher,

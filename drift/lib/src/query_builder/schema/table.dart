@@ -1,4 +1,6 @@
 import 'package:drift/src/dsl/table.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:meta/meta.dart';
 
 import '../../runtime/type_converter.dart';
 import '../compiler.dart';
@@ -12,7 +14,7 @@ abstract interface class GeneratedTable<Row extends Object,
         Self extends GeneratedTable<Row, Self>> extends Table
     implements ResultSet<Row, Self> {
   @override
-  List<TableColumn> get columns;
+  IList<TableColumn> get columns;
 }
 
 /// Additional interface for tables in a drift file that have been created with
@@ -25,6 +27,7 @@ mixin VirtualTableInfo<Row extends Object,
   String get moduleAndArgs;
 }
 
+@immutable
 final class TableColumn<T extends Object> extends SchemaColumn<T> {
   /// Whether this column is required when inserting new rows into the table.
   ///
@@ -38,7 +41,7 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
   /// definition for this column in SQL. For instance, a single-column primary
   /// key defined by overriding the [Table.primaryKey] getter will _not_ add a
   /// [ColumnPrimaryKeyConstraint] to this column.
-  late final List<ColumnConstraint> constraints = _generateConstraints();
+  late final IList<ColumnConstraint> constraints = _generateConstraints().lock;
 
   /// Lazily generate constraints because some constraints (e.g. `CHECK`) are
   /// self-referential.
@@ -79,6 +82,7 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
 ///
 /// This provides methods like [SchemaColumnWithTypeConverter.equalsValue],
 /// which can be used to apply the type converter when building comparisons.
+@immutable
 final class TableColumnWithTypeConverter<D, S extends Object>
     extends TableColumn<S> with SchemaColumnWithTypeConverter<D, S> {
   @override
@@ -92,7 +96,7 @@ final class TableColumnWithTypeConverter<D, S extends Object>
           type: base.type,
           isNullable: base.isNullable,
           requiredDuringInsert: base.requiredDuringInsert,
-          constraints: () => base.constraints,
+          constraints: () => base.constraints.unlock,
           clientDefault: base.clientDefault,
         );
 }
@@ -103,6 +107,7 @@ final class TableColumnWithTypeConverter<D, S extends Object>
 /// of the [entity] to create. This is because generating `CREATE TABLE`
 /// statements is highly dialect-specific, and this layout allows dialects to
 /// customize how they generate these statements most easily.
+@immutable
 final class CreateTableStatement extends CreateStatement<GeneratedTable> {
   /// Create a statement that will `CREATE` the [entity] when issued.
   CreateTableStatement(super.entity, {super.ifNotExists});

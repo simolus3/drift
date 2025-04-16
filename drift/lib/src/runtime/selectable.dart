@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
+
 import '../utils/async_map.dart';
 import '../utils/single_transformer.dart';
 
@@ -140,6 +142,7 @@ abstract interface class SingleOrNullSelectable<T> {
 /// {@macro drift_multi_selectable_example}
 /// {@macro drift_single_selectable_example}
 /// {@macro drift_single_or_null_selectable_example}
+@immutable
 abstract mixin class Selectable<T>
     implements
         MultiSelectable<T>,
@@ -192,6 +195,7 @@ abstract mixin class Selectable<T>
   }
 }
 
+@immutable
 class _MappedSelectable<S, T> extends Selectable<T> {
   final Selectable<S> _source;
   final T Function(S) _mapper;
@@ -211,6 +215,7 @@ class _MappedSelectable<S, T> extends Selectable<T> {
   List<T> _mapResults(List<S> results) => results.map(_mapper).toList();
 }
 
+@immutable
 class _AsyncMappedSelectable<S, T> extends Selectable<T> {
   final Selectable<S> _source;
   final FutureOr<T> Function(S) _mapper;

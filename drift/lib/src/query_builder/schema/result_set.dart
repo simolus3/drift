@@ -1,3 +1,6 @@
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:meta/meta.dart';
+
 import '../../connections/result_set.dart';
 import '../../dsl/table.dart';
 import '../../runtime/data_class.dart';
@@ -8,11 +11,12 @@ import '../types.dart';
 import 'column.dart';
 import 'entities.dart';
 
+@immutable
 mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     implements ResultSetDsl, DatabaseSchemaEntity {
   String? get alias;
 
-  List<SchemaColumn> get columns;
+  IList<SchemaColumn> get columns;
 
   String get aliasOrName => alias ?? entityName;
 
@@ -25,7 +29,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
   }
 
   Row? Function(DriftRow) createMapperFromPositions(
-      List<ColumnPosition> positions);
+      IList<ColumnPosition> positions);
 
   Row? mapToDart(DriftRow row) {
     return createMapperToDart(row.resultSet.structure)(row);
@@ -47,7 +51,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
           'evaluated by a database engine.');
     }
 
-    final structure = ResultSetStructure()..addSelectStarFromSingleTable(this);
+    final structure = ResultSetStructure().withSelectStarFromSingleTable(this);
 
     final rawValues = asColumnMap.cast<String, Variable>().map((key, value) {
       final (type, dartValue) = value.resolveValue(database.dialect);

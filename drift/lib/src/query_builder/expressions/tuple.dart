@@ -1,6 +1,9 @@
+import 'package:meta/meta.dart';
+
 import '../compiler.dart';
 import 'expression.dart';
 
+@immutable
 final class ExpressionTuple<T extends Object> extends Expression {
   final List<Expression<T>> values;
 

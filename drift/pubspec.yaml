@@ -25,6 +25,7 @@ dependencies:
   path: ^1.9.0
   stack_trace: ^1.11.1
   web: ^1.0.0
+  fast_immutable_collections: ^11.0.4
 
 dev_dependencies:
   archive: ^4.0.2

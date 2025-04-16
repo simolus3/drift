@@ -1,6 +1,8 @@
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:meta/meta.dart';
 
 import '../connections/result_set.dart';
 import '../runtime/type_converter.dart';
@@ -10,30 +12,45 @@ import 'schema/column.dart';
 import 'schema/result_set.dart';
 import 'types.dart';
 
+@immutable
 final class ResultSetStructure {
   /// For [Expression] instances added to a query, the position of the column
   /// added for that expression.
-  final Map<Expression, ColumnPosition> expressions;
+  final IMap<Expression, ColumnPosition> expressions;
 
   /// For each [ResultSet] that has been added to a query in its entirety, the
   /// a list of [ColumnPosition]s for each column in the result set.
-  final Map<ResultSet, List<ColumnPosition>> tables;
+  final IMap<ResultSet, IList<ColumnPosition>> tables;
 
-  ResultSetStructure(
-      {Map<Expression, ColumnPosition>? expressions,
-      Map<ResultSet, List<ColumnPosition>>? tables})
-      : expressions = expressions ?? {},
-        tables = tables ?? {};
+  const ResultSetStructure(
+      {this.expressions = const IMap.empty(),
+      this.tables = const IMap.empty()});
 
-  void addSelectStarFromSingleTable(ResultSet resultSet) {
+  ResultSetStructure copyWith({
+    IMap<Expression, ColumnPosition>? expressions,
+    IMap<ResultSet, IList<ColumnPosition>>? tables,
+  }) {
+    return ResultSetStructure(
+      expressions: expressions ?? this.expressions,
+      tables: tables ?? this.tables,
+    );
+  }
+
+  ResultSetStructure withSelectStarFromSingleTable(ResultSet resultSet) {
+    final tables = this.tables.unlock;
+    final expressions = this.expressions.unlock;
     final positions = <ColumnPosition>[];
     for (final (i, column) in resultSet.columns.indexed) {
       final position = (name: column.name, index: i);
       expressions[column] = position;
       positions.add(position);
     }
+    tables[resultSet] = IList(positions);
 
-    tables[resultSet] = positions;
+    return ResultSetStructure(
+      expressions: expressions.lock,
+      tables: tables.lock,
+    );
   }
 
   /// Transforms this [ResultSetStructure] into a new one, mapping values in
@@ -41,7 +58,7 @@ final class ResultSetStructure {
   ///
   /// This is mainly used internally, e.g. used to obtain the result of
   /// subqueries.
-  ResultSetStructure shift(List<ColumnPosition> outerPositions) {
+  ResultSetStructure shift(IList<ColumnPosition> outerPositions) {
     assert(outerPositions.length == expressions.length);
     ColumnPosition apply(ColumnPosition original) {
       return outerPositions[original.index];
@@ -50,18 +67,19 @@ final class ResultSetStructure {
     return ResultSetStructure(
       expressions: expressions.map((e, pos) => MapEntry(e, apply(pos))),
       tables: tables.map((resultSet, positions) =>
-          MapEntry(resultSet, positions.map(apply).toList())),
+          MapEntry(resultSet, positions.map(apply).toIList())),
     );
   }
 }
 
+@immutable
 final class DriftResultSet
     with ListMixin<DriftRow>, NonGrowableListMixin<DriftRow> {
   final ResultSetStructure structure;
   final RawResultSet resultSet;
   final DriftDialect dialect;
 
-  Map<ResultSet, Object? Function(DriftRow)> _createdMappers = {};
+  final Map<ResultSet, Object? Function(DriftRow)> _createdMappers = {};
 
   DriftResultSet(this.structure, this.resultSet, this.dialect);
 

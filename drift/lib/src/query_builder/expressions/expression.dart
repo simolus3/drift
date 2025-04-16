@@ -13,10 +13,12 @@ import 'subquery.dart';
 import 'tuple.dart';
 import 'variables.dart';
 
+@immutable
 sealed class FunctionParameter implements SqlComponent {}
 
 /// An SQL expression, which evaluates to a value when evaluated by a database
 /// engine.
+@immutable
 abstract base class Expression<T extends Object> implements FunctionParameter {
   /// Constant base constructor, allowing subclasses to be const.
   const Expression();

@@ -15,7 +15,7 @@ Expression<R> subqueryExpression<R extends Object>(
 final class SubqueryExpression<R extends Object> extends Expression<R> {
   final BaseSelectStatement statement;
 
-  SubqueryExpression(this.statement);
+  const SubqueryExpression(this.statement);
 
   @override
   int get hashCode => statement.hashCode;

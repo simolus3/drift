@@ -1,7 +1,10 @@
+import 'package:meta/meta.dart';
+
 import '../compiler.dart';
 import 'statement.dart';
 
 /// A statement to begin a transaction.
+@immutable
 final class BeginStatement extends SqlStatement {
   /// For nested transactions, an incrementing counter for each level of
   /// nesting.
@@ -18,6 +21,7 @@ final class BeginStatement extends SqlStatement {
 }
 
 /// A statement to commit a transaction.
+@immutable
 final class CommitStatement extends SqlStatement {
   /// The depth of the corresponding [BeginStatement.depth] to commit.
   final int depth;
@@ -32,6 +36,7 @@ final class CommitStatement extends SqlStatement {
 }
 
 /// A statement to roll back (possibly nested) transactions.
+@immutable
 final class RollbackStatement extends SqlStatement {
   /// The depth of the corresponding [BeginStatement.depth] to roll back.
   final int depth;

@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import '../../runtime/type_converter.dart';
 import '../compiler.dart';
 import '../expressions/custom.dart';
@@ -7,6 +9,7 @@ import 'column.dart';
 import 'entities.dart';
 import 'result_set.dart';
 
+@immutable
 abstract interface class GeneratedView<Row extends Object,
     Self extends GeneratedView<Row, Self>> implements ResultSet<Row, Self> {
   SelectStatement? get query;
@@ -16,10 +19,11 @@ abstract interface class GeneratedView<Row extends Object,
   Set<String> get readsFrom;
 }
 
+@immutable
 final class ViewColumn<T extends Object> extends SchemaColumn<T> {
   final Expression<T> expression;
 
-  ViewColumn({
+  const ViewColumn({
     required super.name,
     required super.type,
     super.isNullable,
@@ -48,6 +52,7 @@ final class ViewColumn<T extends Object> extends SchemaColumn<T> {
 ///
 /// This provides methods like [SchemaColumnWithTypeConverter.equalsValue],
 /// which can be used to apply the type converter when building comparisons.
+@immutable
 final class ViewColumnWithTypeConverter<D, S extends Object>
     extends ViewColumn<S> with SchemaColumnWithTypeConverter<D, S> {
   @override
@@ -65,6 +70,7 @@ final class ViewColumnWithTypeConverter<D, S extends Object>
 }
 
 /// Represents a `CREATE VIEW` statement in SQL.
+@immutable
 final class CreateViewStatement extends CreateStatement<GeneratedView> {
   /// Create a statement that will `CREATE` the [entity] when issued.
   CreateViewStatement(super.entity, {super.ifNotExists});

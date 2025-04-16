@@ -1,3 +1,4 @@
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
@@ -19,33 +20,69 @@ import '../schema/result_set.dart';
 import 'statement.dart';
 import 'query.dart';
 
+@immutable
 sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     Row> extends SqlStatement with Selectable<Row> {
-  final ResultSetStructure structure = ResultSetStructure();
+  final ResultSetStructure structure;
 
   final bool distinct;
-  final List<FromClauseElement> from = [];
+  final IList<FromClauseElement> from;
 
-  WhereClause? whereClause;
+  final WhereClause? whereClause;
 
   /// The optional `GROUP BY` clause for this select statement.
-  GroupBy? groupByClause;
+  final GroupBy? groupByClause;
 
   /// The optional `ORDER BY` clause for this select statement.
-  OrderBy? orderByClause;
+  final OrderBy? orderByClause;
 
   /// The optional `LIMIT` clause restricting the amount of rows returned by
   /// this statement.
-  Limit? limitClause;
+  final Limit? limitClause;
 
   /// All [CompoundSelect] statements that have been added to this select
   /// statement using [union], [unionAll], [except] and [intersect].
-  final List<CompoundSelect> compounds = [];
+  final IList<CompoundSelect> compounds;
 
   /// The database this statement should be sent to.
-  DatabaseConnectionUser _database;
+  final DatabaseConnectionUser _database;
 
-  BaseSelectStatement(this._database, {this.distinct = false});
+  BaseSelectStatement(this._database, {this.distinct = false})
+      : compounds = const IList.empty(),
+        from = const IList.empty(),
+        whereClause = null,
+        groupByClause = null,
+        orderByClause = null,
+        structure = ResultSetStructure(),
+        limitClause = null;
+
+  BaseSelectStatement._(
+    this._database, {
+    required this.distinct,
+    required this.whereClause,
+    required this.groupByClause,
+    required this.orderByClause,
+    required this.limitClause,
+    required this.structure,
+    required this.from,
+    required this.compounds,
+  });
+
+  Self _copyWith({
+    // ignore: unused_element_parameter
+    bool? distinct,
+    // ignore: unused_element_parameter
+    IList<FromClauseElement>? from,
+    // ignore: unused_element_parameter
+    WhereClause? whereClause,
+    GroupBy? groupByClause,
+    // ignore: unused_element_parameter
+    OrderBy? orderByClause,
+    Limit? limitClause,
+    ResultSetStructure? structure,
+    // ignore: unused_element_parameter
+    IList<CompoundSelect>? compounds,
+  });
 
   ColumnPosition get _nextPosition {
     final index = structure.expressions.length;
@@ -53,32 +90,48 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   }
 
   SelectStatement addColumn(Expression expression) {
-    structure.expressions[expression] ??= _nextPosition;
-    return _asSelectStatement();
+    final currentExpressions = structure.expressions.unlock;
+    currentExpressions[expression] ??= _nextPosition;
+    return _copyWith(
+        structure: structure.copyWith(
+      expressions: currentExpressions.lock,
+    ))._asSelectStatement();
   }
 
   SelectStatement addColumns(Iterable<Expression> expressions) {
+    final currentExpressions = structure.expressions.unlock;
+
     for (final expression in expressions) {
-      structure.expressions[expression] ??= _nextPosition;
+      currentExpressions[expression] ??= _nextPosition;
     }
-    return _asSelectStatement();
+    return _copyWith(
+        structure: structure.copyWith(
+      expressions: currentExpressions.lock,
+    ))._asSelectStatement();
   }
 
   @internal
-  void addResultSet(ResultSet resultSet) {
-    if (structure.tables.containsKey(resultSet)) {
+  Self withResultSet(ResultSet resultSet) {
+    Self stmt = this._asSelf();
+    if (stmt.structure.tables.containsKey(resultSet)) {
       throw StateError(
           'Result set $resultSet has been added to select multiple times, please use an alias');
     }
+
+    final expressions = stmt.structure.expressions.unlock;
+    final tables = stmt.structure.tables.unlock;
 
     final positions = <ColumnPosition>[];
     for (final column in resultSet.columns) {
       final columnPosition = _nextPosition;
       positions.add(columnPosition);
-      structure.expressions[column] = columnPosition;
+      expressions[column] = columnPosition;
     }
-
-    structure.tables[resultSet] = positions;
+    tables[resultSet] = positions.lock;
+    stmt = stmt._copyWith(
+        structure: stmt.structure
+            .copyWith(expressions: expressions.lock, tables: tables.lock));
+    return stmt;
   }
 
   /// Adds [table] to this query using an `INNER JOIN` operator.
@@ -104,16 +157,15 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   ///
   /// An optional [having] attribute can be set to exclude certain groups.
   Self groupBy(Iterable<Expression> expressions, {Expression<bool>? having}) {
-    groupByClause = GroupBy(expressions.toList(), having: having);
-    return _asSelf();
+    return _copyWith(
+        groupByClause: GroupBy(expressions.toList(), having: having));
   }
 
   /// Limits the amount of rows returned by capping them at [limit]. If [offset]
   /// is provided as well, the first [offset] rows will be skipped and not
   /// included in the result.
   Self limit(int limit, {int? offset}) {
-    limitClause = Limit(limit, offset);
-    return _asSelf();
+    return _copyWith(limitClause: Limit(limit, offset));
   }
 
   /// Appends the [other] statement as a `UNION` clause after this query.
@@ -146,8 +198,9 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   ///    .groupBy([categories.id]);
   ///    .union(db.selectExpressions([const Constant<String>(null), countWithoutCategory]));
   /// ```
-  SelectStatement union(BaseSelectStatement other) {
-    return _asSelectStatement().._addCompound(CompoundOperator.union, other);
+  SelectStatement union(
+      DatabaseConnectionUser database, BaseSelectStatement other) {
+    return _asSelectStatement()._withCompound(CompoundOperator.union, other);
   }
 
   /// Appends the [other] statement as a `UNION ALL` clause after this query.
@@ -179,8 +232,9 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   ///    .groupBy([categories.id]);
   ///    .unionAll(db.selectExpressions([const Constant<String>(null), countWithoutCategory]));
   /// ```
-  SelectStatement unionAll(BaseSelectStatement other) {
-    return _asSelectStatement().._addCompound(CompoundOperator.unionAll, other);
+  SelectStatement unionAll(
+      DatabaseConnectionUser database, BaseSelectStatement other) {
+    return _asSelectStatement()._withCompound(CompoundOperator.unionAll, other);
   }
 
   /// Appends the [other] statement as a `EXCEPT` clause after this query.
@@ -195,7 +249,7 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   /// [except] is called). Also, the [other] statement must not contain
   /// compound parts on its own.
   SelectStatement except(BaseSelectStatement other) {
-    return _asSelectStatement().._addCompound(CompoundOperator.except, other);
+    return _asSelectStatement()._withCompound(CompoundOperator.except, other);
   }
 
   /// Appends the [other] statement as a `INTERSECT` clause after this query.
@@ -211,7 +265,7 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   /// compound parts on its own.
   SelectStatement intersect(BaseSelectStatement other) {
     return _asSelectStatement()
-      .._addCompound(CompoundOperator.intersect, other);
+        ._withCompound(CompoundOperator.intersect, other);
   }
 
   @override
@@ -222,7 +276,7 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   Self _asSelf();
 
   SelectStatement _withAddedJoin(Join join) {
-    return _asSelectStatement().._addJoin(join);
+    return _asSelectStatement()._withJoin(join);
   }
 
   SelectStatement _asSelectStatement();
@@ -275,15 +329,56 @@ final class SelectStatement
       {bool includeJoinsByDefault = true, super.distinct})
       : _includeJoinsByDefault = includeJoinsByDefault;
 
-  void _applyFrom(SingleTableSelectStatement other) {
-    addResultSet(other.resultSet);
+  SelectStatement._(super.database,
+      {required bool includeJoinsByDefault,
+      required super.distinct,
+      required super.whereClause,
+      required super.groupByClause,
+      required super.orderByClause,
+      required super.from,
+      required super.compounds,
+      required super.structure,
+      required super.limitClause})
+      : _includeJoinsByDefault = includeJoinsByDefault,
+        super._();
+
+  @override
+  SelectStatement _copyWith(
+      {bool? distinct,
+      IList<FromClauseElement>? from,
+      WhereClause? whereClause,
+      GroupBy? groupByClause,
+      OrderBy? orderByClause,
+      Limit? limitClause,
+      ResultSetStructure? structure,
+      bool? includeJoinsByDefault,
+      IList<CompoundSelect>? compounds}) {
+    return SelectStatement._(
+      _database,
+      includeJoinsByDefault: includeJoinsByDefault ?? _includeJoinsByDefault,
+      distinct: distinct ?? this.distinct,
+      from: from ?? this.from,
+      whereClause: whereClause ?? this.whereClause,
+      groupByClause: groupByClause ?? this.groupByClause,
+      orderByClause: orderByClause ?? this.orderByClause,
+      limitClause: limitClause ?? this.limitClause,
+      compounds: compounds ?? this.compounds,
+      structure: structure ?? this.structure,
+    );
+  }
+
+  SelectStatement _applyFrom(SingleTableSelectStatement other) {
+    var stmt = withResultSet(other.resultSet);
 
     assert(distinct == other.distinct);
-    from.addAll(other.from);
-    whereClause = other.whereClause;
-    groupByClause = other.groupByClause;
-    orderByClause = other.orderByClause;
-    limitClause = other.limitClause;
+    stmt = stmt._copyWith(
+      from: from.addAll(other.from),
+      whereClause: other.whereClause,
+      groupByClause: other.groupByClause,
+      orderByClause: other.orderByClause,
+      limitClause: other.limitClause,
+    );
+    return stmt;
   }
 
   /// Applies the [predicate] as the where clause, which will be used to filter
@@ -303,18 +398,16 @@ final class SelectStatement
   /// ```
   SelectStatement where(Expression<bool> predicate) {
     if (whereClause == null) {
-      whereClause = WhereClause(predicate);
+      return _copyWith(whereClause: WhereClause(predicate));
     } else {
-      whereClause = WhereClause(whereClause!.condition & predicate);
+      return _copyWith(
+          whereClause: WhereClause(whereClause!.condition & predicate));
     }
-
-    return this;
   }
 
   /// Orders the results of this statement by the ordering [terms].
   SelectStatement orderBy(List<OrderingTerm> terms) {
-    orderByClause = OrderBy(terms);
-    return this;
+    return _copyWith(orderByClause: OrderBy(terms));
   }
 
   @override
@@ -323,14 +416,28 @@ final class SelectStatement
   @override
   SelectStatement _asSelectStatement() => this;
 
-  void _addJoin(Join join) {
-    from.add(join);
+  SelectStatement _withJoin(Join join) {
+    var stmt = _copyWith(from: from.add(join));
     if (join.includeInResult ?? _includeJoinsByDefault) {
-      addResultSet(join.table.resultSet);
+      stmt = stmt.withResultSet(join.table.resultSet);
     }
+    return stmt;
   }
 
-  void _addCompound(CompoundOperator operator, BaseSelectStatement other) {
+  SelectStatement _withCompound(
+          CompoundOperator operator, BaseSelectStatement other) =>
+      __withCompound(
+        this,
+        _database,
+        operator,
+        other,
+      );
+
+  static SelectStatement __withCompound(
+      SelectStatement stmt,
+      DatabaseConnectionUser database,
+      CompoundOperator operator,
+      BaseSelectStatement other) {
     if (other.limitClause != null ||
         other.orderByClause != null ||
         other.compounds.isNotEmpty) {
@@ -341,9 +448,9 @@ final class SelectStatement
     }
 
     final normalizedOther = other._asSelectStatement();
-    final dialect = _database.dialect;
+    final dialect = database.dialect;
 
-    var columnsHere = structure.expressions.keys.iterator;
+    var columnsHere = stmt.structure.expressions.keys.iterator;
     var otherColumns = other.structure.expressions.keys.iterator;
     var columnCount = 0;
 
@@ -371,8 +478,9 @@ final class SelectStatement
           "Can't add select with more columns (the original query has "
           '$columnCount columns, the added part has more).');
     }
-
-    compounds.add(CompoundSelect._(operator, normalizedOther));
+    return stmt._copyWith(
+        compounds:
+            stmt.compounds.add(CompoundSelect._(operator, normalizedOther)));
   }
 
   @override
@@ -394,10 +502,61 @@ final class SingleTableSelectStatement<Row extends Object,
   @override
   final ResultSet<Row, RS> resultSet;
 
-  SingleTableSelectStatement(super._database, this.resultSet,
-      {super.distinct}) {
-    structure.addSelectStarFromSingleTable(resultSet);
-    from.add(FromResultSet(resultSet));
+  factory SingleTableSelectStatement(
+      DatabaseConnectionUser database, ResultSet<Row, RS> resultSet,
+      {bool distinct = false}) {
+    final structure =
+        ResultSetStructure().withSelectStarFromSingleTable(resultSet);
+    final from = IList([FromResultSet(resultSet)]);
+    return SingleTableSelectStatement<Row, RS>._(
+      database,
+      resultSet: resultSet,
+      distinct: distinct,
+      from: from,
+      whereClause: null,
+      groupByClause: null,
+      orderByClause: null,
+      limitClause: null,
+      compounds: const IList.empty(),
+      structure: structure,
+    );
+  }
+
+  SingleTableSelectStatement._(super.database,
+      {required super.distinct,
+      required super.whereClause,
+      required super.groupByClause,
+      required super.orderByClause,
+      required super.from,
+      required super.compounds,
+      required super.structure,
+      required this.resultSet,
+      required super.limitClause})
+      : super._();
+
+  @override
+  SingleTableSelectStatement<Row, RS> _copyWith(
+      {bool? distinct,
+      IList<FromClauseElement>? from,
+      WhereClause? whereClause,
+      GroupBy? groupByClause,
+      OrderBy? orderByClause,
+      Limit? limitClause,
+      ResultSet<Row, RS>? resultSet,
+      ResultSetStructure? structure,
+      IList<CompoundSelect>? compounds}) {
+    return SingleTableSelectStatement._(
+      _database,
+      resultSet: resultSet ?? this.resultSet,
+      distinct: distinct ?? this.distinct,
+      from: from ?? this.from,
+      whereClause: whereClause ?? this.whereClause,
+      groupByClause: groupByClause ?? this.groupByClause,
+      orderByClause: orderByClause ?? this.orderByClause,
+      limitClause: limitClause ?? this.limitClause,
+      compounds: compounds ?? this.compounds,
+      structure: structure ?? this.structure,
+    );
   }
 
   /// Orders the result by the given clauses. The clauses coming first in the
@@ -417,13 +576,11 @@ final class SingleTableSelectStatement<Row extends Object,
   /// ```
   SingleTableSelectStatement<Row, RS> orderBy(
       List<OrderClauseGenerator<RS>> clauses) {
-    orderByClause =
-        OrderBy(clauses.map((t) => t(resultSet.asSelfType())).toList());
-    return this;
+    return _copyWith(
+        orderByClause: OrderBy(
+      clauses.map((t) => t(resultSet.asSelfType())).toList(),
+    ));
   }
-
-  @override
-  SingleTableSelectStatement<Row, RS> asSelf() => this;
 
   @override
   SingleTableSelectStatement<Row, RS> _asSelf() => this;
@@ -437,6 +594,11 @@ final class SingleTableSelectStatement<Row extends Object,
   @override
   SelectStatement _asSelectStatement() {
     return SelectStatement(_database, distinct: distinct).._applyFrom(this);
+  }
+
+  @override
+  SingleTableSelectStatement<Row, RS> withWhereClause(WhereClause whereClause) {
+    return _copyWith(whereClause: whereClause);
   }
 }
 

@@ -11,7 +11,7 @@ final class Limit implements SqlComponent {
 
   /// Construct a limit clause from the [amount] of rows to include an a
   /// nullable [offset].
-  Limit(this.amount, this.offset);
+  const Limit(this.amount, this.offset);
 
   @override
   void compileWith(StatementCompiler compiler) {

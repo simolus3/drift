@@ -11,7 +11,7 @@ final class GroupBy implements SqlComponent {
 
   /// Creates a `GROUP BY` clause by the expressions to use as group keys
   /// ([groupBy]) and an optional [having] clause.
-  GroupBy(this.groupBy, {this.having});
+  const GroupBy(this.groupBy, {this.having});
 
   @override
   void compileWith(StatementCompiler compiler) {

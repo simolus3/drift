@@ -28,7 +28,7 @@ final class ExistsExpression extends Expression<bool> {
   final bool not;
 
   /// Creates an [ExistsExpression] from the inner [select] statement.
-  ExistsExpression(this.select, {this.not = false});
+  const ExistsExpression(this.select, {this.not = false});
 
   @override
   Precedence get precedence => Precedence.comparisonEq;

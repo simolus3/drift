@@ -132,7 +132,7 @@ final class CollateExpression extends Expression<String> {
   /// The collation to use.
   final Collate collation;
 
-  CollateExpression._(this.source, this.collation);
+  const CollateExpression._(this.source, this.collation);
 
   @override
   int get hashCode => Object.hash(source, collation);

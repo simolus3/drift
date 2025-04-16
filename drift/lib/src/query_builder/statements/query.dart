@@ -10,6 +10,7 @@ import '../schema/table.dart';
 
 /// Container for SQL statements that operate on a single primary SQL table.
 @internal
+@immutable
 abstract mixin class SingleTableStatementMixin<
     Row extends Object,
     RS extends ResultSet<Row, RS>,
@@ -18,11 +19,11 @@ abstract mixin class SingleTableStatementMixin<
   ResultSet<Row, RS> get resultSet;
 
   /// The [WhereClause] filtering rows for this statement.
-  WhereClause? whereClause;
+  WhereClause? get whereClause;
 
   /// Returns `this` as [Self].
   @internal
-  Self asSelf();
+  Self withWhereClause(WhereClause whereClause);
 
   /// Makes this statement only include rows that match the [filter].
   ///
@@ -51,19 +52,17 @@ abstract mixin class SingleTableStatementMixin<
     final predicate = filter(resultSet.asSelfType());
 
     if (whereClause == null) {
-      whereClause = WhereClause(predicate);
+      return withWhereClause(WhereClause(predicate));
     } else {
-      whereClause = WhereClause(whereClause!.condition & predicate);
+      return withWhereClause(WhereClause(whereClause!.condition & predicate));
     }
-
-    return asSelf();
   }
 }
 
 /// Extension for statements on a table.
 ///
-/// This adds the [whereSamePrimaryKey] method as an extension. The query could
-/// run on a view, for which [whereSamePrimaryKey] is not defined.
+/// This adds the [withWhereSamePrimaryKey] method as an extension. The query could
+/// run on a view, for which [withWhereSamePrimaryKey] is not defined.
 extension QueryTableExtensions<
         Row extends Object,
         RS extends GeneratedTable<Row, RS>,
@@ -76,9 +75,9 @@ extension QueryTableExtensions<
   /// considered distinct from all values (including other `NULL`s).
   /// This matches sqlite3's behavior of not counting duplicate `NULL`s as a
   /// uniqueness constraint violation for primary keys, but makes it impossible
-  /// to find other rows with [whereSamePrimaryKey] if nullable primary keys are
+  /// to find other rows with [withWhereSamePrimaryKey] if nullable primary keys are
   /// used.
-  Self whereSamePrimaryKey(Insertable<Row> d) {
+  Self withWhereSamePrimaryKey(Insertable<Row> d) {
     final source = resultSet as GeneratedTable;
     final primaryKey = source.primaryKey;
 
