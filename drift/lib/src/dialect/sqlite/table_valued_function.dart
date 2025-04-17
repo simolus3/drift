@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 
 import 'compiler.dart';
 
@@ -25,7 +26,7 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
   final List<Expression> arguments;
 
   @override
-  final List<SchemaColumn<Object>> columns;
+  late final IList<SchemaColumn<Object>> columns;
 
   @override
   final String? alias;
@@ -38,12 +39,11 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
   TableValuedFunction({
     required this.functionName,
     required this.arguments,
-    required this.columns,
+    required IList<SchemaColumn<Object>> columns,
     this.alias,
   }) {
-    for (final column in columns) {
-      column.owningResultSet = this;
-    }
+    this.columns =
+        columns.map((c) => c.copyWith(owningResultSet: this)).toIList();
   }
 
   @override
@@ -54,7 +54,7 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
 
   @override
   DriftRow? Function(DriftRow p1) createMapperFromPositions(
-      List<ColumnPosition> positions) {
+      IList<ColumnPosition> positions) {
     return (row) => row;
   }
 

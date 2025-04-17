@@ -59,6 +59,7 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
     required super.name,
     required super.type,
     super.isNullable,
+    super.owningResultSet,
     this.requiredDuringInsert = true,
     List<ColumnConstraint> Function() constraints = _noConstraints,
     this.clientDefault,

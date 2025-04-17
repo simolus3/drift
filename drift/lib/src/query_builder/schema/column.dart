@@ -27,6 +27,20 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
     this.owningResultSet,
   });
 
+  SchemaColumn<T> copyWith({
+    String? name,
+    SqlType<T>? type,
+    bool? isNullable,
+    ResultSet? owningResultSet,
+  }) {
+    return SchemaColumn<T>(
+      name: name ?? this.name,
+      type: type ?? this.type,
+      isNullable: isNullable ?? this.isNullable,
+      owningResultSet: owningResultSet ?? this.owningResultSet,
+    );
+  }
+
   @override
   SqlType<T> resolveType(DriftDialect dialect) {
     return type;
