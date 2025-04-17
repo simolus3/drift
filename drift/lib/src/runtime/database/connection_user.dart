@@ -311,13 +311,12 @@ abstract base class DatabaseConnectionUser {
   ///  - the documentation on [aggregate expressions](https://drift.simonbinder.eu/docs/getting-started/expressions/#aggregate)
   ///  - the documentation on [group by](https://drift.simonbinder.eu/docs/advanced-features/joins/#group-by)
   SelectStatement selectOnly(ResultSet table, {bool distinct = false}) {
-    final statement = SelectStatement(
+    final stmt = SelectStatement(
       this,
       includeJoinsByDefault: false,
       distinct: distinct,
     );
-    statement.from.add(FromResultSet(table));
-    return statement;
+    return stmt.withAddedFrom(FromResultSet(table));
   }
 
   /// Counts the amount of rows in a table.

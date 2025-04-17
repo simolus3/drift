@@ -135,6 +135,11 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     return stmt;
   }
 
+  @internal
+  Self withAddedFrom(FromClauseElement fromClause) {
+    return _copyWith(from: (from.toBuilder()..add(fromClause)).build());
+  }
+
   /// Adds [table] to this query using an `INNER JOIN` operator.
   SelectStatement innerJoin(ResultSetDsl table,
       {Expression<bool>? on, bool? includeInResult}) {

@@ -24,11 +24,11 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
   };
 
   Row? Function(DriftRow) createMapperToDart(ResultSetStructure structure) {
-    return createMapperFromPositions(structure.tables[this]!);
+    return createMapperFromPositions(structure.tables[this]!.toList());
   }
 
   Row? Function(DriftRow) createMapperFromPositions(
-      Iterable<ColumnPosition> positions);
+      List<ColumnPosition> positions);
 
   Row? mapToDart(DriftRow row) {
     return createMapperToDart(row.resultSet.structure)(row);

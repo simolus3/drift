@@ -23,7 +23,7 @@ final class CustomSelectStatement<T> with Selectable<T> {
   final List<TypedNullableValue> variables;
 
   /// The function creating an optimized reader given the resolved result set.
-  T Function(DriftRow) Function(DriftResultSet) createMapper;
+  final T Function(DriftRow) Function(DriftResultSet) createMapper;
 
   final DatabaseConnectionUser _db;
 

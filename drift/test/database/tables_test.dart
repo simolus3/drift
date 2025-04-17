@@ -57,8 +57,9 @@ void main() {
       'category': null,
     };
 
-    final structure = ResultSetStructure()
-      ..addSelectStarFromSingleTable(db.todosTable);
+    final structure =
+        ResultSetStructure().withSelectStarFromSingleTable(db.todosTable);
+
     final resultSet = DriftResultSet(
         structure,
         RawResultSet.generate(
