@@ -2,6 +2,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/src/query_builder/clauses/where.dart';
 import 'package:drift/src/query_builder/compiler.dart';
+import 'package:meta/meta.dart';
 
 import '../../connections/result_set.dart';
 import '../../runtime/data_class.dart';
@@ -15,6 +16,7 @@ import 'query.dart';
 import 'statement.dart';
 
 /// Represents an `UPDATE` statement in sql.
+@immutable
 final class UpdateStatement<Row extends Object,
         RS extends GeneratedTable<Row, RS>> extends SqlStatement
     with SingleTableStatementMixin<Row, RS, UpdateStatement<Row, RS>> {
@@ -31,6 +33,9 @@ final class UpdateStatement<Row extends Object,
 
   /// The columns set by this update statement.
   final BuiltMap<String, Expression> updatedColumns;
+
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
 
   /// Used internally by drift to construct an update statement
   UpdateStatement(this._database, this.resultSet)

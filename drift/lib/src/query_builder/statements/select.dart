@@ -329,6 +329,9 @@ final class SelectStatement
     extends BaseSelectStatement<SelectStatement, DriftRow> {
   final bool _includeJoinsByDefault;
 
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   SelectStatement(super.database,
       {bool includeJoinsByDefault = true, super.distinct})
       : _includeJoinsByDefault = includeJoinsByDefault;
@@ -505,6 +508,8 @@ final class SingleTableSelectStatement<Row extends Object,
         SingleTableStatementMixin<Row, RS,
             SingleTableSelectStatement<Row, RS>> {
   @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+  @override
   final ResultSet<Row, RS> resultSet;
 
   factory SingleTableSelectStatement(
@@ -631,6 +636,7 @@ enum JoinOperator implements SqlComponent {
 /// Represents a join of a [table] to a query.
 ///
 /// This allows applying a [JoinOperator] and optionally also an [on] condition.
+@immutable
 final class Join extends FromClauseElement {
   /// The [JoinOperator] to use for this join.
   final JoinOperator operator;
@@ -675,6 +681,7 @@ final class Join extends FromClauseElement {
   }
 }
 
+@immutable
 final class FromResultSet extends FromClauseElement {
   final ResultSet resultSet;
 
@@ -718,6 +725,7 @@ enum CompoundOperator implements SqlComponent {
 
 /// A select statement that has been added to an existing [SelectStatement] by
 /// using a [CompoundOperator].
+@immutable
 final class CompoundSelect implements SqlComponent {
   final CompoundOperator operator;
   final SelectStatement statement;

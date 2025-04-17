@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:meta/meta.dart';
 
 import '../compiler.dart';
@@ -6,6 +7,9 @@ import 'statement.dart';
 /// A statement to begin a transaction.
 @immutable
 final class BeginStatement extends SqlStatement {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// For nested transactions, an incrementing counter for each level of
   /// nesting.
   /// The first transaction opened in a session with have a [depth] of zero.
@@ -16,13 +20,16 @@ final class BeginStatement extends SqlStatement {
 
   @override
   void compileWith(StatementCompiler compiler) {
-    // TODO: implement compileWith
+    compiler.addBegin(this);
   }
 }
 
 /// A statement to commit a transaction.
 @immutable
 final class CommitStatement extends SqlStatement {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// The depth of the corresponding [BeginStatement.depth] to commit.
   final int depth;
 
@@ -31,13 +38,16 @@ final class CommitStatement extends SqlStatement {
 
   @override
   void compileWith(StatementCompiler compiler) {
-    // TODO: implement compileWith
+    compiler.addCommit(this);
   }
 }
 
 /// A statement to roll back (possibly nested) transactions.
 @immutable
 final class RollbackStatement extends SqlStatement {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// The depth of the corresponding [BeginStatement.depth] to roll back.
   final int depth;
 
@@ -46,6 +56,6 @@ final class RollbackStatement extends SqlStatement {
 
   @override
   void compileWith(StatementCompiler compiler) {
-    // TODO: implement compileWith
+    compiler.addRollback(this);
   }
 }
