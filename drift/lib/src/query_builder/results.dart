@@ -83,7 +83,7 @@ final class DriftResultSet
   final ResultSetStructure structure;
   final RawResultSet resultSet;
   final DriftDialect dialect;
-
+  // This is mutable to cache the created mappers.
   final Map<ResultSet, Object? Function(DriftRow)> _createdMappers = {};
 
   DriftResultSet(this.structure, this.resultSet, this.dialect);

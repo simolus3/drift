@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:meta/meta.dart';
 
 import '../../connections/result_set.dart';
@@ -19,9 +20,9 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
 
   String get aliasOrName => alias ?? entityName;
 
-  late final Map<String, SchemaColumn> columnsByName = {
+  late final BuiltMap<String, SchemaColumn> columnsByName = {
     for (final column in columns) column.name: column,
-  };
+  }.build();
 
   Row? Function(DriftRow) createMapperToDart(ResultSetStructure structure) {
     return createMapperFromPositions(structure.tables[this]!.toList());

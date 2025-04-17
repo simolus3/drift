@@ -1,4 +1,6 @@
-import 'package:collection/collection.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:meta/meta.dart';
+
 import 'package:drift/src/query_builder/compiler.dart';
 
 import '../clauses/order_by.dart';
@@ -214,6 +216,7 @@ extension DateTimeAggregate on Expression<DateTime> {
 /// Drift exposes direct bindings to most aggregate functions (e.g. via
 /// [BaseAggregate.count]). This class is useful when writing custom aggregate
 /// function invocations.
+@immutable
 final class AggregateFunctionExpression<D extends Object>
     extends Expression<D> {
   /// The name of the aggregate function to invoke.
@@ -223,7 +226,7 @@ final class AggregateFunctionExpression<D extends Object>
   final bool distinct;
 
   /// The arguments to pass to the function.
-  final List<FunctionParameter> arguments;
+  final BuiltList<FunctionParameter> arguments;
 
   /// The order in which rows of the current group should be passed to the
   /// aggregate function.
@@ -234,13 +237,13 @@ final class AggregateFunctionExpression<D extends Object>
   final Expression<bool>? filter;
 
   /// Creates an aggregate function expression from the syntactic components.
-  const AggregateFunctionExpression(
+  AggregateFunctionExpression(
     this.functionName,
-    this.arguments, {
+    Iterable<FunctionParameter> arguments, {
     this.filter,
     this.distinct = false,
     this.orderBy,
-  });
+  }) : arguments = BuiltList.from(arguments);
 
   @override
   final Precedence precedence = Precedence.primary;
@@ -252,8 +255,7 @@ final class AggregateFunctionExpression<D extends Object>
 
   @override
   int get hashCode {
-    return Object.hash(functionName, distinct,
-        const ListEquality<Object?>().hash(arguments), orderBy, filter);
+    return Object.hash(functionName, distinct, arguments, orderBy, filter);
   }
 
   @override
@@ -265,7 +267,7 @@ final class AggregateFunctionExpression<D extends Object>
     final typedOther = other as AggregateFunctionExpression<D>;
     return typedOther.functionName == functionName &&
         typedOther.distinct == distinct &&
-        const ListEquality<Object?>().equals(typedOther.arguments, arguments) &&
+        typedOther.arguments == arguments &&
         typedOther.orderBy == orderBy &&
         typedOther.filter == filter;
   }

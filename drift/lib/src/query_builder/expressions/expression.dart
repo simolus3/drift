@@ -393,6 +393,7 @@ enum Precedence implements Comparable<Precedence> {
   bool operator >=(Precedence other) => compareTo(other) >= 0;
 }
 
+@immutable
 final class _DartCastExpression<D1 extends Object, D2 extends Object>
     extends Expression<D2> {
   final Expression<D1> inner;
@@ -422,6 +423,7 @@ final class _DartCastExpression<D1 extends Object, D2 extends Object>
   }
 }
 
+@immutable
 final class CastExpression<D1 extends Object, D2 extends Object>
     extends Expression<D2> {
   /// The expression for which the typecast should be performed.
@@ -445,6 +447,7 @@ final class CastExpression<D1 extends Object, D2 extends Object>
   }
 }
 
+@immutable
 final class StarFunctionParameter implements FunctionParameter {
   const StarFunctionParameter();
 

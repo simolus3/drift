@@ -1,8 +1,12 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:meta/meta.dart';
+
 import '../compiler.dart';
 import '../statements/statement.dart';
 
 /// Some abstract schema entity that can be stored in a database. This includes
 /// tables, triggers, views, indexes, etc.
+@immutable
 abstract interface class DatabaseSchemaEntity {
   /// The (unalised) name of this entity in the database.
   String get entityName;
@@ -12,6 +16,7 @@ abstract interface class DatabaseSchemaEntity {
 
 /// A statement that creates a [DatabaseSchemaEntity] (such as tables, views,
 /// triggers or indices).
+@immutable
 abstract base class CreateStatement<T extends DatabaseSchemaEntity>
     extends SqlStatement {
   /// The table, view, trigger or index to create.
@@ -33,6 +38,7 @@ abstract base class CreateStatement<T extends DatabaseSchemaEntity>
 ///
 /// [sqlite-docs]: https://sqlite.org/lang_createtrigger.html
 /// [sql-tut]: https://www.sqlitetutorial.net/sqlite-trigger/
+@immutable
 final class Trigger extends DatabaseSchemaEntity {
   @override
   final String entityName;
@@ -47,7 +53,11 @@ final class Trigger extends DatabaseSchemaEntity {
 }
 
 /// Represents a `CREATE TRIGGER` statement in SQL.
+@immutable
 final class CreateTriggerStatement extends CreateStatement<Trigger> {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// Create a statement that will `CREATE` the [entity] when issued.
   CreateTriggerStatement(super.entity, {super.ifNotExists});
 
@@ -58,6 +68,7 @@ final class CreateTriggerStatement extends CreateStatement<Trigger> {
 }
 
 /// An index on a table.
+@immutable
 final class Index extends DatabaseSchemaEntity {
   @override
   final String entityName;
@@ -72,7 +83,11 @@ final class Index extends DatabaseSchemaEntity {
 }
 
 /// Represents a `CREATE INDEX` statement in SQL.
+@immutable
 final class CreateIndexStatement extends CreateStatement<Index> {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// Create a statement that will `CREATE` the [entity] when issued.
   CreateIndexStatement(super.entity, {super.ifNotExists});
 
@@ -84,6 +99,7 @@ final class CreateIndexStatement extends CreateStatement<Index> {
 
 /// A query defined in a drift file that should run when the database is
 /// created.
+@immutable
 final class OnCreateQuery extends DatabaseSchemaEntity {
   @override
   String get entityName => '@create';

@@ -1,7 +1,10 @@
+import 'package:meta/meta.dart';
+
 import '../compiler.dart';
 import '../expressions/expression.dart';
 
 /// A `WHERE` clause acting as a filter in SQL.
+@immutable
 final class WhereClause implements SqlComponent {
   /// The condition for this `WHERE` clause.
   final Expression<bool> condition;

@@ -1,4 +1,4 @@
-import 'package:collection/collection.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:meta/meta.dart';
 
 import '../runtime/streams/update_rules.dart';
@@ -73,13 +73,13 @@ abstract interface class SqlComponent {
 
 @immutable
 abstract mixin class DialectSpecificComponent implements SqlComponent {
-  final Map<Symbol, Object?> dialectSpecificOptions = {};
+  BuiltMap<Symbol, Object?> get dialectSpecificOptions;
 }
 
 @immutable
 final class CustomComponent implements SqlComponent {
   final String fallbackSql;
-  final Map<KnownSqlDialect, String> dialectSpecifcSql;
+  final BuiltMap<KnownSqlDialect, String> dialectSpecificSql;
 
   /// Additional tables that this SQL construct is watching.
   ///
@@ -89,14 +89,14 @@ final class CustomComponent implements SqlComponent {
   /// is mainly used for view and subqueries used as expressions.
   final Iterable<ResultSet> watchedTables;
 
-  const CustomComponent(
+  CustomComponent(
     this.fallbackSql, {
-    this.dialectSpecifcSql = const {},
+    Map<KnownSqlDialect, String> dialectSpecifcSql = const {},
     this.watchedTables = const [],
-  });
+  }) : dialectSpecificSql = dialectSpecifcSql.build();
 
   String sqlFor(KnownSqlDialect? dialect) {
-    return dialectSpecifcSql[dialect] ?? fallbackSql;
+    return dialectSpecificSql[dialect] ?? fallbackSql;
   }
 
   @override
@@ -108,14 +108,11 @@ final class CustomComponent implements SqlComponent {
   bool operator ==(Object other) {
     return other is CustomComponent &&
         other.fallbackSql == fallbackSql &&
-        _equality.equals(other.dialectSpecifcSql, dialectSpecifcSql);
+        other.dialectSpecificSql == dialectSpecificSql;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(fallbackSql, _equality.hash(dialectSpecifcSql));
-
-  static const _equality = MapEquality<Object?, Object?>();
+  int get hashCode => Object.hash(fallbackSql, dialectSpecificSql);
 }
 
 abstract base class StatementCompiler {
@@ -871,7 +868,7 @@ abstract base class StatementCompiler {
   }
 
   void addDoNothing(DoNothing clause) {
-    addOnConflictConstraint(target: clause.target?.toList());
+    addOnConflictConstraint(target: clause.target);
     statement.buffer.write(' DO NOTHING');
   }
 
@@ -899,7 +896,7 @@ abstract base class StatementCompiler {
   }
 
   void addOnConflictConstraint(
-      {List<TableColumn>? target, WhereClause? where}) {
+      {Iterable<TableColumn>? target, WhereClause? where}) {
     statement.buffer.write('ON CONFLICT');
 
     if (target != null && target.isEmpty) {
@@ -909,8 +906,8 @@ abstract base class StatementCompiler {
     }
 
     statement.buffer.write('(');
-    final conflictTarget =
-        target ?? _currentInsertStatement!.table.primaryKey!.toList();
+    final Iterable<SchemaColumn> conflictTarget =
+        target ?? _currentInsertStatement!.table.primaryKey!;
 
     if (conflictTarget.isEmpty) {
       throw ArgumentError(

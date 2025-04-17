@@ -1,4 +1,5 @@
 import 'package:built_collection/built_collection.dart';
+import 'package:meta/meta.dart';
 
 import '../../connections/result_set.dart';
 import '../../runtime/database/connection_user.dart';
@@ -10,31 +11,35 @@ import '../expressions/expression.dart';
 
 /// A `RETURNING *` clause that can appear as part of an `INSERT`, `UPDATE` or
 /// `DELETE` statement.
+@immutable
 final class ReturningClause<Row extends Object,
     RS extends GeneratedTable<Row, RS>> implements SqlComponent {
   /// The generated [ResultSetStructure] representing columns for this
   /// `RETURNING` clause.
-  late final ResultSetStructure structure;
+  final ResultSetStructure structure;
 
   final ResultSet<Row, RS> _resultSet;
 
+  ReturningClause._(this.structure, this._resultSet);
+
   /// Creates a `RETURNING` clause for the given [resultSet].
-  ReturningClause(this._resultSet) {
+  factory ReturningClause(ResultSet<Row, RS> resultSet) {
     // Note: We currently only generate `RETURNING *` clauses returning columns
     // for a single table.
     final columnPositions = <ColumnPosition>[];
     final expressionsBuilder = MapBuilder<Expression, ColumnPosition>();
     final tables = MapBuilder<ResultSet, BuiltList<ColumnPosition>>();
-    for (final (i, column) in _resultSet.columns.indexed) {
+    for (final (i, column) in resultSet.columns.indexed) {
       final position = (index: i, name: column.name);
       expressionsBuilder[column] = position;
       columnPositions.add(position);
     }
-    tables[_resultSet] = columnPositions.build();
-    structure = ResultSetStructure(
+    tables[resultSet] = columnPositions.build();
+    final structure = ResultSetStructure(
       expressions: expressionsBuilder.build(),
       tables: tables.build(),
     );
+    return ReturningClause._(structure, resultSet);
   }
 
   @override

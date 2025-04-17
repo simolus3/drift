@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:drift/src/dsl/table.dart';
 
 import 'package:meta/meta.dart';
@@ -10,6 +11,7 @@ import 'column_constraints.dart';
 import 'entities.dart';
 import 'result_set.dart';
 
+@immutable
 abstract interface class GeneratedTable<Row extends Object,
         Self extends GeneratedTable<Row, Self>> extends Table
     implements ResultSet<Row, Self> {
@@ -19,6 +21,7 @@ abstract interface class GeneratedTable<Row extends Object,
 
 /// Additional interface for tables in a drift file that have been created with
 /// an `CREATE VIRTUAL TABLE STATEMENT`.
+@immutable
 mixin VirtualTableInfo<Row extends Object,
     Self extends GeneratedTable<Row, Self>> on GeneratedTable<Row, Self> {
   /// Returns the module name and the arguments that were used in the statement
@@ -45,7 +48,7 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
 
   /// Lazily generate constraints because some constraints (e.g. `CHECK`) are
   /// self-referential.
-  final List<ColumnConstraint> Function() _generateConstraints;
+  final Iterable<ColumnConstraint> Function() _generateConstraints;
 
   /// A function that yields a default column for inserts if no value has been
   /// set. This is different to [defaultValue] since the function is written in
@@ -61,11 +64,11 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
     super.isNullable,
     super.owningResultSet,
     this.requiredDuringInsert = true,
-    List<ColumnConstraint> Function() constraints = _noConstraints,
+    Iterable<ColumnConstraint> Function() constraints = _noConstraints,
     this.clientDefault,
   }) : _generateConstraints = constraints;
 
-  static List<ColumnConstraint> _noConstraints() => const [];
+  static Iterable<ColumnConstraint> _noConstraints() => const [];
 
   /// Applies a type converter to this column.
   ///
@@ -110,6 +113,9 @@ final class TableColumnWithTypeConverter<D, S extends Object>
 /// customize how they generate these statements most easily.
 @immutable
 final class CreateTableStatement extends CreateStatement<GeneratedTable> {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// Create a statement that will `CREATE` the [entity] when issued.
   CreateTableStatement(super.entity, {super.ifNotExists});
 
@@ -120,7 +126,11 @@ final class CreateTableStatement extends CreateStatement<GeneratedTable> {
 }
 
 /// A statement renaming [oldName] to [table].
+@immutable
 final class RenameTableStatement extends SqlStatement {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// The table to be renamed, with the new name.
   final GeneratedTable table;
 
@@ -137,7 +147,11 @@ final class RenameTableStatement extends SqlStatement {
 }
 
 /// A statement adding a column to a table.
+@immutable
 final class AddColumnStatement extends SqlStatement {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// The table to which the [column] should be added.
   final GeneratedTable table;
 
@@ -154,7 +168,11 @@ final class AddColumnStatement extends SqlStatement {
 }
 
 /// A statement removing a column to a table.
+@immutable
 final class DropColumnStatement extends SqlStatement {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// The table from which the [columnName] should be removed.
   final GeneratedTable table;
 
@@ -171,7 +189,11 @@ final class DropColumnStatement extends SqlStatement {
 }
 
 /// A statement renaming [oldName] in [table] to [column].
+@immutable
 final class RenameColumnStatement extends SqlStatement {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// The table to be altered.
   final GeneratedTable table;
 

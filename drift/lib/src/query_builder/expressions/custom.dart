@@ -9,6 +9,7 @@ import 'expression.dart';
 /// The [CustomExpression.customText] will be written into the query without any
 /// modification.
 @internal
+@immutable
 final class CustomExpression<D extends Object> extends Expression<D> {
   /// The custom SQL text making up this custom expression.
   final CustomComponent customText;

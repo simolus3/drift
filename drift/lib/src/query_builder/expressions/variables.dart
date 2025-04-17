@@ -4,13 +4,14 @@
 import 'dart:typed_data';
 
 import 'package:drift/src/query_builder/compiler.dart';
-
+import 'package:meta/meta.dart';
 import '../dialect.dart';
 import '../types.dart';
 import 'expression.dart';
 
 /// An expression that represents the value of a dart object encoded to sql
 /// using prepared statements.
+@immutable
 final class Variable<T extends Object> extends Expression<T> {
   /// The Dart value that will be sent to the database
   final T? value;
@@ -95,6 +96,7 @@ final class Variable<T extends Object> extends Expression<T> {
 /// An expression that represents the value of a dart object encoded to sql
 /// by writing them into the sql statements. For most cases, consider using
 /// [Variable] instead.
+@immutable
 final class Literal<T extends Object> extends Expression<T> {
   /// The value that will be converted to an sql literal.
   final T? value;

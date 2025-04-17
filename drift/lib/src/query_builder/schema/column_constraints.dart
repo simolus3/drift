@@ -1,7 +1,9 @@
 import '../compiler.dart';
 import '../dialect.dart';
 import '../expressions/expression.dart';
+import 'package:meta/meta.dart';
 
+@immutable
 abstract base class ColumnConstraint implements SqlComponent {
   const ColumnConstraint._();
 
@@ -13,6 +15,7 @@ abstract base class ColumnConstraint implements SqlComponent {
   }
 }
 
+@immutable
 final class ColumnPrimaryKeyConstraint extends ColumnConstraint {
   final bool isAutoIncrementing;
 
@@ -26,6 +29,7 @@ final class ColumnPrimaryKeyConstraint extends ColumnConstraint {
 }
 
 /// A `DEFAULT` constraint in SQL.
+@immutable
 final class ColumnDefaultConstraint<T extends Object> extends ColumnConstraint {
   /// The default expression to use for the column when no value is given for
   /// inserts.
@@ -44,6 +48,7 @@ final class ColumnDefaultConstraint<T extends Object> extends ColumnConstraint {
 ///
 /// This information filled out by the generator to support generated or virtual
 /// columns.
+@immutable
 final class ColumnGeneratedAs extends ColumnConstraint {
   /// The expression that this column evaluates to.
   final Expression generatedAs;
@@ -61,6 +66,7 @@ final class ColumnGeneratedAs extends ColumnConstraint {
 }
 
 /// A `UNIQUE` constraint on an individual column.
+@immutable
 final class ColumnUniqueConstraint extends ColumnConstraint {
   const ColumnUniqueConstraint() : super._();
 
@@ -83,6 +89,7 @@ enum ReferenceAction {
   const ReferenceAction(this.defaultLexeme);
 }
 
+@immutable
 final class ColumnForeignKeyConstraint extends ColumnConstraint {
   final String otherTableName;
   final String otherColumnName;
@@ -108,6 +115,7 @@ final class ColumnForeignKeyConstraint extends ColumnConstraint {
   }
 }
 
+@immutable
 final class ColumnCheckConstraint extends ColumnConstraint {
   final Expression<bool> check;
 
@@ -119,6 +127,7 @@ final class ColumnCheckConstraint extends ColumnConstraint {
   }
 }
 
+@immutable
 final class CustomColumnConstraint extends ColumnConstraint {
   final CustomComponent component;
   final KnownSqlDialect? onlyOnDialect;

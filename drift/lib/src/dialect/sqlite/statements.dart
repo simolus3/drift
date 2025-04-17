@@ -44,7 +44,8 @@ extension SetInsertMode<Row extends Object, RS extends GeneratedTable<Row, RS>>
   /// statement behaves with conflicts. For a variant that is better suited for
   /// different SQL dialects, see [DoUpdate].
   InsertStatement<Row, RS> mode(InsertMode mode) {
-    dialectSpecificOptions[insertModeKey] = mode;
-    return this;
+    final options = dialectSpecificOptions.toBuilder();
+    options[insertModeKey] = mode;
+    return copyWith(dialectSpecificOptions: options.build());
   }
 }

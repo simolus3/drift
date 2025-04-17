@@ -1,6 +1,9 @@
+import 'package:meta/meta.dart';
+
 import '../compiler.dart';
 
 /// A limit clause inside a select, update or delete statement.
+@immutable
 final class Limit implements SqlComponent {
   /// The maximum amount of rows that should be returned by the query.
   final int amount;

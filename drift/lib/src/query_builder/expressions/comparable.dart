@@ -1,5 +1,7 @@
 // ignore_for_file: invalid_use_of_protected_member
 
+import 'package:meta/meta.dart';
+
 import '../compiler.dart';
 import '../dialect.dart';
 import '../types.dart';
@@ -84,6 +86,7 @@ extension ComparableExpr<DT extends Comparable<dynamic>> on Expression<DT> {
 /// A `BETWEEN` expression in SQL.
 ///
 /// Created by [ComparableExpr.isBetween] and [ComparableExpr.isBetweenValues].
+@immutable
 final class BetweenExpression extends Expression<bool> {
   /// The expression to be compared against [lower] and [higher].
   final Expression target;

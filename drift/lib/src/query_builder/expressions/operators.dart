@@ -1,9 +1,12 @@
+import 'package:meta/meta.dart';
+
 import '../compiler.dart';
 import '../dialect.dart';
 import '../types.dart';
 import 'expression.dart';
 
 /// An expression of the form `<left> <operator> <right>`.
+@immutable
 final class BinaryExpression<T extends Object> extends Expression<T> {
   /// The expression on the left-hand side of the [operator].
   final Expression left;
@@ -129,6 +132,7 @@ enum BinaryOperator implements SqlComponent {
 }
 
 /// An expression of the form `<operator> <operand>` or `<operand> <operator>`.
+@immutable
 final class UnaryExpression<T extends Object> extends Expression<T> {
   /// The operator applied to [operand].
   final UnaryOperator operator;

@@ -1,9 +1,12 @@
+import 'package:meta/meta.dart';
+
 import 'package:drift/src/query_builder/compiler.dart';
 
 import 'expression.dart';
 
 /// An expression that evaluates to the current date or the current date and
 /// time.
+@immutable
 final class CurrentDateOrTimeExpression extends Expression<DateTime> {
   /// Whether this should evaluate to the current date and time, or just to the
   /// current date.
@@ -40,6 +43,7 @@ const Expression<DateTime> currentDateAndTime =
 
 /// An expression converting the inner [timestamp] (as unix seconds) to a
 /// [DateTime] value.
+@immutable
 final class UnixTimestampToDateTime extends Expression<DateTime> {
   /// The timestamp (in seconds) to convert.
   final Expression<int> timestamp;
@@ -95,6 +99,7 @@ enum DateExtractionField<T extends Object> {
 /// An expression that extracts some field(s) from a [DateTime] expression.
 ///
 /// These are constructed with getters available with [DateTimeExpressions].
+@immutable
 final class DateExtractionOperator<T extends Object> extends Expression<T> {
   /// The value from which a [DateExtractionField] should be extracted.
   final Expression<DateTime> value;

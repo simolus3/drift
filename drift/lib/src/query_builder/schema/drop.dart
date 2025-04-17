@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:meta/meta.dart';
 
 import '../compiler.dart';
@@ -9,6 +10,9 @@ import 'view.dart';
 /// Represents a `DROP TABLE` statement in SQL.
 @immutable
 final class DropStatement extends SqlStatement {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// The type of element to delete (either `TABLE`, `VIEW`, `TRIGGER` or
   /// `INDEX`).
   final String kind;

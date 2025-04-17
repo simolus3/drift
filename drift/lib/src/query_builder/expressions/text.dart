@@ -1,7 +1,7 @@
 import 'package:drift/src/query_builder/compiler.dart';
 import 'package:drift/src/query_builder/dialect.dart';
 import 'package:drift/src/query_builder/types.dart';
-
+import 'package:meta/meta.dart';
 import 'functions.dart';
 import 'expression.dart';
 import 'operators.dart';
@@ -125,6 +125,7 @@ extension StringExpressionOperators on Expression<String> {
 /// An expression that changes the collation used to e.g. compare texts.
 ///
 /// Created with [StringExpressionOperators.collate].
+@immutable
 final class CollateExpression extends Expression<String> {
   /// The inner text expression.
   final Expression<String> source;
@@ -159,6 +160,7 @@ final class CollateExpression extends Expression<String> {
 ///
 /// See also:
 /// - https://www.sqlite.org/datatype3.html#collation
+@immutable
 final class Collate {
   /// The name of this collation in SQL.
   final String name;

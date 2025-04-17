@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'package:drift/src/query_builder/compiler.dart';
 
 import '../statements/select.dart';
@@ -12,6 +14,7 @@ Expression<R> subqueryExpression<R extends Object>(
   return SubqueryExpression<R>(statement);
 }
 
+@immutable
 final class SubqueryExpression<R extends Object> extends Expression<R> {
   final BaseSelectStatement statement;
 

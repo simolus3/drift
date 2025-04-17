@@ -1,3 +1,6 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:meta/meta.dart';
+
 import 'package:drift/src/query_builder/compiler.dart';
 
 import 'expression.dart';
@@ -18,6 +21,7 @@ typedef CaseWhen<T extends Object, R extends Object> = ({
 /// For internal use. Must be used via [CaseWhenExpression] and [CaseWhenExpressionWithBase]
 ///
 /// https://www.sqlite.org/lang_expr.html#the_case_expression
+@immutable
 final class CaseWhenExpression<T extends Object, R extends Object>
     extends Expression<R> {
   /// The optional base expression.
@@ -28,7 +32,7 @@ final class CaseWhenExpression<T extends Object, R extends Object>
   /// The when-then entries for this expression.
   ///
   /// This expression will evaluate to the value of the entry with a matching key.
-  final List<CaseWhen<T, R>> orderedCases;
+  final BuiltList<CaseWhen<T, R>> orderedCases;
 
   /// The expression to use if no entry in [orderedCases] matched.
   final Expression<R>? orElse;
@@ -36,11 +40,12 @@ final class CaseWhenExpression<T extends Object, R extends Object>
   /// Creates a `CASE WHEN` expression from the independent components.
   ///
   /// If [orderedCases] list is empty - throws [ArgumentError]
-  CaseWhenExpression._(this.base, this.orderedCases, this.orElse) {
-    if (orderedCases.isEmpty) {
+  CaseWhenExpression._(this.base, Iterable<CaseWhen<T, R>> cases, this.orElse)
+      : orderedCases = BuiltList.of(cases) {
+    if (cases.isEmpty) {
       throw ArgumentError.value(
-        orderedCases,
-        'orderedCases',
+        cases,
+        'cases',
         'Must not be empty',
       );
     }
@@ -51,7 +56,7 @@ final class CaseWhenExpression<T extends Object, R extends Object>
   /// If [cases] is empty - throws [ArgumentError]
   static CaseWhenExpression<T, R> withBase<T extends Object, R extends Object>(
     Expression<T> base, {
-    required List<CaseWhen<T, R>> cases,
+    required Iterable<CaseWhen<T, R>> cases,
     Expression<R>? orElse,
   }) {
     return CaseWhenExpression._(base, cases, orElse);
@@ -64,7 +69,7 @@ final class CaseWhenExpression<T extends Object, R extends Object>
   ///
   /// If [cases] is empty - throws [ArgumentError]
   static CaseWhenExpression<bool, R> conditional<R extends Object>({
-    required List<CaseWhen<bool, R>> cases,
+    required Iterable<CaseWhen<bool, R>> cases,
     Expression<R>? orElse,
   }) {
     return CaseWhenExpression._(null, cases, orElse);

@@ -1,3 +1,5 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:meta/meta.dart';
 import '../compiler.dart';
 import '../expressions/expression.dart';
 import '../expressions/functions.dart';
@@ -32,6 +34,7 @@ enum NullsOrder {
 
 /// A single term in a [OrderBy] clause. The priority of this term is determined
 /// by its position in [OrderBy.terms].
+@immutable
 class OrderingTerm implements SqlComponent {
   /// The expression with which different rows should be compared.
   final Expression expression;
@@ -78,7 +81,7 @@ class OrderingTerm implements SqlComponent {
   /// Creates an ordering term that sorts rows in a random order
   /// using sqlite random function.
   factory OrderingTerm.random() {
-    return OrderingTerm(expression: const FunctionCallExpression('random', []));
+    return OrderingTerm(expression: FunctionCallExpression('random', []));
   }
 
   @override
@@ -95,15 +98,15 @@ final class OrderBy implements SqlComponent {
   /// The list of ordering terms to respect. Terms appearing earlier in this
   /// list are more important, the others will only considered when two rows
   /// are equal by the first [OrderingTerm].
-  final List<OrderingTerm> terms;
+  final BuiltList<OrderingTerm> terms;
 
   /// Constructs an order by clause by the [terms].
-  const OrderBy(this.terms);
+  OrderBy(Iterable<OrderingTerm> terms) : terms = BuiltList.of(terms);
 
   /// Orders by nothing.
   ///
   /// In this case, the ordering of result rows is undefined.
-  const OrderBy.nothing() : this(const []);
+  OrderBy.nothing() : this([]);
 
   @override
   void compileWith(StatementCompiler compiler) {

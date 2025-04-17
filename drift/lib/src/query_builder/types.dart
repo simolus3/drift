@@ -2,6 +2,7 @@ import 'dart:core';
 import 'dart:core' as core;
 import 'dart:typed_data';
 
+import 'package:built_collection/built_collection.dart';
 import 'package:collection/collection.dart';
 
 import 'dialect.dart';
@@ -22,7 +23,7 @@ final class DatabaseJson {
 abstract interface class SqlType<T extends Object> {
   /// Creates a [SqlType] implementation based on a [fallback] type
   /// implementation used by default and [overrides] used as fallbacks.
-  const factory SqlType.dialectSpecific({
+  factory SqlType.dialectSpecific({
     required SqlType<T> fallback,
     required Map<KnownSqlDialect, SqlType<T>> overrides,
   }) = _DialectAwareType;
@@ -46,9 +47,12 @@ extension TypeExtension<T extends Object> on SqlType<T> {
 
 final class _DialectAwareType<T extends Object> implements SqlType<T> {
   final SqlType<T> fallback;
-  final Map<KnownSqlDialect, SqlType<T>> overrides;
+  final BuiltMap<KnownSqlDialect, SqlType<T>> overrides;
 
-  const _DialectAwareType({required this.fallback, required this.overrides});
+  _DialectAwareType({
+    required this.fallback,
+    required Map<KnownSqlDialect, SqlType<T>> overrides,
+  }) : overrides = overrides.build();
 
   SqlType<T> _implementationFor(DriftDialect dialect) {
     return overrides[dialect.known] ?? fallback;

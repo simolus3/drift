@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'package:drift/src/query_builder/compiler.dart';
 
 import '../statements/select.dart';
@@ -18,6 +20,7 @@ Expression<bool> notExistsQuery(BaseSelectStatement select) {
 ///
 /// This expression evaluates the [select] statement and reports whether that
 /// statement would return any rows.
+@immutable
 final class ExistsExpression extends Expression<bool> {
   /// The inner select statement to run.
   ///

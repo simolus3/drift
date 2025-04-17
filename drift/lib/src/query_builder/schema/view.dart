@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:meta/meta.dart';
 
 import '../../runtime/type_converter.dart';
@@ -34,7 +35,7 @@ final class ViewColumn<T extends Object> extends SchemaColumn<T> {
     required super.name,
     required super.type,
     super.isNullable,
-  }) : expression = const CustomExpression(CustomComponent(''));
+  }) : expression = CustomExpression(CustomComponent(''));
 
   /// Applies a type converter to this column.
   ///
@@ -72,6 +73,9 @@ final class ViewColumnWithTypeConverter<D, S extends Object>
 /// Represents a `CREATE VIEW` statement in SQL.
 @immutable
 final class CreateViewStatement extends CreateStatement<GeneratedView> {
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
+
   /// Create a statement that will `CREATE` the [entity] when issued.
   CreateViewStatement(super.entity, {super.ifNotExists});
 

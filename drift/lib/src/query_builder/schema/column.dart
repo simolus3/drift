@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import '../../runtime/type_converter.dart';
 import '../compiler.dart';
 import '../dialect.dart';
@@ -7,6 +9,7 @@ import '../types.dart';
 import 'result_set.dart';
 
 /// A column that appears as part of some schema object.
+@immutable
 base class SchemaColumn<T extends Object> extends Expression<T> {
   /// The raw name of the column in SQL (without any escaping quotes).
   final String name;
@@ -61,6 +64,7 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
 ///
 /// This provides the [equalsValue] method, which can be used to compare this
 /// column against a value mapped through a type converter.
+@immutable
 base mixin SchemaColumnWithTypeConverter<D, S extends Object>
     on SchemaColumn<S> {
   /// The type converted used on this column.

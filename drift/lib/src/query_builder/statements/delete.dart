@@ -1,3 +1,4 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:drift/src/query_builder/clauses/where.dart';
 import 'package:meta/meta.dart';
 
@@ -27,6 +28,9 @@ final class DeleteStatement<Row extends Object,
 
   @override
   final WhereClause? whereClause;
+
+  @override
+  final BuiltMap<Symbol, Object?> dialectSpecificOptions = BuiltMap();
 
   /// This constructor should be called by [DatabaseConnectionUser.delete] for
   /// you.

@@ -1,6 +1,7 @@
 import 'package:drift/src/connections/result_set.dart';
 
 import 'package:drift/src/query_builder/results.dart';
+import 'package:meta/meta.dart';
 
 import '../compiler.dart';
 import '../expressions/expression.dart';
@@ -51,6 +52,7 @@ import 'result_set.dart';
 ///
 /// See also: [subqueryExpression], for subqueries which only return one row and
 /// one column.
+@immutable
 final class Subquery<Row extends Object>
     with ResultSet<Row, Subquery<Row>>
     implements SqlComponent {
