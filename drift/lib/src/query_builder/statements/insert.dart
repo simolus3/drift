@@ -344,12 +344,10 @@ final class InsertDefaultValues extends InsertSource {
 @immutable
 final class InsertFromValues extends InsertSource {
   /// An ordered map from column names to expressions for inserts.
-  final LinkedHashMap<String, Expression> __values;
-  //TODO: Does this change the order?
-  UnmodifiableMapView<String, Expression> get values =>
-      UnmodifiableMapView(__values);
+  final BuiltMap<String, Expression> values;
 
-  InsertFromValues._(this.__values);
+  InsertFromValues._(Map<String, Expression> values)
+      : values = BuiltMap(values);
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -366,13 +364,11 @@ final class InsertFromSelect extends InsertSource {
 
   /// Map from column names in the table to insert to result positions in the
   /// used select statement.
-  final LinkedHashMap<String, ColumnPosition> __columnNameToSelectColumnName;
-  //TODO: Does this change the order?
-  UnmodifiableMapView<String, ColumnPosition>
-      get columnNameToSelectColumnName =>
-          UnmodifiableMapView(__columnNameToSelectColumnName);
+  final BuiltMap<String, ColumnPosition> columnNameToSelectColumnName;
 
-  InsertFromSelect._(this.select, this.__columnNameToSelectColumnName);
+  InsertFromSelect._(
+      this.select, Map<String, ColumnPosition> __columnNameToSelectColumnName)
+      : columnNameToSelectColumnName = BuiltMap(__columnNameToSelectColumnName);
 
   @override
   void compileWith(StatementCompiler compiler) {

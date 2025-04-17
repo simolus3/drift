@@ -23,16 +23,16 @@ final class ReturningClause<Row extends Object,
     // Note: We currently only generate `RETURNING *` clauses returning columns
     // for a single table.
     final columnPositions = <ColumnPosition>[];
-    final Map<Expression, ColumnPosition> expressions = {};
-    final Map<ResultSet, BuiltList<ColumnPosition>> tables = {};
+    final expressionsBuilder = MapBuilder<Expression, ColumnPosition>();
+    final tables = MapBuilder<ResultSet, BuiltList<ColumnPosition>>();
     for (final (i, column) in _resultSet.columns.indexed) {
       final position = (index: i, name: column.name);
-      expressions[column] = position;
+      expressionsBuilder[column] = position;
       columnPositions.add(position);
     }
     tables[_resultSet] = columnPositions.build();
     structure = ResultSetStructure(
-      expressions: expressions.build(),
+      expressions: expressionsBuilder.build(),
       tables: tables.build(),
     );
   }
