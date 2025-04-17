@@ -1,7 +1,7 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/src/query_builder/clauses/where.dart';
 import 'package:drift/src/query_builder/compiler.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 
 import '../../connections/result_set.dart';
 import '../../runtime/data_class.dart';
@@ -30,12 +30,12 @@ final class UpdateStatement<Row extends Object,
   final WhereClause? whereClause;
 
   /// The columns set by this update statement.
-  final IMap<String, Expression> updatedColumns;
+  final BuiltMap<String, Expression> updatedColumns;
 
   /// Used internally by drift to construct an update statement
   UpdateStatement(this._database, this.resultSet)
       : returning = null,
-        updatedColumns = const IMap.empty(),
+        updatedColumns = BuiltMap(),
         whereClause = null;
 
   UpdateStatement._(this._database,
@@ -54,7 +54,7 @@ final class UpdateStatement<Row extends Object,
     GeneratedTable<Row, RS>? resultSet,
     WhereClause? whereClause,
     ReturningClause<Row, RS>? returning,
-    IMap<String, Expression>? updatedColumns,
+    BuiltMap<String, Expression>? updatedColumns,
   }) {
     return UpdateStatement._(
       _database,
@@ -78,7 +78,7 @@ final class UpdateStatement<Row extends Object,
   UpdateStatement<Row, RS> _withAppliedColumns(
       Insertable<Row> entity, bool nullToAbsent) {
     return _copyWith(
-      updatedColumns: entity.toColumns(nullToAbsent).lock,
+      updatedColumns: BuiltMap.of(entity.toColumns(nullToAbsent)),
     );
   }
 
@@ -161,13 +161,14 @@ final class UpdateStatement<Row extends Object,
     final primaryKeys =
         stmt.resultSet.primaryKey?.map((c) => c.name) ?? const [];
 
-    final newUpdatedColumns = stmt.updatedColumns.unlock;
+    final updatedColumnsBuilder = stmt.updatedColumns.toBuilder();
 
     // entityToSql doesn't include absent values, so we might have to apply the
     // default value here
     for (final column in stmt.resultSet.columns) {
+      final updatedColumns = updatedColumnsBuilder.build();
       // if a default value exists and no value is set, apply the default
-      if (newUpdatedColumns.containsKey(column.name)) {
+      if (updatedColumns.containsKey(column.name)) {
         continue;
       }
 
@@ -176,16 +177,16 @@ final class UpdateStatement<Row extends Object,
           .firstOrNull
           ?.defaultExpression;
 
-      if (defaultValue != null && !newUpdatedColumns.containsKey(column.name)) {
-        newUpdatedColumns[column.name] = defaultValue;
+      if (defaultValue != null && !updatedColumns.containsKey(column.name)) {
+        updatedColumnsBuilder[column.name] = defaultValue;
       }
     }
 
     // Don't update the primary key
-    newUpdatedColumns.removeWhere((key, _) => primaryKeys.contains(key));
+    updatedColumnsBuilder.removeWhere((key, _) => primaryKeys.contains(key));
 
     stmt = stmt._copyWith(
-      updatedColumns: newUpdatedColumns.lock,
+      updatedColumns: updatedColumnsBuilder.build(),
     );
 
     final result = await stmt._run();

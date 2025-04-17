@@ -1,7 +1,8 @@
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:built_collection/built_collection.dart';
+
 import 'package:meta/meta.dart';
 
 import '../connections/result_set.dart';
@@ -16,19 +17,21 @@ import 'types.dart';
 final class ResultSetStructure {
   /// For [Expression] instances added to a query, the position of the column
   /// added for that expression.
-  final IMap<Expression, ColumnPosition> expressions;
+  final BuiltMap<Expression, ColumnPosition> expressions;
 
   /// For each [ResultSet] that has been added to a query in its entirety, the
   /// a list of [ColumnPosition]s for each column in the result set.
-  final IMap<ResultSet, IList<ColumnPosition>> tables;
+  final BuiltMap<ResultSet, BuiltList<ColumnPosition>> tables;
 
-  const ResultSetStructure(
-      {this.expressions = const IMap.empty(),
-      this.tables = const IMap.empty()});
+  ResultSetStructure(
+      {BuiltMap<Expression, ColumnPosition>? expressions,
+      BuiltMap<ResultSet, BuiltList<ColumnPosition>>? tables})
+      : expressions = expressions ?? BuiltMap(),
+        tables = tables ?? BuiltMap();
 
   ResultSetStructure copyWith({
-    IMap<Expression, ColumnPosition>? expressions,
-    IMap<ResultSet, IList<ColumnPosition>>? tables,
+    BuiltMap<Expression, ColumnPosition>? expressions,
+    BuiltMap<ResultSet, BuiltList<ColumnPosition>>? tables,
   }) {
     return ResultSetStructure(
       expressions: expressions ?? this.expressions,
@@ -37,19 +40,20 @@ final class ResultSetStructure {
   }
 
   ResultSetStructure withSelectStarFromSingleTable(ResultSet resultSet) {
-    final tables = this.tables.unlock;
-    final expressions = this.expressions.unlock;
-    final positions = <ColumnPosition>[];
+    final tableBuilder = tables.toBuilder();
+    final expressionsBuilder = expressions.toBuilder();
+
+    final positions = ListBuilder<ColumnPosition>();
     for (final (i, column) in resultSet.columns.indexed) {
       final position = (name: column.name, index: i);
-      expressions[column] = position;
+      expressionsBuilder[column] = position;
       positions.add(position);
     }
-    tables[resultSet] = IList(positions);
+    tableBuilder[resultSet] = positions.build();
 
     return ResultSetStructure(
-      expressions: expressions.lock,
-      tables: tables.lock,
+      expressions: expressionsBuilder.build(),
+      tables: tableBuilder.build(),
     );
   }
 
@@ -58,16 +62,17 @@ final class ResultSetStructure {
   ///
   /// This is mainly used internally, e.g. used to obtain the result of
   /// subqueries.
-  ResultSetStructure shift(IList<ColumnPosition> outerPositions) {
+  ResultSetStructure shift(Iterable<ColumnPosition> outerPositions) {
     assert(outerPositions.length == expressions.length);
+    final builtOuter = outerPositions.toBuiltList();
     ColumnPosition apply(ColumnPosition original) {
-      return outerPositions[original.index];
+      return builtOuter[original.index];
     }
 
     return ResultSetStructure(
       expressions: expressions.map((e, pos) => MapEntry(e, apply(pos))),
       tables: tables.map((resultSet, positions) =>
-          MapEntry(resultSet, positions.map(apply).toIList())),
+          MapEntry(resultSet, positions.map(apply).toBuiltList())),
     );
   }
 }

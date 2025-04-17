@@ -1,4 +1,4 @@
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:built_collection/built_collection.dart';
 
 import '../../connections/result_set.dart';
 import '../../runtime/database/connection_user.dart';
@@ -24,16 +24,16 @@ final class ReturningClause<Row extends Object,
     // for a single table.
     final columnPositions = <ColumnPosition>[];
     final Map<Expression, ColumnPosition> expressions = {};
-    final Map<ResultSet, IList<ColumnPosition>> tables = {};
+    final Map<ResultSet, BuiltList<ColumnPosition>> tables = {};
     for (final (i, column) in _resultSet.columns.indexed) {
       final position = (index: i, name: column.name);
       expressions[column] = position;
       columnPositions.add(position);
     }
-    tables[_resultSet] = columnPositions.lock;
+    tables[_resultSet] = columnPositions.build();
     structure = ResultSetStructure(
-      expressions: expressions.lock,
-      tables: tables.lock,
+      expressions: expressions.build(),
+      tables: tables.build(),
     );
   }
 

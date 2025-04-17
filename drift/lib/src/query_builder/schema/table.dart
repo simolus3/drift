@@ -1,5 +1,5 @@
 import 'package:drift/src/dsl/table.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+
 import 'package:meta/meta.dart';
 
 import '../../runtime/type_converter.dart';
@@ -14,7 +14,7 @@ abstract interface class GeneratedTable<Row extends Object,
         Self extends GeneratedTable<Row, Self>> extends Table
     implements ResultSet<Row, Self> {
   @override
-  IList<TableColumn> get columns;
+  Iterable<TableColumn> get columns;
 }
 
 /// Additional interface for tables in a drift file that have been created with
@@ -41,7 +41,7 @@ final class TableColumn<T extends Object> extends SchemaColumn<T> {
   /// definition for this column in SQL. For instance, a single-column primary
   /// key defined by overriding the [Table.primaryKey] getter will _not_ add a
   /// [ColumnPrimaryKeyConstraint] to this column.
-  late final IList<ColumnConstraint> constraints = _generateConstraints().lock;
+  late final Iterable<ColumnConstraint> constraints = _generateConstraints();
 
   /// Lazily generate constraints because some constraints (e.g. `CHECK`) are
   /// self-referential.
@@ -97,7 +97,7 @@ final class TableColumnWithTypeConverter<D, S extends Object>
           type: base.type,
           isNullable: base.isNullable,
           requiredDuringInsert: base.requiredDuringInsert,
-          constraints: () => base.constraints.unlock,
+          constraints: () => base.constraints.toList(),
           clientDefault: base.clientDefault,
         );
 }

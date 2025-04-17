@@ -1,7 +1,6 @@
 import 'package:drift/src/connections/result_set.dart';
 
 import 'package:drift/src/query_builder/results.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 
 import '../compiler.dart';
 import '../expressions/expression.dart';
@@ -113,7 +112,7 @@ final class Subquery<Row extends Object>
   }
 
   @override
-  late final IList<SchemaColumn<Object>> columns = [
+  late final Iterable<SchemaColumn<Object>> columns = [
     for (final entry in select.structure.expressions.entries)
       SchemaColumn(
         name: entry.value.name,
@@ -121,14 +120,14 @@ final class Subquery<Row extends Object>
         type: BuiltinDriftType.text,
         owningResultSet: this,
       ),
-  ].lock;
+  ];
 
   @override
   Subquery<Row> asSelfType() => this;
 
   @override
   Row? Function(DriftRow p1) createMapperFromPositions(
-      IList<ColumnPosition> positions) {
+      Iterable<ColumnPosition> positions) {
     final structure = select.structure.shift(positions);
     return select.createMapper(structure);
   }

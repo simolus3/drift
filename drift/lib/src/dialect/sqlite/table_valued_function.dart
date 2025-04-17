@@ -1,5 +1,5 @@
+import 'package:built_collection/built_collection.dart';
 import 'package:drift/drift.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 
 import 'compiler.dart';
 
@@ -26,7 +26,7 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
   final List<Expression> arguments;
 
   @override
-  late final IList<SchemaColumn<Object>> columns;
+  late final BuiltList<SchemaColumn<Object>> columns;
 
   @override
   final String? alias;
@@ -39,11 +39,11 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
   TableValuedFunction({
     required this.functionName,
     required this.arguments,
-    required IList<SchemaColumn<Object>> columns,
+    required Iterable<SchemaColumn<Object>> columns,
     this.alias,
   }) {
     this.columns =
-        columns.map((c) => c.copyWith(owningResultSet: this)).toIList();
+        columns.map((c) => c.copyWith(owningResultSet: this)).toBuiltList();
   }
 
   @override
@@ -54,7 +54,7 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
 
   @override
   DriftRow? Function(DriftRow p1) createMapperFromPositions(
-      IList<ColumnPosition> positions) {
+      Iterable<ColumnPosition> positions) {
     return (row) => row;
   }
 

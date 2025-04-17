@@ -501,7 +501,7 @@ abstract base class StatementCompiler {
 
     _ignoreResultSet = false;
 
-    if (select.from.unlock case [final first, ...final rest]) {
+    if (select.from.toList() case [final first, ...final rest]) {
       statement.buffer.write(' FROM ');
       first.compileWith(this);
 
@@ -871,7 +871,7 @@ abstract base class StatementCompiler {
   }
 
   void addDoNothing(DoNothing clause) {
-    addOnConflictConstraint(target: clause.target?.unlock);
+    addOnConflictConstraint(target: clause.target?.toList());
     statement.buffer.write(' DO NOTHING');
   }
 

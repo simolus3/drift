@@ -1,4 +1,3 @@
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:meta/meta.dart';
 
 import '../../connections/result_set.dart';
@@ -16,7 +15,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     implements ResultSetDsl, DatabaseSchemaEntity {
   String? get alias;
 
-  IList<SchemaColumn> get columns;
+  Iterable<SchemaColumn> get columns;
 
   String get aliasOrName => alias ?? entityName;
 
@@ -29,7 +28,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
   }
 
   Row? Function(DriftRow) createMapperFromPositions(
-      IList<ColumnPosition> positions);
+      Iterable<ColumnPosition> positions);
 
   Row? mapToDart(DriftRow row) {
     return createMapperToDart(row.resultSet.structure)(row);

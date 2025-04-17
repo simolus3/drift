@@ -1,4 +1,4 @@
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
@@ -26,7 +26,7 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   final ResultSetStructure structure;
 
   final bool distinct;
-  final IList<FromClauseElement> from;
+  final BuiltList<FromClauseElement> from;
 
   final WhereClause? whereClause;
 
@@ -42,14 +42,14 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
 
   /// All [CompoundSelect] statements that have been added to this select
   /// statement using [union], [unionAll], [except] and [intersect].
-  final IList<CompoundSelect> compounds;
+  final BuiltList<CompoundSelect> compounds;
 
   /// The database this statement should be sent to.
   final DatabaseConnectionUser _database;
 
   BaseSelectStatement(this._database, {this.distinct = false})
-      : compounds = const IList.empty(),
-        from = const IList.empty(),
+      : compounds = BuiltList(),
+        from = BuiltList(),
         whereClause = null,
         groupByClause = null,
         orderByClause = null,
@@ -72,7 +72,7 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     // ignore: unused_element_parameter
     bool? distinct,
     // ignore: unused_element_parameter
-    IList<FromClauseElement>? from,
+    BuiltList<FromClauseElement>? from,
     // ignore: unused_element_parameter
     WhereClause? whereClause,
     GroupBy? groupByClause,
@@ -81,7 +81,7 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     Limit? limitClause,
     ResultSetStructure? structure,
     // ignore: unused_element_parameter
-    IList<CompoundSelect>? compounds,
+    BuiltList<CompoundSelect>? compounds,
   });
 
   ColumnPosition get _nextPosition {
@@ -90,23 +90,23 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   }
 
   SelectStatement addColumn(Expression expression) {
-    final currentExpressions = structure.expressions.unlock;
-    currentExpressions[expression] ??= _nextPosition;
+    final expressionsBuilder = structure.expressions.toBuilder();
+    expressionsBuilder[expression] ??= _nextPosition;
     return _copyWith(
         structure: structure.copyWith(
-      expressions: currentExpressions.lock,
+      expressions: expressionsBuilder.build(),
     ))._asSelectStatement();
   }
 
   SelectStatement addColumns(Iterable<Expression> expressions) {
-    final currentExpressions = structure.expressions.unlock;
+    final expressionsBuilder = structure.expressions.toBuilder();
 
     for (final expression in expressions) {
-      currentExpressions[expression] ??= _nextPosition;
+      expressionsBuilder[expression] ??= _nextPosition;
     }
     return _copyWith(
         structure: structure.copyWith(
-      expressions: currentExpressions.lock,
+      expressions: expressionsBuilder.build(),
     ))._asSelectStatement();
   }
 
@@ -118,19 +118,20 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
           'Result set $resultSet has been added to select multiple times, please use an alias');
     }
 
-    final expressions = stmt.structure.expressions.unlock;
-    final tables = stmt.structure.tables.unlock;
+    final expressionsBuilder = stmt.structure.expressions.toBuilder();
+    final tablesBuilder = stmt.structure.tables.toBuilder();
 
     final positions = <ColumnPosition>[];
     for (final column in resultSet.columns) {
       final columnPosition = _nextPosition;
       positions.add(columnPosition);
-      expressions[column] = columnPosition;
+      expressionsBuilder[column] = columnPosition;
     }
-    tables[resultSet] = positions.lock;
+    tablesBuilder[resultSet] = positions.build();
     stmt = stmt._copyWith(
-        structure: stmt.structure
-            .copyWith(expressions: expressions.lock, tables: tables.lock));
+        structure: stmt.structure.copyWith(
+            expressions: expressionsBuilder.build(),
+            tables: tablesBuilder.build()));
     return stmt;
   }
 
@@ -198,8 +199,7 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   ///    .groupBy([categories.id]);
   ///    .union(db.selectExpressions([const Constant<String>(null), countWithoutCategory]));
   /// ```
-  SelectStatement union(
-      DatabaseConnectionUser database, BaseSelectStatement other) {
+  SelectStatement union(BaseSelectStatement other) {
     return _asSelectStatement()._withCompound(CompoundOperator.union, other);
   }
 
@@ -232,8 +232,7 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   ///    .groupBy([categories.id]);
   ///    .unionAll(db.selectExpressions([const Constant<String>(null), countWithoutCategory]));
   /// ```
-  SelectStatement unionAll(
-      DatabaseConnectionUser database, BaseSelectStatement other) {
+  SelectStatement unionAll(BaseSelectStatement other) {
     return _asSelectStatement()._withCompound(CompoundOperator.unionAll, other);
   }
 
@@ -345,14 +344,14 @@ final class SelectStatement
   @override
   SelectStatement _copyWith(
       {bool? distinct,
-      IList<FromClauseElement>? from,
+      BuiltList<FromClauseElement>? from,
       WhereClause? whereClause,
       GroupBy? groupByClause,
       OrderBy? orderByClause,
       Limit? limitClause,
       ResultSetStructure? structure,
       bool? includeJoinsByDefault,
-      IList<CompoundSelect>? compounds}) {
+      BuiltList<CompoundSelect>? compounds}) {
     return SelectStatement._(
       _database,
       includeJoinsByDefault: includeJoinsByDefault ?? _includeJoinsByDefault,
@@ -372,7 +371,7 @@ final class SelectStatement
 
     assert(distinct == other.distinct);
     stmt = stmt._copyWith(
-      from: from.addAll(other.from),
+      from: (from.toBuilder()..addAll(other.from)).build(),
       whereClause: other.whereClause,
       groupByClause: other.groupByClause,
       orderByClause: other.orderByClause,
@@ -417,7 +416,7 @@ final class SelectStatement
   SelectStatement _asSelectStatement() => this;
 
   SelectStatement _withJoin(Join join) {
-    var stmt = _copyWith(from: from.add(join));
+    var stmt = _copyWith(from: (from.toBuilder()..add(join)).build());
     if (join.includeInResult ?? _includeJoinsByDefault) {
       stmt = stmt.withResultSet(join.table.resultSet);
     }
@@ -479,8 +478,9 @@ final class SelectStatement
           '$columnCount columns, the added part has more).');
     }
     return stmt._copyWith(
-        compounds:
-            stmt.compounds.add(CompoundSelect._(operator, normalizedOther)));
+        compounds: (stmt.compounds.toBuilder()
+              ..add(CompoundSelect._(operator, normalizedOther)))
+            .build());
   }
 
   @override
@@ -507,7 +507,7 @@ final class SingleTableSelectStatement<Row extends Object,
       {bool distinct = false}) {
     final structure =
         ResultSetStructure().withSelectStarFromSingleTable(resultSet);
-    final from = IList([FromResultSet(resultSet)]);
+    final from = BuiltList<FromResultSet>([FromResultSet(resultSet)]);
     return SingleTableSelectStatement<Row, RS>._(
       database,
       resultSet: resultSet,
@@ -517,7 +517,7 @@ final class SingleTableSelectStatement<Row extends Object,
       groupByClause: null,
       orderByClause: null,
       limitClause: null,
-      compounds: const IList.empty(),
+      compounds: BuiltList<CompoundSelect>(),
       structure: structure,
     );
   }
@@ -537,14 +537,14 @@ final class SingleTableSelectStatement<Row extends Object,
   @override
   SingleTableSelectStatement<Row, RS> _copyWith(
       {bool? distinct,
-      IList<FromClauseElement>? from,
+      BuiltList<FromClauseElement>? from,
       WhereClause? whereClause,
       GroupBy? groupByClause,
       OrderBy? orderByClause,
       Limit? limitClause,
       ResultSet<Row, RS>? resultSet,
       ResultSetStructure? structure,
-      IList<CompoundSelect>? compounds}) {
+      BuiltList<CompoundSelect>? compounds}) {
     return SingleTableSelectStatement._(
       _database,
       resultSet: resultSet ?? this.resultSet,

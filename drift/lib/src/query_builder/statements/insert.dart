@@ -1,7 +1,8 @@
 import 'dart:collection';
 
+import 'package:built_collection/built_collection.dart';
 import 'package:drift/src/query_builder/compiler.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+
 import 'package:meta/meta.dart';
 
 import '../../connections/result_set.dart';
@@ -505,14 +506,16 @@ final class UpsertMultiple<Row extends Object,
   ///
   /// The first clause with a matching [DoUpdate.target] or [DoNothing.target]
   /// will be considered.
-  final IList<UpsertClause<Row, RS>> clauses;
+  late final BuiltList<UpsertClause<Row, RS>> clauses;
 
   /// Creates an upsert consisting of multiple [DoUpdate] and [DoNothing]
   /// clauses.
   ///
   /// This requires a fairly recent sqlite3 version (3.35.0, released on 2021-
   /// 03-12).
-  UpsertMultiple(this.clauses);
+  UpsertMultiple(Iterable<UpsertClause<Row, RS>> clauses) {
+    this.clauses = clauses.toBuiltList();
+  }
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -528,10 +531,12 @@ final class DoNothing<Row extends Object, RS extends GeneratedTable<Row, RS>>
   /// specifies the uniqueness constraint that will trigger the upsert.
   ///
   /// By default, the primary key of the table will be used.
-  final IList<TableColumn>? target;
+  late final BuiltList<TableColumn>? target;
 
   /// Creates an upsert clause that does nothing on conflict
-  DoNothing({this.target});
+  DoNothing({Iterable<TableColumn>? target}) {
+    this.target = target?.toBuiltList();
+  }
 
   @override
   void compileWith(StatementCompiler compiler) {

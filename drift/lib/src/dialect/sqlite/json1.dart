@@ -8,8 +8,8 @@ library;
 
 import 'dart:typed_data';
 
+import 'package:built_collection/built_collection.dart';
 import 'package:drift/drift.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 
 import 'dialect.dart';
 import 'table_valued_function.dart';
@@ -322,7 +322,7 @@ final class JsonTableFunction extends TableValuedFunction<JsonTableFunction> {
                 name: 'fullkey', isNullable: true, type: BuiltinDriftType.text),
             SchemaColumn<String>(
                 name: 'path', isNullable: true, type: BuiltinDriftType.text),
-          ].lock,
+          ].build(),
         );
 
   Expression<T> _col<T extends Object>(String name) {
