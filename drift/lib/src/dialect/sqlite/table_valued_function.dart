@@ -54,7 +54,7 @@ abstract base class TableValuedFunction<Self extends TableValuedFunction<Self>>
 
   @override
   DriftRow? Function(DriftRow p1) createMapperFromPositions(
-      Iterable<ColumnPosition> positions) {
+      List<ColumnPosition> positions) {
     return (row) => row;
   }
 
