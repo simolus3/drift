@@ -193,7 +193,7 @@ void main() {
 
   test('dialect-specific custom expression', () {
     final expr = Expression.customComponent(
-        CustomComponent('fallback', dialectSpecifcSql: {
+        CustomComponent('fallback', dialectSpecificSql: {
       KnownSqlDialect.mariadb: 'mariadb',
       KnownSqlDialect.postgres: 'pg',
     }));

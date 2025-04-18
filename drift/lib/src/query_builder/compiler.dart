@@ -75,7 +75,7 @@ abstract mixin class DialectSpecificComponent implements SqlComponent {
 
 final class CustomComponent implements SqlComponent {
   final String fallbackSql;
-  final Map<KnownSqlDialect, String> dialectSpecifcSql;
+  final Map<KnownSqlDialect, String> dialectSpecificSql;
 
   /// Additional tables that this SQL construct is watching.
   ///
@@ -87,12 +87,12 @@ final class CustomComponent implements SqlComponent {
 
   const CustomComponent(
     this.fallbackSql, {
-    this.dialectSpecifcSql = const {},
+    this.dialectSpecificSql = const {},
     this.watchedTables = const [],
   });
 
   String sqlFor(KnownSqlDialect? dialect) {
-    return dialectSpecifcSql[dialect] ?? fallbackSql;
+    return dialectSpecificSql[dialect] ?? fallbackSql;
   }
 
   @override
@@ -104,12 +104,12 @@ final class CustomComponent implements SqlComponent {
   bool operator ==(Object other) {
     return other is CustomComponent &&
         other.fallbackSql == fallbackSql &&
-        _equality.equals(other.dialectSpecifcSql, dialectSpecifcSql);
+        _equality.equals(other.dialectSpecificSql, dialectSpecificSql);
   }
 
   @override
   int get hashCode =>
-      Object.hash(fallbackSql, _equality.hash(dialectSpecifcSql));
+      Object.hash(fallbackSql, _equality.hash(dialectSpecificSql));
 
   static const _equality = MapEquality<Object?, Object?>();
 }

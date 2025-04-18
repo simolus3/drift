@@ -21,14 +21,18 @@ import 'query.dart';
 
 sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     Row> extends SqlStatement with Selectable<Row> {
+  @internal
   final ResultSetStructure structure;
-
+  @internal
   final bool distinct;
+  @internal
   final List<FromClauseElement> from;
 
+  @internal
   WhereClause? whereClause;
 
   /// The optional `GROUP BY` clause for this select statement.
+  @internal
   GroupBy? groupByClause;
 
   /// The optional `ORDER BY` clause for this select statement.
@@ -36,10 +40,12 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
 
   /// The optional `LIMIT` clause restricting the amount of rows returned by
   /// this statement.
+  @internal
   Limit? limitClause;
 
   /// All [CompoundSelect] statements that have been added to this select
   /// statement using [union], [unionAll], [except] and [intersect].
+  @internal
   final List<CompoundSelect> compounds;
 
   /// The database this statement should be sent to.
@@ -151,6 +157,10 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
     return raw.map(_mapResults);
   }
 
+  @internal
+
+  /// Used internally to create a deep copy of a select statement.
+  /// This should never be used directly.
   BaseSelectStatement<Self, Row> deepCopy();
 }
 
@@ -410,6 +420,7 @@ final class SingleTableSelectStatement<Row extends Object,
         SingleTableStatementMixin<Row, RS,
             SingleTableSelectStatement<Row, RS>> {
   @override
+  @internal
   final ResultSet<Row, RS> resultSet;
 
   SingleTableSelectStatement(super._database, this.resultSet,

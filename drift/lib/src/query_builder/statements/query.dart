@@ -15,9 +15,11 @@ abstract mixin class SingleTableStatementMixin<
     RS extends ResultSet<Row, RS>,
     Self extends SingleTableStatementMixin<Row, RS, Self>> {
   /// The [ResultSet] that this statement is primarily operating on.
+  @internal
   ResultSet<Row, RS> get resultSet;
 
   /// The [WhereClause] filtering rows for this statement.
+  @internal
   WhereClause? whereClause;
 
   /// Makes this statement only include rows that match the [filter].

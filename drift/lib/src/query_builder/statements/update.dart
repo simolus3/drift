@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:drift/src/query_builder/compiler.dart';
+import 'package:meta/meta.dart';
 
 import '../../connections/result_set.dart';
 import '../../runtime/data_class.dart';
@@ -22,9 +23,11 @@ final class UpdateStatement<Row extends Object,
   final DatabaseConnectionUser _database;
 
   /// An optional `RETURNING` clause part of this statement.
+  @internal
   ReturningClause<Row, RS>? returning;
 
   /// The columns set by this update statement.
+  @internal
   final Map<String, Expression> updatedColumns = {};
 
   /// Used internally by drift to construct an update statement
