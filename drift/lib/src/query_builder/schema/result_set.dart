@@ -67,6 +67,8 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     return mapper(mappedResultSet.first)!;
   }
 
+  /// Return a copy of this result set with the given alias.
+  /// This must deeply copy the result set.
   Self withAlias(String alias);
 
   /// Type-level hack: Result sets are supposed to inherit from the [Self] type

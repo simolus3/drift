@@ -133,7 +133,7 @@ final class Subquery<Row extends Object>
 
   @override
   Subquery<Row> withAlias(String alias) {
-    return Subquery(select, entityName, alias: alias);
+    return Subquery(select.deepCopy(), entityName, alias: alias);
   }
 
   @override

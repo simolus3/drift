@@ -30,11 +30,6 @@ final class UpdateStatement<Row extends Object,
   /// Used internally by drift to construct an update statement
   UpdateStatement(this._database, this.resultSet);
 
-  @override
-  UpdateStatement<Row, RS> asSelf() {
-    return this;
-  }
-
   Future<QueryResult> _run() async {
     final result = await _database.runStatement(this);
     if (result.affectedRows case final rows? when rows > 0) {

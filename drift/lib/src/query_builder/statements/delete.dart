@@ -93,7 +93,4 @@ final class DeleteStatement<Row extends Object,
     final result = await _run();
     return returning!.interpretResults(_database, result);
   }
-
-  @override
-  DeleteStatement<Row, RS> asSelf() => this;
 }

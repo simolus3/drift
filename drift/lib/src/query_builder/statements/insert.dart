@@ -48,7 +48,7 @@ final class InsertStatement<Row extends Object,
   ///
   /// Typically, [row] is an instance of the companion class drift generates for
   /// tables, which allows specifying which columns to use.
-  InsertStatement<Row, RS> values(Insertable<Row> row) {
+  void values(Insertable<Row> row) {
     _checkNoSource();
 
     final rawValues = row.toColumns(true);
@@ -80,8 +80,6 @@ final class InsertStatement<Row extends Object,
     if (map.isNotEmpty) {
       source = InsertFromValues._(map);
     }
-
-    return this;
   }
 
   /// Inserts rows from the [select] statement.
@@ -95,7 +93,7 @@ final class InsertStatement<Row extends Object,
   /// target column, and values are expressions added to the select statement.
   ///
   /// For an example, see the [documentation website](https://drift.simonbinder.eu/docs/advanced-features/joins/#using-selects-as-insert)
-  InsertStatement<Row, RS> fromSelect(
+  void fromSelect(
     BaseSelectStatement select, {
     required Map<TableColumn, Expression> columns,
   }) {
@@ -117,13 +115,11 @@ final class InsertStatement<Row extends Object,
     });
 
     source = InsertFromSelect._(select, columnNameToSelectColumnName);
-    return this;
   }
 
-  InsertStatement<Row, RS> onConflict(UpsertClause<Row, RS> upsert) {
+  void onConflict(UpsertClause<Row, RS> upsert) {
     assert(upsertClause == null, 'upsert clause already set');
     upsertClause = upsert;
-    return this;
   }
 
   @override

@@ -20,10 +20,6 @@ abstract mixin class SingleTableStatementMixin<
   /// The [WhereClause] filtering rows for this statement.
   WhereClause? whereClause;
 
-  /// Returns `this` as [Self].
-  @internal
-  Self asSelf();
-
   /// Makes this statement only include rows that match the [filter].
   ///
   /// For instance, if you have a table users with an id column, you could
@@ -47,7 +43,7 @@ abstract mixin class SingleTableStatementMixin<
   ///
   /// If you want to remove duplicate rows from a query, use the `distinct`
   /// parameter on [DatabaseConnectionUser.select].
-  Self where(Expression<bool> Function(RS tbl) filter) {
+  void where(Expression<bool> Function(RS tbl) filter) {
     final predicate = filter(resultSet.asSelfType());
 
     if (whereClause == null) {
@@ -55,8 +51,6 @@ abstract mixin class SingleTableStatementMixin<
     } else {
       whereClause = WhereClause(whereClause!.condition & predicate);
     }
-
-    return asSelf();
   }
 }
 
@@ -78,7 +72,7 @@ extension QueryTableExtensions<
   /// uniqueness constraint violation for primary keys, but makes it impossible
   /// to find other rows with [whereSamePrimaryKey] if nullable primary keys are
   /// used.
-  Self whereSamePrimaryKey(Insertable<Row> d) {
+  void whereSamePrimaryKey(Insertable<Row> d) {
     final source = resultSet as GeneratedTable;
     final primaryKey = source.primaryKey;
 
@@ -123,6 +117,6 @@ extension QueryTableExtensions<
         entry.key.equalsExp(entry.value)
     ]);
 
-    return where((_) => predicate);
+    where((_) => predicate);
   }
 }
