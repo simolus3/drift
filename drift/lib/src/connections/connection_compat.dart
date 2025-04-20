@@ -87,6 +87,9 @@ without awaiting every statement in it.''');
   }
 
   @override
+  Object? get tag => _inner.tag;
+
+  @override
   DriftRootSession? get root => _inner.root;
 
   @override

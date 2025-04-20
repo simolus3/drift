@@ -9,15 +9,15 @@ import 'dart:isolate';
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import 'drift.dart';
+import '../src/connections/connection.dart';
+import '../src/connections/isolate.dart';
+import '../src/connections/remote/protocol.dart';
+import '../src/query_builder/dialect.dart';
+import '../src/runtime/database/connection_user.dart';
+import '../src/runtime/database/db_base.dart';
 import 'remote.dart';
-import 'src/isolate.dart';
-import 'src/remote/protocol.dart';
 
 export 'remote.dart' show DriftRemoteException;
-
-/// Signature of a function that opens a database connection.
-typedef DatabaseOpener = QueryExecutor Function();
 
 /// Defines utilities to run drift in a background isolate. In the operation
 /// mode created by these utilities, there's a single background isolate doing
@@ -86,37 +86,39 @@ class DriftIsolate {
 
   /// Connects to this [DriftIsolate] from another isolate.
   ///
-  /// All operations on the returned [DatabaseConnection] will be executed on a
-  /// background isolate.
+  /// All operations on the returned [DriftDatabaseImplementation] will be
+  /// executed on a background isolate.
+  ///
+  /// The returned [DriftDatabaseImplementation] with use the [dialect] passed
+  /// to this method.
   ///
   /// When [singleClientMode] is enabled (it defaults to `false`), drift assumes
   /// that the isolate will only be connected to once. In this mode, drift will
-  /// shutdown the remote isolate once the returned [DatabaseConnection] is
-  /// closed.
+  /// shutdown the remote isolate once the returned [DriftSession] is closed.
   /// Also, stream queries are more efficient when this mode is enables since we
   /// don't have to synchronize table updates to other clients (since there are
   /// none).
   ///
   /// Setting the [isolateDebugLog] is only helpful when debugging drift itself.
   /// It will print messages exchanged between the two isolates.
-  Future<DatabaseConnection> connect({
+  Future<DriftDatabaseImplementation> connect({
+    required DriftDialect dialect,
     bool isolateDebugLog = false,
     bool singleClientMode = false,
     Duration? connectTimeout,
   }) async {
     final (channel, serialize) = await _open(connectTimeout);
-    final connection = await connectToRemoteAndInitialize(
-      channel,
+    return connectToRemote(
+      dialect: dialect,
+      channel: channel,
+      tag: this,
       debugLog: isolateDebugLog,
       serialize: serialize,
       singleClientMode: singleClientMode,
     );
-
-    return DatabaseConnection(connection.executor,
-        streamQueries: connection.streamQueries, connectionData: this);
   }
 
-  /// Stops the background isolate and disconnects all [DatabaseConnection]s
+  /// Stops the background isolate and disconnects all [DriftSession]s
   /// created.
   /// If you only want to disconnect a database connection created via
   /// [connect], use [GeneratedDatabase.close] instead.
@@ -144,7 +146,7 @@ class DriftIsolate {
   ///
   /// {@macro drift_isolate_serialize}
   static Future<DriftIsolate> spawn(
-    DatabaseOpener opener, {
+    DriftDatabaseImplementation Function() opener, {
     bool serialize = false,
     Future<Isolate> Function<T>(void Function(T), T) isolateSpawn =
         Isolate.spawn,
@@ -168,7 +170,7 @@ class DriftIsolate {
   ///
   /// {@macro drift_isolate_serialize}
   factory DriftIsolate.inCurrent(
-    DatabaseOpener opener, {
+    DriftDatabaseImplementation Function() opener, {
     bool killIsolateWhenDone = false,
     bool serialize = false,
     bool shutdownAfterLastDisconnect = false,
@@ -225,24 +227,24 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
   /// requiring a database is also available through [computeWithDatabase].
   @experimental
   Future<DriftIsolate> serializableConnection() async {
-    final currentlyInRootConnection = resolvedEngine is GeneratedDatabase;
-    // ignore: invalid_use_of_protected_member
-    final localConnection = resolvedEngine.connection;
-    final data = await localConnection.connectionData;
+    final connection = await currentSession();
 
     // If we're connected to an isolate already, we can use that one directly
     // instead of starting a short-lived drift server.
     // However, this does not work if [serializableConnection] is called in a
     // transaction zone, since the top-level connection could be blocked waiting
     // for the transaction (as transactions can't be concurrent in sqlite3).
-    if (data is DriftIsolate && currentlyInRootConnection) {
-      return data;
+    if (connection.tag case final DriftIsolate isolate) {
+      return isolate;
     } else {
       // Set up a drift server acting as a proxy to the existing database
       // connection.
       final server = RunningDriftServer(
         Isolate.current,
-        localConnection,
+        DriftDatabaseImplementation(
+          dialect: dialect,
+          openConnection: () async => connection,
+        ),
         onlyAcceptSingleConnection: true,
         closeConnectionAfterShutdown: false,
         killIsolateWhenDone: false,
@@ -325,16 +327,17 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
   @experimental
   Future<Ret> computeWithDatabase<Ret>({
     required FutureOr<Ret> Function(DB) computation,
-    required DB Function(DatabaseConnection) connect,
+    required DB Function(DriftDatabaseImplementation) connect,
   }) async {
     final connection = await serializableConnection();
 
     return await Isolate.run(() async {
-      final database = connect(await connection.connect());
+      final database = connect(await connection.connect(dialect: dialect));
       try {
         return await computation(database);
       } finally {
-        await database.close();
+        // ignore: invalid_use_of_visible_for_overriding_member
+        await database.attachedDatabase.close();
       }
     });
   }
@@ -349,7 +352,7 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
 /// used to open the underlying database connection.
 void _startDriftIsolate(List args) {
   final sendPort = args[0] as SendPort;
-  final opener = args[1] as DatabaseOpener;
+  final opener = args[1] as DriftDatabaseImplementation Function();
 
   final server = RunningDriftServer(Isolate.current, opener());
   sendPort.send(server.portToOpenConnection);

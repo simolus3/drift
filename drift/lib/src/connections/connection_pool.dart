@@ -28,6 +28,9 @@ abstract class _ConnectionPool
   }
 
   @override
+  Object? get tag => null;
+
+  @override
   DriftTransactionParent? get transactionParent => this;
 
   @override

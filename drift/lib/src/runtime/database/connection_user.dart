@@ -85,6 +85,32 @@ abstract base class DatabaseConnectionUser {
     _currentStreamQueryStore().handleTableUpdates(withRulesApplied);
   }
 
+  /// Listen for table updates reported through [notifyUpdates].
+  ///
+  /// By default, this listens to every table update. Table updates are reported
+  /// as a set of individual updates that happened atomically.
+  /// An optional filter can be provided in the [query] parameter. When set,
+  /// only updates matching the query will be reported in the stream.
+  ///
+  /// When called inside a transaction, the stream will close when the
+  /// transaction completes or is rolled back. Otherwise, the stream will
+  /// complete as the database is closed.
+  Stream<Set<TableUpdate>> tableUpdates(
+      [TableUpdateQuery query = const TableUpdateQuery.any()]) {
+    // The stream should refer to the transaction active when tableUpdates was
+    // called, not the one when a listener attaches.
+    final queries = _currentStreamQueryStore();
+
+    // We're wrapping updatesForSync in a stream controller to make it async.
+    return Stream.multi(
+      (controller) {
+        final source = queries.updatesForSync(query);
+        source.pipe(controller);
+      },
+      isBroadcast: true,
+    );
+  }
+
   /// Executes [action] in a transaction, which means that all its queries and
   /// updates will be called atomically.
   ///

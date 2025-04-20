@@ -4,8 +4,8 @@ import 'dart:isolate';
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../drift.dart';
-import '../remote.dart';
+import '../../connections/remote.dart';
+import 'connection.dart';
 
 // All of this is drift-internal and not exported, so:
 // ignore_for_file: public_member_api_docs
@@ -91,7 +91,7 @@ class RunningDriftServer {
 
   RunningDriftServer(
     this.self,
-    QueryExecutor connection, {
+    DriftDatabaseImplementation connection, {
     this.killIsolateWhenDone = true,
     bool closeConnectionAfterShutdown = true,
     this.onlyAcceptSingleConnection = false,

@@ -41,6 +41,14 @@ abstract interface class DriftSession {
   Future<QueryResult> execute(StatementInfo statement);
   Future<List<QueryResult>> executeBatch(List<StatementBatch> batch);
 
+  /// An arbitrary and user-defined tag that may be attached to sessions.
+  ///
+  /// For [DriftSession]s implemented as isolate clients, this tag stores the
+  /// `SendPort` used to connect to the isolate.
+  /// This allows to obtain another [DriftSession] given an existing one by
+  /// extracting its [tag].
+  abstract final Object? tag;
+
   /// If this session has schema management method, a [DriftRootSession]
   /// instance exposing them.
   DriftRootSession? get root;

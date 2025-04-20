@@ -19,6 +19,9 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   }
 
   @override
+  Object? get tag => null;
+
+  @override
   DriftRootSession? get root => this;
 
   @override

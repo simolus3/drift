@@ -11,6 +11,7 @@ import 'protocol.dart';
 /// The client part of a remote drift communication scheme.
 final class DriftClient {
   final DriftChannel _channel;
+  final Object? _tag;
 
   /// Whether to operate in "single-client mode".
   ///
@@ -24,7 +25,7 @@ final class DriftClient {
   late StreamQueryStore _streamQueries;
 
   /// Creates a new drift client from the underlying [DriftChannel].
-  DriftClient(this._channel, this.singleClientMode) {
+  DriftClient(this._channel, this.singleClientMode, this._tag) {
     _streamQueries = _RemoteStreamQueryStore(this);
   }
 
@@ -57,6 +58,9 @@ final class _RemoteSession
   int get _sessionId => details.sessionId;
 
   _RemoteSession(this.client, this.details, {this.isOutermostSession = false});
+
+  @override
+  Object? get tag => isOutermostSession ? client._tag : null;
 
   @override
   Future<void> close() async {

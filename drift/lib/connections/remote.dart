@@ -156,6 +156,7 @@ abstract interface class DriftServer {
 DriftDatabaseImplementation connectToRemote({
   required StreamChannel<Object?> channel,
   required DriftDialect dialect,
+  Object? tag,
   bool debugLog = false,
   bool serialize = true,
   bool singleClientMode = false,
@@ -164,6 +165,7 @@ DriftDatabaseImplementation connectToRemote({
     DriftChannel(
         channel.messageChannel(serialize: serialize, debugLog: debugLog)),
     singleClientMode,
+    tag,
   );
 
   return DriftDatabaseImplementation(
