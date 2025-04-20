@@ -5,20 +5,20 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:async/async.dart';
+import 'package:drift/connections/isolate.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/isolate.dart';
 import 'package:drift/native.dart';
-import 'package:drift/src/isolate.dart';
+import 'package:drift/src/connections/isolate.dart';
 import 'package:drift/src/remote/communication.dart';
 import 'package:mockito/mockito.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
 
-import 'generated/todos.dart';
-import 'test_utils/database_vm.dart';
-import 'test_utils/test_utils.dart';
-import 'test_utils/independent_isolate.dart' as fake_isolate;
+import '../generated/todos.dart';
+import '../test_utils/database_vm.dart';
+import '../test_utils/test_utils.dart';
+import '../test_utils/independent_isolate.dart' as fake_isolate;
 
 void main() {
   preferLocalSqlite3();
