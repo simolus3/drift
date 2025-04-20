@@ -50,25 +50,27 @@
 @experimental
 library;
 
+import 'dart:typed_data';
+
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import 'drift.dart';
-import 'remote.dart' as global;
-import 'src/remote/client_impl.dart';
-import 'src/remote/communication.dart';
-import 'src/remote/protocol.dart';
-import 'src/remote/server_impl.dart';
+import '' as global;
 
-export 'src/remote/communication.dart' show DriftRemoteException;
+import '../src/connections/connection.dart';
+import '../src/connections/remote/channel.dart';
+import '../src/connections/remote/client.dart';
+import '../src/connections/remote/protocol.dart';
+import '../src/connections/remote/serialize.dart';
+import '../src/connections/remote/server.dart';
+import '../src/query_builder/dialect.dart';
 
 /// Serves a drift database connection over any two-way communication channel.
 ///
 /// Users are responsible for creating the underlying stream channels before
 /// passing them to this server via [serve].
 /// A single drift server can safely handle multiple clients.
-@sealed
-abstract class DriftServer {
+abstract interface class DriftServer {
   /// Creates a drift server proxying incoming requests to the underlying
   /// [connection].
   ///
@@ -76,11 +78,14 @@ abstract class DriftServer {
   /// clients can use [shutdown] to stop this server remotely.
   /// If [closeConnectionAfterShutdown] is set to `true` (the default), shutting
   /// down the server will also close the [connection].
-  factory DriftServer(QueryExecutor connection,
+  factory DriftServer(DriftDatabaseImplementation connection,
       {bool allowRemoteShutdown = false,
       bool closeConnectionAfterShutdown = true}) {
     return ServerImplementation(
-        connection, allowRemoteShutdown, closeConnectionAfterShutdown);
+      connection: connection,
+      allowRemoteShutdown: allowRemoteShutdown,
+      closeConnectionAfterShutdown: closeConnectionAfterShutdown,
+    );
   }
 
   /// A stream of table update notifications sent from clients to this server.
@@ -107,8 +112,8 @@ abstract class DriftServer {
   /// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
   /// the message may be any Dart object.
   ///
-  /// After calling [serve], you can obtain a [DatabaseConnection] on the other
-  /// end of the [channel] by calling [connectToRemoteAndInitialize].
+  /// After calling [serve], you can obtain a [DriftSession] on the other
+  /// end of the [channel] by calling [connectToRemote].
   ///
   /// __Warning__: As long as this library is marked experimental, the protocol
   /// might change with every drift version. For this reason, make sure that
@@ -143,61 +148,28 @@ abstract class DriftServer {
 /// If [serialize] is true, drift will only send [bool], [int], [double],
 /// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
 /// the message may be any Dart object.
-/// The value of [serialize] for [remote] must be the same value passed to
-/// [DriftServer.serve].
+/// The value of [serialize] for [connectToRemote] must be the same value passed
+/// to [DriftServer.serve].
 ///
 /// The optional [debugLog] can be enabled to print incoming and outgoing
 /// messages.
-///
-/// __NOTE__: This synchronous method has a flaw, as its [QueryExecutor.dialect]
-/// is always going to be [SqlDialect.sqlite]. While this not a problem in most
-/// scenarios where that is the actual database, it makes it harder to use with
-/// other database clients. The [connectToRemoteAndInitialize] method does not
-/// have this issue.
-///
-/// Due to this problem, it is recommended to avoid [remote] altogether. If you
-/// know the dialect beforehand, you can wrap [connectToRemoteAndInitialize] in
-/// a [DatabaseConnection.delayed] to get a connection sychronously.
-@Deprecated('Use the asynchronous `connectToRemoteAndInitialize` instead')
-DatabaseConnection remote(
-  StreamChannel<Object?> channel, {
+DriftDatabaseImplementation connectToRemote({
+  required StreamChannel<Object?> channel,
+  required DriftDialect dialect,
   bool debugLog = false,
   bool serialize = true,
   bool singleClientMode = false,
 }) {
-  final client = DriftClient(channel, debugLog, serialize, singleClientMode);
-  return client.connection;
-}
+  final client = DriftClient(
+    DriftChannel(
+        channel.messageChannel(serialize: serialize, debugLog: debugLog)),
+    singleClientMode,
+  );
 
-/// Connects to a remote server over a two-way communication channel.
-///
-/// The other end of the [channel] must be attached to a drift server with
-/// [DriftServer.serve] for this setup to work.
-///
-/// If it is known that only a single client will connect to this database
-/// server, [singleClientMode] can be enabled.
-/// When enabled, [shutdown] is implicitly called when the database connection
-/// is closed. This may make it easier to dispose the remote isolate or server.
-/// Also, update notifications for table updates don't have to be sent which
-/// reduces load on the connection.
-///
-/// If [serialize] is true, drift will only send [bool], [int], [double],
-/// [Uint8List], [String] or [List]'s thereof over the channel. Otherwise,
-/// the message may be any Dart object.
-/// The value of [serialize] for [connectToRemoteAndInitialize] must be the same
-/// value passed to [DriftServer.serve].
-///
-/// The optional [debugLog] can be enabled to print incoming and outgoing
-/// messages.
-Future<DatabaseConnection> connectToRemoteAndInitialize(
-  StreamChannel<Object?> channel, {
-  bool debugLog = false,
-  bool serialize = true,
-  bool singleClientMode = false,
-}) async {
-  final client = DriftClient(channel, debugLog, serialize, singleClientMode);
-  await client.serverInfo;
-  return client.connection;
+  return DriftDatabaseImplementation(
+    dialect: dialect,
+    openConnection: client.requestRootSession,
+  );
 }
 
 /// Sends a shutdown request over a channel.
@@ -205,12 +177,15 @@ Future<DatabaseConnection> connectToRemoteAndInitialize(
 /// On the remote side, the corresponding channel must have been passed to
 /// [DriftServer.serve] for this setup to work.
 /// Also, the [DriftServer] must have been configured to allow remote-shutdowns.
-Future<void> shutdown(StreamChannel<Object?> channel, {bool serialize = true}) {
-  final comm = DriftCommunication(channel, serialize: serialize);
-  return comm
-      .request<void>(NoArgsRequest.terminateAll)
-      // Sending a terminate request will stop the server, so we won't get a
-      // response. This is expected and not an error we should throw.
-      .onError<ConnectionClosedException>((error, stackTrace) => null)
-      .whenComplete(comm.close);
+Future<void> shutdown(StreamChannel<Object?> channel,
+    {bool serialize = true}) async {
+  final comm = DriftChannel(channel.messageChannel(serialize: serialize));
+  try {
+    await comm.request(ShutdownServerRequest.new);
+  } on ConnectionClosedException {
+    // Sending a terminate request will stop the server, so we won't get a
+    // response. This is expected and not an error we should throw.
+  } finally {
+    await comm.close();
+  }
 }

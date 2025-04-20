@@ -1,16 +1,17 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:async/async.dart';
+import 'package:drift/connections/remote.dart';
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/remote.dart';
-import 'package:drift/src/remote/protocol.dart';
-import 'package:drift/src/utils/synchronized.dart';
+import 'package:drift/src/connections/remote/protocol.dart';
 import 'package:mockito/mockito.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
-import 'generated/todos.dart';
-import 'test_utils/test_utils.dart';
+import '../generated/todos.dart';
+import '../test_utils/test_utils.dart';
 
 void main() {
   test('closes channel in shutdown', () async {
@@ -28,12 +29,14 @@ void main() {
         DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
     server.serve(controller.foreign);
 
-    final client = await connectToRemoteAndInitialize(
-        controller.local.expectedToClose,
-        singleClientMode: true);
+    final client = connectToRemote(
+      dialect: const SqliteDialect(),
+      channel: controller.local.expectedToClose,
+      singleClientMode: true,
+    );
     final db = TodoDb(client);
 
-    await db.todosTable.select().get();
+    await db.select(db.todosTable).get();
     await db.close();
 
     expect(server.done, completes);
@@ -47,8 +50,10 @@ void main() {
       final controller = StreamChannelController<Object?>();
       server.serve(controller.foreign, serialize: false);
 
-      final client = await connectToRemoteAndInitialize(
-        controller.local.transformSink(StreamSinkTransformer.fromHandlers(
+      final client = connectToRemote(
+        dialect: const SqliteDialect(),
+        channel:
+            controller.local.transformSink(StreamSinkTransformer.fromHandlers(
           handleData: (data, out) {
             expect(data, isNot(isA<NotifyTablesUpdated>()));
             out.add(data);
@@ -59,7 +64,7 @@ void main() {
       );
 
       final db = TodoDb(client);
-      await db.todosTable.select().get();
+      await db.select(db.todosTable).get();
       await db.close();
     },
   );
@@ -220,27 +225,31 @@ void main() {
 
   test('nested transactions', () async {
     final controller = StreamChannelController<Object?>();
-    final executor = MockExecutor();
+    final executor = MockSession();
     final outerTransaction = executor.transactions;
     // avoid this object being created implicitly in the beginTransaction() when
     // stub because that breaks mockito.
     outerTransaction.transactions; // ignore: unnecessary_statements
-    final innerTransactions = <MockTransactionExecutor>[];
+    final innerTransactions = <MockSession>[];
 
-    TransactionExecutor newTransaction(Invocation _) {
-      final transaction = MockTransactionExecutor()..transactions;
+    Future<DriftSession> newTransaction(Invocation _) async {
+      final transaction = MockSession();
       innerTransactions.add(transaction);
-      when(transaction.beginTransaction()).thenAnswer(newTransaction);
+      when(transaction.begin(any)).thenAnswer(newTransaction);
       return transaction;
     }
 
-    when(outerTransaction.beginTransaction()).thenAnswer(newTransaction);
+    when(outerTransaction.begin(any)).thenAnswer(newTransaction);
 
-    final server = DriftServer(DatabaseConnection(executor));
+    final server = DriftServer(DriftDatabaseImplementation(
+      dialect: const SqliteDialect(),
+      openConnection: () async => executor,
+    ));
     server.serve(controller.foreign);
     addTearDown(server.shutdown);
 
-    final db = TodoDb(await connectToRemoteAndInitialize(controller.local));
+    final db = TodoDb(connectToRemote(
+        dialect: const SqliteDialect(), channel: controller.local));
     addTearDown(db.close);
 
     await db.transaction(() async {
@@ -258,38 +267,38 @@ void main() {
       });
     });
 
-    verify(outerTransaction.beginTransaction());
-    verify(innerTransactions[0].ensureOpen(any));
+    verify(outerTransaction.begin(any));
     verify(innerTransactions[0].rollback());
-    verify(innerTransactions[1].ensureOpen(any));
-    verify(innerTransactions[1].beginTransaction());
-    verify(innerTransactions[2].ensureOpen(any));
-    verify(innerTransactions[2].send());
-    verify(innerTransactions[1].send());
-    verify(outerTransaction.send());
+    verify(innerTransactions[1].begin(any));
+    verify(innerTransactions[2].commit());
+    verify(innerTransactions[1].commit());
+    verify(outerTransaction.commit());
   });
 
   test('handles exclusive executors', () async {
     final controller = StreamChannelController<Object?>();
-    final executor = MockExecutor();
+    final executor = MockSession();
     final multi = MultiChannel<Object?>(controller.local);
 
     final testEvents = StreamController<String>();
     final testEventQueue = StreamQueue(testEvents.stream);
     final lock = Lock();
 
-    final server = DriftServer(DatabaseConnection(executor));
+    final server = DriftServer(DriftDatabaseImplementation(
+      dialect: const SqliteDialect(),
+      openConnection: () async => executor,
+    ));
     controller.foreign.serveMulti(server);
     addTearDown(server.shutdown);
 
     final a = TodoDb(await multi.newRemoteConnection());
     final b = TodoDb(await multi.newRemoteConnection());
 
-    final exclusiveA = MockExecutor();
-    final exclusiveB = MockExecutor();
+    final exclusiveA = MockSession();
+    final exclusiveB = MockSession();
 
     var exclusiveCount = 0;
-    when(executor.beginExclusive()).thenAnswer(expectAsync1((_) {
+    when(executor.exclusive()).thenAnswer(expectAsync1((_) async {
       if (exclusiveCount == 0) {
         exclusiveCount++;
         testEvents.add('try-a');
@@ -349,19 +358,6 @@ void main() {
       testEventQueue,
       emitsInOrder(['grant-a', 'close-a', 'grant-b', 'close-b']),
     );
-  });
-
-  test('reports correct dialect of remote', () async {
-    final executor = MockExecutor();
-    when(executor.dialect).thenReturn(SqlDialect.postgres);
-
-    final controller = StreamChannelController<Object?>();
-    final server = DriftServer(DatabaseConnection(executor))
-      ..serve(controller.foreign);
-
-    final client = await connectToRemoteAndInitialize(controller.local);
-    await server.shutdown();
-    expect(client.executor.dialect, SqlDialect.postgres);
   });
 }
 

@@ -5,6 +5,7 @@ library;
 
 import 'package:meta/meta.dart';
 
+import '../../runtime/streams/update_rules.dart';
 import '../connection.dart';
 import '../result_set.dart';
 
@@ -16,7 +17,7 @@ sealed class Request<Res extends Response> implements ProtocolMessage {
   Request(this.id);
 }
 
-sealed class Response implements ProtocolMessage {
+final class Response implements ProtocolMessage {
   final int requestId;
 
   Response(this.requestId);
@@ -141,10 +142,23 @@ final class CloseSessionRequest extends Request<Response> {
       {required this.sessionId, this.mode = CloseMode.close});
 }
 
+/// Requests to shut the entire server down.
+final class ShutdownServerRequest extends Request<Response> {
+  ShutdownServerRequest(super.id);
+}
+
 /// Notification that the [DriftSession.closed] future has completed on a
 /// session the client is interested in.
 final class NotifySessionClosed extends ProtocolMessage {
   final int sessionId;
 
   NotifySessionClosed({required this.sessionId});
+}
+
+/// Sent to notify that a previous query has updated some tables. When a server
+/// receives this message, it forwards it to all connected clients.
+final class NotifyTablesUpdated extends ProtocolMessage {
+  final List<TableUpdate> updates;
+
+  NotifyTablesUpdated(this.updates);
 }

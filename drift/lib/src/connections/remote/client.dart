@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import '../../runtime/streams/store.dart';
+import '../../runtime/streams/store_impl.dart';
+import '../../runtime/streams/update_rules.dart';
 import '../connection.dart';
 import '../result_set.dart';
 import 'channel.dart';
@@ -9,7 +12,30 @@ import 'protocol.dart';
 final class DriftClient {
   final DriftChannel _channel;
 
-  DriftClient(this._channel);
+  /// Whether to operate in "single-client mode".
+  ///
+  /// In this mode, no table update notifications are sent to the server.
+  final bool singleClientMode;
+
+  /// A [StreamQueryStore] that takes queries from other clients attached to the
+  /// same server into account.
+  StreamQueryStore get streamQueries => _streamQueries;
+
+  late StreamQueryStore _streamQueries;
+
+  /// Creates a new drift client from the underlying [DriftChannel].
+  DriftClient(this._channel, this.singleClientMode) {
+    _streamQueries = _RemoteStreamQueryStore(this);
+  }
+
+  /// Sends a [ClientInitialize] request to the server and wraps the returned
+  /// [SessionDetails] in a [DriftSession] implementation.
+  Future<DriftSession> requestRootSession() async {
+    final details = await _channel
+        .request<ClientInitialize, SessionDetails>(ClientInitialize.new);
+
+    return _RemoteSession(this, details, isOutermostSession: true);
+  }
 }
 
 final class _RemoteSession
@@ -22,17 +48,35 @@ final class _RemoteSession
   final DriftClient client;
   final SessionDetails details;
 
+  /// Whether this session is the one returned by
+  /// [DriftClient.requestRootSession].
+  final bool isOutermostSession;
+
   final Completer _closed = Completer();
 
   int get _sessionId => details.sessionId;
 
-  _RemoteSession(this.client, this.details);
+  _RemoteSession(this.client, this.details, {this.isOutermostSession = false});
 
   @override
   Future<void> close() async {
     if (!_closed.isCompleted) {
-      _closed.complete(client._channel
-          .request((id) => CloseSessionRequest(id, sessionId: _sessionId)));
+      if (isOutermostSession) {
+        final future = client.singleClientMode
+            ? client._channel
+                .request((id) => CloseSessionRequest(id, sessionId: _sessionId))
+            // Don't close the top-level session, other clients may still be
+            // using it.
+            : Future.value(null);
+
+        _closed.complete(future.whenComplete(() async {
+          await client._channel.close();
+        }));
+      } else {
+        // Just close the sub-session
+        _closed.complete(client._channel
+            .request((id) => CloseSessionRequest(id, sessionId: _sessionId)));
+      }
     }
 
     await closed;
@@ -119,5 +163,45 @@ final class _RemoteSession
           sessionId: _sessionId,
           schemaVersion: version,
         ));
+  }
+}
+
+final class _RemoteStreamQueryStore extends LocalStreamQueryStore {
+  final DriftClient _client;
+  final Set<Completer> _awaitingUpdates = {};
+
+  _RemoteStreamQueryStore(this._client);
+
+  @override
+  void handleTableUpdates(Set<TableUpdate> updates,
+      [bool comesFromServer = false]) {
+    super.handleTableUpdates(updates);
+
+    if (!comesFromServer && !_client.singleClientMode) {
+      // Also notify the server (so that queries on other connections have a
+      // chance to update as well). Since this method is synchronous but the
+      // connection isn't, we store this request in a completer and await
+      // pending operations in close() (which is async).
+      final completer = Completer<void>();
+      _awaitingUpdates.add(completer);
+
+      _client._channel.send(NotifyTablesUpdated(updates.toList()));
+
+      completer.future.catchError((_) {
+        // we don't care about errors if the connection is closed before the
+        // update is dispatched. Why?
+      }, test: (e) => e is ConnectionClosedException).whenComplete(() {
+        _awaitingUpdates.remove(completer);
+      });
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    await super.close();
+
+    // create a copy because awaiting futures in here mutates the set
+    final updatesCopy = _awaitingUpdates.map((e) => e.future).toList();
+    await Future.wait(updatesCopy);
   }
 }
