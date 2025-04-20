@@ -105,7 +105,7 @@ extension DriftNativeStringExtensions on Expression<String> {
     return FunctionCallExpression('moor_contains', [
       this,
       Variable<String>(substring),
-      if (caseSensitive) const Constant<int>(1) else const Constant<int>(0),
+      if (caseSensitive) const Literal<int>(1) else const Literal<int>(0),
     ]);
   }
 }
