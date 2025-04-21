@@ -10,10 +10,8 @@ import '../schema/table.dart';
 
 /// Container for SQL statements that operate on a single primary SQL table.
 @internal
-abstract mixin class SingleTableStatementMixin<
-    Row extends Object,
-    RS extends ResultSet<Row, RS>,
-    Self extends SingleTableStatementMixin<Row, RS, Self>> {
+abstract mixin class SingleTableStatementMixin<Row extends Object,
+    RS extends ResultSet<Row, RS>> {
   /// The [ResultSet] that this statement is primarily operating on.
   @internal
   ResultSet<Row, RS> get resultSet;
@@ -60,11 +58,8 @@ abstract mixin class SingleTableStatementMixin<
 ///
 /// This adds the [whereSamePrimaryKey] method as an extension. The query could
 /// run on a view, for which [whereSamePrimaryKey] is not defined.
-extension QueryTableExtensions<
-        Row extends Object,
-        RS extends GeneratedTable<Row, RS>,
-        Self extends SingleTableStatementMixin<Row, RS, Self>>
-    on SingleTableStatementMixin<Row, RS, Self> {
+extension QueryTableExtensions<Row extends Object,
+    RS extends GeneratedTable<Row, RS>> on SingleTableStatementMixin<Row, RS> {
   /// Applies a [where] statement so that the row with the same primary key as
   /// [d] will be matched.
   ///
@@ -83,7 +78,7 @@ extension QueryTableExtensions<
         'When using Query.whereSamePrimaryKey, which is also called from '
         'DeleteStatement.delete and UpdateStatement.replace, the affected table'
         'must have a primary key. You can either specify a primary implicitly '
-        'by making an integer() column autoIncrement(), or by explictly '
+        'by making an integer() column autoIncrement(), or by explicitly '
         'overriding the primaryKey getter in your table class. You\'ll also '
         'have to re-run the code generation step.\n'
         'Alternatively, if you\'re using DeleteStatement.delete or '
