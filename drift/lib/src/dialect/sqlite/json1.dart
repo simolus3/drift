@@ -367,7 +367,7 @@ final class JsonTableFunction extends TableValuedFunction<JsonTableFunction> {
   JsonTableFunction withAlias(String alias) {
     return JsonTableFunction._(
       functionName: entityName,
-      arguments: arguments,
+      arguments: [...arguments],
       alias: alias,
     );
   }

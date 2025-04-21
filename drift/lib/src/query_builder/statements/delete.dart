@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import '../../connections/result_set.dart';
 import '../../runtime/data_class.dart';
 import '../../runtime/database/connection_user.dart';
@@ -14,9 +16,11 @@ final class DeleteStatement<Row extends Object,
     with SingleTableStatementMixin<Row, RS, DeleteStatement<Row, RS>> {
   /// The table from which rows should be deleted.
   @override
+  @internal
   final GeneratedTable<Row, RS> resultSet;
 
   /// An optional `RETURNING` clause part of this statement.
+  @internal
   ReturningClause<Row, RS>? returning;
 
   final DatabaseConnectionUser _database;
@@ -93,7 +97,4 @@ final class DeleteStatement<Row extends Object,
     final result = await _run();
     return returning!.interpretResults(_database, result);
   }
-
-  @override
-  DeleteStatement<Row, RS> asSelf() => this;
 }

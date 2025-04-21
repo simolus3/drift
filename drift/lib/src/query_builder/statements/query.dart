@@ -10,19 +10,15 @@ import '../schema/table.dart';
 
 /// Container for SQL statements that operate on a single primary SQL table.
 @internal
-abstract mixin class SingleTableStatementMixin<
-    Row extends Object,
-    RS extends ResultSet<Row, RS>,
-    Self extends SingleTableStatementMixin<Row, RS, Self>> {
+abstract mixin class SingleTableStatementMixin<Row extends Object,
+    RS extends ResultSet<Row, RS>> {
   /// The [ResultSet] that this statement is primarily operating on.
+  @internal
   ResultSet<Row, RS> get resultSet;
 
   /// The [WhereClause] filtering rows for this statement.
-  WhereClause? whereClause;
-
-  /// Returns `this` as [Self].
   @internal
-  Self asSelf();
+  WhereClause? whereClause;
 
   /// Makes this statement only include rows that match the [filter].
   ///
@@ -47,7 +43,7 @@ abstract mixin class SingleTableStatementMixin<
   ///
   /// If you want to remove duplicate rows from a query, use the `distinct`
   /// parameter on [DatabaseConnectionUser.select].
-  Self where(Expression<bool> Function(RS tbl) filter) {
+  void where(Expression<bool> Function(RS tbl) filter) {
     final predicate = filter(resultSet.asSelfType());
 
     if (whereClause == null) {
@@ -55,8 +51,6 @@ abstract mixin class SingleTableStatementMixin<
     } else {
       whereClause = WhereClause(whereClause!.condition & predicate);
     }
-
-    return asSelf();
   }
 }
 
@@ -64,11 +58,8 @@ abstract mixin class SingleTableStatementMixin<
 ///
 /// This adds the [whereSamePrimaryKey] method as an extension. The query could
 /// run on a view, for which [whereSamePrimaryKey] is not defined.
-extension QueryTableExtensions<
-        Row extends Object,
-        RS extends GeneratedTable<Row, RS>,
-        Self extends SingleTableStatementMixin<Row, RS, Self>>
-    on SingleTableStatementMixin<Row, RS, Self> {
+extension QueryTableExtensions<Row extends Object,
+    RS extends GeneratedTable<Row, RS>> on SingleTableStatementMixin<Row, RS> {
   /// Applies a [where] statement so that the row with the same primary key as
   /// [d] will be matched.
   ///
@@ -78,7 +69,7 @@ extension QueryTableExtensions<
   /// uniqueness constraint violation for primary keys, but makes it impossible
   /// to find other rows with [whereSamePrimaryKey] if nullable primary keys are
   /// used.
-  Self whereSamePrimaryKey(Insertable<Row> d) {
+  void whereSamePrimaryKey(Insertable<Row> d) {
     final source = resultSet as GeneratedTable;
     final primaryKey = source.primaryKey;
 
@@ -87,7 +78,7 @@ extension QueryTableExtensions<
         'When using Query.whereSamePrimaryKey, which is also called from '
         'DeleteStatement.delete and UpdateStatement.replace, the affected table'
         'must have a primary key. You can either specify a primary implicitly '
-        'by making an integer() column autoIncrement(), or by explictly '
+        'by making an integer() column autoIncrement(), or by explicitly '
         'overriding the primaryKey getter in your table class. You\'ll also '
         'have to re-run the code generation step.\n'
         'Alternatively, if you\'re using DeleteStatement.delete or '
@@ -123,6 +114,6 @@ extension QueryTableExtensions<
         entry.key.equalsExp(entry.value)
     ]);
 
-    return where((_) => predicate);
+    where((_) => predicate);
   }
 }
