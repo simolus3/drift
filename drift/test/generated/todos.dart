@@ -262,7 +262,7 @@ final class UuidType implements SqlType<UuidValue> {
 
   @override
   Object sqlParameter(DriftDialect dialect, Object value) {
-    return _supportsUuids(dialect) ? value : "'$value'";
+    return _supportsUuids(dialect) ? value : value.toString();
   }
 
   @override

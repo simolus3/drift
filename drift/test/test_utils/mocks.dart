@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/result_set.dart';
 import 'package:mockito/mockito.dart';
@@ -133,7 +134,10 @@ final class MockSession extends Mock
       execute(
         argThat(
           isA<StatementInfo>().having((e) => e.sql, 'sql', sql).having(
-              (e) => e.variables.map((e) => e.$2), 'variables', variables),
+              (e) => e.variables.map((v) => v.$1.sqlParameterOrNull(
+                  e.generated?.dialect ?? const SqliteDialect(), v.$2)),
+              'variables',
+              variables),
         ),
       );
 

@@ -1,3 +1,5 @@
+import 'package:drift/dialect/postgres.dart';
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -11,33 +13,42 @@ void main() {
 
   group('in expression', () {
     test('variable', () {
-      final c = Variable<UuidValue>(uuid, const NativeUuidType());
+      final c = Variable<UuidValue>(uuid, (_) => const UuidType());
 
-      expect(c.driftSqlType, isA<NativeUuidType>());
-      expect(c, generates('?', [uuid]));
+      expect(c.resolveType(const SqliteDialect()), isA<UuidType>());
+      expect(c, generates('?1', [uuid.toString()]));
+      expect(
+        c,
+        generatesWithOptions(r'$1',
+            variables: [uuid], dialect: const PostgresDialect()),
+      );
     });
 
     test('constant', () {
-      final c = Constant<UuidValue>(uuid, const NativeUuidType());
+      final c = Literal<UuidValue>(uuid, (_) => const UuidType());
 
-      expect(c.driftSqlType, isA<NativeUuidType>());
+      expect(c.resolveType(const SqliteDialect()), isA<UuidType>());
       expect(c, generates("'$uuid'"));
     });
 
     test('cast', () {
-      final cast = Variable('foo').cast<UuidValue>(const NativeUuidType());
+      final cast = Variable('foo').cast<UuidValue>(const UuidType());
 
-      expect(cast.driftSqlType, isA<NativeUuidType>());
-      expect(cast, generates('CAST(? AS uuid)', ['foo']));
+      expect(cast.resolveType(const SqliteDialect()), isA<UuidType>());
+      expect(cast, generates('CAST(?1 AS text)', ['foo']));
+      expect(
+        cast,
+        generatesWithOptions(r'CAST($1 AS uuid)',
+            variables: ['foo'], dialect: const PostgresDialect()),
+      );
     });
   });
 
   test('for inserts', () async {
-    final sqlite3Executor = MockExecutor();
-    final postgresExecutor = MockExecutor();
-    when(postgresExecutor.dialect).thenReturn(SqlDialect.postgres);
+    final sqlite3Executor = MockSession();
+    final postgresExecutor = MockSession();
 
-    var database = TodoDb(sqlite3Executor);
+    var database = TodoDb(createConnection(sqlite3Executor));
     addTearDown(database.close);
 
     final uuid = Uuid().v4obj();
@@ -45,48 +56,50 @@ void main() {
         .into(database.withCustomType)
         .insert(WithCustomTypeCompanion.insert(id: uuid));
 
-    verify(sqlite3Executor.runInsert(
-        'INSERT INTO "with_custom_type" ("id") VALUES (?)', [uuid.toString()]));
+    verify(sqlite3Executor.executeSql(
+        'INSERT INTO "with_custom_type" ("id") VALUES (?1)',
+        [uuid.toString()]));
 
     database.close();
-    database = TodoDb(postgresExecutor);
+    database = TodoDb(
+        createConnection(postgresExecutor, dialect: const PostgresDialect()));
 
     await database
         .into(database.withCustomType)
         .insert(WithCustomTypeCompanion.insert(id: uuid));
 
-    verify(postgresExecutor.runInsert(
+    verify(postgresExecutor.executeSql(
         r'INSERT INTO "with_custom_type" ("id") VALUES ($1)', [uuid]));
   });
 
   test('for selects', () async {
     final uuid = Uuid().v4obj();
 
-    final sqlite3Executor = MockExecutor();
-    when(sqlite3Executor.runSelect(any, any)).thenAnswer((_) {
-      return Future.value([
+    final sqlite3Executor = MockSession();
+    when(sqlite3Executor.execute(any)).thenAnswer((_) async {
+      return queryResult([
         {'id': uuid.toString()}
       ]);
     });
 
-    final postgresExecutor = MockExecutor();
-    when(postgresExecutor.dialect).thenReturn(SqlDialect.postgres);
-    when(postgresExecutor.runSelect(any, any)).thenAnswer((_) {
-      return Future.value([
+    final postgresExecutor = MockSession();
+    when(postgresExecutor.execute(any)).thenAnswer((_) async {
+      return queryResult([
         {'id': uuid}
       ]);
     });
 
-    var database = TodoDb(sqlite3Executor);
+    var database = TodoDb(createConnection(sqlite3Executor));
     addTearDown(database.close);
 
-    final row = await database.withCustomType.all().getSingle();
+    final row = await database.select(database.withCustomType).getSingle();
     expect(row.id, uuid);
 
     await database.close();
-    database = TodoDb(postgresExecutor);
+    database = TodoDb(
+        createConnection(postgresExecutor, dialect: const PostgresDialect()));
 
-    final pgRow = await database.withCustomType.all().getSingle();
+    final pgRow = await database.select(database.withCustomType).getSingle();
     expect(pgRow.id, uuid);
   });
 }
