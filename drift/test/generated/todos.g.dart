@@ -3213,6 +3213,7 @@ abstract base class _$TodoDb extends GeneratedDatabase {
       $CategoryTodoCountViewView(this);
   late final $TodoWithCategoryViewView todoWithCategoryView =
       $TodoWithCategoryViewView(this);
+  late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<AllTodosWithCategoryResult> allTodosWithCategory() {
     return customSelectMapped<AllTodosWithCategoryResult>(
         query:
@@ -3395,5 +3396,37 @@ final class AllTodosWithCategoryResult extends CustomResultSet {
           ..write('catDesc: $catDesc')
           ..write(')'))
         .toString();
+  }
+}
+
+base mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
+  $UsersTable get users => attachedDatabase.users;
+  $CategoriesTable get categories => attachedDatabase.categories;
+  $TodosTableTable get todosTable => attachedDatabase.todosTable;
+  $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
+  $TodoWithCategoryViewView get todoWithCategoryView =>
+      attachedDatabase.todoWithCategoryView;
+  Selectable<TodoEntry> todosForUser({required RowId user}) {
+    return customSelectMapped<TodoEntry>(
+        query:
+            'SELECT t.id AS _c0, t.title AS _c1, t.content AS _c2, t.target_date AS _c3, t.category AS _c4, t.status AS _c5 FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
+        variables: [(dialect.intType, $UsersTable.$converterid.toSql(user))],
+        readsFrom: {
+          todosTable,
+          sharedTodos,
+          users,
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = todosTable.createMapperFromPositions(const [
+            (index: 0, name: '_c0'),
+            (index: 1, name: '_c1'),
+            (index: 2, name: '_c2'),
+            (index: 3, name: '_c3'),
+            (index: 4, name: '_c4'),
+            (index: 5, name: '_c5'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        });
   }
 }

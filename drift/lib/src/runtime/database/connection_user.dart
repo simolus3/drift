@@ -15,8 +15,6 @@ import '../streams/update_rules.dart';
 import 'custom_select.dart';
 import 'db_base.dart';
 
-const _zoneRootUserKey = #DatabaseConnectionUser;
-
 /// The shared base class for drift databases and database accessors.
 abstract base class DatabaseConnectionUser {
   /// The database class that this user is attached to.
@@ -609,6 +607,8 @@ extension on DriftTransactionSession {
 /// Methods available internally but not exposed as part of drift's public API.
 @internal
 extension InternalConnectionUser on DatabaseConnectionUser {
+  Object get _zoneRootUserKey => (#DatabaseConnectionUser, attachedDatabase);
+
   Future<T> runConnectionZoned<T>(DriftSession session,
       StreamQueryStore streamQueries, Future<T> Function() calculation) {
     final wrapped = _ScopedDatabaseSession(session, streamQueries);

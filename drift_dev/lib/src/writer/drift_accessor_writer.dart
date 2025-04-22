@@ -18,7 +18,7 @@ class AccessorWriter {
 
     final prefix = isModular ? '' : r'_';
     classScope.leaf()
-      ..write('mixin $prefix\$${daoName}Mixin on ')
+      ..write('base mixin $prefix\$${daoName}Mixin on ')
       ..writeDriftRef('DatabaseAccessor<')
       ..writeDart(input.accessor.databaseClass)
       ..writeln('> {');

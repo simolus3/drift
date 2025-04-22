@@ -1,4 +1,6 @@
-part of 'runtime_api.dart';
+import '../../dsl/database.dart';
+import 'connection_user.dart';
+import 'db_base.dart';
 
 /// Class that runs queries to a subset of all available queries in a database.
 ///
@@ -7,14 +9,14 @@ part of 'runtime_api.dart';
 /// can be extracted into [DatabaseAccessor]s outside of that database.
 /// For details on how to write a dao, see [DriftAccessor].
 /// [T] should be the associated database class you wrote.
-abstract class DatabaseAccessor<T extends GeneratedDatabase>
+abstract base class DatabaseAccessor<T extends GeneratedDatabase>
     extends DatabaseConnectionUser {
   /// The main database instance for this dao
   @override
   final T attachedDatabase;
 
   /// Used internally by drift
-  DatabaseAccessor(this.attachedDatabase) : super.delegate(attachedDatabase);
+  DatabaseAccessor(this.attachedDatabase);
 }
 
 /// Extension for generated dao classes to keep the old [db] field that was

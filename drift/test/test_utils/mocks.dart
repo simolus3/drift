@@ -35,7 +35,12 @@ final class MockSession extends Mock
   var open = true;
   final Completer<void> closedCompleter = Completer();
 
-  MockSession() {
+  MockSession({bool isTransaction = false}) {
+    when(root).thenReturn(this);
+    when(transaction).thenReturn(isTransaction ? this : null);
+    when(transactionParent).thenReturn(this);
+    when(locks).thenReturn(this);
+
     when(execute(any)).thenAnswer((i) async {
       assert(open);
       final statement = i.positionalArguments[0] as StatementInfo;
@@ -82,6 +87,21 @@ final class MockSession extends Mock
     when(commit()).thenAnswer((_) => Future.value(null));
     when(rollback()).thenAnswer((_) => Future.value(null));
   }
+
+  @override
+  DriftRootSession? get root => _nsm(Invocation.getter(#root), this);
+
+  @override
+  DriftTransactionSession? get transaction =>
+      _nsm(Invocation.getter(#transaction), this);
+
+  @override
+  DriftTransactionParent? get transactionParent =>
+      _nsm(Invocation.getter(#transactionParent), this);
+
+  @override
+  DriftSessionWithInternalLocks? get locks =>
+      _nsm(Invocation.getter(#locks), this);
 
   @override
   Future<QueryResult> execute(StatementInfo? statement) => _nsm(

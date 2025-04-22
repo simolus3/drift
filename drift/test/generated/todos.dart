@@ -290,7 +290,7 @@ final class UuidType implements SqlType<UuidValue> {
     CategoryTodoCountView,
     TodoWithCategoryView,
   ],
-//  daos: [SomeDao],
+  daos: [SomeDao],
   queries: {
     'allTodosWithCategory': 'SELECT t.*, c.id as catId, c."desc" as catDesc '
         'FROM todos t INNER JOIN categories c ON c.id = t.category',
@@ -313,7 +313,6 @@ final class TodoDb extends _$TodoDb {
   int schemaVersion = 1;
 }
 
-/*
 @DriftAccessor(
   tables: [Users, SharedTodos, TodosTable],
   views: [TodoWithCategoryView],
@@ -324,11 +323,9 @@ final class TodoDb extends _$TodoDb {
         'WHERE u.id = :user'
   },
 )
-
-class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
+final class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
   SomeDao(super.db);
 }
-*/
 
 DriftDatabaseImplementation _nullExecutor([DriftDialect? dialect]) {
   return DriftDatabaseImplementation(

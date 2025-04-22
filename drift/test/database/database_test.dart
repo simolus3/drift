@@ -5,8 +5,8 @@ import 'package:test/test.dart';
 import '../generated/todos.dart';
 import '../test_utils/test_utils.dart';
 
-class _FakeDb extends GeneratedDatabase {
-  _FakeDb(super.executor);
+final class _FakeDb extends GeneratedDatabase {
+  _FakeDb(super.implementation);
 
   @override
   MigrationStrategy get migration {
@@ -27,9 +27,10 @@ class _FakeDb extends GeneratedDatabase {
   }
 
   @override
-  List<TableInfo> get allTables => [];
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities => const [];
+
   @override
-  int get schemaVersion => 1;
+  int schemaVersion = 1;
 }
 
 void main() {
@@ -45,80 +46,106 @@ void main() {
 
   group('callbacks', () {
     late _FakeDb db;
-    late MockExecutor executor;
+    late MockSession session;
 
     setUp(() {
-      executor = MockExecutor();
-      db = _FakeDb(executor);
+      session = MockSession();
+      db = _FakeDb(createConnection(session));
     });
 
     test('onCreate', () async {
-      await db.beforeOpen(executor, const OpeningDetails(null, 1));
-      verify(executor.runCustom('created', any));
+      when(session.schemaVersion).thenAnswer((_) async => 0);
+      await db.initialize();
+      verify(session.executeSql('created'));
     });
 
     test('onUpgrade', () async {
-      await db.beforeOpen(executor, const OpeningDetails(2, 3));
-      verify(executor.runCustom('updated from 2 to 3', any));
+      db.schemaVersion = 3;
+      when(session.schemaVersion).thenAnswer((_) async => 2);
+      await db.initialize();
+
+      verify(session.executeSql('updated from 2 to 3'));
     });
 
     test('beforeOpen', () async {
-      await db.beforeOpen(executor, const OpeningDetails(3, 4));
-      verify(executor.runSelect('opened: 3 to 4', []));
+      db.schemaVersion = 4;
+      when(session.schemaVersion).thenAnswer((_) async => 3);
+      await db.initialize();
+
+      verify(session.executeSql('opened: 3 to 4'));
     });
   });
 
   test('creates and attaches daos', () async {
-    final executor = MockExecutor();
-    final db = TodoDb(executor);
+    final executor = MockSession();
+    final db = TodoDb(createConnection(executor));
 
     await db.someDao.todosForUser(user: RowId(1)).get();
 
-    verify(executor.runSelect(argThat(contains('SELECT t.* FROM todos')), [1]));
+    verify(
+      executor.executeSql(
+          contains(
+              'INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users'),
+          [1]),
+    );
   });
 
   test('closing the database closes the executor', () async {
-    final executor = MockExecutor();
-    final db = TodoDb(executor);
+    final executor = MockSession();
+    final db = TodoDb(createConnection(executor));
 
+    await db.initialize();
     await db.close();
 
     verify(executor.close());
   });
 
-  test('throws when migration fails', () async {
-    final executor = MockExecutor(const OpeningDetails(null, 1));
-    when(executor.runCustom(any, any)).thenAnswer((_) => Future.error('error'));
+  test('closing the database immediately does nothing', () async {
+    final executor = MockSession();
+    final db = TodoDb(createConnection(executor));
+    await db.close();
 
-    final db = TodoDb(executor);
+    verifyNever(executor.close());
+  });
+
+  test('throws when migration fails', () async {
+    final executor = MockSession();
+    when(executor.schemaVersion).thenAnswer((_) async => 0);
+    when(executor.execute(any)).thenAnswer((_) => Future.error('error'));
+
+    final db = TodoDb(createConnection(executor));
     expect(db.customSelect('SELECT 1').getSingle(), throwsA('error'));
   });
 
   test('zone database is ignored for operations on another database', () async {
-    final ex1 = MockExecutor();
-    final ex2 = MockExecutor();
+    final ex1 = MockSession();
+    final ex2 = MockSession();
 
-    final db1 = TodoDb(ex1);
-    final db2 = TodoDb(ex2);
+    final db1 = TodoDb(createConnection(ex1));
+    final db2 = TodoDb(createConnection(ex2));
     addTearDown(db1.close);
     addTearDown(db2.close);
 
     await db1.transaction(() async {
+      clearInteractions(ex1);
       await db2.customSelect('SELECT 1').get();
     });
 
-    verify(ex2.runSelect('SELECT 1', []));
-    verifyNever(ex2.runSelect(any, any));
+    verify(ex2.executeSql('SELECT 1'));
+    verifyNever(ex1.execute(any));
   });
 
   test('disallows zero as a schema version', () async {
-    var db = TodoDb(MockExecutor(OpeningDetails(null, 0)))..schemaVersion = 0;
+    var executor = MockSession();
+    when(executor.schemaVersion).thenAnswer((_) async => 0);
+
+    var db = TodoDb(createConnection(executor))..schemaVersion = 0;
     await expectLater(db.customSelect('SELECT 1').get(), throwsStateError);
 
-    db = TodoDb(MockExecutor(OpeningDetails(null, 0)))..schemaVersion = -1;
+    db = TodoDb(createConnection(executor))..schemaVersion = -1;
     await expectLater(db.customSelect('SELECT 1').get(), throwsStateError);
 
-    db = TodoDb(MockExecutor(OpeningDetails(null, 0)))..schemaVersion = 1;
+    db = TodoDb(createConnection(executor))..schemaVersion = 1;
     await expectLater(db.customSelect('SELECT 1').get(), completes);
   });
 }

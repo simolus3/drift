@@ -92,6 +92,14 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   }
 
   Future<void> _runMigrations(DriftRootSession session) async {
+    final schemaVersion = this.schemaVersion;
+    if (schemaVersion <= 0) {
+      throw StateError(
+        'The schemaVersion getter returned $schemaVersion, but it must return '
+        'at least one.',
+      );
+    }
+
     final oldVersion = await session.schemaVersion;
     final strategy = _resolvedMigration;
     final migrator = Migrator(this);
