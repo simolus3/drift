@@ -46,7 +46,7 @@ final class DriftCompatibilitySession
       {required DriftSession inner, required DriftDialect dialect})
       : _inner = inner,
         _dialect = dialect,
-        _transactionDepth = 0;
+        _transactionDepth = -1;
 
   void _checkOpen() {
     if (_isClosed) {
@@ -112,7 +112,7 @@ without awaiting every statement in it.''');
     } else {
       return _startNested(() async {
         await _inner.execute(StatementInfo(
-            _dialect.compile(BeginStatement(depth: _transactionDepth))));
+            _dialect.compile(BeginStatement(depth: _transactionDepth + 1))));
         return DriftCompatibilityTransaction._(
             false, _inner, _dialect, _transactionDepth + 1);
       });

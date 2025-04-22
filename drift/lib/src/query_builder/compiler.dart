@@ -470,13 +470,14 @@ abstract base class StatementCompiler {
     final isRoot = statement.buffer.isEmpty;
     if (isRoot) {
       statement.isReadOnly = true;
+      statement.resultSetStructure = select.structure;
     }
 
     statement.buffer.write('SELECT ');
     if (select.distinct) {
       statement.buffer.write('DISTINCT ');
     }
-    statement.resultSetStructure = select.structure;
+
     statement.hasMultipleTables |= select.from.length > 1;
 
     var first = true;

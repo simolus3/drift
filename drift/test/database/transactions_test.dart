@@ -12,20 +12,20 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
-  late MockExecutor executor;
+  late MockSession executor;
   late MockStreamQueries streamQueries;
 
   setUp(() {
-    executor = MockExecutor();
+    executor = MockSession();
     streamQueries = MockStreamQueries();
 
-    final connection = createConnection(executor, streamQueries);
+    final connection = createConnection(executor, streams: streamQueries);
     db = TodoDb(connection);
   });
 
   test('streams in transactions are isolated and scoped', () async {
     // create a database without mocked stream queries
-    db = TodoDb(MockExecutor());
+    db = TodoDb(createConnection(executor));
 
     late Stream<int?> stream;
 
@@ -91,39 +91,25 @@ void main() {
   });
 
   group('nested transactions', () {
-    test('are no-ops if not supported', () async {
+    test('are emulated if not supported', () async {
       final transactions = executor.transactions;
-      when(transactions.supportsNestedTransactions).thenReturn(false);
+      when(transactions.transactionParent).thenReturn(null);
 
       await db.transaction(() async {
         await db.transaction(() async {
-          // todo how can we test that these are really equal?
+          await db.customSelect('SELECT 1').get();
         });
 
         // the outer callback has not completed yet, so shouldn't send
-        verifyNever(executor.transactions.send());
+        verifyNever(executor.transactions.commit());
       });
 
-      verify(transactions.send());
-      verify(executor.beginTransaction());
-      verifyNever(transactions.beginTransaction());
-    });
-
-    test('can throw if not supported', () async {
-      final transactions = executor.transactions;
-      when(transactions.supportsNestedTransactions).thenReturn(false);
-
-      await db.transaction(() async {
-        await expectLater(
-          db.transaction(() async {
-            fail('Should not be called');
-          }, requireNew: true),
-          throwsUnsupportedError,
-        );
-      });
-
-      verify(transactions.send());
-      verifyNever(transactions.beginTransaction());
+      verify(transactions.executeSql('SAVEPOINT s1;'));
+      verify(transactions.executeSql('SELECT 1'));
+      verify(transactions.executeSql('RELEASE s1;'));
+      verify(transactions.commit());
+      verify(executor.begin(any));
+      verifyNever(transactions.begin(any));
     });
 
     test('are committed separately', () async {
@@ -131,18 +117,18 @@ void main() {
       final innerTransactions = outerTransactions.transactions;
 
       await db.transaction(() async {
-        verify(executor.beginTransaction());
+        verify(executor.begin(any));
 
         await db.transaction(() async {
           await db.select(db.todosTable).get();
         });
 
-        verify(outerTransactions.beginTransaction());
-        verify(innerTransactions.ensureOpen(any));
-        verify(innerTransactions.send());
+        verify(outerTransactions.begin(any));
+        verify(innerTransactions.executeSql(contains('SELECT')));
+        verify(innerTransactions.commit());
       });
 
-      verify(outerTransactions.send());
+      verify(outerTransactions.commit());
     });
 
     test('are rolled back after exceptions', () async {
@@ -150,7 +136,7 @@ void main() {
       final innerTransactions = outerTransactions.transactions;
 
       await db.transaction(() async {
-        verify(executor.beginTransaction());
+        verify(executor.begin(any));
         final cause = Exception('revert inner');
 
         await expectLater(db.transaction(() async {
@@ -159,24 +145,27 @@ void main() {
           throw cause;
         }), throwsA(cause));
 
-        verify(outerTransactions.beginTransaction());
-        verify(innerTransactions.ensureOpen(any));
+        verify(outerTransactions.begin(any));
+        verify(innerTransactions.execute(any));
         verify(innerTransactions.rollback());
       });
 
-      verify(outerTransactions.send());
+      verify(outerTransactions.commit());
     });
   });
 
   test('code in callback uses transaction', () async {
     // notice how we call .select on the database, but it should be called on
     // transaction executor.
+    await db.initialize();
+    clearInteractions(executor);
+
     await db.transaction(() async {
       await db.select(db.users).get();
     });
 
-    verifyNever(executor.runSelect(any, any));
-    verify(executor.transactions.runSelect(any, any));
+    verifyNever(executor.execute(any));
+    verify(executor.transactions.execute(any));
   });
 
   test('transactions rollback after errors', () async {
@@ -187,13 +176,14 @@ void main() {
 
     await expectLater(future, throwsA(exception));
 
-    verifyNever(executor.transactions.send());
+    verifyNever(executor.transactions.commit());
     verify(executor.transactions.rollback());
   });
 
   test('transactions notify about table updates after completing', () async {
     final transactions = executor.transactions;
-    when(transactions.runUpdate(any, any)).thenAnswer((_) => Future.value(2));
+    when(transactions.execute(any))
+        .thenAnswer((_) async => queryResult(null, affectedRows: 2));
 
     await db.transaction(() async {
       await db
@@ -210,12 +200,12 @@ void main() {
       streamQueries.handleTableUpdates(
           {TableUpdate.onTable(db.users, kind: UpdateKind.update)}),
     ).called(1);
-    verify(executor.transactions.send());
+    verify(executor.transactions.commit());
   });
 
   test('the database is opened before starting a transaction', () async {
     await db.transaction(() async {
-      verify(executor.ensureOpen(db));
+      verify(executor.schemaVersion);
     });
   });
 
@@ -246,7 +236,8 @@ void main() {
     const commitException = 'commit';
 
     final transactions = executor.transactions;
-    when(transactions.send()).thenAnswer((_) => Future.error(commitException));
+    when(transactions.commit())
+        .thenAnswer((_) => Future.error(commitException));
     when(transactions.rollback())
         .thenAnswer((_) => Future.error(rollbackException));
 
@@ -264,10 +255,16 @@ void main() {
     // the database operation (https://github.com/simolus3/drift/issues/2873).
 
     test('select', () async {
-      when(executor.runSelect(any, any))
-          .thenAnswer((_) => Future.error('should run select in transaction'));
+      when(executor.execute(any)).thenAnswer((i) {
+        final arg = i.positionalArguments[0] as StatementInfo;
+        if (arg.needsResultSet) {
+          return Future.error('should run select in transaction');
+        } else {
+          return Future.value(queryResult([]));
+        }
+      });
 
-      final simpleQuery = db.users.select();
+      final simpleQuery = db.select(db.users);
       final joinedQuery = db.selectOnly(db.users)..addColumns([db.users.id]);
       final customQuery = db.customSelect('SELECT 1');
 
@@ -279,8 +276,14 @@ void main() {
     });
 
     test('update', () async {
-      when(executor.runUpdate(any, any))
-          .thenAnswer((_) => Future.error('should run update in transaction'));
+      when(executor.execute(any)).thenAnswer((i) {
+        final arg = i.positionalArguments[0] as StatementInfo;
+        if (arg.expectedWrites.isNotEmpty) {
+          return Future.error('should run update in transaction');
+        } else {
+          return Future.value(queryResult([]));
+        }
+      });
 
       final stmt = db.update(db.users);
       await db.transaction(() async {
@@ -288,26 +291,41 @@ void main() {
       });
 
       verify(executor.transactions
-          .runUpdate('UPDATE "users" SET "is_awesome" = ?;', [1]));
+          .executeSql('UPDATE "users" SET "is_awesome" = ?1;', [1]));
     });
 
     test('delete', () async {
-      when(executor.runDelete(any, any))
-          .thenAnswer((_) => Future.error('should run delete in transaction'));
+      when(executor.execute(any)).thenAnswer((i) {
+        final arg = i.positionalArguments[0] as StatementInfo;
+        if (arg.expectedWrites.isNotEmpty) {
+          return Future.error('should run delete in transaction');
+        } else {
+          return Future.value(queryResult([]));
+        }
+      });
 
       final stmt = db.delete(db.users);
       await db.transaction(() async {
         await stmt.go();
       });
 
-      verify(executor.transactions.runDelete('DELETE FROM "users";', []));
+      verify(executor.transactions.executeSql('DELETE FROM "users";', []));
     });
 
     test('insert', () async {
-      when(executor.runSelect(any, any))
-          .thenAnswer((_) => Future.error('should run select in transaction'));
-      when(executor.runInsert(any, any))
-          .thenAnswer((_) => Future.error('should run delete in transaction'));
+      when(executor.execute(any)).thenAnswer((i) {
+        final arg = i.positionalArguments[0] as StatementInfo;
+        if (arg.expectedWrites.isNotEmpty) {
+          return Future.error('should run update in transaction');
+        } else {
+          return Future.value(queryResult([]));
+        }
+      });
+
+      final transactions = executor.transactions;
+      when(transactions.execute(any)).thenAnswer((i) {
+        return Future.value(queryResult([], lastInsertRowId: 1));
+      });
 
       final stmt = db.into(db.categories);
 
@@ -317,10 +335,10 @@ void main() {
             CategoriesCompanion.insert(description: 'test2'));
       });
 
-      verify(executor.transactions
-          .runInsert('INSERT INTO "categories" ("desc") VALUES (?)', ['test']));
-      verify(executor.transactions.runSelect(
-          'INSERT INTO "categories" ("desc") VALUES (?) RETURNING *',
+      verify(executor.transactions.executeSql(
+          'INSERT INTO "categories" ("desc") VALUES (?1)', ['test']));
+      verify(executor.transactions.executeSql(
+          'INSERT INTO "categories" ("desc") VALUES (?1) RETURNING *',
           ['test2']));
     });
   });

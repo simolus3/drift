@@ -4,6 +4,8 @@ import '../../connections/connection.dart';
 import '../../connections/result_set.dart';
 import '../../query_builder.dart';
 import '../selectable.dart';
+import '../streams/store.dart';
+import '../streams/update_rules.dart';
 import 'connection_user.dart';
 
 /// A select statement that is constructed with a raw sql prepared statement
@@ -52,16 +54,15 @@ final class CustomSelectStatement<T> with Selectable<T> {
     );
   }
 
-  @override
-  Future<List<T>> get() async {
-    final session = await _db.currentSession();
-
-    final result = await session.execute(StatementInfo.fromText(
+  StatementInfo get _statement {
+    return StatementInfo.fromText(
       query,
       variables: variables,
       needsResultSet: true,
-    ));
+    );
+  }
 
+  List<T> _mapResults(QueryResult result) {
     final driftResultSet =
         DriftResultSet(ResultSetStructure(), result.resultSet!, _db.dialect);
     final mapper = createMapper(driftResultSet);
@@ -69,9 +70,28 @@ final class CustomSelectStatement<T> with Selectable<T> {
   }
 
   @override
+  Future<List<T>> get() async {
+    final session = await _db.currentSession();
+
+    final result = await session.execute(_statement);
+    return _mapResults(result);
+  }
+
+  @override
   Stream<List<T>> watch() {
-    // TODO: implement watch
-    throw UnimplementedError();
+    final streams = _db.currentStreamQueryStore();
+    final raw = streams.registerStream(
+      QueryStreamFetcher(
+        readsFrom: TableUpdateQuery.onAllTables(tables),
+        key: StreamKey(query, variables),
+        fetchData: () async {
+          final currentSession = await _db.currentSession();
+          return currentSession.execute(_statement);
+        },
+      ),
+      _db,
+    );
+    return raw.map(_mapResults);
   }
 }
 

@@ -206,6 +206,7 @@ final class InsertStatement<Row extends Object,
     Insertable<Row> entity, {
     UpsertClause<Row, RS>? onConflict,
   }) async {
+    source = null;
     values(entity);
     if (onConflict != null) {
       this.onConflict(onConflict);
@@ -231,6 +232,7 @@ final class InsertStatement<Row extends Object,
     required Map<TableColumn, Expression> columns,
     UpsertClause<Row, RS>? onConflict,
   }) async {
+    source = null;
     fromSelect(select, columns: columns);
     if (onConflict != null) {
       this.onConflict(onConflict);
@@ -249,6 +251,7 @@ final class InsertStatement<Row extends Object,
   /// instead.
   Future<Row> insertReturning(Insertable<Row> entity,
       {UpsertClause<Row, RS>? onConflict}) async {
+    source = null;
     final row = await insertReturningOrNull(entity, onConflict: onConflict);
 
     if (row == null) {
@@ -267,6 +270,7 @@ final class InsertStatement<Row extends Object,
   /// added as an [upsertClause]). This method returns null in that case.
   Future<Row?> insertReturningOrNull(Insertable<Row> entity,
       {UpsertClause<Row, RS>? onConflict}) async {
+    source = null;
     values(entity);
     if (onConflict != null) {
       this.onConflict(onConflict);
