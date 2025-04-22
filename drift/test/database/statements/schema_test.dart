@@ -301,7 +301,7 @@ void main() {
     ];
 
     CustomComponent statements(String base) {
-      return CustomComponent('fallback', dialectSpecificSql: {
+      return CustomComponent('fallback', dialectSpecifcSql: {
         for (final dialect in KnownSqlDialect.values) dialect: '$base $dialect',
       });
     }

@@ -41,7 +41,7 @@ abstract base class Expression<T extends Object> implements FunctionParameter {
     SqlType<T>? customType,
   }) {
     return Expression.customComponent(
-      CustomComponent(sql, dialectSpecificSql: dialectSpecific),
+      CustomComponent(sql, dialectSpecifcSql: dialectSpecific),
       precedence: precedence,
       customType: customType,
     );

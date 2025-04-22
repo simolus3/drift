@@ -13,7 +13,7 @@ final class BeginStatement extends SqlStatement {
 
   @override
   void compileWith(StatementCompiler compiler) {
-    compiler.addBegin(this);
+    // TODO: implement compileWith
   }
 }
 
@@ -27,7 +27,7 @@ final class CommitStatement extends SqlStatement {
 
   @override
   void compileWith(StatementCompiler compiler) {
-    compiler.addCommit(this);
+    // TODO: implement compileWith
   }
 }
 
@@ -41,6 +41,6 @@ final class RollbackStatement extends SqlStatement {
 
   @override
   void compileWith(StatementCompiler compiler) {
-    compiler.addRollback(this);
+    // TODO: implement compileWith
   }
 }
