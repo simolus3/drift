@@ -22,7 +22,8 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
 
   /// Opens a drift database backed by a given [implementation].
   GeneratedDatabase(this.implementation) {
-    _streamQueryStore = DelayedStreamQueryStore(_openedStreamQueries.future);
+    _streamQueryStore =
+        DelayedStreamQueryStore(_openedStreamQueries.future, rootConnection);
   }
 
   /// Specify the schema version of your database. Whenever you change or add

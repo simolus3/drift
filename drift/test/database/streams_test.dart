@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/cancellation_zone.dart';
-import 'package:drift/src/runtime/executor/stream_queries.dart';
+import 'package:drift/src/runtime/streams/store.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -13,50 +14,50 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
-  late MockExecutor executor;
+  late MockSession executor;
   setUp(() async {
-    executor = MockExecutor();
-    db = TodoDb(executor);
-    await db.doWhenOpened((_) {});
+    executor = MockSession();
+    db = TodoDb(createConnection(executor));
+    await db.initialize();
+    clearInteractions(executor);
   });
 
   test('streams fetch when the first listener attaches', () async {
     final stream = db.select(db.users).watch();
 
-    verifyNever(executor.runSelect(any, any));
+    verifyNever(executor.execute(any));
 
     stream.listen((_) {});
     await pumpEventQueue(times: 1);
 
-    verify(executor.runSelect(any, any)).called(1);
+    verify(executor.execute(any)).called(1);
   });
 
   test('streams fetch when the underlying data changes', () async {
     db.select(db.users).watch().listen((_) {});
 
+    await pumpEventQueue(times: 1);
     db.markTablesUpdated({db.users});
     await pumpEventQueue(times: 1);
 
     // twice: Once because the listener attached, once because the data changed
-    verify(executor.runSelect(any, any)).called(2);
+    verify(executor.execute(any)).called(2);
   });
 
   test('streams recognize aliased tables', () async {
     final first = db.alias(db.users, 'one');
     final second = db.alias(db.users, 'two');
 
-    db.select(first).watch().listen((_) {});
+    db.select(first).watch().listen(null);
     await pumpEventQueue(times: 1);
 
     db.markTablesUpdated({second});
     await pumpEventQueue(times: 1);
 
-    verify(executor.runSelect(any, any)).called(2);
+    verify(executor.execute(any)).called(2);
   });
 
   test('streams emit cached data when a new listener attaches', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
-
     final first = db.select(db.users).watch();
     expect(first, emits(isEmpty));
 
@@ -65,20 +66,17 @@ void main() {
     final second = db.select(db.users).watch();
     expect(second, emits(isEmpty));
 
-    verify(executor.dialect);
     verifyNoMoreInteractions(executor);
   });
 
   test('same stream emits cached data when listening twice', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
-
     final stream = db.select(db.users).watch();
     expect(await stream.first, isEmpty);
 
     clearInteractions(executor);
 
     await stream.first;
-    verifyNever(executor.runSelect(any, any));
+    verifyNever(executor.execute(any));
   });
 
   test('does not emit cached data when resuming and data did not change',
@@ -127,18 +125,19 @@ void main() {
 
   group('updating clears cached data', () {
     test('when an older stream is no longer listened to', () async {
-      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
       final first = db.select(db.categories).watch();
       await first.first; // subscribe to first stream, then drop subscription
 
-      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {
-              'id': 1,
-              'desc': 'd',
-              'description_in_upper_case': 'D',
-              'priority': 0,
-            }
-          ]));
+      when(executor.execute(any)).thenAnswer(
+        (_) async => queryResult([
+          {
+            'id': 1,
+            'desc': 'd',
+            'description_in_upper_case': 'D',
+            'priority': 0,
+          }
+        ], lastInsertRowId: 1, affectedRows: 1),
+      );
       await db
           .into(db.categories)
           .insert(CategoriesCompanion.insert(description: 'd'));
@@ -148,18 +147,19 @@ void main() {
     });
 
     test('when an older stream is still listened to', () async {
-      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
       final first = db.select(db.categories).watch();
       final subscription = first.listen((_) {});
 
-      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
-            {
-              'id': 1,
-              'desc': 'd',
-              'description_in_upper_case': 'D',
-              'priority': 0,
-            }
-          ]));
+      when(executor.execute(any)).thenAnswer(
+        (_) async => queryResult([
+          {
+            'id': 1,
+            'desc': 'd',
+            'description_in_upper_case': 'D',
+            'priority': 0,
+          }
+        ], lastInsertRowId: 1, affectedRows: 1),
+      );
       await db
           .into(db.categories)
           .insert(CategoriesCompanion.insert(description: 'd'));
@@ -171,8 +171,6 @@ void main() {
   });
 
   test('every stream instance can be listened to', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
-
     final first = db.select(db.users).watch();
     final second = db.select(db.users).watch();
 
@@ -189,21 +187,17 @@ void main() {
   });
 
   test('same stream instance can be listened to multiple times', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
-
     final stream = db.select(db.users).watch();
 
     final firstSub = stream.take(2).listen(null); // will listen forever
     final second = await stream.first;
 
     expect(second, isEmpty);
-    verify(executor.runSelect(any, any)).called(1);
+    verify(executor.execute(any)).called(1);
     await firstSub.cancel();
   });
 
   test('streams are disposed when not listening for a while', () async {
-    when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([]));
-
     final stream = db.select(db.users).watch();
 
     await stream.first; // listen to stream, then cancel
@@ -211,13 +205,12 @@ void main() {
     await stream.first; // listen again
     await pumpEventQueue(times: 1);
 
-    verify(executor.runSelect(any, any)).called(2);
+    verify(executor.execute(any)).called(2);
   });
 
   test('stream emits error when loading the query throws', () {
     final exception = Exception('stub');
-    when(executor.runSelect(any, any))
-        .thenAnswer((_) => Future.error(exception));
+    when(executor.execute(any)).thenAnswer((_) => Future.error(exception));
 
     final result = db.customSelect('select 1').watch().first;
     expectLater(result, throwsA(exception));
@@ -264,13 +257,14 @@ void main() {
 
       db.markTablesUpdated({db.users});
 
-      verifyNever(executor.runSelect(any, any));
+      verifyNever(executor.execute(any));
     });
 
     test('when the data updates after the listener has detached', () async {
-      final subscription = db.select(db.users).watch().listen((_) {});
+      final queue = StreamQueue(db.select(db.users).watch());
+      await queue.next;
+      await queue.cancel();
 
-      await subscription.cancel();
       clearInteractions(executor);
 
       // The stream is kept open for the rest of this event iteration
@@ -280,11 +274,10 @@ void main() {
 
       db.markTablesUpdated({db.users});
 
-      verifyNever(executor.runSelect(any, any));
+      verifyNever(executor.execute(any));
     });
 
     test('when all listeners are paused', () async {
-      when(executor.runSelect(any, any)).thenAnswer((i) => Future.value([]));
       final isPaused = Completer<void>();
 
       final subscription = db.select(db.categories).watch().listen(null);
@@ -300,14 +293,14 @@ void main() {
       await pumpEventQueue();
 
       // Return a new row on the next select
-      when(executor.runSelect(any, any)).thenAnswer((_) => Future.value([
+      when(executor.execute(any)).thenAnswer((_) => Future.value(queryResult([
             {
               'id': 1,
               'desc': 'd',
               'description_in_upper_case': 'D',
               'priority': 0,
             }
-          ]));
+          ])));
       db.markTablesUpdated([db.categories]);
       await pumpEventQueue();
       final hadData = Completer<void>();
@@ -321,33 +314,39 @@ void main() {
       await hadData.future;
 
       await subscription.cancel();
-      verify(executor.runSelect(any, any)).called(2);
+      verify(executor.execute(any)).called(2);
     });
   });
 
   // note: There's a trigger on config inserts that updates with_defaults
   test('updates streams for updates caused by triggers', () async {
-    final db = CustomTablesDb(executor);
+    final db = CustomTablesDb(createConnection(executor));
     // The first select only runs reliably when we don't have to wait for the
     // stream to open the database, it may get cancelled otherwise
-    await db.doWhenOpened((_) {});
+    await db.initialize();
+    clearInteractions(executor);
 
     db.select(db.withDefaults).watch().listen((_) {});
 
+    await pumpEventQueue(times: 1);
     db.notifyUpdates({const TableUpdate('config', kind: UpdateKind.insert)});
     await pumpEventQueue(times: 1);
 
-    verify(executor.runSelect(any, any)).called(2);
+    verify(executor.execute(any)).called(2);
   });
 
   test('limits trigger propagation to the target type of trigger', () async {
-    final db = CustomTablesDb(executor);
+    final db = CustomTablesDb(createConnection(executor));
+    await db.initialize();
+    clearInteractions(executor);
+
     db.select(db.withDefaults).watch().listen((_) {});
 
+    await pumpEventQueue(times: 1);
     db.notifyUpdates({const TableUpdate('config', kind: UpdateKind.delete)});
     await pumpEventQueue(times: 1);
 
-    verify(executor.runSelect(any, any)).called(1);
+    verify(executor.execute(any)).called(1);
   });
 
   group('listen for table updates', () {
@@ -432,8 +431,7 @@ void main() {
 
   test("streams opening the database don't cancel migrations", () async {
     // https://github.com/simolus3/drift/issues/3061
-    executor = MockExecutor(OpeningDetails(null, 1));
-    db = TodoDb(executor);
+    db = TodoDb(createConnection(executor));
     db.migration = MigrationStrategy(onCreate: expectAsync1((m) async {
       await m.createAll();
       // This invalidates the user stream
@@ -448,6 +446,6 @@ void main() {
       }
     }));
 
-    await db.users.all().watch().first;
+    db.select(db.users).watch().first;
   });
 }

@@ -13,9 +13,12 @@ class DelayedStreamQueryStore implements StreamQueryStore {
   late Future<StreamQueryStore> _delegate;
   StreamQueryStore? _resolved;
 
+  final Future<void> Function() _requestStreams;
+
   /// Creates a [StreamQueryStore] that will work after [delegate] is
   /// available.
-  DelayedStreamQueryStore(Future<StreamQueryStore> delegate) {
+  DelayedStreamQueryStore(
+      Future<StreamQueryStore> delegate, this._requestStreams) {
     _delegate = delegate.then((value) => _resolved = value);
   }
 
@@ -38,6 +41,7 @@ class DelayedStreamQueryStore implements StreamQueryStore {
       // breaks query streams which need to know about live subscribers.
       return Stream.multi(
         (listener) async {
+          await _requestStreams();
           final store = await _delegate;
           if (!listener.isClosed) {
             await listener.addStream(createStream(store));
