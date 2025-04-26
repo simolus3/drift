@@ -7,8 +7,9 @@ export 'src/dsl/columns.dart';
 export 'src/dsl/database.dart';
 export 'src/dsl/table.dart';
 
-export 'src/query_builder.dart';
+export 'src/query_builder.dart' hide SingleTableStatementMixin;
 
+export 'src/runtime/batch.dart' hide createBatch, runBatch;
 export 'src/runtime/data_class.dart';
 export 'src/runtime/database/connection_user.dart' hide InternalConnectionUser;
 export 'src/runtime/database/custom_select.dart' hide CustomSelectStatement;

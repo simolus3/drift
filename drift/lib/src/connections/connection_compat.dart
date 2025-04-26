@@ -163,7 +163,7 @@ without awaiting every statement in it.''');
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(List<StatementBatch> batch) async {
+  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
     return await _synchronized(() async {
       _checkOpen();
       return _inner.executeBatch(batch);

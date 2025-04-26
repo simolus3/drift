@@ -91,7 +91,7 @@ abstract class _ConnectionPool
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(List<StatementBatch> batch) {
+  Future<List<QueryResult>> executeBatch(StatementBatch batch) {
     return _withSession(
       forWrite: true,
       (session) => session.executeBatch(batch),

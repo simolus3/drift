@@ -39,7 +39,7 @@ abstract interface class DriftTransactionSession {
 
 abstract interface class DriftSession {
   Future<QueryResult> execute(StatementInfo statement);
-  Future<List<QueryResult>> executeBatch(List<StatementBatch> batch);
+  Future<List<QueryResult>> executeBatch(StatementBatch batch);
 
   /// An arbitrary and user-defined tag that may be attached to sessions.
   ///
@@ -80,10 +80,17 @@ abstract interface class DriftRootSession {
 }
 
 final class StatementBatch {
-  final String sql;
-  final List<StatementInfo> statements;
+  final List<String> sql;
+  final List<StatementInBatch> statements;
 
   StatementBatch({required this.sql, required this.statements});
+}
+
+final class StatementInBatch {
+  final int sqlIndex;
+  final StatementInfo info;
+
+  StatementInBatch(this.sqlIndex, this.info);
 }
 
 final class StatementInfo {

@@ -1,3 +1,4 @@
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -7,14 +8,14 @@ import '../test_utils/test_utils.dart';
 
 void main() {
   late TodoDb db;
-  late MockExecutor executor;
+  late MockSession executor;
   late MockStreamQueries streamQueries;
 
   setUp(() {
-    executor = MockExecutor();
+    executor = MockSession();
     streamQueries = MockStreamQueries();
 
-    db = TodoDb(createConnection(executor, streamQueries));
+    db = TodoDb(createConnection(executor, streams: streamQueries));
   });
 
   test('runs generated statements', () async {
@@ -39,46 +40,44 @@ void main() {
         CategoriesCompanion(id: Value(RowId(2)), description: Value('new2')),
       ]);
 
-      b.deleteWhere<$CategoriesTable, Category>(
+      b.deleteWhere<Category, $CategoriesTable>(
           db.categories, (tbl) => tbl.id.equals(1));
       b.deleteAll(db.categories);
       b.delete(db.todosTable, const TodosTableCompanion(id: Value(RowId(3))));
 
       b.update(db.users, const UsersCompanion(name: Value('new name 2')));
 
-      b.customStatement('some custom statement', [4]);
+      b.customStatement('some custom statement', [(BuiltinDriftType.int, 4)]);
     });
 
     final transaction = executor.transactions;
-    verify(
-      transaction.runBatched(
-        BatchedStatements(
-          [
-            'INSERT INTO "todos" ("content") VALUES (?)',
-            'UPDATE "users" SET "name" = ?;',
-            'UPDATE "users" SET "name" = ? WHERE "name" = ?;',
-            'UPDATE "categories" SET "desc" = ?, "priority" = 0 WHERE "id" = ?;',
-            'DELETE FROM "categories" WHERE "id" = ?;',
-            'DELETE FROM "categories";',
-            'DELETE FROM "todos" WHERE "id" = ?;',
-            'some custom statement',
-          ],
-          [
-            ArgumentsForBatchedStatement(0, ['first']),
-            ArgumentsForBatchedStatement(0, ['second']),
-            ArgumentsForBatchedStatement(1, ['new name']),
-            ArgumentsForBatchedStatement(2, ['Another', 'old']),
-            ArgumentsForBatchedStatement(3, ['new1', 1]),
-            ArgumentsForBatchedStatement(3, ['new2', 2]),
-            ArgumentsForBatchedStatement(4, [1]),
-            ArgumentsForBatchedStatement(5, []),
-            ArgumentsForBatchedStatement(6, [3]),
-            ArgumentsForBatchedStatement(1, ['new name 2']),
-            ArgumentsForBatchedStatement(7, [4]),
-          ],
-        ),
-      ),
-    );
+    final batch = verify(transaction.executeBatch(captureAny)).captured.single
+        as StatementBatch;
+
+    expect(batch.sql, [
+      'INSERT INTO "todos" ("content") VALUES (?1)',
+      'UPDATE "users" SET "name" = ?1;',
+      'UPDATE "users" SET "name" = ?1 WHERE "name" = ?2;',
+      'UPDATE "categories" SET "desc" = ?1,"priority" = 0 WHERE "id" = ?2;',
+      'DELETE FROM "categories" WHERE "id" = ?1;',
+      'DELETE FROM "categories";',
+      'DELETE FROM "todos" WHERE "id" = ?1;',
+      'some custom statement',
+    ]);
+
+    expect(batch.statements, [
+      isStatementInBatch(0, ['first']),
+      isStatementInBatch(0, ['second']),
+      isStatementInBatch(1, ['new name']),
+      isStatementInBatch(2, ['Another', 'old']),
+      isStatementInBatch(3, ['new1', 1]),
+      isStatementInBatch(3, ['new2', 2]),
+      isStatementInBatch(4, [1]),
+      isStatementInBatch(5, []),
+      isStatementInBatch(6, [3]),
+      isStatementInBatch(1, ['new name 2']),
+      isStatementInBatch(7, [4]),
+    ]);
   });
 
   test('custom statement can update queries', () async {
@@ -93,7 +92,7 @@ void main() {
 
   test('supports inserts with upsert clause', () async {
     await db.batch((batch) {
-      batch.insert(
+      batch.insert<Category, $CategoriesTable>(
         db.categories,
         CategoriesCompanion.insert(description: 'description'),
         onConflict: DoUpdate((old) {
@@ -102,15 +101,16 @@ void main() {
       );
     });
 
-    verify(executor.transactions.runBatched(BatchedStatements(
-      [
-        ('INSERT INTO "categories" ("desc") VALUES (?) '
-            'ON CONFLICT("id") DO UPDATE SET "id" = ?')
-      ],
-      [
-        ArgumentsForBatchedStatement(0, ['description', 42])
-      ],
-    )));
+    final batch = verify(executor.transactions.executeBatch(captureAny))
+        .captured
+        .single as StatementBatch;
+    expect(batch.sql, [
+      ('INSERT INTO "categories" ("desc") VALUES (?1) '
+          'ON CONFLICT("id") DO UPDATE SET "id" = ?2')
+    ]);
+    expect(batch.statements, [
+      isStatementInBatch(0, ['description', 42])
+    ]);
   });
 
   test('insertAllOnConflictUpdate', () async {
@@ -123,16 +123,17 @@ void main() {
       batch.insertAllOnConflictUpdate(db.categories, entries);
     });
 
-    verify(executor.transactions.runBatched(BatchedStatements(
-      [
-        ('INSERT INTO "categories" ("desc") VALUES (?) '
-            'ON CONFLICT("id") DO UPDATE SET "desc" = ?')
-      ],
-      [
-        ArgumentsForBatchedStatement(0, ['first', 'first']),
-        ArgumentsForBatchedStatement(0, ['second', 'second']),
-      ],
-    )));
+    final batch = verify(executor.transactions.executeBatch(captureAny))
+        .captured
+        .single as StatementBatch;
+    expect(batch.sql, [
+      ('INSERT INTO "categories" ("desc") VALUES (?1) '
+          'ON CONFLICT("id") DO UPDATE SET "desc" = ?1')
+    ]);
+    expect(batch.statements, [
+      isStatementInBatch(0, ['first']),
+      isStatementInBatch(0, ['second']),
+    ]);
   });
 
   test('insert with where clause and excluded table', () async {
@@ -143,7 +144,7 @@ void main() {
     ];
 
     await db.batch((batch) {
-      batch.insertAll<Categories, Category>(
+      batch.insertAll<Category, $CategoriesTable>(
         db.categories,
         entries,
         onConflict: DoUpdate.withExcluded(
@@ -152,33 +153,23 @@ void main() {
             priority: excluded.priority.dartCast(),
           ),
           where: (old, excluded) =>
-              old.id.dartCast<int>().isBiggerOrEqual(excluded.id.dartCast()),
+              old.id.dartCast<int>().isGreaterOrEqual(excluded.id.dartCast()),
         ),
       );
     });
 
-    verify(executor.transactions.runBatched(BatchedStatements(
-      [
-        ('INSERT INTO "categories" ("desc") VALUES (?) ON CONFLICT("id") '
-            'DO UPDATE SET "desc" = "categories"."desc", '
-            '"priority" = "excluded"."priority" WHERE "categories"."id" >= "excluded"."id"')
-      ],
-      [
-        ArgumentsForBatchedStatement(0, ['first']),
-        ArgumentsForBatchedStatement(0, ['second']),
-      ],
-    )));
-  });
-
-  test('can re-use an outer transaction', () async {
-    await db.transaction(() async {
-      await db.batch((b) {});
-    });
-
-    verifyNever(executor.runBatched(any));
-    verify(executor.transactions.runBatched(any));
-  }, onPlatform: const {
-    'js': [Skip('Blocked by https://github.com/dart-lang/mockito/issues/198')]
+    final batch = verify(executor.transactions.executeBatch(captureAny))
+        .captured
+        .single as StatementBatch;
+    expect(batch.sql, [
+      ('INSERT INTO "categories" ("desc") VALUES (?1) ON CONFLICT("id") '
+          'DO UPDATE SET "desc" = "categories"."desc",'
+          '"priority" = "excluded"."priority" WHERE "categories"."id" >= "excluded"."id"')
+    ]);
+    expect(batch.statements, [
+      isStatementInBatch(0, ['first']),
+      isStatementInBatch(0, ['second']),
+    ]);
   });
 
   test('supports async batch functions', () async {
@@ -192,13 +183,14 @@ void main() {
           db.categories, CategoriesCompanion.insert(description: 'second'));
     });
 
-    verify(executor.transactions.runBatched(BatchedStatements(
-      ['INSERT INTO "categories" ("desc") VALUES (?)'],
-      [
-        ArgumentsForBatchedStatement(0, ['first']),
-        ArgumentsForBatchedStatement(0, ['second']),
-      ],
-    )));
+    final batch = verify(executor.transactions.executeBatch(captureAny))
+        .captured
+        .single as StatementBatch;
+    expect(batch.sql, ['INSERT INTO "categories" ("desc") VALUES (?1)']);
+    expect(batch.statements, [
+      isStatementInBatch(0, ['first']),
+      isStatementInBatch(0, ['second']),
+    ]);
   });
 
   test('updates stream queries', () async {
@@ -226,19 +218,45 @@ void main() {
     );
   });
 
-  test('does not start a new transaction when running in a transaction',
-      () async {
+  test('uses nested transactions', () async {
     await db.transaction(() async {
       await db.batch((batch) {});
       await db.batch((batch) {});
     });
 
-    verify(executor.beginTransaction()).called(1);
+    verify(executor.begin(any)).called(1);
+    verify(executor.transactions.begin(any)).called(2);
   });
 
   test('starts a new transaction when not running in a transaction', () async {
     await db.batch((batch) {});
 
-    verify(executor.beginTransaction()).called(1);
+    verify(executor.begin(any)).called(1);
   });
+
+  test('can get results', () async {
+    late BatchedStatement stmt;
+
+    final transactions = executor.transactions;
+    when(transactions.executeBatch(any)).thenAnswer((_) async {
+      return [queryResult([], affectedRows: 42)];
+    });
+
+    final results = await db.batch((b) {
+      stmt = b.deleteAll(db.categories);
+    });
+
+    expect(stmt.resolveResult(results).affectedRows, 42);
+  });
+}
+
+Matcher isStatementInBatch(int sqlIndex, List<Object?> variables) {
+  return isA<StatementInBatch>()
+      .having((e) => e.sqlIndex, 'sqlIndex', sqlIndex)
+      .having(
+        (e) => e.info.variables.map((v) => v.$1.sqlParameterOrNull(
+            e.info.generated?.dialect ?? const SqliteDialect(), v.$2)),
+        'variables',
+        variables,
+      );
 }

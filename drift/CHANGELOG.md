@@ -10,6 +10,8 @@
   Replace `integer().autoIncrement()()` with `integer().autoIncrement()`.
 - Add `@DriftColumnDeclarationBuilder` annotation, allowing custom types to
   be used without a manual `customType` call.
+- Add `BatchStatement` and `BatchResult` API to obtain the results of running statements
+  within a `Batch`.
 
 ## 2.25.0-dev
 

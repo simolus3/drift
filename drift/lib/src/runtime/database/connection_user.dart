@@ -6,6 +6,7 @@ import '../../connections/connection.dart';
 import '../../connections/result_set.dart';
 import '../../query_builder.dart';
 import '../../query_builder/statements/statement.dart';
+import '../batch.dart';
 import '../data_class.dart';
 import '../exceptions.dart';
 import '../selectable.dart';
@@ -191,6 +192,39 @@ abstract base class DatabaseConnectionUser {
         await nestedStreams.close(forwardUpdates: success);
       }
     });
+  }
+
+  /// Runs statements inside a batch.
+  ///
+  /// A batch can only run a subset of statements, and those statements must be
+  /// called on the [Batch] instance. The statements aren't executed with a call
+  /// to [Batch]. Instead, all generated queries are queued up and are then run
+  /// and executed atomically in a transaction.
+  /// If [batch] is called outside of a [transaction] call, it will implicitly
+  /// start a transaction. Otherwise, the batch will re-use the transaction,
+  /// and will have an effect when the transaction completes.
+  /// Typically, running bulk updates (so a lot of similar statements) over a
+  /// [Batch] is much faster than running them via the [GeneratedDatabase]
+  /// directly.
+  ///
+  /// An example that inserts users in a batch:
+  /// ```dart
+  ///  await batch((b) {
+  ///    b.insertAll(
+  ///      todos,
+  ///      [
+  ///        TodosCompanion.insert(content: 'Use batches'),
+  ///        TodosCompanion.insert(content: 'Have fun'),
+  ///      ],
+  ///    );
+  ///  });
+  /// ```
+  Future<BatchResult> batch(
+      FutureOr<void> Function(Batch batch) runInBatch) async {
+    final batch = createBatch(this);
+    await Future(() => runInBatch(batch));
+
+    return await runBatch(batch);
   }
 
   /// Obtains an exclusive lock on the current database context, runs [action]

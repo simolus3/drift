@@ -53,12 +53,10 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(List<StatementBatch> batch) async {
+  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
     final results = <QueryResult>[];
-    for (final stmt in batch) {
-      for (final instantiation in stmt.statements) {
-        results.add(await execute(instantiation));
-      }
+    for (final stmt in batch.statements) {
+      results.add(await execute(stmt.info));
     }
 
     return results;

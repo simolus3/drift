@@ -121,7 +121,7 @@ final class _RemoteSession
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(List<StatementBatch> batch) async {
+  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
     final response = await client._channel
         .request<ExecuteBatchRequest, ExecuteResponse>((id) =>
             ExecuteBatchRequest(id, sessionId: _sessionId, batch: batch));

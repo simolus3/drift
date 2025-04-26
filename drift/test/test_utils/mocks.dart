@@ -109,9 +109,9 @@ final class MockSession extends Mock
       Future.value(QueryResult(resultSet: null)));
 
   @override
-  Future<List<QueryResult>> executeBatch(List<StatementBatch>? statement) =>
-      _nsm(Invocation.method(#executeBatch, [statement]),
-          Future.value(const <QueryResult>[]));
+  Future<List<QueryResult>> executeBatch(StatementBatch? statement) => _nsm(
+      Invocation.method(#executeBatch, [statement]),
+      Future.value(const <QueryResult>[]));
 
   @override
   Future<void> close() =>

@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:drift/src/query_builder/compiler.dart';
+import 'package:meta/meta.dart';
 
 import '../../connections/result_set.dart';
 import '../../runtime/data_class.dart';
@@ -51,6 +52,15 @@ final class UpdateStatement<Row extends Object,
       ..addAll(entity.toColumns(nullToAbsent));
   }
 
+  /// Sets the `SET` components used for this update statement to the columns
+  /// from [entity].
+  ///
+  /// This method is not typically used directly, see [write] or [replace]
+  /// instead.
+  void setValues(Insertable<Row> entity) {
+    _applyColumns(entity, true);
+  }
+
   /// Writes all non-null fields from [entity] into the columns of all rows
   /// that match the [where] clause. Warning: That also means that, when you're
   /// not setting a where clause explicitly, this method will update all rows in
@@ -68,7 +78,7 @@ final class UpdateStatement<Row extends Object,
   /// See also: [replace], which does not require [where] statements and
   /// supports setting fields back to null.
   Future<int> write(Insertable<Row> entity) async {
-    _applyColumns(entity, true);
+    setValues(entity);
 
     if (updatedColumns.isEmpty) {
       // nothing to update, we're done
@@ -92,29 +102,12 @@ final class UpdateStatement<Row extends Object,
     return returning!.interpretResults(_database, result);
   }
 
-  /// Replaces the old version of [entity] that is stored in the database with
-  /// the fields of the [entity] provided here. This implicitly applies a
-  /// [where] clause to rows with the same primary key as [entity], so that only
-  /// the row representing outdated data will be replaced.
+  /// Update this statement to generate the SQL for a [replace] call.
   ///
-  /// If [entity] has absent values (set to null on the [DataClass] or
-  /// explicitly to absent on the [UpdateCompanion]), and a default value for
-  /// the field exists, that default value will be used. Otherwise, the field
-  /// will be reset to null. This behavior is different to [write], which simply
-  /// ignores such fields without changing them in the database.
-  ///
-  /// When [dontExecute] is true (defaults to false), the query will __NOT__ be
-  /// run, but all the validations are still in place. This is mainly used
-  /// internally by drift.
-  ///
-  /// Returns true if a row was affected by this operation.
-  ///
-  /// See also:
-  ///  - [write], which doesn't apply a [where] statement itself and ignores
-  ///    null values in the entity.
-  ///  - [InsertStatement.insert] with the `orReplace` parameter, which behaves
-  ///  similar to this method but creates a new row if none exists.
-  Future<bool> replace(Insertable<Row> entity) async {
+  /// This is used internally when [replace] cannot be used because it also
+  /// runs the statement, e.g. to build batches.
+  @internal
+  void prepareReplace(Insertable<Row> entity) {
     // We don't turn nulls to absent values here (as opposed to a regular
     // update, where only non-null fields will be written).
     _applyColumns(entity, false);
@@ -147,6 +140,32 @@ final class UpdateStatement<Row extends Object,
 
     // Don't update the primary key
     updatedColumns.removeWhere((key, _) => primaryKeys.contains(key));
+  }
+
+  /// Replaces the old version of [entity] that is stored in the database with
+  /// the fields of the [entity] provided here. This implicitly applies a
+  /// [where] clause to rows with the same primary key as [entity], so that only
+  /// the row representing outdated data will be replaced.
+  ///
+  /// If [entity] has absent values (set to null on the [DataClass] or
+  /// explicitly to absent on the [UpdateCompanion]), and a default value for
+  /// the field exists, that default value will be used. Otherwise, the field
+  /// will be reset to null. This behavior is different to [write], which simply
+  /// ignores such fields without changing them in the database.
+  ///
+  /// When [dontExecute] is true (defaults to false), the query will __NOT__ be
+  /// run, but all the validations are still in place. This is mainly used
+  /// internally by drift.
+  ///
+  /// Returns true if a row was affected by this operation.
+  ///
+  /// See also:
+  ///  - [write], which doesn't apply a [where] statement itself and ignores
+  ///    null values in the entity.
+  ///  - [InsertStatement.insert] with the `orReplace` parameter, which behaves
+  ///  similar to this method but creates a new row if none exists.
+  Future<bool> replace(Insertable<Row> entity) async {
+    prepareReplace(entity);
 
     final result = await _run();
     return result.affectedRows! != 0;

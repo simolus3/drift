@@ -79,7 +79,7 @@ final class ExecuteRequest extends Request<ExecuteResponse> {
 }
 
 final class ExecuteBatchRequest extends Request<ExecuteResponse> {
-  final List<StatementBatch> batch;
+  final StatementBatch batch;
   final int sessionId;
 
   ExecuteBatchRequest(super.id, {required this.sessionId, required this.batch});
