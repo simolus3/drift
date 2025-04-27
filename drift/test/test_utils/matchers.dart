@@ -110,3 +110,14 @@ class _GeneratesSqlMatcher extends Matcher {
     return matches;
   }
 }
+
+Matcher isStatementInBatch(int sqlIndex, List<Object?> variables) {
+  return isA<StatementInBatch>()
+      .having((e) => e.sqlIndex, 'sqlIndex', sqlIndex)
+      .having(
+        (e) => e.info.variables.map((v) => v.$1.sqlParameterOrNull(
+            e.info.generated?.dialect ?? const SqliteDialect(), v.$2)),
+        'variables',
+        variables,
+      );
+}

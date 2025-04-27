@@ -295,7 +295,9 @@ extension type const DriftAny(Object fromDb) implements Object {
   }
 }
 
+/// The [SqlType] implementation for [DriftAny].
 final class AnyType extends _SqliteType<DriftAny> {
+  /// Default const constructor.
   const AnyType() : super('ANY');
 
   @override

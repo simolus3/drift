@@ -1,4 +1,3 @@
-import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -248,15 +247,4 @@ void main() {
 
     expect(stmt.resolveResult(results).affectedRows, 42);
   });
-}
-
-Matcher isStatementInBatch(int sqlIndex, List<Object?> variables) {
-  return isA<StatementInBatch>()
-      .having((e) => e.sqlIndex, 'sqlIndex', sqlIndex)
-      .having(
-        (e) => e.info.variables.map((v) => v.$1.sqlParameterOrNull(
-            e.info.generated?.dialect ?? const SqliteDialect(), v.$2)),
-        'variables',
-        variables,
-      );
 }

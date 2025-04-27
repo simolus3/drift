@@ -5,7 +5,10 @@ import 'package:async/async.dart';
 import 'package:drift/connections/remote.dart';
 import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/src/connections/remote/channel.dart';
 import 'package:drift/src/connections/remote/protocol.dart';
+import 'package:drift/src/connections/remote/serialize.dart';
+import 'package:drift/src/utils/synchronized.dart';
 import 'package:mockito/mockito.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
@@ -70,150 +73,175 @@ void main() {
   );
 
   test('Uint8Lists are mapped from and to Uint8Lists', () async {
-    const protocol = DriftProtocol();
+    const protocol = ProtocolMessageSerializer();
 
-    final request = Request(
+    final request = ExecuteRequest(
       1,
-      ExecuteQuery(StatementMethod.select, 'SELECT ?', [
-        Uint8List.fromList([1, 2, 3])
+      sessionId: 2,
+      statement: StatementInfo.fromText('SELECT ?', variables: [
+        (BuiltinDriftType.byteArray, Uint8List.fromList([1, 2, 3]))
       ]),
     );
 
-    final mapped = protocol.deserialize(protocol.serialize(request)!);
+    final mapped = protocol.decode(protocol.encode(request));
     expect(
       mapped,
-      isA<Request>().having((e) => e.id, 'id', 1).having(
-            (e) => e.payload,
-            'payload',
-            isA<ExecuteQuery>()
-                .having((e) => e.method, 'method', StatementMethod.select)
-                .having((e) => e.args, 'args', [isA<Uint8List>()]),
+      isA<ExecuteRequest>()
+          .having((e) => e.id, 'id', 1)
+          .having((e) => e.sessionId, 'sessionId', 2)
+          .having(
+            (e) => e.statement,
+            'statement',
+            isA<StatementInfo>().having((e) => e.sql, 'sql', 'SELECT ?').having(
+                (e) => e.variables.map((e) => e.$2),
+                'variables',
+                [isA<Uint8List>()]),
           ),
     );
   });
 
   test('BigInts are serialied', () {
-    const protocol = DriftProtocol();
+    const protocol = ProtocolMessageSerializer();
 
-    final request = Request(
+    final request = ExecuteRequest(
       1,
-      ExecuteQuery(StatementMethod.select, 'SELECT ?', [BigInt.one]),
+      sessionId: 2,
+      statement: StatementInfo.fromText('SELECT ?',
+          variables: [(BuiltinDriftType.int64, BigInt.one)]),
     );
 
     final mapped = _checkSimpleRoundtrip(protocol, request);
     expect(
       mapped,
-      isA<Request>().having((e) => e.id, 'id', 1).having(
-            (e) => e.payload,
-            'payload',
-            isA<ExecuteQuery>()
-                .having((e) => e.method, 'method', StatementMethod.select)
-                .having((e) => e.args, 'args', [isA<BigInt>()]),
-          ),
+      isA<ExecuteRequest>().having(
+        (e) => e.statement,
+        'statement',
+        isA<StatementInfo>().having((e) => e.sql, 'sql', 'SELECT ?').having(
+            (e) => e.variables.map((e) => e.$2), 'variables', [isA<BigInt>()]),
+      ),
     );
 
-    final response = SuccessResponse(
-        1,
-        SelectResult([
-          {'col': BigInt.one}
-        ]));
+    final response = ExecuteResponse(1, result: [
+      queryResult([
+        {'col': BigInt.one}
+      ])
+    ]);
     final mappedResponse = _checkSimpleRoundtrip(protocol, response);
+    expect(mappedResponse,
+        isA<ExecuteResponse>().having((e) => e.requestId, 'requestId', 1));
+
     expect(
-      mappedResponse,
-      isA<SuccessResponse>().having((e) => e.requestId, 'requestId', 1).having(
-            (e) => e.response,
-            'response',
-            isA<SelectResult>().having(
-              (e) => e.rows,
-              'rows',
-              ([
-                {'col': BigInt.one}
-              ]),
-            ),
-          ),
-    );
+        (mappedResponse as ExecuteResponse)
+            .result
+            .single
+            .resultSet!
+            .single
+            .byName('col'),
+        BigInt.one);
 
     final batchRequest = _checkSimpleRoundtrip(
       protocol,
-      Request(
+      ExecuteBatchRequest(
         1,
-        ExecuteBatchedStatement(BatchedStatements(
-          ['SELECT ?'],
-          [
-            ArgumentsForBatchedStatement(0, [BigInt.zero]),
-            ArgumentsForBatchedStatement(0, [BigInt.one]),
-            ArgumentsForBatchedStatement(0, [BigInt.two]),
+        sessionId: 2,
+        batch: StatementBatch(
+          sql: ['SELECT ?'],
+          statements: [
+            StatementInBatch(
+              0,
+              StatementInfo.fromText(
+                'SELECT ?',
+                variables: [(BuiltinDriftType.int64, BigInt.zero)],
+              ),
+            ),
+            StatementInBatch(
+              0,
+              StatementInfo.fromText(
+                'SELECT ?',
+                variables: [(BuiltinDriftType.int64, BigInt.one)],
+              ),
+            ),
+            StatementInBatch(
+              0,
+              StatementInfo.fromText(
+                'SELECT ?',
+                variables: [(BuiltinDriftType.int64, BigInt.two)],
+              ),
+            ),
           ],
-        )),
+        ),
       ),
     );
     expect(
       batchRequest,
-      isA<Request>().having((e) => e.id, 'id', 1).having(
-            (e) => e.payload,
-            'payload',
-            isA<ExecuteBatchedStatement>().having(
-              (e) => e.stmts,
-              'stmts',
-              BatchedStatements(
-                ['SELECT ?'],
-                [
-                  ArgumentsForBatchedStatement(0, [BigInt.zero]),
-                  ArgumentsForBatchedStatement(0, [BigInt.one]),
-                  ArgumentsForBatchedStatement(0, [BigInt.two]),
-                ],
-              ),
+      isA<ExecuteBatchRequest>().having((e) => e.id, 'id', 1).having(
+            (e) => e.batch,
+            'batch',
+            isA<StatementBatch>()
+                .having((e) => e.sql, 'sql', ['SELECT ?']).having(
+              (e) => e.statements,
+              'statements',
+              [
+                isStatementInBatch(0, [BigInt.zero]),
+                isStatementInBatch(0, [BigInt.one]),
+                isStatementInBatch(0, [BigInt.two]),
+              ],
             ),
           ),
     );
   });
 
   test('can run protocol without using complex types', () async {
-    final executor = MockExecutor();
-    final server = DriftServer(DatabaseConnection(executor));
+    final executor = MockSession();
+    final server = DriftServer(createConnection(executor));
     addTearDown(server.shutdown);
 
     final channelController = StreamChannelController<Object?>();
     server.serve(channelController.foreign.changeStream(_checkStreamOfSimple),
         serialize: true);
 
-    final connection = await connectToRemoteAndInitialize(
-        channelController.local
-            .changeStream(_checkStreamOfSimple)
-            .expectedToClose,
-        serialize: true);
+    final connection = connectToRemote(
+      channel: channelController.local
+          .changeStream(_checkStreamOfSimple)
+          .expectedToClose,
+      serialize: true,
+      dialect: const SqliteDialect(),
+    );
     final db = TodoDb(connection);
 
     await db.customSelect('SELECT ?, ?, ?, ?', variables: [
-      Variable.withBigInt(BigInt.one),
-      Variable.withBool(true),
-      Variable.withReal(1.2),
-      Variable.withBlob(Uint8List(12)),
+      (BuiltinDriftType.int64, BigInt.one),
+      (BuiltinDriftType.bool, true),
+      (BuiltinDriftType.double, 1.2),
+      (BuiltinDriftType.byteArray, Uint8List(12)),
     ]).get();
-    verify(executor.runSelect('SELECT ?, ?, ?, ?', [
+    verify(executor.executeSql('SELECT ?, ?, ?, ?', [
       BigInt.one,
       1,
       1.2,
       Uint8List(12),
     ]));
 
-    when(executor.runInsert(any, any)).thenAnswer(
+    when(executor.execute(any)).thenAnswer(
         (realInvocation) => Future.error(UnimplementedError('error!')));
     await expectLater(
-      db.categories
-          .insertOne(CategoriesCompanion.insert(description: 'description')),
+      db
+          .into(db.categories)
+          .insert(CategoriesCompanion.insert(description: 'description')),
       throwsA(isA<DriftRemoteException>().having(
           (e) => e.remoteCause, 'remoteCause', 'UnimplementedError: error!')),
     );
 
-    final statements =
-        BatchedStatements(['SELECT 1'], [ArgumentsForBatchedStatement(0, [])]);
-    when(executor.runBatched(any)).thenAnswer((i) => Future.value());
+    final statements = StatementBatch(
+      sql: ['SELECT 1'],
+      statements: [StatementInBatch(0, StatementInfo.fromText('SELECT 1'))],
+    );
+    when(executor.executeBatch(any)).thenAnswer((i) => Future.value([]));
     // Not using db.batch because that starts a transaction, we want to test
     // this working with the default executor.
     // Regression test for: https://github.com/simolus3/drift/pull/2707
-    await db.executor.runBatched(statements);
-    verify(executor.runBatched(statements));
+    await (await db.currentSession()).executeBatch(statements);
+    verify(executor.executeBatch(statements));
 
     // Regression test for https://github.com/simolus3/drift/issues/3194
     await db.transaction(() async {
@@ -291,52 +319,42 @@ void main() {
     controller.foreign.serveMulti(server);
     addTearDown(server.shutdown);
 
-    final a = TodoDb(await multi.newRemoteConnection());
-    final b = TodoDb(await multi.newRemoteConnection());
+    final a = TodoDb(multi.newRemoteConnection());
+    final b = TodoDb(multi.newRemoteConnection());
 
     final exclusiveA = MockSession();
     final exclusiveB = MockSession();
 
     var exclusiveCount = 0;
+
     when(executor.exclusive()).thenAnswer(expectAsync1((_) async {
+      String name;
+      MockSession inner;
+
       if (exclusiveCount == 0) {
         exclusiveCount++;
-        testEvents.add('try-a');
-        return exclusiveA;
+        name = 'a';
+        inner = exclusiveA;
       } else {
-        testEvents.add('try-b');
-        return exclusiveB;
+        name = 'b';
+        inner = exclusiveB;
       }
-    }, count: 2, id: 'beginExclusive'));
 
-    for (final (name, executor) in [('a', exclusiveA), ('b', exclusiveB)]) {
-      final closeCompleter = Completer<void>();
+      testEvents.add('try-$name');
+      await Future<void>.delayed(Duration.zero);
 
-      when(executor.ensureOpen(any)).thenAnswer((i) {
-        if (!executor.opened) {
-          return expectAsync0(() async {
-            await Future<void>.delayed(Duration.zero);
+      final ready = Completer<bool>();
 
-            final ready = Completer<bool>();
-            lock.synchronized(() {
-              testEvents.add('grant-$name');
-              ready.complete(true);
-              executor.opened = true;
-              return closeCompleter.future;
-            });
-
-            return ready.future;
-          }, id: 'ensureOpen-$name')();
-        } else {
-          return Future.value(true);
-        }
+      lock.synchronized(() async {
+        testEvents.add('grant-$name');
+        ready.complete(true);
+        await inner.closed;
+        testEvents.add('close-$name');
       });
 
-      when(executor.close()).thenAnswer(expectAsync1((_) async {
-        testEvents.add('close-$name');
-        closeCompleter.complete();
-      }, id: 'close-$name'));
-    }
+      await ready.future;
+      return inner;
+    }, count: 2, id: 'beginExclusive'));
 
     final wait = Completer<void>();
     a.exclusively(() async {
@@ -379,10 +397,11 @@ void _checkSimple(Object? object) {
   }
 }
 
-Message _checkSimpleRoundtrip(DriftProtocol protocol, Message source) {
-  final serialized = protocol.serialize(source);
+ProtocolMessage _checkSimpleRoundtrip(
+    ProtocolMessageSerializer serializer, ProtocolMessage source) {
+  final serialized = serializer.encode(source);
   _checkSimple(serialized);
-  return protocol.deserialize(serialized!);
+  return serializer.decode(serialized);
 }
 
 extension<T> on StreamChannel<T> {
@@ -401,10 +420,10 @@ extension<T> on StreamChannel<T> {
 }
 
 extension on MultiChannel<Object?> {
-  Future<DatabaseConnection> newRemoteConnection() async {
+  DriftDatabaseImplementation newRemoteConnection() {
     final channel = virtualChannel();
     sink.add(channel.id);
 
-    return await connectToRemoteAndInitialize(channel);
+    return connectToRemote(channel: channel, dialect: const SqliteDialect());
   }
 }

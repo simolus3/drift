@@ -100,8 +100,9 @@ void main() {
     await pool.execute(StatementInfo.fromText('write'));
     verify(write.executeSql('write', []));
 
-    await pool.executeBatch([]);
-    verify(write.executeBatch([]));
+    final batch = StatementBatch(sql: [], statements: []);
+    await pool.executeBatch(batch);
+    verify(write.executeBatch(batch));
   });
 
   test('runs transactions on the writing executor', () async {
