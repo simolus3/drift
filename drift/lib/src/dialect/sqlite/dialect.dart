@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 
+import '../common_types.dart';
 import 'compiler.dart';
 import 'types.dart';
 
@@ -54,7 +55,7 @@ final class SqliteDialect extends DriftDialect {
   SqlType<DateTime> get dateTimeType => const DateTimeType();
 
   @override
-  SqlType<double> get doubleType => const DoubleType();
+  SqlType<double> get doubleType => const CommonDoubleType();
 
   @override
   SqlType<int> get intType => const IntType();

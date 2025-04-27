@@ -41,6 +41,26 @@ void main() {
           expect(type.dartValue(dialect, dataString), dataUint8);
         });
       });
+
+      group('real type', () {
+        const type = BuiltinDriftType.double;
+
+        test('can be read from floating point values returned by sql', () {
+          expect(type.dartValue(dialect, 3.1234), 3.1234);
+        });
+
+        test('can read BigInt', () {
+          expect(type.dartValue(dialect, BigInt.parse('12345')), 12345.0);
+        });
+
+        test('can be mapped to sql constants', () {
+          expect(type.sqlLiteral(dialect, 1.123), '1.123');
+        });
+
+        test('can be mapped to variables', () {
+          expect(type.sqlParameter(dialect, 1.123), 1.123);
+        });
+      });
     });
   }
 

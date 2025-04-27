@@ -24,7 +24,7 @@ final class PostgresDialect extends DriftDialect {
   SqlType<DateTime> get dateTimeType => const _SimplePostgresType('TIMESTAMP');
 
   @override
-  SqlType<double> get doubleType => const _SimplePostgresType('REAL');
+  SqlType<double> get doubleType => const CommonDoubleType();
 
   @override
   SqlType<int> get intType => const _SimplePostgresType('INTEGER');

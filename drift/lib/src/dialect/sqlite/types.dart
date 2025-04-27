@@ -56,18 +56,6 @@ final class BoolType extends _SqlTypeWithoutMapping<bool> {
   }
 }
 
-final class DoubleType extends _SqlTypeWithoutMapping<double> {
-  const DoubleType() : super('REAL');
-
-  @override
-  double dartValue(DriftDialect dialect, Object databaseValue) {
-    return switch (databaseValue) {
-      BigInt() => databaseValue.toDouble(),
-      _ => (databaseValue as num).toDouble(),
-    };
-  }
-}
-
 final class IntType extends _SqlTypeWithoutMapping<int> {
   const IntType() : super('INTEGER');
 
@@ -265,14 +253,59 @@ final class StringType extends _SqliteType<String> {
   }
 }
 
-extension type DriftAny(Object fromDb) implements Object {}
+/// A drift type around a SQL value with an unknown type.
+///
+/// In [STRICT tables], a column can be declared with the type `ANY`. In such
+/// column, _any_ value can be stored without sqlite3 (or drift) attempting to
+/// cast it to a specific type. Thus, the [fromDb] is directly passed to
+/// or from the underlying SQL database package.
+///
+/// To write a custom value into the database with [DriftAny], you can construct
+/// it and pass it into a [Variable] or into a companion of a table having a
+/// column with an `ANY` type.
+///
+/// [STRICT tables]: https://www.sqlite.org/stricttables.html
+extension type const DriftAny(Object fromDb) implements Object {
+  /// Interprets the [fromDb] value as a drift [type] under the configuration
+  /// given by the [DriftDialect].
+  ///
+  /// A given [fromDb] may have different Dart representations that would
+  /// be given to you by drift. For instance, the SQL value `1` could have the
+  /// following possible Dart interpretations:
+  ///
+  ///   - The [bool] constant `true`.
+  ///   - The [int] constant `1`
+  ///   - The big integer [BigInt.one].
+  ///   - All [DateTime] values having `1` as their UNIX timestamp in seconds
+  ///     (this depends on the configuration - drift can be configured to store
+  ///     date times [as text] too).
+  ///
+  /// For this reason, it is not always possible to directly map these raw
+  /// values to Dart without further information. Drift also needs to know the
+  /// expected type and some configuration options for context. For all SQL
+  /// types _except_ `ANY`, drift will do this for you behind the scenes.
+  ///
+  /// You can obtain a [dialect] instance from a database or DAO by using
+  /// [DatabaseConnectionUser.dialect].
+  /// For [type], enum values of [BuiltinDriftType] are most commonly used.
+  ///
+  /// [as text]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#datetime-options
+  T readAs<T extends Object>(SqlType<T> type, DriftDialect dialect) {
+    return type.dartValue(dialect, fromDb);
+  }
+}
 
 final class AnyType extends _SqliteType<DriftAny> {
   const AnyType() : super('ANY');
 
   @override
   String sqlLiteral(DriftDialect dialect, DriftAny value) {
-    throw 'TODO';
+    final inner = BuiltinDriftType.forValue(value.fromDb);
+    if (inner == null) {
+      throw ArgumentError.value(value, 'value', 'Unknown inner type');
+    }
+
+    return inner.sqlLiteral(dialect, value);
   }
 
   @override

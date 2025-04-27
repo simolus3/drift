@@ -37,3 +37,31 @@ final class CommonByteArrayType implements SqlType<Uint8List> {
   @override
   String typeName(DriftDialect dialect) => name;
 }
+
+/// Common implementation for a `REAL` / [double] type.
+final class CommonDoubleType implements SqlType<double> {
+  /// The name of this type, typically `REAL`.
+  final String name;
+
+  /// Creates a double type from its SQL name.
+  const CommonDoubleType({this.name = 'REAL'});
+
+  @override
+  double dartValue(DriftDialect dialect, Object databaseValue) {
+    return switch (databaseValue) {
+      BigInt() => databaseValue.toDouble(),
+      _ => (databaseValue as num).toDouble(),
+    };
+  }
+
+  @override
+  String sqlLiteral(DriftDialect dialect, double value) => value.toString();
+
+  @override
+  Object sqlParameter(DriftDialect dialect, double value) {
+    return value;
+  }
+
+  @override
+  String typeName(DriftDialect dialect) => name;
+}

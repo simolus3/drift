@@ -1,32 +1,50 @@
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
-import '../../generated/todos.dart';
-
 void main() {
+  const dialect = SqliteDialect();
+
   test('int column writes AUTOINCREMENT constraint', () {
-    final column = GeneratedColumn<int>(
-      'foo',
-      'tbl',
-      false,
-      type: DriftSqlType.int,
-      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT',
+    final column = TableColumn<int>(
+      name: 'foo',
+      isNullable: false,
+      type: BuiltinDriftType.int,
+      constraints: () => [ColumnPrimaryKeyConstraint(isAutoIncrementing: true)],
     );
 
-    final context = GenerationContext.fromDb(TodoDb());
-    column.writeColumnDefinition(context);
-
-    expect(context.sql,
+    final compiler = dialect.createCompiler()..addTableColumnDefinition(column);
+    expect(compiler.statement.sql,
         equals('"foo" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT'));
   });
 
   test('int column writes PRIMARY KEY constraint', () {
-    final column = GeneratedColumn<int>('foo', 'tbl', false,
-        type: DriftSqlType.int, $customConstraints: 'NOT NULL PRIMARY KEY');
+    final column = TableColumn<int>(
+      name: 'foo',
+      isNullable: false,
+      type: BuiltinDriftType.int,
+      constraints: () =>
+          [ColumnPrimaryKeyConstraint(isAutoIncrementing: false)],
+    );
 
-    final context = GenerationContext.fromDb(TodoDb());
-    column.writeColumnDefinition(context);
+    final compiler = dialect.createCompiler()..addTableColumnDefinition(column);
+    expect(
+        compiler.statement.sql, equals('"foo" INTEGER NOT NULL PRIMARY KEY'));
+  });
 
-    expect(context.sql, equals('"foo" INTEGER NOT NULL PRIMARY KEY'));
+  test('can add custom constraints', () {
+    final column = TableColumn<int>(
+      name: 'foo',
+      isNullable: false,
+      type: BuiltinDriftType.int,
+      constraints: () => [
+        ColumnPrimaryKeyConstraint(isAutoIncrementing: false),
+        ColumnConstraint.customSql('custom')
+      ],
+    );
+
+    final compiler = dialect.createCompiler()..addTableColumnDefinition(column);
+    expect(compiler.statement.sql,
+        equals('"foo" INTEGER NOT NULL PRIMARY KEY custom'));
   });
 }
