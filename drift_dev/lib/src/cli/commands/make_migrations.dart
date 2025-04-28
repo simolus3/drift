@@ -323,7 +323,7 @@ class _MigrationTestEmitter {
     } else if (schemaFile.readAsStringSync() != content) {
       cli.exit(
           "A schema for version $schemaVersion of the $dbName database already exists and differs from the current schema."
-          " Either delete the existing schema file or update the schema version in the database file.");
+          " Either delete the existing schema file (${schemaFile.path}) or update the schema version in the database file.");
     }
   }
 
