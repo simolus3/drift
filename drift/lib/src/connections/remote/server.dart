@@ -116,7 +116,8 @@ final class ServerImplementation implements DriftServer {
       WriteSchemaVersion() => await conn.writeSchemaVersion(request),
       CloseSessionRequest(:final sessionId) =>
         await conn.closeSession(id, sessionId),
-      ShutdownServerRequest() => _remoteShutdown().then((_) => Response(id)),
+      ShutdownServerRequest() =>
+        _remoteShutdown().then((_) => SimpleResponse(id)),
     };
   }
 
@@ -153,12 +154,12 @@ final class _ActiveConnection {
     await loadSession(version.sessionId)
         .root!
         .writeSchemaVersion(version.schemaVersion);
-    return Response(version.id);
+    return SimpleResponse(version.id);
   }
 
   Future<Response> closeSession(int requestId, int session) async {
     await loadSession(session).close();
-    return Response(requestId);
+    return SimpleResponse(requestId);
   }
 
   Future<SessionDetails> startExclusive(StartExclusiveRequest request) async {

@@ -17,10 +17,14 @@ sealed class Request<Res extends Response> implements ProtocolMessage {
   Request(this.id);
 }
 
-final class Response implements ProtocolMessage {
+sealed class Response implements ProtocolMessage {
   final int requestId;
 
   Response(this.requestId);
+}
+
+final class SimpleResponse extends Response {
+  SimpleResponse(super.requestId);
 }
 
 final class ErrorResponse implements ProtocolMessage {
