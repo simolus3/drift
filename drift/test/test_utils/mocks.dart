@@ -29,7 +29,7 @@ final class MockSession extends Mock
         DriftTransactionParent,
         DriftTransactionSession,
         DriftSessionWithInternalLocks {
-  late final MockSession transactions = MockSession();
+  late final MockSession transactions = MockSession(isTransaction: true);
   late final MockSession exclusiveExecutor = this;
 
   var open = true;

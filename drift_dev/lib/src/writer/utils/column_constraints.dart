@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show BuiltinDriftType, KnownSqlDialect;
 import 'package:drift_dev/src/utils/string_escaper.dart';
 
 import '../../analysis/dialect.dart';
@@ -88,21 +87,6 @@ List<String> columnConstraints(TextEmitter emitter, DriftColumn column) {
 
       result.write('})');
       return [result.toString()];
-    }
-  }
-
-  if (column.sqlType case ColumnDriftType(builtin: BuiltinDriftType.bool)) {
-    for (final dialect in emitter.writer.options.dialects.values) {
-      final known = dialect.known;
-      if (known == KnownSqlDialect.mariadb || known == KnownSqlDialect.sqlite) {
-        final columnConstraint = emitter.drift('ColumnConstraint');
-        final customComponent = emitter.drift('CustomComponent');
-        final knownSqlDialect = emitter.drift('KnownSqlDialect');
-        final sqlCheck = 'CHECK ("${column.nameInSql}" IN (0, 1))';
-
-        entries.add(
-            '$columnConstraint.custom($customComponent(${asDartLiteral(sqlCheck)}), onlyOnDialect: $knownSqlDialect.${known!.name})');
-      }
     }
   }
 

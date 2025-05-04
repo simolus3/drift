@@ -194,6 +194,7 @@ class ColumnParser {
                     b.addText(
                         '.${element.name.isEmpty ? 'new' : element.name}');
                   }
+                  b.addText('()');
                 }),
                 customType.typeArguments[0],
               ));

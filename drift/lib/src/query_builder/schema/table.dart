@@ -15,6 +15,30 @@ abstract interface class GeneratedTable<Row extends Object,
   List<TableColumn> get columns;
 }
 
+/// Default methods for all generated tables.
+extension GeneratedTableExtension on GeneratedTable {
+  /// All table constraints that have been added to this table.
+  ///
+  /// This typically includes the primary key (if it hasn't been set as a
+  /// [ColumnConstraint] on a single column) or unique keys.
+  ///
+  /// This does not include [customConstraints] added to the table.
+  List<TableConstraint> get constraints {
+    final pk = primaryKey;
+    final hasPkOnColumn = columns
+        .any((e) => e.constraints.any((c) => c is ColumnPrimaryKeyConstraint));
+
+    return [
+      if (pk != null && pk.isNotEmpty && !hasPkOnColumn)
+        TablePrimaryKeyConstraint(pk.toList().cast()),
+      // ignore: invalid_use_of_visible_for_overriding_member
+      if (uniqueKeys case final uniqueKeys?)
+        for (final unique in uniqueKeys)
+          TableUniqueKeyConstraint(unique.toList().cast()),
+    ];
+  }
+}
+
 /// Additional interface for tables in a drift file that have been created with
 /// an `CREATE VIRTUAL TABLE STATEMENT`.
 mixin VirtualTableInfo<Row extends Object,
@@ -181,5 +205,43 @@ final class RenameColumnStatement extends SqlStatement {
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addRenameColumnStatement(this);
+  }
+}
+
+/// A table constraint supported by drift.
+sealed class TableConstraint implements SqlComponent {}
+
+/// A `PRIMARY KEY` constraint set on a table.
+///
+/// Drift only uses this when [Table.primaryKey] was overridden when defining
+/// the table. If a column was marked as a primary key or auto-incrementing, a
+/// [ColumnPrimaryKeyConstraint] will be generated instead.
+final class TablePrimaryKeyConstraint extends TableConstraint {
+  /// The columns forming the primary key.
+  final List<TableColumn> columns;
+
+  /// @nodoc
+  TablePrimaryKeyConstraint(this.columns);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addTablePrimaryKeyConstraint(this);
+  }
+}
+
+/// A `UNIQUE` constraint attached to a table.
+///
+/// Drift generates instances of this class in [GeneratedTable.constraints] when
+/// [Table.uniqueKeys] are set.
+final class TableUniqueKeyConstraint extends TableConstraint {
+  /// The columns forming the unique constraint.
+  final List<TableColumn> columns;
+
+  /// @nodoc
+  TableUniqueKeyConstraint(this.columns);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addTableUniqueKeyConstraint(this);
   }
 }

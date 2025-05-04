@@ -7,7 +7,7 @@ part 'main.g.dart';
 
 class Users extends Table {
   UuidColumn get id => customType(PgTypes.uuid).withDefault(genRandomUuid())();
-  TextColumn get name => text()();
+  TextColumn get name => text();
 
   @override
   Set<Column<Object>>? get primaryKey => {id};

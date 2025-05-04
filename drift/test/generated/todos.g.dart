@@ -656,12 +656,7 @@ class $UsersTable extends Users
       type: BuiltinDriftType.bool,
       isNullable: false,
       requiredDuringInsert: false,
-      constraints: () => [
-            ColumnDefaultConstraint<bool>(const Literal(true)),
-            ColumnConstraint.custom(
-                CustomComponent('CHECK ("is_awesome" IN (0, 1))'),
-                onlyOnDialect: KnownSqlDialect.sqlite)
-          ])
+      constraints: () => [ColumnDefaultConstraint<bool>(const Literal(true))])
     ..owningResultSet = this;
   @override
   late final TableColumn<Uint8List> profilePicture = TableColumn<Uint8List>(
@@ -1624,12 +1619,7 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
       name: 'a_bool',
       type: BuiltinDriftType.bool,
       isNullable: true,
-      requiredDuringInsert: false,
-      constraints: () => [
-            ColumnConstraint.custom(
-                CustomComponent('CHECK ("a_bool" IN (0, 1))'),
-                onlyOnDialect: KnownSqlDialect.sqlite)
-          ])
+      requiredDuringInsert: false)
     ..owningResultSet = this;
   @override
   late final TableColumn<DateTime> aDateTime = TableColumn<DateTime>(
@@ -3079,7 +3069,8 @@ class $CategoryTodoCountViewView extends CategoryTodoCountView
   @override
   SelectStatement? get query =>
       (_attachedDatabase.selectOnly(categories)..addColumns(columns))
-          .innerJoin(todos, on: todos.category.equalsExp(categories.id));
+          .innerJoin(todos, on: todos.category.equalsExp(categories.id))
+          .groupBy([categories.id]);
   @override
   CustomComponent? get sqlDefinition => null;
   @override

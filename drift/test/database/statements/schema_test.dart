@@ -23,93 +23,139 @@ void main() {
 
   group('Migrations', () {
     test('creates all tables', () async {
+      final sql = <String>[];
+
       when(mockExecutor.schemaVersion).thenAnswer((_) => Future.value(0));
+      when(mockExecutor.execute(any)).thenAnswer((i) async {
+        sql.add((i.positionalArguments[0] as StatementInfo).sql);
+        return queryResult([]);
+      });
+
       await db.initialize();
 
-      // should create todos, categories, users and shared_todos table
-      verify(mockExecutor.executeSql(
-          'CREATE TABLE IF NOT EXISTS "todos" '
-          '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "title" TEXT NULL, '
-          '"content" TEXT NOT NULL, "target_date" INTEGER NULL UNIQUE, '
-          '"category" INTEGER NULL REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED, '
-          '"status" TEXT NULL, '
-          'UNIQUE ("title", "category"), UNIQUE ("title", "target_date"));',
-          []));
+      expect(
+        sql[0],
+        'CREATE TABLE IF NOT EXISTS "categories" '
+        '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+        '"desc" TEXT NOT NULL UNIQUE,'
+        '"priority" INTEGER NOT NULL DEFAULT 0,'
+        '"description_in_upper_case" TEXT NOT NULL GENERATED ALWAYS AS '
+        '(UPPER("desc")) VIRTUAL'
+        ');',
+      );
 
-      verify(mockExecutor.executeSql(
-          'CREATE TABLE IF NOT EXISTS "categories" '
-          '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          '"desc" TEXT NOT NULL UNIQUE, '
-          '"priority" INTEGER NOT NULL DEFAULT 0, '
-          '"description_in_upper_case" TEXT NOT NULL GENERATED ALWAYS AS '
-          '(UPPER("desc")) VIRTUAL'
-          ');',
-          []));
+      expect(
+        sql[1],
+        'CREATE TABLE IF NOT EXISTS "todos" '
+        '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+        '"title" TEXT NULL,'
+        '"content" TEXT NOT NULL,'
+        '"target_date" TEXT NULL UNIQUE,'
+        '"category" INTEGER NULL REFERENCES categories (id)DEFERRABLE INITIALLY DEFERRED,'
+        '"status" TEXT NULL,'
+        'UNIQUE ("title","category"),UNIQUE ("title","target_date"));',
+      );
 
-      verify(mockExecutor.executeSql(
-          'CREATE TABLE IF NOT EXISTS "users" ('
-          '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, '
-          '"name" TEXT NOT NULL UNIQUE, '
-          '"is_awesome" INTEGER NOT NULL DEFAULT 1 CHECK ("is_awesome" IN (0, 1)), '
-          '"profile_picture" BLOB NOT NULL, '
-          '"creation_time" INTEGER NOT NULL '
-          "DEFAULT (CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)) "
-          'CHECK("creation_time" > -631152000)'
-          ');',
-          []));
+      expect(
+        sql[2],
+        'CREATE TABLE IF NOT EXISTS "users" ('
+        '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+        '"creation_time" TEXT NOT NULL '
+        'DEFAULT (CURRENT_TIMESTAMP) '
+        "CHECK(julianday(\"creation_time\") > julianday('1950-01-01T00:00:00.000Z')),"
+        '"name" TEXT NOT NULL UNIQUE,'
+        '"is_awesome" INTEGER NOT NULL DEFAULT 1 CHECK ("is_awesome" IN (0, 1)),'
+        '"profile_picture" BLOB NOT NULL'
+        ');',
+      );
 
-      verify(mockExecutor.executeSql(
-          'CREATE TABLE IF NOT EXISTS "shared_todos" ('
-          '"todo" INTEGER NOT NULL, '
-          '"user" INTEGER NOT NULL, '
-          'PRIMARY KEY ("todo", "user"), '
-          'FOREIGN KEY (todo) REFERENCES todos(id), '
-          'FOREIGN KEY (user) REFERENCES users(id)'
-          ');',
-          []));
+      expect(
+        sql[3],
+        'CREATE TABLE IF NOT EXISTS "shared_todos" ('
+        '"todo" INTEGER NOT NULL,'
+        '"user" INTEGER NOT NULL,'
+        'PRIMARY KEY ("todo","user"),'
+        'FOREIGN KEY (todo) REFERENCES todos(id),'
+        'FOREIGN KEY (user) REFERENCES users(id)'
+        ');',
+      );
 
-      verify(mockExecutor.executeSql(
-          'CREATE TABLE IF NOT EXISTS '
-          '"table_without_p_k" ('
-          '"not_really_an_id" INTEGER NOT NULL, '
-          '"some_float" REAL NOT NULL, '
-          '"web_safe_int" INTEGER NULL, '
-          '"custom" TEXT NOT NULL'
-          ');',
-          []));
+      expect(
+        sql[4],
+        'CREATE TABLE IF NOT EXISTS '
+        '"table_without_p_k" ('
+        '"not_really_an_id" INTEGER NOT NULL,'
+        '"some_float" REAL NOT NULL,'
+        '"web_safe_int" INTEGER NULL,'
+        '"custom" TEXT NOT NULL'
+        ');',
+      );
 
-      verify(mockExecutor.executeSql(
-          'CREATE VIEW IF NOT EXISTS "category_todo_count_view" '
-          '("category_id", "description", "item_count") AS SELECT '
-          '"t1"."id" AS "category_id", '
-          '"t1"."desc" || \'!\' AS "description", '
-          'COUNT("t0"."id") AS "item_count" '
-          'FROM "categories" "t1" '
-          'INNER JOIN "todos" "t0" '
-          'ON "t0"."category" = "t1"."id" '
-          'GROUP BY "t1"."id"',
-          []));
+      expect(
+        sql[5],
+        'CREATE TABLE IF NOT EXISTS "pure_defaults" ('
+        '"insert" TEXT NULL,'
+        'PRIMARY KEY ("insert")'
+        ');',
+      );
 
-      verify(mockExecutor.executeSql(
-          'CREATE VIEW IF NOT EXISTS "todo_with_category_view" '
-          '("title", "desc") AS SELECT '
-          '"t0"."title" AS "title", '
-          '"t1"."desc" AS "desc" '
-          'FROM "todos" "t0" '
-          'INNER JOIN "categories" "t1" '
-          'ON "t1"."id" = "t0"."category"',
-          []));
+      expect(
+        sql[6],
+        'CREATE TABLE IF NOT EXISTS "with_custom_type" ('
+        '"id" text NOT NULL'
+        ');',
+      );
+
+      expect(
+        sql[7],
+        'CREATE TABLE IF NOT EXISTS "table_with_every_column_type" ('
+        '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+        '"a_bool" INTEGER NULL CHECK ("a_bool" IN (0, 1)),'
+        '"a_date_time" TEXT NULL,'
+        '"a_text" TEXT NULL,'
+        '"an_int" INTEGER NULL,'
+        '"an_int64" INTEGER NULL,'
+        '"a_real" REAL NULL,'
+        '"a_blob" BLOB NULL,'
+        '"an_int_enum" INTEGER NULL,'
+        '"insert" TEXT NULL'
+        ');',
+      );
+
+      expect(
+        sql[12],
+        'CREATE VIEW IF NOT EXISTS "category_todo_count_view"'
+        '("category_id","description","item_count") AS SELECT '
+        '"t1"."id" AS "c0",'
+        '"t1"."desc" || \'!\' AS "c1",'
+        'COUNT("t0"."id") AS "c2" '
+        'FROM "categories" AS "t1" '
+        'INNER JOIN "todos" AS "t0" '
+        'ON "t0"."category" = "t1"."id" '
+        'GROUP BY "t1"."id"',
+      );
+
+      expect(
+        sql[13],
+        'CREATE VIEW IF NOT EXISTS "todo_with_category_view"'
+        '("title","desc") AS SELECT '
+        '"t0"."title" AS "c0",'
+        '"t1"."desc" AS "c1" '
+        'FROM "todos" AS "t0" '
+        'INNER JOIN "categories" AS "t1" '
+        'ON "t1"."id" = "t0"."category"',
+      );
     });
 
     test('creates individual tables', () async {
       await db.createMigrator().createTable(db.users);
 
       verify(mockExecutor.executeSql(
-        'CREATE TABLE IF NOT EXISTS "users" '
-        '("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
+        'CREATE TABLE IF NOT EXISTS "users" ('
+        '"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,'
         '"creation_time" TEXT NOT NULL '
-        'DEFAULT CURRENT_TIMESTAMP '
-        'CHECK("creation_time" > \'1950-01-01T00:00:00.000Z\'),'
+        'DEFAULT (CURRENT_TIMESTAMP) '
+        "CHECK(julianday(\"creation_time\") > julianday('1950-01-01T00:00:00.000Z')),"
         '"name" TEXT NOT NULL UNIQUE,'
         '"is_awesome" INTEGER NOT NULL DEFAULT 1 CHECK ("is_awesome" IN (0, 1)),'
         '"profile_picture" BLOB NOT NULL'
@@ -142,11 +188,11 @@ void main() {
       verify(mockExecutor.executeSql(
           'CREATE VIEW IF NOT EXISTS "category_todo_count_view"'
           '("category_id","description","item_count") AS SELECT '
-          '"t1"."id" AS "category_id", '
-          '"t1"."desc" || \'!\' AS "description", '
-          'COUNT("t0"."id") AS "item_count" '
-          'FROM "categories" "t1" '
-          'INNER JOIN "todos" "t0" '
+          '"t1"."id" AS "c0",'
+          '"t1"."desc" || \'!\' AS "c1",'
+          'COUNT("t0"."id") AS "c2" '
+          'FROM "categories" AS "t1" '
+          'INNER JOIN "todos" AS "t0" '
           'ON "t0"."category" = "t1"."id" '
           'GROUP BY "t1"."id"',
           []));

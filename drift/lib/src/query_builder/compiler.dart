@@ -120,6 +120,7 @@ abstract base class StatementCompiler {
 
   bool _ignoreResultSet = false;
   InsertStatement? _currentInsertStatement;
+  GeneratedView? _generatingCreateView;
 
   DriftDialect get dialect;
 
@@ -133,12 +134,13 @@ abstract base class StatementCompiler {
     addReference(column.name);
     statement.space();
     statement.buffer.write(column.type.typeName(dialect));
-    statement.space();
 
-    var hadConstraint = false;
-    if (!column.isNullable) {
-      hadConstraint = true;
-      statement.buffer.write('NOT NULL');
+    final hasCustomConstraint =
+        column.constraints.any((e) => e is CustomColumnConstraint);
+    if (!hasCustomConstraint) {
+      statement.space();
+
+      statement.buffer.write(column.isNullable ? 'NULL' : 'NOT NULL');
     }
 
     for (final constraint in column.constraints) {
@@ -148,14 +150,15 @@ abstract base class StatementCompiler {
         }
       }
 
-      if (hadConstraint) {
-        statement.space();
-      }
+      statement.space();
 
       constraint.compileWith(this);
-      hadConstraint = true;
     }
+
+    addDialectSpecificDefaultColumnConstraints(column);
   }
+
+  void addDialectSpecificDefaultColumnConstraints(TableColumn column) {}
 
   void addAddColumnStatement(AddColumnStatement stmt) {
     statement.buffer.write('ALTER TABLE ');
@@ -268,14 +271,16 @@ abstract base class StatementCompiler {
     }
 
     if (!table.dontWriteConstraints) {
-      // TODO: Emit table constraints
+      for (final constraint in table.constraints) {
+        statement.comma();
+        constraint.compileWith(this);
+      }
     }
 
-    final constraints = table.customConstraints;
-    for (var i = 0; i < constraints.length; i++) {
-      statement.buffer
-        ..write(', ')
-        ..write(constraints[i]);
+    for (final constraint in table.customConstraints) {
+      statement
+        ..comma()
+        ..buffer.write(constraint);
     }
 
     statement.buffer.write(')');
@@ -290,6 +295,7 @@ abstract base class StatementCompiler {
     if (view.sqlDefinition case final sql?) {
       sql.compileWith(this);
     } else {
+      _generatingCreateView = create.entity;
       statement.supportsVariables = false;
       statement.buffer.write('CREATE VIEW ');
       if (create.ifNotExists) {
@@ -628,6 +634,11 @@ abstract base class StatementCompiler {
   }
 
   void addColumnReference(SchemaColumn column) {
+    if (column.owningResultSet == _generatingCreateView) {
+      (column as ViewColumn).expression.compileWith(this);
+      return;
+    }
+
     if (statement.hasMultipleTables) {
       final resultSet = column.owningResultSet;
       addReference(resultSet.aliasOrName);
@@ -971,6 +982,28 @@ abstract base class StatementCompiler {
     select.operator.compileWith(this);
     statement.space();
     select.statement.compileWith(this);
+  }
+
+  void addTablePrimaryKeyConstraint(TablePrimaryKeyConstraint e) {
+    statement.buffer.write('PRIMARY KEY (');
+    for (var i = 0; i < e.columns.length; i++) {
+      if (i != 0) statement.comma();
+
+      final column = e.columns[i];
+      addReference(column.name);
+    }
+    statement.buffer.write(')');
+  }
+
+  void addTableUniqueKeyConstraint(TableUniqueKeyConstraint e) {
+    statement.buffer.write('UNIQUE (');
+    for (var i = 0; i < e.columns.length; i++) {
+      if (i != 0) statement.comma();
+
+      final column = e.columns[i];
+      addReference(column.name);
+    }
+    statement.buffer.write(')');
   }
 
   void addUnixTimestampToDateTime(UnixTimestampToDateTime e);

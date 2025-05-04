@@ -38,8 +38,13 @@ final class SqliteCompiler extends StatementCompiler {
   }
 
   bool _needsToMakeDateTimeComparable(Expression inner) {
-    return dialect.options.storeDateTimesAsText &&
-        inner.resolveType(dialect) is DateTimeType;
+    if (!dialect.options.storeDateTimesAsText) {
+      // We store timestamps which can be compared directly
+      return false;
+    }
+
+    final type = inner.resolveType(dialect);
+    return type is DateTimeType || type == BuiltinDriftType.dateTime;
   }
 
   Expression<double> _makeDateTimeComparable(Expression inner) {
@@ -174,6 +179,15 @@ final class SqliteCompiler extends StatementCompiler {
     }
 
     statement.buffer.write(')');
+  }
+
+  @override
+  void addDialectSpecificDefaultColumnConstraints(TableColumn<Object> column) {
+    if (column.type == BuiltinDriftType.bool) {
+      statement.buffer.write(' CHECK (');
+      addReference(column.name);
+      statement.buffer.write(' IN (0, 1))');
+    }
   }
 }
 
