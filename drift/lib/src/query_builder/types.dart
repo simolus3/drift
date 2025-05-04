@@ -13,9 +13,22 @@ typedef TypedNullableValue<T extends Object> = (SqlType<T>, T?);
 final class DatabaseJson {
   final Object? dartValue;
 
-  DatabaseJson(this.dartValue);
+  const DatabaseJson(this.dartValue);
 
   Object? toJson() => dartValue;
+
+  @override
+  int get hashCode => dartValue.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is DatabaseJson && other.dartValue == dartValue;
+  }
+
+  @override
+  String toString() {
+    return dartValue.toString();
+  }
 }
 
 /// The base class for column types in databases.

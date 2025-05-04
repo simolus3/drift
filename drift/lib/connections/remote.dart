@@ -162,8 +162,11 @@ DriftDatabaseImplementation connectToRemote({
   bool singleClientMode = false,
 }) {
   final client = DriftClient(
-    DriftChannel(
-        channel.messageChannel(serialize: serialize, debugLog: debugLog)),
+    DriftChannel(channel.messageChannel(
+      serialize: serialize,
+      debugLog: debugLog,
+      dialect: dialect,
+    )),
     singleClientMode,
     tag,
   );
@@ -171,6 +174,7 @@ DriftDatabaseImplementation connectToRemote({
   return DriftDatabaseImplementation(
     dialect: dialect,
     openConnection: client.requestRootSession,
+    streamQueries: client.streamQueries,
   );
 }
 

@@ -169,6 +169,15 @@ abstract class Table extends ResultSetDsl {
   @DriftColumnDeclarationBuilder(BuiltinDriftType.text)
   ColumnBuilder<String> text() => isGenerated();
 
+  /// Use this as the body of a getter to declare a column that holds strings.
+  /// Example (inside the body of a table class):
+  /// ```
+  /// TextColumn get name => text()();
+  /// ```
+  @protected
+  @DriftColumnDeclarationBuilder(BuiltinDriftType.json)
+  ColumnBuilder<DatabaseJson> json() => isGenerated();
+
   /// Creates a column to store an `enum` class [T].
   ///
   /// In the database, the column will be represented as text corresponding to

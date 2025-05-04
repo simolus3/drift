@@ -5,7 +5,6 @@ import 'package:meta/meta.dart';
 import '../../connections/connection.dart';
 import '../../connections/result_set.dart';
 import '../../query_builder.dart';
-import '../../query_builder/statements/statement.dart';
 import '../batch.dart';
 import '../data_class.dart';
 import '../exceptions.dart';
@@ -160,7 +159,7 @@ abstract base class DatabaseConnectionUser {
   Future<T> transaction<T>(Future<T> Function() action,
       {TransactionOptions? options}) async {
     final resolved = await currentSession();
-    final transaction = await (resolved as DriftTransactionParent)
+    final transaction = await resolved.transactionParent!
         .begin(options ?? TransactionOptions());
     final transactionControl = transaction.transaction!;
     final nestedStreams = ScopedStreamQueryStore(_currentStreamQueryStore());
@@ -265,8 +264,7 @@ abstract base class DatabaseConnectionUser {
   /// earlier statements.
   Future<T> exclusively<T>(Future<T> Function() action) async {
     final resolved = await currentSession();
-    final exclusive =
-        await (resolved as DriftSessionWithInternalLocks).exclusive();
+    final exclusive = await resolved.locks!.exclusive();
     final streams = ScopedStreamQueryStore(_currentStreamQueryStore());
 
     return _runConnectionZoned(

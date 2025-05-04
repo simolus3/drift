@@ -23,7 +23,7 @@ final class DriftCompatibilitySession
   final DriftSession _inner;
   final DriftDialect _dialect;
 
-  final Completer<void> _closed = Completer();
+  final Completer<void> _closed = Completer.sync();
 
   /// Whether this session has explicitly been closed.
   bool _isClosed = false;
@@ -38,15 +38,20 @@ final class DriftCompatibilitySession
   final int _transactionDepth;
 
   DriftCompatibilitySession._(
-      this._inner, this._dialect, this._transactionDepth);
+      this._inner, this._dialect, this._transactionDepth) {
+    _inner.closed.whenComplete(() {
+      if (!_closed.isCompleted) {
+        _isClosed = true;
+        _closed.complete();
+      }
+    });
+  }
 
   /// Wraps [inner] as a compatibility session, using [dialect] to generate
   /// transaction-related commands if not supported by the inner session.
   DriftCompatibilitySession(
       {required DriftSession inner, required DriftDialect dialect})
-      : _inner = inner,
-        _dialect = dialect,
-        _transactionDepth = -1;
+      : this._(inner, dialect, -1);
 
   void _checkOpen() {
     if (_isClosed) {
@@ -191,6 +196,8 @@ final class DriftCompatibilityTransaction extends DriftCompatibilitySession
 
   @override
   Future<void> close() async {
+    assert(!isClosed);
+
     if (_isUsingUnderlyingTransaction) {
       await _inner.close();
     } else {
@@ -200,21 +207,27 @@ final class DriftCompatibilityTransaction extends DriftCompatibilitySession
 
   @override
   Future<void> commit() async {
+    assert(!isClosed);
+
     if (_isUsingUnderlyingTransaction) {
       await (_inner as DriftTransactionSession).commit();
     } else {
       await _inner.execute(StatementInfo(
           _dialect.compile(CommitStatement(depth: _transactionDepth))));
+      _closed.complete();
     }
   }
 
   @override
   Future<void> rollback() async {
+    assert(!isClosed);
+
     if (_isUsingUnderlyingTransaction) {
       await (_inner as DriftTransactionSession).rollback();
     } else {
       await _inner.execute(StatementInfo(
-          _dialect.compile(CommitStatement(depth: _transactionDepth))));
+          _dialect.compile(RollbackStatement(depth: _transactionDepth))));
+      _closed.complete();
     }
   }
 }

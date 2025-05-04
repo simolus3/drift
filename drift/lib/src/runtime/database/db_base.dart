@@ -16,6 +16,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   /// and executing them.
   final DriftDatabaseImplementation implementation;
   Future<DriftSession>? _openingSession;
+  DriftSession? _openedSession;
 
   final Completer<StreamQueryStore> _openedStreamQueries = Completer();
   late StreamQueryStore _streamQueryStore;
@@ -72,22 +73,25 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       return _openingSession = Future(() async {
         final (inner, streams) = await implementation.open();
         _openedStreamQueries.complete(streams);
+        _openedSession = inner;
 
         // Run migrations in a scoped connection zone so that they can use the
         // database while calls outside of migrations are waiting on this future
         // to complete.
+        final compat = DriftCompatibilitySession(
+          inner: inner,
+          dialect: implementation.dialect,
+        );
+
         if (inner.root case final root?) {
           await runConnectionZoned(
-            inner,
+            compat,
             streams,
             () => _runMigrations(root),
           );
         }
 
-        return DriftCompatibilitySession(
-          inner: inner,
-          dialect: implementation.dialect,
-        );
+        return compat;
       });
     }
   }
@@ -123,7 +127,9 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
 
   /// Closes this drift database and releases associated resources.
   Future<void> close() async {
-    if (_openingSession case final opening?) {
+    if (_openedSession case final opened?) {
+      await opened.close();
+    } else if (_openingSession case final opening?) {
       final resolved = await opening;
 
       await resolved.close();

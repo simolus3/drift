@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:drift/src/connections/connection_compat.dart';
 import 'package:drift/src/connections/remote/serialize.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../../../connections/remote.dart';
+import '../../../dialect/sqlite.dart';
 import '../connection.dart';
 import 'channel.dart';
 import 'protocol.dart';
@@ -45,7 +47,10 @@ final class ServerImplementation implements DriftServer {
 
   Future<DriftSession> _resolveSession() {
     if (!_session.isCompleted) {
-      _session.complete(connection.open().then((conn) => conn.$1));
+      _session.complete(
+        connection.open().then((conn) => DriftCompatibilitySession(
+            inner: conn.$1, dialect: const SqliteDialect())),
+      );
     }
     return _session.future;
   }
@@ -60,6 +65,13 @@ final class ServerImplementation implements DriftServer {
     final comm = DriftChannel(channel.messageChannel(serialize: serialize));
 
     final connection = _ActiveConnection(comm);
+    comm.notifications.listen((msg) {
+      if (msg is NotifyTablesUpdated) {
+        _tableUpdateNotifications.add(msg);
+        dispatchTableUpdateNotification(msg);
+      }
+    });
+
     comm.setRequestHandler((req) => _handleRequest(connection, req));
     _activeConnections.add(connection);
     return comm.closed.then((_) => _activeConnections.remove(connection));
@@ -106,7 +118,7 @@ final class ServerImplementation implements DriftServer {
       ExecuteRequest(:final sessionId, :final statement) => ExecuteResponse(id,
           result: [await loadSession(sessionId).execute(statement)]),
       ExecuteBatchRequest(:final sessionId, :final batch) => ExecuteResponse(
-          sessionId,
+          id,
           result: await loadSession(sessionId).executeBatch(batch),
         ),
       StartExclusiveRequest() => await conn.startExclusive(request),
@@ -114,8 +126,8 @@ final class ServerImplementation implements DriftServer {
       GetSchemaVersion(:final sessionId) => SchemaVersionResponse(
           id, await loadSession(sessionId).root!.schemaVersion),
       WriteSchemaVersion() => await conn.writeSchemaVersion(request),
-      CloseSessionRequest(:final sessionId) =>
-        await conn.closeSession(id, sessionId),
+      CloseSessionRequest(:final sessionId, :final mode) =>
+        await conn.closeSession(id, sessionId, mode),
       ShutdownServerRequest() =>
         _remoteShutdown().then((_) => SimpleResponse(id)),
     };
@@ -157,8 +169,18 @@ final class _ActiveConnection {
     return SimpleResponse(version.id);
   }
 
-  Future<Response> closeSession(int requestId, int session) async {
-    await loadSession(session).close();
+  Future<Response> closeSession(
+      int requestId, int session, CloseMode mode) async {
+    final loaded = loadSession(session);
+    switch (mode) {
+      case CloseMode.close:
+        await loaded.close();
+      case CloseMode.rollback:
+        await loaded.transaction!.rollback();
+      case CloseMode.commit:
+        await loaded.transaction!.commit();
+    }
+
     return SimpleResponse(requestId);
   }
 

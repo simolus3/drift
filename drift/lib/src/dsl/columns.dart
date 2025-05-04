@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import '../query_builder/expressions/expression.dart';
 import '../query_builder/schema/column.dart';
+import '../query_builder/types.dart';
 import '../runtime/type_converter.dart';
 import 'internal.dart';
 
@@ -66,6 +67,9 @@ typedef BlobColumn = Column<Uint8List>;
 
 /// A column that stores floating point numeric values.
 typedef RealColumn = Column<double>;
+
+/// A column that stores json values.
+typedef JsonColumn = Column<DatabaseJson>;
 
 /// Common definitions shared between regular columns ([ColumnBuilder]s) and
 /// virtual columns ([VirtualColumnBuilder]).

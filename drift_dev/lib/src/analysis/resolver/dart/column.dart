@@ -24,6 +24,7 @@ const String _startBool = 'boolean';
 const String _startDateTime = 'dateTime';
 const String _startBlob = 'blob';
 const String _startReal = 'real';
+const String _startJson = 'json';
 const String _startCustom = 'customType';
 const String _startCustomCol = 'col';
 
@@ -37,6 +38,7 @@ const Set<String> _starters = {
   _startDateTime,
   _startBlob,
   _startReal,
+  _startJson,
   _startCustom,
   _startCustomCol,
 };
@@ -585,6 +587,7 @@ class ColumnParser {
       _startDateTime: BuiltinDriftType.dateTime,
       _startBlob: BuiltinDriftType.byteArray,
       _startReal: BuiltinDriftType.double,
+      _startJson: BuiltinDriftType.json,
     }[name]!;
   }
 

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import '../query_builder/compiler.dart';
 import '../query_builder/dialect.dart';
 import '../query_builder/types.dart';
+import '../runtime/streams/delayed_stream_queries.dart';
 import '../runtime/streams/store.dart';
 import '../runtime/streams/store_impl.dart';
 import '../runtime/streams/update_rules.dart';
@@ -17,6 +20,39 @@ final class DriftDatabaseImplementation {
     required Future<DriftSession> Function() openConnection,
     this.streamQueries,
   }) : _openConnection = openConnection;
+
+  static DriftDatabaseImplementation delayed(
+      Future<DriftDatabaseImplementation> Function() open,
+      {required DriftDialect dialect}) {
+    final session = Completer<DriftSession>();
+    final streamQueries = Completer<StreamQueryStore>();
+
+    Future<void> request() {
+      if (!session.isCompleted) {
+        session.complete(Future(() async {
+          final connection = await open();
+          final (conn, queries) = await connection.open();
+
+          streamQueries.complete(queries);
+          return conn;
+        }));
+      }
+
+      return session.future;
+    }
+
+    return DriftDatabaseImplementation(
+      dialect: dialect,
+      openConnection: () async {
+        await request();
+        return await session.future;
+      },
+      streamQueries: DelayedStreamQueryStore(
+        streamQueries.future,
+        request,
+      ),
+    );
+  }
 
   Future<(DriftSession, StreamQueryStore)> open() async {
     final session = await _openConnection();

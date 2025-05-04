@@ -8,7 +8,9 @@ import 'package:drift/drift.dart';
 import 'package:drift/src/connections/remote/channel.dart';
 import 'package:drift/src/connections/remote/protocol.dart';
 import 'package:drift/src/connections/remote/serialize.dart';
+import 'package:drift/src/connections/sqlite3/connection.dart';
 import 'package:drift/src/utils/synchronized.dart';
+import 'package:sqlite3/common.dart' as sqlite;
 import 'package:mockito/mockito.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
@@ -73,7 +75,7 @@ void main() {
   );
 
   test('Uint8Lists are mapped from and to Uint8Lists', () async {
-    const protocol = ProtocolMessageSerializer();
+    final protocol = ProtocolMessageSerializer(SqliteDialect());
 
     final request = ExecuteRequest(
       1,
@@ -100,8 +102,8 @@ void main() {
     );
   });
 
-  test('BigInts are serialied', () {
-    const protocol = ProtocolMessageSerializer();
+  test('BigInts are serialized', () {
+    final protocol = ProtocolMessageSerializer(SqliteDialect());
 
     final request = ExecuteRequest(
       1,
@@ -122,9 +124,16 @@ void main() {
     );
 
     final response = ExecuteResponse(1, result: [
-      queryResult([
-        {'col': BigInt.one}
-      ])
+      QueryResult(
+          resultSet: SqliteResultSet(
+        resultSet: sqlite.ResultSet(
+          ['col'],
+          null,
+          [
+            [BigInt.one]
+          ],
+        ),
+      ))
     ]);
     final mappedResponse = _checkSimpleRoundtrip(protocol, response);
     expect(mappedResponse,
@@ -193,6 +202,14 @@ void main() {
 
   test('can run protocol without using complex types', () async {
     final executor = MockSession();
+    when(executor.execute(any)).thenAnswer((_) async {
+      // The remote protocol only supports serializing sqlite result sets.
+      return QueryResult(
+          resultSet: SqliteResultSet(
+        resultSet: sqlite.ResultSet([], null, []),
+      ));
+    });
+
     final server = DriftServer(createConnection(executor));
     addTearDown(server.shutdown);
 
@@ -241,7 +258,11 @@ void main() {
     // this working with the default executor.
     // Regression test for: https://github.com/simolus3/drift/pull/2707
     await (await db.currentSession()).executeBatch(statements);
-    verify(executor.executeBatch(statements));
+    final actualStatements =
+        verify(executor.executeBatch(captureAny)).captured[0] as StatementBatch;
+    expect(actualStatements.sql, ['SELECT 1']);
+    expect(actualStatements.statements,
+        [isA<StatementInBatch>().having((e) => e.sqlIndex, 'sqlIndex', 0)]);
 
     // Regression test for https://github.com/simolus3/drift/issues/3194
     await db.transaction(() async {
@@ -254,15 +275,36 @@ void main() {
   test('nested transactions', () async {
     final controller = StreamChannelController<Object?>();
     final executor = MockSession();
+    when(executor.execute(any)).thenAnswer((_) async {
+      // The remote protocol only supports serializing sqlite result sets.
+      return QueryResult(
+          resultSet: SqliteResultSet(
+        resultSet: sqlite.ResultSet([], null, []),
+      ));
+    });
+
     final outerTransaction = executor.transactions;
     // avoid this object being created implicitly in the beginTransaction() when
     // stub because that breaks mockito.
+    when(outerTransaction.execute(any)).thenAnswer((_) async {
+      return QueryResult(
+          resultSet: SqliteResultSet(
+        resultSet: sqlite.ResultSet([], null, []),
+      ));
+    });
+
     outerTransaction.transactions; // ignore: unnecessary_statements
     final innerTransactions = <MockSession>[];
 
     Future<DriftSession> newTransaction(Invocation _) async {
-      final transaction = MockSession();
+      final transaction = MockSession(isTransaction: true);
       innerTransactions.add(transaction);
+      when(transaction.execute(any)).thenAnswer((_) async {
+        return QueryResult(
+            resultSet: SqliteResultSet(
+          resultSet: sqlite.ResultSet([], null, []),
+        ));
+      });
       when(transaction.begin(any)).thenAnswer(newTransaction);
       return transaction;
     }
@@ -324,6 +366,16 @@ void main() {
 
     final exclusiveA = MockSession();
     final exclusiveB = MockSession();
+
+    for (final session in [executor, exclusiveA, exclusiveB]) {
+      when(session.execute(any)).thenAnswer((_) async {
+        // The remote protocol only supports serializing sqlite result sets.
+        return QueryResult(
+            resultSet: SqliteResultSet(
+          resultSet: sqlite.ResultSet([], null, []),
+        ));
+      });
+    }
 
     var exclusiveCount = 0;
 

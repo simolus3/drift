@@ -103,4 +103,6 @@ Map<BuiltinDriftType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
   BuiltinDriftType.byteArray:
       DartTopLevelSymbol('Uint8List', Uri.parse('dart:typed_data')),
   BuiltinDriftType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
+  BuiltinDriftType.json:
+      DartTopLevelSymbol('DatabaseJson', AnnotatedDartCode.drift),
 });

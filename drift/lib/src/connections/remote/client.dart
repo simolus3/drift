@@ -13,6 +13,8 @@ final class DriftClient {
   final DriftChannel _channel;
   final Object? _tag;
 
+  final Map<int, _RemoteSession> _activeSessions = {};
+
   /// Whether to operate in "single-client mode".
   ///
   /// In this mode, no table update notifications are sent to the server.
@@ -22,11 +24,23 @@ final class DriftClient {
   /// same server into account.
   StreamQueryStore get streamQueries => _streamQueries;
 
-  late StreamQueryStore _streamQueries;
+  late _RemoteStreamQueryStore _streamQueries;
 
   /// Creates a new drift client from the underlying [DriftChannel].
   DriftClient(this._channel, this.singleClientMode, this._tag) {
     _streamQueries = _RemoteStreamQueryStore(this);
+
+    _channel.notifications.listen((event) {
+      if (event is NotifySessionClosed) {
+        if (_activeSessions[event.sessionId] case final session?) {
+          if (!session._closed.isCompleted) {
+            session._closed.complete();
+          }
+        }
+      } else if (event is NotifyTablesUpdated) {
+        _streamQueries.handleTableUpdates(event.updates.toSet(), true);
+      }
+    });
   }
 
   /// Sends a [ClientInitialize] request to the server and wraps the returned
@@ -57,7 +71,13 @@ final class _RemoteSession
 
   int get _sessionId => details.sessionId;
 
-  _RemoteSession(this.client, this.details, {this.isOutermostSession = false});
+  _RemoteSession(this.client, this.details, {this.isOutermostSession = false}) {
+    client._activeSessions[details.sessionId] = this;
+
+    _closed.future.whenComplete(() {
+      client._activeSessions.remove(details.sessionId);
+    });
+  }
 
   @override
   Object? get tag => isOutermostSession ? client._tag : null;
@@ -74,12 +94,20 @@ final class _RemoteSession
             : Future.value(null);
 
         _closed.complete(future.whenComplete(() async {
+          if (client.singleClientMode) {
+            try {
+              await client._channel.request(ShutdownServerRequest.new);
+            } on ConnectionClosedException {
+              // Expected, we're closing the server.
+            }
+          }
+
           await client._channel.close();
         }));
       } else {
         // Just close the sub-session
-        _closed.complete(client._channel
-            .request((id) => CloseSessionRequest(id, sessionId: _sessionId)));
+        client._channel
+            .request((id) => CloseSessionRequest(id, sessionId: _sessionId));
       }
     }
 
@@ -102,6 +130,7 @@ final class _RemoteSession
   Future<void> commit() async {
     await client._channel.request((id) =>
         CloseSessionRequest(id, sessionId: _sessionId, mode: CloseMode.commit));
+    await closed;
   }
 
   @override
@@ -139,6 +168,7 @@ final class _RemoteSession
   Future<void> rollback() async {
     await client._channel.request((id) => CloseSessionRequest(id,
         sessionId: _sessionId, mode: CloseMode.rollback));
+    await closed;
   }
 
   @override

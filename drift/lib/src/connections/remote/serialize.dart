@@ -1,8 +1,16 @@
+// ignore_for_file: constant_identifier_names
+
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/src/dialect/sqlite/dialect.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:sqlite3/common.dart' as sqlite;
 
+import '../sqlite3/connection.dart';
 import 'protocol.dart';
 
 /// Utility to convert arbitrary [StreamChannel]s to channels of
@@ -12,30 +20,54 @@ extension ToProtocolChannel on StreamChannel<Object?> {
   /// [ProtocolMessage]s are sent and received.
   StreamChannel<ProtocolMessage> messageChannel({
     required bool serialize,
+    DriftDialect dialect = const SqliteDialect(),
     bool debugLog = false,
   }) {
-    const serializer = ProtocolMessageSerializer();
+    final serializer = ProtocolMessageSerializer(dialect);
 
-    return switch (serialize) {
-      false => cast(),
+    final messages = switch (serialize) {
+      false => cast<ProtocolMessage>(),
       true => transform(StreamChannelTransformer.fromCodec(serializer)),
     };
+
+    if (debugLog) {
+      return messages
+          .transformStream(
+        StreamTransformer.fromBind(
+          (source) => source.map(
+            (event) {
+              print('[in]: ${event.debugToString()}');
+              return event;
+            },
+          ),
+        ),
+      )
+          .transformSink(
+        StreamSinkTransformer.fromHandlers(
+          handleData: (msg, sink) {
+            print('[out]: ${msg.debugToString()}');
+            sink.add(msg);
+          },
+        ),
+      );
+    }
+
+    return messages;
   }
 }
 
 /// A [Codec] implementation mapping [ProtocolMessage]s to objects that can be
 /// serialized through ports across different isolate groups.
 class ProtocolMessageSerializer extends Codec<ProtocolMessage, Object?> {
+  @override
+  Converter<Object?, ProtocolMessage> decoder;
+  @override
+  Converter<ProtocolMessage, Object> encoder;
+
   /// @nodoc
-  const ProtocolMessageSerializer();
-
-  @override
-  Converter<Object?, ProtocolMessage> get decoder =>
-      const _ProtocolMessageDecoder();
-
-  @override
-  Converter<ProtocolMessage, Object> get encoder =>
-      const _ProtocolMessageEncoder();
+  ProtocolMessageSerializer(DriftDialect dialect)
+      : decoder = _ProtocolMessageDecoder(),
+        encoder = _ProtocolMessageEncoder(dialect);
 }
 
 const _tag_SimpleResponse = 0;
@@ -52,6 +84,11 @@ const _tag_SchemaVersionResponse = 11;
 const _tag_WriteSchemaVersion = 12;
 const _tag_CloseSessionRequest = 13;
 const _tag_SessionDetails = 14;
+const _tag_ExecuteRequest = 15;
+const _tag_ExecuteResponse = 16;
+const _tag_ExecuteBatched = 17;
+
+const _tag_BigInt = 'bigint';
 
 /// A converter that implements [startChunkedConversion] through [convert].
 abstract base class _StatelessConverter<S, T> extends Converter<S, T> {
@@ -65,7 +102,9 @@ abstract base class _StatelessConverter<S, T> extends Converter<S, T> {
 
 final class _ProtocolMessageEncoder
     extends _StatelessConverter<ProtocolMessage, Object> {
-  const _ProtocolMessageEncoder();
+  final DriftDialect dialect;
+
+  const _ProtocolMessageEncoder(this.dialect);
 
   @override
   Object convert(ProtocolMessage input) {
@@ -90,11 +129,53 @@ final class _ProtocolMessageEncoder
           ]
         ],
       ClientInitialize() => [_tag_ClientInitialize, input.id],
-      // TODO: Handle this case.
-      ExecuteRequest() => throw UnimplementedError(),
-      // TODO: Handle this case.
-      ExecuteBatchRequest() => throw UnimplementedError(),
-      ExecuteResponse() => throw UnimplementedError(),
+      ExecuteRequest() => [
+          _tag_ExecuteRequest,
+          input.id,
+          input.sessionId,
+          input.statement.sql,
+          [
+            for (final (type, value) in input.statement.variables)
+              _encodeDbValue(type.sqlParameterOrNull(dialect, value))
+          ],
+          input.statement.needsResultSet,
+          input.statement.isReadOnly,
+        ],
+      ExecuteBatchRequest() => [
+          _tag_ExecuteBatched,
+          input.id,
+          input.sessionId,
+          input.batch.sql,
+          [
+            for (final stmt in input.batch.statements)
+              [
+                stmt.sqlIndex,
+                [
+                  for (final (type, value) in stmt.info.variables)
+                    _encodeDbValue(type.sqlParameterOrNull(dialect, value))
+                ],
+                stmt.info.needsResultSet,
+                stmt.info.isReadOnly,
+              ]
+          ]
+        ],
+      ExecuteResponse() => [
+          _tag_ExecuteResponse,
+          input.requestId,
+          for (final result in input.result)
+            [
+              result.affectedRows,
+              result.lastInsertRowId,
+              switch (result.resultSet) {
+                null => null,
+                final rs as SqliteResultSet => [
+                    rs.resultSet.columnNames,
+                    for (final row in rs.resultSet)
+                      [for (final value in row.values) _encodeDbValue(value)]
+                  ],
+              },
+            ]
+        ],
       StartExclusiveRequest() => [
           _tag_StartExclusiveRequest,
           input.id,
@@ -142,6 +223,27 @@ final class _ProtocolMessageEncoder
   }
 }
 
+dynamic _encodeDbValue(dynamic variable) {
+  if (variable is List<int> && variable is! Uint8List) {
+    return Uint8List.fromList(variable);
+  } else if (variable is BigInt) {
+    return [_tag_BigInt, variable.toString()];
+  } else {
+    return variable;
+  }
+}
+
+Object? _decodeDbValue(Object? wire) {
+  if (wire is List) {
+    if (wire.length == 2 && wire[0] == _tag_BigInt) {
+      return BigInt.parse(wire[1].toString());
+    }
+
+    return Uint8List.fromList(wire.cast());
+  }
+  return wire;
+}
+
 final class _ProtocolMessageDecoder
     extends _StatelessConverter<Object?, ProtocolMessage> {
   const _ProtocolMessageDecoder();
@@ -155,9 +257,9 @@ final class _ProtocolMessageDecoder
         return SimpleResponse(payload[0] as int);
       case _tag_ErrorResponse:
         return ErrorResponse(
-          payload[1] as int,
-          payload[2] as String,
-          switch (payload[3]) {
+          payload[0] as int,
+          payload[1] as String,
+          switch (payload[2]) {
             null => null,
             final trace as String => StackTrace.fromString(trace),
           },
@@ -188,6 +290,12 @@ final class _ProtocolMessageDecoder
           sessionId: payload[1] as int,
           schemaVersion: payload[2] as int,
         );
+      case _tag_CloseSessionRequest:
+        return CloseSessionRequest(
+          payload[0] as int,
+          sessionId: payload[1] as int,
+          mode: CloseMode.values[payload[2] as int],
+        );
       case _tag_SessionDetails:
         return SessionDetails(
           payload[0] as int,
@@ -196,6 +304,69 @@ final class _ProtocolMessageDecoder
           isDriftTransactionParent: payload[3] as bool,
           isTransaction: payload[4] as bool,
           isDriftSessionWithInternalLocks: payload[5] as bool,
+        );
+      case _tag_ExecuteRequest:
+        return ExecuteRequest(
+          payload[0] as int,
+          sessionId: payload[1] as int,
+          statement: StatementInfo.fromText(
+            payload[2] as String,
+            variables: [
+              for (final entry in payload[3] as List)
+                (const _UnknownSqlType(), _decodeDbValue(entry))
+            ],
+            needsResultSet: payload[4] as bool,
+            isReadOnly: payload[5] as bool,
+          ),
+        );
+      case _tag_ExecuteResponse:
+        return ExecuteResponse(
+          payload[0] as int,
+          result: [
+            for (final result in payload.skip(1).cast<List>())
+              QueryResult(
+                affectedRows: result[0] as int?,
+                lastInsertRowId: result[1] as int?,
+                resultSet: switch (result[2]) {
+                  null => null,
+                  final encoded as List => SqliteResultSet(
+                      resultSet: sqlite.ResultSet(
+                        (encoded[0] as List).cast(),
+                        null,
+                        [
+                          for (final row in encoded.skip(1))
+                            [for (final col in row as List) _decodeDbValue(col)]
+                        ],
+                      ),
+                    )
+                },
+              )
+          ],
+        );
+      case _tag_ExecuteBatched:
+        final sql = (payload[2] as List).cast<String>();
+
+        return ExecuteBatchRequest(
+          payload[0] as int,
+          sessionId: payload[1] as int,
+          batch: StatementBatch(
+            sql: sql,
+            statements: [
+              for (final entry in (payload[3] as List).cast<List>())
+                StatementInBatch(
+                  entry[0] as int,
+                  StatementInfo.fromText(
+                    sql[entry[0] as int],
+                    variables: [
+                      for (final variable in entry[1] as List)
+                        (const _UnknownSqlType(), _decodeDbValue(variable))
+                    ],
+                    needsResultSet: entry[2] as bool,
+                    isReadOnly: entry[3] as bool,
+                  ),
+                )
+            ],
+          ),
         );
       default:
         throw ArgumentError.value(tag, 'tag', 'Unknown message type');
@@ -214,4 +385,31 @@ final class _StatelessConverterSink<S, T> implements Sink<S> {
 
   @override
   void close() => _inner.close();
+}
+
+/// We can't transport [SqlType] instances across the serialized protocol, so we
+/// apply type conversions before sending and use this [_UnknownSqlType] with
+/// the transformed value on the other end.
+final class _UnknownSqlType implements SqlType {
+  const _UnknownSqlType();
+
+  @override
+  Object dartValue(DriftDialect dialect, Object databaseValue) {
+    throw UnimplementedError();
+  }
+
+  @override
+  String sqlLiteral(DriftDialect dialect, Object value) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Object sqlParameter(DriftDialect dialect, Object value) {
+    return value;
+  }
+
+  @override
+  String typeName(DriftDialect dialect) {
+    throw UnimplementedError();
+  }
 }

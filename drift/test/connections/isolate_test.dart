@@ -3,14 +3,16 @@ library;
 
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:drift/connections/isolate.dart';
+import 'package:drift/connections/sqlite3.dart';
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:drift/src/connections/isolate.dart';
-import 'package:drift/src/remote/communication.dart';
+import 'package:drift/src/connections/remote/channel.dart';
 import 'package:mockito/mockito.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
@@ -19,6 +21,8 @@ import '../generated/todos.dart';
 import '../test_utils/database_vm.dart';
 import '../test_utils/test_utils.dart';
 import '../test_utils/independent_isolate.dart' as fake_isolate;
+
+const _dialect = SqliteDialect();
 
 void main() {
   preferLocalSqlite3();
@@ -62,14 +66,11 @@ void main() {
 
     test('shutdownAll closes other connections', () async {
       final isolate = await spawnBackground(false);
-
-      final (channel, serialize) =
-          await connectToServer(isolate.connectPort, false, null);
-      expect(serialize, isFalse);
-      final communication = DriftCommunication(channel, serialize: serialize);
+      final connection = await isolate.connect(dialect: _dialect);
+      final (session, _) = await connection.open();
 
       await isolate.shutdownAll();
-      expect(communication.closed, completes);
+      expect(session.closed, completes);
     });
   }, tags: 'background_isolate');
 
@@ -84,7 +85,7 @@ void main() {
     final writer = await Isolate.spawn(_writeTodoEntryInBackground,
         _BackgroundEntryMessage(driftIsolate, receiveDone.sendPort));
 
-    final db = TodoDb(await driftIsolate.connect());
+    final db = TodoDb(await driftIsolate.connect(dialect: _dialect));
     final expectedEntry = const TypeMatcher<TodoEntry>()
         .having((e) => e.content, 'content', 'Hello from background');
 
@@ -106,7 +107,7 @@ void main() {
 
   test('errors propagate across isolates', () async {
     final isolate = await DriftIsolate.spawn(_backgroundConnection);
-    final db = TodoDb(await isolate.connect());
+    final db = TodoDb(await isolate.connect(dialect: _dialect));
 
     try {
       await db.customStatement('UPDATE non_existing_table SET foo = bar');
@@ -117,7 +118,7 @@ void main() {
 
       // The stack trace of remote exceptions should point towards the actual
       // source making the faulty call.
-      expect(s.toString(), contains('test/isolate_test.dart'));
+      expect(s.toString(), contains('test/connections/isolate_test.dart'));
     }
 
     // Check that isolate is still usable
@@ -153,24 +154,29 @@ void main() {
     expect(done.first, completion(anything));
 
     final drift = await spawned.first as DriftIsolate;
-    final db = TodoDb(await drift.connect(singleClientMode: true));
+    final db =
+        TodoDb(await drift.connect(dialect: _dialect, singleClientMode: true));
+    await db.initialize();
     await db.close();
   }, tags: 'background_isolate');
 
   test('shutting down will close the underlying executor', () async {
-    final mockExecutor = MockExecutor();
-    final isolate =
-        DriftIsolate.inCurrent(() => DatabaseConnection(mockExecutor));
+    final mockExecutor = MockSession();
+    final isolate = DriftIsolate.inCurrent(
+        expectAsync0(() => createConnection(mockExecutor)));
+
+    final db = TodoDb(await isolate.connect(dialect: _dialect));
+    await db.initialize();
     await isolate.shutdownAll();
 
     verify(mockExecutor.close());
   });
 
   group('computeWithDatabase', () {
-    Future<void> testWith(DatabaseConnection connection,
+    Future<void> testWith(DriftDatabaseImplementation connection,
         {DriftIsolate? referenceIsolate}) async {
       final db = TodoDb(connection);
-      final stream = StreamQueue(db.categories.all().watch());
+      final stream = StreamQueue(db.select(db.categories).watch());
       await expectLater(stream, emits(isEmpty));
 
       if (referenceIsolate != null) {
@@ -231,29 +237,37 @@ void main() {
 
     test('with an existing isolate', () async {
       final isolate = await DriftIsolate.spawn(_backgroundConnection);
-      await testWith(await isolate.connect(singleClientMode: true),
+      await testWith(
+          await isolate.connect(dialect: _dialect, singleClientMode: true),
           referenceIsolate: isolate);
     });
 
     test('with existing isolate, delayed', () async {
       final isolate = await DriftIsolate.spawn(_backgroundConnection);
       await testWith(
-          DatabaseConnection.delayed(isolate.connect(singleClientMode: true)),
-          referenceIsolate: isolate);
+        DriftDatabaseImplementation.delayed(
+          dialect: _dialect,
+          () async {
+            return isolate.connect(dialect: _dialect, singleClientMode: true);
+          },
+        ),
+        referenceIsolate: isolate,
+      );
     });
 
     test('without using isolates in setup', () async {
-      await testWith(DatabaseConnection(NativeDatabase.memory()));
+      await testWith(
+          SqliteConnection.synchronous(open: () => sqlite3.openInMemory()));
     });
   });
 
   test('uses correct dialect', () async {
     // Regression test for https://github.com/simolus3/drift/issues/2894
     final isolate = await DriftIsolate.spawn(() {
-      return NativeDatabase.memory()
-          .interceptWith(PretendDialectInterceptor(SqlDialect.postgres));
+      return SqliteConnection.synchronous(open: () => sqlite3.openInMemory());
     });
-    final database = TodoDb(await isolate.connect(singleClientMode: true));
+    final database = TodoDb(
+        await isolate.connect(dialect: _dialect, singleClientMode: true));
     addTearDown(database.close);
 
     await database.transaction(() async {
@@ -279,8 +293,8 @@ void main() {
     final deadEnd = ReceivePort();
 
     await expectLater(
-      DriftIsolate.fromConnectPort(deadEnd.sendPort)
-          .connect(connectTimeout: Duration(milliseconds: 100)),
+      DriftIsolate.fromConnectPort(deadEnd.sendPort).connect(
+          dialect: _dialect, connectTimeout: Duration(milliseconds: 100)),
       throwsA(isA<TimeoutException>()),
     );
 
@@ -290,13 +304,14 @@ void main() {
   test('server can shut down after clients disconnect', () async {
     var didShutdown = Completer<void>();
     final isolate = DriftIsolate.inCurrent(
-      () => NativeDatabase.memory(),
+      () => SqliteConnection.synchronous(open: () => sqlite3.openInMemory()),
       shutdownAfterLastDisconnect: true,
       beforeShutdown: () => didShutdown.complete(),
     );
 
     final databases = [
-      for (var i = 0; i < 10; i++) TodoDb(await isolate.connect()),
+      for (var i = 0; i < 10; i++)
+        TodoDb(await isolate.connect(dialect: _dialect)),
     ];
     for (final database in databases) {
       await database.customStatement('SELECT 1');
@@ -318,12 +333,13 @@ void main() {
 
       final connectPort = await receivePort.first as SendPort;
       final db = TodoDb(await DriftIsolate.fromConnectPort(connectPort)
-          .connect(singleClientMode: true));
+          .connect(dialect: _dialect, singleClientMode: true));
       // Being able to send a _RegularInstance() implies that serialization is
       // disabled.
-      final row = await db.customSelect('SELECT ? AS a',
-          variables: [Variable(_RegularInstance())]).getSingle();
-      expect(row.data, {'a': isA<_RegularInstance>()});
+      final row = await db.customSelect('SELECT ? AS a', variables: [
+        (SqliteDialect.anyType(), DriftAny(_RegularInstance()))
+      ]).getSingle();
+      expect(row.read('a'), isA<_RegularInstance>());
       await db.close();
     });
 
@@ -343,10 +359,11 @@ void main() {
         () async {
           final connectPort = await receivePort.first as SendPort;
           db = TodoDb(await DriftIsolate.fromConnectPort(connectPort)
-              .connect(singleClientMode: true));
+              .connect(dialect: _dialect, singleClientMode: true));
 
-          await db!.customSelect('SELECT ? AS a',
-              variables: [Variable(_RegularInstance())]).getSingle();
+          await db!.customSelect('SELECT ? AS a', variables: [
+            (SqliteDialect.anyType(), DriftAny(_RegularInstance()))
+          ]).getSingle();
         },
         expectAsync2(
           (error, _) {
@@ -393,9 +410,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
   setUp(() async {
     isolate = await spawner();
 
-    database = TodoDb(
-      DatabaseConnection.delayed(isolate.connect()),
-    );
+    database = TodoDb(await isolate.connect(dialect: _dialect));
   });
 
   tearDown(() async {
@@ -577,12 +592,12 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
   test('can see parameters in exception', () async {
     final duplicateCategory =
         CategoriesCompanion.insert(description: 'has unique constraint');
-    await database.categories.insertOne(duplicateCategory);
+    await database.into(database.categories).insert(duplicateCategory);
 
     if (serialize) {
       // We can't serialize exceptions, so expect a string error
       await expectLater(
-        () => database.categories.insertOne(duplicateCategory),
+        () => database.into(database.categories).insert(duplicateCategory),
         throwsA(
           isA<DriftRemoteException>().having(
             (e) => e.remoteCause,
@@ -596,14 +611,14 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
       );
     } else {
       await expectLater(
-        () => database.categories.insertOne(duplicateCategory),
+        () => database.into(database.categories).insert(duplicateCategory),
         throwsA(
           isA<DriftRemoteException>().having(
             (e) => e.remoteCause,
             'remoteCause',
             isA<SqliteException>()
                 .having((e) => e.causingStatement, 'causingStatement',
-                    'INSERT INTO "categories" ("desc") VALUES (?)')
+                    'INSERT INTO "categories" ("desc") VALUES (?1)')
                 .having((e) => e.parametersToStatement, 'parametersToStatement',
                     ['has unique constraint']),
           ),
@@ -614,7 +629,7 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
 
   if (!serialize) {
     test('provides complete stack traces for exceptions', () async {
-      // This functions have a name so that we can assert they show up in stack
+      // This function has a name so that we can assert it shows up in stack
       // traces.
       Future<void> faultyMigration() async {
         await database.customStatement('invalid syntax');
@@ -625,8 +640,8 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
       });
 
       try {
-        // The database is opened at the first statement, which will also run the
-        // faulty migration logic.
+        // The database is opened at the first statement, which will also run
+        // the faulty migration logic.
         Future<void> useDatabase() async {
           await database.customSelect('SELECT 1').get();
         }
@@ -636,39 +651,34 @@ void _runTests(FutureOr<DriftIsolate> Function() spawner, bool terminateIsolate,
       } on DriftRemoteException catch (e, s) {
         final trace = Chain.forTrace(s);
 
+        expect(trace.traces, hasLength(2));
         // Innermost trace: The query failing on the remote isolate
-        expect(trace.traces, hasLength(4));
         expect(
             trace.traces[0].frames[0].toString(), contains('package:sqlite3/'));
 
-        // Then the next one: The migration being called in this isolate
+        // Outer trace: using the database and opening the migration
         expect(
-            trace.traces[1].frames,
-            contains(isA<Frame>().having(
-                (e) => e.member, 'member', contains('faultyMigration'))));
-
-        // This in turn is called by the server when trying to open the database.
-        expect(
-            trace.traces[2].frames,
-            contains(isA<Frame>().having((e) => e.member, 'member',
-                contains('_ServerDbUser.beforeOpen'))));
-
-        // Which, finally, happened because we were opening the database here.
-        expect(
-            trace.traces[3].frames,
-            contains(isA<Frame>()
-                .having((e) => e.member, 'member', contains('useDatabase'))));
+          trace.traces[1].frames,
+          containsAllInOrder([
+            isA<Frame>()
+                .having((e) => e.member, 'member', contains('faultyMigration')),
+            isA<Frame>()
+                .having((e) => e.member, 'member', contains('useDatabase')),
+          ]),
+        );
       }
+
+      await database.close();
     });
   }
 }
 
-DatabaseConnection _backgroundConnection() {
-  return DatabaseConnection(NativeDatabase.memory());
+DriftDatabaseImplementation _backgroundConnection() {
+  return SqliteConnection.synchronous(open: () => sqlite3.openInMemory());
 }
 
 Future<void> _writeTodoEntryInBackground(_BackgroundEntryMessage msg) async {
-  final connection = await msg.isolate.connect();
+  final connection = await msg.isolate.connect(dialect: _dialect);
   final database = TodoDb(connection);
 
   await database
@@ -686,7 +696,7 @@ class _BackgroundEntryMessage {
 
 void _createBackground(SendPort send) {
   final drift = DriftIsolate.inCurrent(
-      () => DatabaseConnection(NativeDatabase.memory()),
+      () => SqliteConnection.synchronous(open: () => sqlite3.openInMemory()),
       killIsolateWhenDone: true);
   send.send(drift);
 }

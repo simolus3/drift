@@ -17,8 +17,6 @@ import '../src/runtime/database/connection_user.dart';
 import '../src/runtime/database/db_base.dart';
 import 'remote.dart';
 
-export 'remote.dart' show DriftRemoteException;
-
 /// Defines utilities to run drift in a background isolate. In the operation
 /// mode created by these utilities, there's a single background isolate doing
 /// all the work. Any other isolate can use the [connect] method to obtain an
@@ -330,6 +328,7 @@ extension ComputeWithDriftIsolate<DB extends DatabaseConnectionUser> on DB {
     required DB Function(DriftDatabaseImplementation) connect,
   }) async {
     final connection = await serializableConnection();
+    final dialect = this.dialect;
 
     return await Isolate.run(() async {
       final database = connect(await connection.connect(dialect: dialect));

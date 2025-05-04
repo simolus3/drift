@@ -1,25 +1,23 @@
 import 'dart:convert';
 
-import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import '../../generated/converter.dart';
 import '../../generated/todos.dart';
-import '../../test_utils/test_utils.dart';
 
 enum _MyEnum { one, two, three }
 
 void main() {
-  test('TypeConverter.json', () {
+  test('TypeConverter.legacyJson', () {
     // ignore: deprecated_member_use_from_same_package
-    final converter = TypeConverter.json(
+    final converter = TypeConverter.legacyJson(
       fromJson: (json) => _MyEnum.values.byName(json as String),
       toJson: (member) => member.name,
     );
 
     // ignore: deprecated_member_use_from_same_package
-    final customCodec = TypeConverter.json(
+    final customCodec = TypeConverter.legacyJson(
       fromJson: (json) => _MyEnum.values.byName(json as String),
       json: JsonCodec(toEncodable: (object) => 'custom'),
     );
@@ -42,50 +40,23 @@ void main() {
   });
 
   test('TypeConverter.json2', () {
-    final converter = TypeConverter.json2(
+    final converter = TypeConverter.json(
       fromJson: (json) => _MyEnum.values.byName(json as String),
       toJson: (member) => member.name,
-    );
-
-    final customCodec = TypeConverter.json2(
-      fromJson: (json) => _MyEnum.values.byName(json as String),
-      json: JsonCodec(toEncodable: (object) => 'custom'),
     );
 
     const values = {
-      _MyEnum.one: ('"one"', 'one'),
-      _MyEnum.two: ('"two"', 'two'),
-      _MyEnum.three: ('"three"', 'three'),
+      _MyEnum.one: 'one',
+      _MyEnum.two: 'two',
+      _MyEnum.three: 'three',
     };
 
-    values.forEach((key, v) {
-      final (value, jsonValue) = v;
-
-      expect(converter.toSql(key), value);
-      expect(converter.fromSql(value), key);
-      expect(converter.toJson(key), jsonValue);
-      expect(converter.fromJson(jsonValue), key);
-
-      expect(customCodec.toSql(key), '"custom"');
-      expect(customCodec.fromSql(value), key);
-      expect(customCodec.toJson(key), key);
-      expect(customCodec.fromJson(jsonValue), key);
+    values.forEach((key, value) {
+      expect(converter.toSql(key), DatabaseJson(value));
+      expect(converter.fromSql(DatabaseJson(value)), key);
+      expect(converter.toJson(key), value);
+      expect(converter.fromJson(value), key);
     });
-  });
-
-  test('TypeConverter.jsonb', () async {
-    final converter = TypeConverter.jsonb(
-      fromJson: (json) => _MyEnum.values.byName(json as String),
-      toJson: (member) => member.name,
-    );
-    final db = TodoDb(testInMemoryDatabase());
-
-    for (final value in _MyEnum.values) {
-      final converted = Variable.withBlob(converter.toSql(value)).json();
-      final query = await db.selectExpressions([converted]).getSingle();
-
-      expect(query.read(converted), '"${value.name}"');
-    }
   });
 
   test('TypeConverter.extensionType', () {

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:convert' as convert;
 
-import 'package:sqlite3/common.dart' as sqlite3 show jsonb;
+import '../query_builder.dart';
 
 /// Maps a custom dart object of type [D] into a primitive type [S] understood
 /// by the sqlite backend.
@@ -85,10 +85,10 @@ abstract class TypeConverter<D, S> {
   /// Given the different formats, migrating from [TypeConverter.json] to
   /// [json2] can be a breaking change.
   @Deprecated(
-    'Use TypeConverter.json2 instead. This converter causes a double JSON '
+    'Use TypeConverter.json instead. This converter causes a double JSON '
     'conversion when serializing drift row classes to JSON.',
   )
-  static JsonTypeConverter<D, String> json<D>({
+  static JsonTypeConverter<D, String> legacyJson<D>({
     required D Function(dynamic json) fromJson,
     dynamic Function(D column)? toJson,
     convert.JsonCodec json = convert.json,
@@ -107,48 +107,13 @@ abstract class TypeConverter<D, S> {
   /// parsed JSON structure to the Dart type [D]. Optionally, you can also
   /// be explicit about the other direction via [toJson]. By default, Dart's
   /// JSON encoder simply calls `toJson()` on the object.
-  ///
-  /// Finally, the [json] codec itself can be customized as well if needed.
-  ///
-  /// For sqlite3 databases, [jsonb] can be used as an alternative encoding for
-  /// binary columns.
-  static JsonTypeConverter2<D, String, Object?> json2<D>({
-    required D Function(Object? json) fromJson,
-    Object? Function(D column)? toJson,
-    convert.JsonCodec json = convert.json,
-  }) {
-    return _DefaultJsonConverter<D, String, Object?>(
-      mapFromJson: fromJson,
-      mapToJson: toJson ?? (value) => value,
-      jsonForDb: json,
-    );
-  }
-
-  /// Creates a type converter for storing complex Dart objects in a binary
-  /// column by serializing them into the [JSONB representation] used by SQLite.
-  ///
-  /// This requires supplying [fromJson], a function responsible for mapping the
-  /// parsed JSON structure to the Dart type [D]. Optionally, you can also
-  /// be explicit about the other direction via [toJson]. By default, the JSONB
-  /// encoder simply calls `toJson()` on the object.
-  ///
-  /// Note that this representation is primarily useful when [JSON operators]
-  /// are commonly used on the column to extract individual fields. The main
-  /// advantage of the JSONB representation is that those operators can be
-  /// implemented more efficiently. For the common case where entire JSON values
-  /// are inserted and selected, prefer using a textual [json2] converter for
-  /// better compatibility with standard formats.
-  ///
-  /// [JSONB representation]: https://sqlite.org/jsonb.html
-  /// [JSON operators]: https://sqlite.org/json1.html
-  static JsonTypeConverter2<D, Uint8List, Object?> jsonb<D>({
+  static JsonTypeConverter2<D, DatabaseJson, Object?> json<D>({
     required D Function(Object? json) fromJson,
     Object? Function(D column)? toJson,
   }) {
-    return _DefaultJsonConverter<D, Uint8List, Object?>(
+    return _DefaultJsonConverter<D, Object?>(
       mapFromJson: fromJson,
       mapToJson: toJson ?? (value) => value,
-      jsonForDb: sqlite3.jsonb,
     );
   }
 
@@ -362,25 +327,24 @@ class _LegacyJsonConverter<D> extends TypeConverter<D, String>
   }
 }
 
-class _DefaultJsonConverter<D, S, J> extends TypeConverter<D, S>
-    with JsonTypeConverter2<D, S, J> {
+class _DefaultJsonConverter<D, J> extends TypeConverter<D, DatabaseJson>
+    with JsonTypeConverter2<D, DatabaseJson, J> {
   final D Function(J json) mapFromJson;
   final J Function(D column) mapToJson;
-  final convert.Codec<Object?, S> jsonForDb;
 
-  _DefaultJsonConverter(
-      {required this.mapFromJson,
-      required this.mapToJson,
-      required this.jsonForDb});
+  _DefaultJsonConverter({
+    required this.mapFromJson,
+    required this.mapToJson,
+  });
 
   @override
-  D fromSql(S fromDb) {
-    return mapFromJson(jsonForDb.decode(fromDb) as J);
+  D fromSql(DatabaseJson fromDb) {
+    return mapFromJson(fromDb.dartValue as J);
   }
 
   @override
-  S toSql(D value) {
-    return jsonForDb.encode(mapToJson(value));
+  DatabaseJson toSql(D value) {
+    return DatabaseJson(mapToJson(value));
   }
 
   @override

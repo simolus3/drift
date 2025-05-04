@@ -20,6 +20,8 @@ final class DriftChannel {
   final Map<int, _PendingRequest> _pendingRequests = {};
   final StreamController<Request> _incomingRequests =
       StreamController(sync: true);
+  final StreamController<ProtocolMessage> _notifications =
+      StreamController(sync: true);
 
   bool _startedClosingLocally = false;
   final Completer<void> _closeCompleter = Completer();
@@ -53,6 +55,9 @@ final class DriftChannel {
   /// A stream of requests coming from the other peer.
   Stream<Request> get incomingRequests => _incomingRequests.stream;
 
+  /// A stream of notifications being sent by the other peer.
+  Stream<ProtocolMessage> get notifications => _notifications.stream;
+
   /// Returns a new request id to be used for the next request.
   int newRequestId() => _currentRequestId++;
 
@@ -85,6 +90,8 @@ final class DriftChannel {
       final request = _pendingRequests.remove(msg.requestId);
 
       request?.completeWithError(const CancellationException());
+    } else if (msg != null) {
+      _notifications.add(msg);
     }
   }
 
