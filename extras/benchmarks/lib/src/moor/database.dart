@@ -15,7 +15,18 @@ class KeyValues extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [KeyValues])
+class Group extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+
+class User extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get groupId => integer().references(Group, #id)();
+}
+
+@DriftDatabase(tables: [KeyValues, Group, User])
 class Database extends _$Database {
   Database({bool cachePreparedStatements = true})
       : super(_obtainExecutor(
@@ -24,6 +35,14 @@ class Database extends _$Database {
 
   @override
   int get schemaVersion => 1;
+  Future<void> wipeAll() async {
+    await delete(user).go();
+
+    await delete(group).go();
+
+    await delete(keyValues).go();
+    ;
+  }
 }
 
 const _uuid = Uuid();
@@ -35,7 +54,7 @@ QueryExecutor _obtainExecutor({
       File(p.join(Directory.systemTemp.path, 'drift_benchmarks', _uuid.v4()));
   file.parent.createSync();
 
-  return NativeDatabase(
+  return NativeDatabase.createInBackground(
     file,
     cachePreparedStatements: cachePreparedStatements,
   );

@@ -7,7 +7,7 @@ import 'database.dart';
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 // ignore_for_file: invalid_use_of_protected_member
 
-const int _numQueries = 100000;
+const int _numQueries = 10000;
 
 const Uuid uuid = Uuid();
 
@@ -44,6 +44,12 @@ class CachedPreparedStatements extends AsyncBenchmarkBase {
   Future<void> run() async {
     await _runQueries(_db);
   }
+
+  @override
+  Future<void> teardown() async {
+    await _db.wipeAll();
+    await _db.close();
+  }
 }
 
 class NonCachedPreparedStatements extends AsyncBenchmarkBase {
@@ -61,5 +67,11 @@ class NonCachedPreparedStatements extends AsyncBenchmarkBase {
   @override
   Future<void> run() async {
     await _runQueries(_db);
+  }
+
+  @override
+  Future<void> teardown() async {
+    await _db.wipeAll();
+    await _db.close();
   }
 }

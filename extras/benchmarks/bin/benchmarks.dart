@@ -3,9 +3,12 @@ import 'dart:io';
 
 import 'package:benchmarks/benchmarks.dart';
 
-final File output = File('benchmark_results.json');
+File output = File('benchmark_results.json');
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
+  if (args.isNotEmpty && args.first.endsWith(".json")) {
+    output = File(args.first);
+  }
   final tracker = TrackingEmitter();
   ComparingEmitter comparer;
   if (await output.exists()) {

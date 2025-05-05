@@ -20,6 +20,11 @@ List<Reportable> allBenchmarks(ScoreEmitter emitter) {
     // high-level moor apis
     KeyValueInsertBatch(emitter),
     KeyValueInsertSerial(emitter),
+    KeyValueReads(emitter),
+    KeyValueReadStreams(emitter),
+    KeyValueReadsBatch(emitter),
+    KeyValueUpdate(emitter),
+
     // sql parser
     ParseDriftFile(emitter),
     TokenizerBenchmark(emitter),

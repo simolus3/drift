@@ -2,25 +2,17 @@ name: benchmarks
 description: Runs simple and complex benchmarks to measure performance of moor and moor_ffi
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: "^3.0.0"
 
 dependencies:
-  drift: ^1.0.0
-  sqlite3: '>=1.0.0 <3.0.0'
+  drift: ^2.0.0
+  sqlite3: ">=1.0.0 <3.0.0"
   benchmark_harness: ^2.0.0
   intl: ^0.17.0
   uuid: ^4.0.0
   path: ^1.8.0
 
 dev_dependencies:
-  drift_dev: ^1.0.0
+  drift_dev: ^2.0.0
   build_runner:
   test:
-
-dependency_overrides:
-  drift:
-    path: ../../drift
-  drift_dev:
-    path: ../../drift_dev
-  sqlparser:
-    path: ../../sqlparser
