@@ -8,12 +8,22 @@ import '../connection.dart';
 import '../result_set.dart';
 import 'native_functions.dart';
 
+/// A [DriftSession] implemented by synchronously running queries against a
+/// [sqlite.CommonDatabase].
+///
+/// This is not a recommended implementation to use directly. Instead, use
+/// packages like `drift_flutter` or utilities provided in this package to setup
+/// a background pool of isolate to run queries.
 final class SqliteConnection implements DriftSession, DriftRootSession {
+  /// The database used for the connection.
   final sqlite.CommonDatabase database;
+
+  /// The [SqliteDialect] controling how variables are mapped to the database.
   final SqliteDialect dialect;
 
   final Completer<void> _closedCompleter = Completer();
 
+  /// Wrap a [database] as a [DriftSession] using the given [dialect].
   SqliteConnection(this.dialect, this.database) {
     database.useNativeFunctions();
   }
@@ -86,6 +96,10 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
     database.userVersion = version;
   }
 
+  /// Returns a [DriftDatabaseImplementation] backed by a SQLite
+  /// [sqlite.CommonDatabase] obtained by calling [open].
+  ///
+  /// Closing this [SqliteConnection] will close the database.
   static DriftDatabaseImplementation synchronous(
       {required sqlite.CommonDatabase Function() open}) {
     final dialect = SqliteDialect();
