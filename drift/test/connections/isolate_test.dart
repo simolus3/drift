@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:async/async.dart';
 import 'package:drift/connections/isolate.dart';
 import 'package:drift/connections/sqlite3.dart';
+import 'package:drift/dialect/postgres.dart';
 import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/remote/channel.dart';
@@ -266,8 +267,12 @@ void main() {
     final isolate = await DriftIsolate.spawn(() {
       return SqliteConnection.synchronous(open: () => sqlite3.openInMemory());
     });
-    final database = TodoDb(
-        await isolate.connect(dialect: _dialect, singleClientMode: true));
+    final database = TodoDb(await isolate.connect(
+        dialect: const PostgresDialect(), singleClientMode: true))
+      ..migration = MigrationStrategy(onCreate: (m) async {
+        // Don't create anything, we can't handle the CREATE TABLE statements
+        // for postgres.
+      });
     addTearDown(database.close);
 
     await database.transaction(() async {
@@ -281,7 +286,7 @@ void main() {
             isA<SqliteException>().having(
               (e) => e.causingStatement,
               'causingStatement',
-              contains(r'VALUES ($1, $2)'),
+              contains(r'VALUES ($1,$2)'),
             ),
           ),
         ),
@@ -339,7 +344,8 @@ void main() {
       final row = await db.customSelect('SELECT ? AS a', variables: [
         (SqliteDialect.anyType(), DriftAny(_RegularInstance()))
       ]).getSingle();
-      expect(row.read('a'), isA<_RegularInstance>());
+      expect(row.readWithType(SqliteDialect.anyType(), 'a'),
+          isA<_RegularInstance>());
       await db.close();
     });
 

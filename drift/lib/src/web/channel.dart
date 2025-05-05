@@ -3,13 +3,12 @@ import 'dart:js_interop';
 import 'package:stream_channel/stream_channel.dart';
 
 import 'package:web/web.dart' as web;
-import 'package:drift/remote.dart';
 
 import '../remote/protocol.dart';
 import '../remote/web_protocol.dart';
 import 'wasm_setup/protocol.dart';
 
-/// Extension to transform a raw [MessagePort] from web workers into a Dart
+/// Extension to transform a raw [web.MessagePort] from web workers into a Dart
 /// [StreamChannel].
 extension WebPortToChannel on web.MessagePort {
   static const _disconnectMessage = '_disconnect';

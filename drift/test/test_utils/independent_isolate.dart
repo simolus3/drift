@@ -17,10 +17,19 @@ void spawnIsolate(SendPort sendConnectPortTo) async {
     () {
       final executor = MockSession();
       when(executor.execute(any)).thenAnswer((i) async {
-        final args = i.positionalArguments[1];
+        final args = i.positionalArguments[0] as StatementInfo;
         return QueryResult(
           resultSet: SqliteResultSet(
-              resultSet: sqlite.ResultSet(['a'], null, [args as List])),
+            resultSet: sqlite.ResultSet(
+              ['a'],
+              null,
+              [
+                [
+                  for (final arg in args.variables) arg.rawValue,
+                ]
+              ],
+            ),
+          ),
         );
       });
 

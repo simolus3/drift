@@ -201,7 +201,7 @@ final class JsonType extends _SqliteType<DatabaseJson> {
     if (binary) {
       return blobType.sqlLiteral(dialect, jsonb.encode(value.dartValue));
     } else {
-      return const StringType()
+      return const CommonTextType()
           .sqlLiteral(dialect, json.encode(value.dartValue));
     }
   }
@@ -221,35 +221,14 @@ final class JsonType extends _SqliteType<DatabaseJson> {
       return DatabaseJson(
           jsonb.decode(blobType.dartValue(dialect, databaseValue)));
     } else {
-      return DatabaseJson(
-          json.decode(const StringType().dartValue(dialect, databaseValue)));
+      return DatabaseJson(json
+          .decode(const CommonTextType().dartValue(dialect, databaseValue)));
     }
   }
 
   @override
   String typeName(DriftDialect dialect) {
     return _useBinary(dialect) ? 'BLOB' : 'TEXT';
-  }
-}
-
-final class StringType extends _SqliteType<String> {
-  const StringType() : super('TEXT');
-
-  @override
-  String dartValue(DriftDialect dialect, Object databaseValue) {
-    return databaseValue.toString();
-  }
-
-  @override
-  String sqlLiteral(DriftDialect dialect, String value) {
-    // From the sqlite docs: (https://www.sqlite.org/lang_expr.html)
-    // A string constant is formed by enclosing the string in single quotes
-    // (').
-    // A single quote within the string can be encoded by putting two single
-    // quotes in a row - as in Pascal. C-style escapes using the backslash
-    // character are not supported because they are not standard SQL.
-    final escapedChars = value.replaceAll('\'', '\'\'');
-    return "'$escapedChars'";
   }
 }
 

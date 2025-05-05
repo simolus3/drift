@@ -1,7 +1,8 @@
 import 'dart:js_interop';
 
+import 'package:drift/connections/sqlite3.dart';
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/wasm.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:test/scaffolding.dart';
 
@@ -32,9 +33,16 @@ Future<WasmSqlite3> get sqlite3 {
   });
 }
 
-DatabaseConnection testInMemoryDatabase([DriftDialect? dialect]) {
-  return DatabaseConnection(LazyDatabase(() async {
-    final sqlite = await sqlite3;
-    return WasmDatabase.inMemory(sqlite);
-  }));
+DriftDatabaseImplementation testInMemoryDatabase([DriftDialect? dialect]) {
+  final resolvedDialect = dialect ?? const SqliteDialect();
+
+  return DriftDatabaseImplementation(
+    dialect: resolvedDialect,
+    openConnection: () async {
+      final sqlite = await sqlite3;
+      sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
+
+      return SqliteConnection(sqlite.openInMemory());
+    },
+  );
 }

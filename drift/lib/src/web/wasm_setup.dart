@@ -13,17 +13,17 @@ library;
 import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
+import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/remote.dart';
 import 'package:drift/wasm.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart' as web;
 
 import 'broadcast_stream_queries.dart';
-import 'channel_new.dart';
+import 'channel.dart';
 import 'wasm_setup/shared.dart';
 import 'wasm_setup/protocol.dart';
 

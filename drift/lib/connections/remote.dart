@@ -165,7 +165,6 @@ DriftDatabaseImplementation connectToRemote({
     DriftChannel(channel.messageChannel(
       serialize: serialize,
       debugLog: debugLog,
-      dialect: dialect,
     )),
     singleClientMode,
     tag,

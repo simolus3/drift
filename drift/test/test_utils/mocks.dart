@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/result_set.dart';
 import 'package:mockito/mockito.dart';
@@ -84,8 +83,12 @@ final class MockSession extends Mock
       return transactions;
     });
 
-    when(commit()).thenAnswer((_) => Future.value(null));
-    when(rollback()).thenAnswer((_) => Future.value(null));
+    when(commit()).thenAnswer((_) async {
+      closedCompleter.complete();
+    });
+    when(rollback()).thenAnswer((_) async {
+      closedCompleter.complete();
+    });
   }
 
   @override
@@ -154,8 +157,7 @@ final class MockSession extends Mock
       execute(
         argThat(
           isA<StatementInfo>().having((e) => e.sql, 'sql', sql).having(
-              (e) => e.variables.map((v) => v.$1.sqlParameterOrNull(
-                  e.generated?.dialect ?? const SqliteDialect(), v.$2)),
+              (e) => e.variables.map((v) => v.rawValue),
               'variables',
               variables),
         ),

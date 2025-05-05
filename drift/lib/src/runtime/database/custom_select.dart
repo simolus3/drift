@@ -57,7 +57,7 @@ final class CustomSelectStatement<T> with Selectable<T> {
   StatementInfo get _statement {
     return StatementInfo.fromText(
       query,
-      variables: variables,
+      variables: variables.toSql(_db.dialect),
       needsResultSet: true,
     );
   }

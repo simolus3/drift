@@ -6,7 +6,6 @@ import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/src/dialect/sqlite/dialect.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:sqlite3/common.dart' as sqlite;
 
@@ -20,10 +19,9 @@ extension ToProtocolChannel on StreamChannel<Object?> {
   /// [ProtocolMessage]s are sent and received.
   StreamChannel<ProtocolMessage> messageChannel({
     required bool serialize,
-    DriftDialect dialect = const SqliteDialect(),
     bool debugLog = false,
   }) {
-    final serializer = ProtocolMessageSerializer(dialect);
+    final serializer = ProtocolMessageSerializer();
 
     final messages = switch (serialize) {
       false => cast<ProtocolMessage>(),
@@ -60,14 +58,14 @@ extension ToProtocolChannel on StreamChannel<Object?> {
 /// serialized through ports across different isolate groups.
 class ProtocolMessageSerializer extends Codec<ProtocolMessage, Object?> {
   @override
-  Converter<Object?, ProtocolMessage> decoder;
+  final Converter<Object?, ProtocolMessage> decoder;
   @override
-  Converter<ProtocolMessage, Object> encoder;
+  final Converter<ProtocolMessage, Object> encoder;
 
   /// @nodoc
-  ProtocolMessageSerializer(DriftDialect dialect)
-      : decoder = _ProtocolMessageDecoder(),
-        encoder = _ProtocolMessageEncoder(dialect);
+  const ProtocolMessageSerializer()
+      : decoder = const _ProtocolMessageDecoder(),
+        encoder = const _ProtocolMessageEncoder();
 }
 
 const _tag_SimpleResponse = 0;
@@ -102,9 +100,7 @@ abstract base class _StatelessConverter<S, T> extends Converter<S, T> {
 
 final class _ProtocolMessageEncoder
     extends _StatelessConverter<ProtocolMessage, Object> {
-  final DriftDialect dialect;
-
-  const _ProtocolMessageEncoder(this.dialect);
+  const _ProtocolMessageEncoder();
 
   @override
   Object convert(ProtocolMessage input) {
@@ -135,8 +131,8 @@ final class _ProtocolMessageEncoder
           input.sessionId,
           input.statement.sql,
           [
-            for (final (type, value) in input.statement.variables)
-              _encodeDbValue(type.sqlParameterOrNull(dialect, value))
+            for (final variable in input.statement.variables)
+              _encodeDbValue(variable.rawValue)
           ],
           input.statement.needsResultSet,
           input.statement.isReadOnly,
@@ -151,8 +147,8 @@ final class _ProtocolMessageEncoder
               [
                 stmt.sqlIndex,
                 [
-                  for (final (type, value) in stmt.info.variables)
-                    _encodeDbValue(type.sqlParameterOrNull(dialect, value))
+                  for (final variable in stmt.info.variables)
+                    _encodeDbValue(variable.rawValue)
                 ],
                 stmt.info.needsResultSet,
                 stmt.info.isReadOnly,
@@ -268,6 +264,17 @@ final class _ProtocolMessageDecoder
         return CancelledResponse(payload[0] as int);
       case _tag_NotifySessionClosed:
         return NotifySessionClosed(sessionId: payload[0] as int);
+      case _tag_NotifyTablesUpdated:
+        return NotifyTablesUpdated([
+          for (final update in (payload[0] as List).cast<List>())
+            TableUpdate(
+              update[0] as String,
+              kind: switch (update[1]) {
+                null => null,
+                final kind as int => UpdateKind.values[kind],
+              },
+            ),
+        ]);
       case _tag_ClientInitialize:
         return ClientInitialize(payload[0] as int);
       case _tag_ShutdownServerRequest:
@@ -313,7 +320,7 @@ final class _ProtocolMessageDecoder
             payload[2] as String,
             variables: [
               for (final entry in payload[3] as List)
-                (const _UnknownSqlType(), _decodeDbValue(entry))
+                MappedValue.raw(const _UnknownSqlType(), _decodeDbValue(entry))
             ],
             needsResultSet: payload[4] as bool,
             isReadOnly: payload[5] as bool,
@@ -359,7 +366,8 @@ final class _ProtocolMessageDecoder
                     sql[entry[0] as int],
                     variables: [
                       for (final variable in entry[1] as List)
-                        (const _UnknownSqlType(), _decodeDbValue(variable))
+                        MappedValue.raw(
+                            const _UnknownSqlType(), _decodeDbValue(variable))
                     ],
                     needsResultSet: entry[2] as bool,
                     isReadOnly: entry[3] as bool,

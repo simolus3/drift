@@ -67,7 +67,7 @@ final class SqliteDialect extends DriftDialect {
   SqlType<DatabaseJson> get jsonType => const JsonType();
 
   @override
-  SqlType<String> get textType => const StringType();
+  SqlType<String> get textType => const CommonTextType();
 
   /// Returns an implementation of [SqlType] that reads and writes [DriftAny]
   /// values without any further mapping.

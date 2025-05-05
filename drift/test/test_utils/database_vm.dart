@@ -57,11 +57,10 @@ Version get sqlite3Version {
 DriftDatabaseImplementation testInMemoryDatabase([DriftDialect? dialect]) {
   preferLocalSqlite3();
 
-  final resolvedDialect = (dialect ?? const SqliteDialect()) as SqliteDialect;
+  final resolvedDialect = dialect ?? const SqliteDialect();
 
   return DriftDatabaseImplementation(
     dialect: resolvedDialect,
-    openConnection: () async =>
-        SqliteConnection(resolvedDialect, sqlite3.openInMemory()),
+    openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
   );
 }

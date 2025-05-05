@@ -134,29 +134,26 @@ final class StatementInfo {
 
   final String sql;
   final bool needsResultSet;
-  final List<TypedNullableValue> variables;
+  final List<MappedValue> variables;
   final Set<TableUpdate> expectedWrites;
   final bool isReadOnly;
 
   StatementInfo(CompiledStatement this.generated)
       : sql = generated.buffer.toString(),
         needsResultSet = generated.resultSetStructure != null,
-        variables = generated.variables,
-        expectedWrites = generated.possibleUpdates,
-        isReadOnly = generated.isReadOnly;
+        variables = generated.variables
+            .map((e) => MappedValue.map(e.$1, generated.dialect, e.$2))
+            .toList(),
+        isReadOnly = generated.isReadOnly,
+        expectedWrites = generated.possibleUpdates;
 
   StatementInfo.fromText(
     this.sql, {
     this.variables = const [],
     this.needsResultSet = false,
-    this.expectedWrites = const {},
     this.isReadOnly = false,
+    this.expectedWrites = const {},
   }) : generated = null;
-
-  Iterable<Object?> sqlVariables(DriftDialect dialect) =>
-      variables.map((value) {
-        return value.$1.sqlParameterOrNull(dialect, value.$2);
-      });
 
   @override
   String toString() {
@@ -164,6 +161,48 @@ final class StatementInfo {
   }
 }
 
+/// A value used when binding SQL parameters to statements.
+extension type const MappedValue._((SqlType, Object?) _value) {
+  /// Creates a [MappedValue] from the given [type] and [rawValue] components.
+  factory MappedValue.raw(SqlType type, Object? rawValue) {
+    return MappedValue._((type, rawValue));
+  }
+
+  /// Applies [SqlType.sqlParameter] on the given [type] and [dartValue] using
+  /// the provided [dialect].
+  static MappedValue map<T extends Object>(
+      SqlType<T> type, DriftDialect dialect, T? dartValue) {
+    return MappedValue.raw(type, type.sqlParameterOrNull(dialect, dartValue));
+  }
+
+  /// The type of the variable.
+  ///
+  /// This value is preserved because some implementations need to know the
+  /// original when binding values. This is particularly true for Postgres,
+  /// where `null` values need to have an associated type. Being given the
+  /// [rawValue] alone would not be enough.
+  SqlType get type => _value.$1;
+
+  /// The value obtained by calling [SqlType.sqlParameter] on the original value
+  /// and the associated [type].
+  Object? get rawValue => _value.$2;
+}
+
+extension ApplyMapping on Iterable<TypedNullableValue> {
+  /// Maps all value in this iterable to sql using the given [dialect].
+  List<MappedValue> toSql(DriftDialect dialect) {
+    return [
+      for (final (type, dartValue) in this)
+        MappedValue.map(type, dialect, dartValue)
+    ];
+  }
+}
+
+/// An interface describing options to use when beginning a transaction.
+///
+/// This is not currently used, but introduced as a parameter on
+/// [DriftTransactionParent.begin] to preserve forwards-compatibility if options
+/// are introduced in the future.
 final class TransactionOptions {
   // We might eventually use this to implement read-only transactions, which can
   // be used to optimize connection pools.

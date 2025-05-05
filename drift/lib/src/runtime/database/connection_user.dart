@@ -489,7 +489,11 @@ abstract base class DatabaseConnectionUser {
       [List<TypedNullableValue>? args]) async {
     final session = await currentSession();
     await session.execute(
-        StatementInfo.fromText(statement, variables: args ?? const []));
+      StatementInfo.fromText(
+        statement,
+        variables: args?.toSql(dialect) ?? const [],
+      ),
+    );
   }
 
   /// Executes a custom delete or update statement and returns the amount of
@@ -556,7 +560,7 @@ abstract base class DatabaseConnectionUser {
     final session = await currentSession();
     final result = await session.execute(
       StatementInfo.fromText(query,
-          variables: variables, needsResultSet: needsResultSet),
+          variables: variables.toSql(dialect), needsResultSet: needsResultSet),
     );
 
     if (updates != null) {

@@ -197,7 +197,8 @@ final class Batch {
     Iterable<TableUpdate> updates = const {},
   ]) {
     return _addCustomStatement(StatementInfo.fromText(sql,
-        variables: args, expectedWrites: updates.toSet()));
+        variables: args.toSql(_database.dialect),
+        expectedWrites: updates.toSet()));
   }
 
   Future<BatchResult> _run() async {

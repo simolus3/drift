@@ -75,13 +75,14 @@ void main() {
   );
 
   test('Uint8Lists are mapped from and to Uint8Lists', () async {
-    final protocol = ProtocolMessageSerializer(SqliteDialect());
+    final protocol = ProtocolMessageSerializer();
 
     final request = ExecuteRequest(
       1,
       sessionId: 2,
       statement: StatementInfo.fromText('SELECT ?', variables: [
-        (BuiltinDriftType.byteArray, Uint8List.fromList([1, 2, 3]))
+        MappedValue.raw(
+            BuiltinDriftType.byteArray, Uint8List.fromList([1, 2, 3]))
       ]),
     );
 
@@ -95,7 +96,7 @@ void main() {
             (e) => e.statement,
             'statement',
             isA<StatementInfo>().having((e) => e.sql, 'sql', 'SELECT ?').having(
-                (e) => e.variables.map((e) => e.$2),
+                (e) => e.variables.map((e) => e.rawValue),
                 'variables',
                 [isA<Uint8List>()]),
           ),
@@ -103,13 +104,13 @@ void main() {
   });
 
   test('BigInts are serialized', () {
-    final protocol = ProtocolMessageSerializer(SqliteDialect());
+    final protocol = ProtocolMessageSerializer();
 
     final request = ExecuteRequest(
       1,
       sessionId: 2,
       statement: StatementInfo.fromText('SELECT ?',
-          variables: [(BuiltinDriftType.int64, BigInt.one)]),
+          variables: [MappedValue.raw(BuiltinDriftType.int64, BigInt.one)]),
     );
 
     final mapped = _checkSimpleRoundtrip(protocol, request);
@@ -119,7 +120,9 @@ void main() {
         (e) => e.statement,
         'statement',
         isA<StatementInfo>().having((e) => e.sql, 'sql', 'SELECT ?').having(
-            (e) => e.variables.map((e) => e.$2), 'variables', [isA<BigInt>()]),
+            (e) => e.variables.map((e) => e.rawValue),
+            'variables',
+            [isA<BigInt>()]),
       ),
     );
 
@@ -160,21 +163,27 @@ void main() {
               0,
               StatementInfo.fromText(
                 'SELECT ?',
-                variables: [(BuiltinDriftType.int64, BigInt.zero)],
+                variables: [
+                  MappedValue.raw(BuiltinDriftType.int64, BigInt.zero)
+                ],
               ),
             ),
             StatementInBatch(
               0,
               StatementInfo.fromText(
                 'SELECT ?',
-                variables: [(BuiltinDriftType.int64, BigInt.one)],
+                variables: [
+                  MappedValue.raw(BuiltinDriftType.int64, BigInt.one)
+                ],
               ),
             ),
             StatementInBatch(
               0,
               StatementInfo.fromText(
                 'SELECT ?',
-                variables: [(BuiltinDriftType.int64, BigInt.two)],
+                variables: [
+                  MappedValue.raw(BuiltinDriftType.int64, BigInt.two)
+                ],
               ),
             ),
           ],

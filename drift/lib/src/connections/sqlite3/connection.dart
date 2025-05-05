@@ -18,13 +18,10 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   /// The database used for the connection.
   final sqlite.CommonDatabase database;
 
-  /// The [SqliteDialect] controling how variables are mapped to the database.
-  final SqliteDialect dialect;
-
   final Completer<void> _closedCompleter = Completer();
 
-  /// Wrap a [database] as a [DriftSession] using the given [dialect].
-  SqliteConnection(this.dialect, this.database) {
+  /// Wrap a [database] as a [DriftSession].
+  SqliteConnection(this.database) {
     database.useNativeFunctions();
   }
 
@@ -46,7 +43,7 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   @override
   Future<QueryResult> execute(StatementInfo statement) async {
     final sql = statement.sql;
-    final variables = statement.sqlVariables(dialect).toList();
+    final variables = statement.variables.map((e) => e.rawValue).toList();
     RawResultSet? resultSet;
 
     if (statement.needsResultSet) {
@@ -101,12 +98,11 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   ///
   /// Closing this [SqliteConnection] will close the database.
   static DriftDatabaseImplementation synchronous(
-      {required sqlite.CommonDatabase Function() open}) {
-    final dialect = SqliteDialect();
-
+      {required sqlite.CommonDatabase Function() open,
+      SqliteDialect dialect = const SqliteDialect()}) {
     return DriftDatabaseImplementation(
       dialect: dialect,
-      openConnection: () async => SqliteConnection(dialect, open()),
+      openConnection: () async => SqliteConnection(open()),
     );
   }
 }

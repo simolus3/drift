@@ -137,13 +137,12 @@ without awaiting every statement in it.''');
     await _synchronized(abortIfCancelled: false, () async {
       if (!_isClosed) {
         _isClosed = true;
-        try {
-          await _closeInner();
-        } finally {
-          _closed.complete();
-        }
+        await _closeInner();
       }
     });
+
+    // Closing the inner session will close this one as well.
+    await closed;
   }
 
   @override

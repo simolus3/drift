@@ -1,3 +1,4 @@
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/connection_pool.dart';
 import 'package:mockito/mockito.dart';
@@ -40,7 +41,8 @@ void main() {
 
     final result = await pool.execute(StatementInfo.fromText(
       'statement',
-      variables: [(BuiltinDriftType.int, 1), (BuiltinDriftType.int, 2)],
+      variables: [(BuiltinDriftType.int, 1), (BuiltinDriftType.int, 2)]
+          .toSql(const SqliteDialect()),
       isReadOnly: true,
     ));
 
@@ -76,9 +78,11 @@ void main() {
     });
 
     final firstFuture = pool.execute(StatementInfo.fromText('statement',
-        variables: [(BuiltinDriftType.int, 1)], isReadOnly: true));
+        variables: [(BuiltinDriftType.int, 1)].toSql(const SqliteDialect()),
+        isReadOnly: true));
     final secondFuture = pool.execute(StatementInfo.fromText('statement',
-        variables: [(BuiltinDriftType.int, 2)], isReadOnly: true));
+        variables: [(BuiltinDriftType.int, 2)].toSql(const SqliteDialect()),
+        isReadOnly: true));
 
     final fasterResult = await Future.any([firstFuture, secondFuture]);
     final firstResult = await firstFuture;

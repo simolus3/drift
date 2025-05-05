@@ -15,28 +15,28 @@ final class PostgresDialect extends DriftDialect {
   StatementCompiler createCompiler() => PostgresCompiler(this);
 
   @override
-  SqlType<bool> get boolType => const _BoolType();
+  SqlType<bool> get boolType => const _SafeSqlLiteralType('boolean');
 
   @override
   SqlType<Uint8List> get byteArrayType => blobType;
 
   @override
-  SqlType<DateTime> get dateTimeType => const _SimplePostgresType('TIMESTAMP');
+  SqlType<DateTime> get dateTimeType => const _TimestampType();
 
   @override
   SqlType<double> get doubleType => const CommonDoubleType();
 
   @override
-  SqlType<int> get intType => const _SimplePostgresType('INTEGER');
+  SqlType<int> get intType => const _SafeSqlLiteralType('INTEGER');
 
   @override
-  SqlType<BigInt> get int64Type => const _SimplePostgresType('INTEGER');
+  SqlType<BigInt> get int64Type => const _SafeSqlLiteralType('INTEGER');
 
   @override
   SqlType<DatabaseJson> get jsonType => const _SimplePostgresType('JSON');
 
   @override
-  SqlType<String> get textType => const _SimplePostgresType('TEXT');
+  SqlType<String> get textType => const CommonTextType();
 }
 
 const blobType = CommonByteArrayType('bytea');
@@ -51,7 +51,7 @@ final class _SimplePostgresType<T extends Object> implements SqlType<T> {
 
   @override
   String sqlLiteral(DriftDialect dialect, T value) {
-    throw UnimplementedError();
+    throw UnimplementedError(name);
   }
 
   @override
@@ -61,11 +61,21 @@ final class _SimplePostgresType<T extends Object> implements SqlType<T> {
   String typeName(DriftDialect dialect) => name;
 }
 
-final class _BoolType extends _SimplePostgresType<bool> {
-  const _BoolType() : super('boolean');
+final class _SafeSqlLiteralType<T extends Object>
+    extends _SimplePostgresType<T> {
+  const _SafeSqlLiteralType(super.name);
 
   @override
-  String sqlLiteral(DriftDialect dialect, bool value) {
+  String sqlLiteral(DriftDialect dialect, T value) {
     return value.toString();
+  }
+}
+
+final class _TimestampType extends _SimplePostgresType<DateTime> {
+  const _TimestampType() : super('TIMESTAMP');
+
+  @override
+  String sqlLiteral(DriftDialect dialect, DateTime value) {
+    return 'TIMESTAMP ${BuiltinDriftType.text.sqlLiteral(dialect, value.toIso8601String())}';
   }
 }

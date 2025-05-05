@@ -115,8 +115,7 @@ Matcher isStatementInBatch(int sqlIndex, List<Object?> variables) {
   return isA<StatementInBatch>()
       .having((e) => e.sqlIndex, 'sqlIndex', sqlIndex)
       .having(
-        (e) => e.info.variables.map((v) => v.$1.sqlParameterOrNull(
-            e.info.generated?.dialect ?? const SqliteDialect(), v.$2)),
+        (e) => e.info.variables.map((v) => v.rawValue).toList(),
         'variables',
         variables,
       );

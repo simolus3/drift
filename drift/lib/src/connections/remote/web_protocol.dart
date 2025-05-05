@@ -1,4 +1,4 @@
-/// This is a variant of `protocol.dart` that, instead of serializing to simple
+/// This is a variant of `serialize.dart` that, instead of serializing to simple
 /// values (e.g. strings, numbers, blobs and list thereof), serializes to
 /// `JSObject`s.
 ///
@@ -16,7 +16,7 @@ import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' show SqliteException;
 
-import '../web/wasm_setup/protocol.dart';
+import '../../web/wasm_setup/protocol.dart';
 import 'protocol.dart';
 
 @JS()
@@ -38,30 +38,31 @@ extension type _SerializedSelectResult._(JSObject inner) implements JSObject {
   external JSArray<JSArray<JSAny?>> get r;
 }
 
-/// A version of the [DriftProtocol] that directly serializes to [JSAny] types,
+/// A version of the drift protocol that directly serializes to [JSAny] types,
 /// avoiding the intermediate steps first of serializing to simple Dart
 /// structures and then using `jsify()`.
 final class WebProtocol {
-  static const _tag_Request = 0;
-  static const _tag_SuccessResponse = 1;
-  static const _tag_ErrorResponse = 2;
+  static const _tag_SimpleResponse = 0;
+  static const _tag_ErrorResponse = 1;
   static const _tag_CancelledResponse = 3;
-  static const _tag_ErrorResponseSqliteException = 4;
-
-  static const _tag_NoArgsRequest_terminateAll = 0;
-
-  static const _tag_ExecuteQuery = 3;
-  static const _tag_ExecuteBatchedStatement = 4;
-  static const _tag_RunTransactionAction = 5;
-  static const _tag_EnsureOpen = 6;
-  static const _tag_RunBeforeOpen = 7;
-  static const _tag_NotifyTablesUpdated = 8;
-  static const _tag_RequestCancellation = 12;
-  static const _tag_ServerInfo = 13;
-  static const _tag_BigInt = 14;
-  static const _tag_Double = 15;
+  static const _tag_NotifySessionClosed = 4;
+  static const _tag_NotifyTablesUpdated = 5;
+  static const _tag_ClientInitialize = 6;
+  static const _tag_ShutdownServerRequest = 7;
+  static const _tag_StartExclusiveRequest = 8;
+  static const _tag_BeginTransactionRequest = 9;
+  static const _tag_GetSchemaVersionRequest = 10;
+  static const _tag_SchemaVersionResponse = 11;
+  static const _tag_WriteSchemaVersion = 12;
+  static const _tag_CloseSessionRequest = 13;
+  static const _tag_SessionDetails = 14;
+  static const _tag_ExecuteRequest = 15;
+  static const _tag_ExecuteResponse = 16;
+  static const _tag_ExecuteBatched = 17;
+  static const _tag_ErrorSqliteException = 18;
 
   final ProtocolVersion _protocolVersion;
+  final DriftDialect _dialect;
 
   /// Whether we can send [_tag_ErrorResponseSqliteException].
   ///
@@ -73,19 +74,84 @@ final class WebProtocol {
       _protocolVersion >= ProtocolVersion.v4;
 
   /// Creates the default instance for [WebProtocol].
-  const WebProtocol([this._protocolVersion = ProtocolVersion.legacy]);
+  const WebProtocol(
+      {required DriftDialect dialect,
+      ProtocolVersion version = ProtocolVersion.legacy})
+      : _dialect = dialect,
+        _protocolVersion = version;
 
-  /// Serializes [Message] into a JavaScript representation that is forwards-
-  /// compatible with future drift versions.
-  JSArray serialize(Message message) {
+  /// Serializes [ProtocolMessage] into a JavaScript representation that is
+  /// forwards-compatible with future drift versions.
+  JSArray serialize(ProtocolMessage message) {
     final (tag, payload) = switch (message) {
-      Request(:final id, :final payload) => (
-          _tag_Request,
-          _SerializedRequest(i: id, p: _serializeRequest(payload))
+      ExecuteRequest() => (
+          _tag_ExecuteRequest,
+          <JSAny?>[
+            message.id.toJS,
+            message.sessionId.toJS,
+            message.statement.sql.toJS,
+            [
+              for (final (type, value) in message.statement.variables)
+                _encodeDbValue(type.sqlParameterOrNull(dialect, value))
+            ].toJS,
+            message.statement.needsResultSet.toJS,
+            message.statement.isReadOnly.toJS,
+          ]
         ),
-      SuccessResponse(:final requestId, :final response) => (
-          _tag_SuccessResponse,
-          _SerializedRequest(i: requestId, p: _serializeResponse(response))
+      ClientInitialize(:final id) => (_tag_ClientInitialize, id.toJS),
+      SessionDetails() => (
+          _tag_SessionDetails,
+          <JSAny>[
+            message.requestId.toJS,
+            message.sessionId.toJS,
+            message.isRoot.toJS,
+            message.isDriftTransactionParent.toJS,
+            message.isTransaction.toJS,
+            message.isDriftSessionWithInternalLocks.toJS,
+          ].toJS
+        ),
+      StartExclusiveRequest() => (
+          _tag_StartExclusiveRequest,
+          <JSAny>[message.id.toJS, message.parentId.toJS]
+        ),
+      BeginTransactionRequest() => (
+          _tag_StartExclusiveRequest,
+          <JSAny?>[message.id.toJS, message.parentId.toJS, null].toJS,
+        ),
+      CloseSessionRequest() => (
+          _tag_CloseSessionRequest,
+          <JSAny?>[
+            message.id.toJS,
+            message.sessionId.toJS,
+            message.mode.name.toJS
+          ].toJS,
+        ),
+      GetSchemaVersion() => (
+          _tag_GetSchemaVersionRequest,
+          <JSAny?>[message.id.toJS, message.sessionId.toJS].toJS,
+        ),
+      WriteSchemaVersion() => (
+          _tag_GetSchemaVersionRequest,
+          <JSAny?>[
+            message.id.toJS,
+            message.sessionId.toJS,
+            message.schemaVersion.toJS
+          ].toJS,
+        ),
+      ShutdownServerRequest(:final id) => (_tag_ShutdownServerRequest, id.toJS),
+      NotifySessionClosed(:final sessionId) => (
+          _tag_NotifySessionClosed,
+          sessionId.toJS
+        ),
+      NotifyTablesUpdated(:final updates) => (
+          _tag_NotifyTablesUpdated,
+          [
+            for (final update in updates)
+              [
+                update.table.toJS,
+                update.kind?.index.toJS,
+              ].toJS
+          ]
         ),
       ErrorResponse(
         :final requestId,
@@ -94,7 +160,7 @@ final class WebProtocol {
       )
           when canSerializeSqliteExceptions =>
         (
-          _tag_ErrorResponseSqliteException,
+          _tag_ErrorSqliteException,
           [
             requestId.toJS,
             stackTrace?.toString().toJS,
@@ -126,7 +192,7 @@ final class WebProtocol {
   }
 
   /// Deserializes a message obtained from [serialize].
-  Message deserialize(JSArray message) {
+  ProtocolMessage deserialize(JSArray message) {
     final [tag, payload] = message.toDart;
 
     Request decodeRequest() {
