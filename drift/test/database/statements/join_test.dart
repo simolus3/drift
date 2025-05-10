@@ -30,45 +30,47 @@ void main() {
             on: categoryTodoCountView.categoryId.equalsExp(categories.id))
         .get();
 
-    verify(executor.executeSql('SELECT '
-        '"t"."id" AS "t.id", '
-        '"t"."title" AS "t.title", '
-        '"t"."content" AS "t.content", '
-        '"t"."target_date" AS "t.target_date", '
-        '"t"."category" AS "t.category", '
-        '"t"."status" AS "t.status", '
-        '"c"."id" AS "c.id", '
-        '"c"."desc" AS "c.desc", '
-        '"c"."priority" AS "c.priority", '
-        '"c"."description_in_upper_case" AS "c.description_in_upper_case", '
-        '"ct"."category_id" AS "ct.category_id", '
-        '"ct"."description" AS "ct.description", '
-        '"ct"."item_count" AS "ct.item_count" '
-        'FROM "todos" "t" '
-        'LEFT OUTER JOIN "categories" "c" '
-        'ON "c"."id" = "t"."category" '
-        'LEFT OUTER JOIN "category_todo_count_view" "ct" '
-        'ON "ct"."category_id" = "c"."id";'));
+    verify(executor.executeSql(
+      'SELECT '
+      '"t"."id" AS "c0",'
+      '"t"."title" AS "c1",'
+      '"t"."content" AS "c2",'
+      '"t"."target_date" AS "c3",'
+      '"t"."category" AS "c4",'
+      '"t"."status" AS "c5",'
+      '"c"."id" AS "c6",'
+      '"c"."desc" AS "c7",'
+      '"c"."priority" AS "c8",'
+      '"c"."description_in_upper_case" AS "c9",'
+      '"ct"."category_id" AS "c10",'
+      '"ct"."description" AS "c11",'
+      '"ct"."item_count" AS "c12" '
+      'FROM "todos" AS "t" '
+      'LEFT OUTER JOIN "categories" AS "c" '
+      'ON "c"."id" = "t"."category" '
+      'LEFT OUTER JOIN "category_todo_count_view" AS "ct" '
+      'ON "ct"."category_id" = "c"."id";',
+    ));
   });
 
   test('parses results from multiple tables', () async {
     final todos = db.alias(db.todosTable, 't');
     final categories = db.alias(db.categories, 'c');
 
-    final date = DateTime(2019, 03, 20);
+    final date = DateTime.utc(2019, 03, 20);
     when(executor.execute(any)).thenAnswer((_) async {
       return queryResult([
         {
-          't.id': 5,
-          't.title': 'title',
-          't.content': 'content',
-          't.target_date': date.millisecondsSinceEpoch ~/ 1000,
-          't.category': 3,
-          't.status': 'workInProgress',
-          'c.id': 3,
-          'c.desc': 'description',
-          'c.description_in_upper_case': 'DESCRIPTION',
-          'c.priority': 2,
+          'c0': 5,
+          'c1': 'title',
+          'c2': 'content',
+          'c3': date.toIso8601String(),
+          'c4': 3,
+          'c5': 'workInProgress',
+          'c6': 3,
+          'c7': 'description',
+          'c8': 2,
+          'c9': 'DESCRIPTION',
         }
       ]);
     });
@@ -109,18 +111,16 @@ void main() {
     expect(row.read(todos.status), 'workInProgress');
     expect(row.readWithConverter(todos.status), TodoStatus.workInProgress);
 
-    verify(executor.executeSql(contains('DISTINCT'), any));
+    verify(executor.executeSql(contains('DISTINCT'), anything));
   });
 
   test('throws when no data is available', () async {
     when(executor.execute(any)).thenAnswer((_) {
       return Future.value(queryResult([
         {
-          'todos.id': 5,
-          'todos.title': 'title',
-          'todos.content': 'content',
-          'todos.target_date': null,
-          'todos.category': null,
+          'c0': 5,
+          'c1': 'title',
+          'c2': 'content',
         }
       ]));
     });
@@ -161,7 +161,7 @@ void main() {
         .get();
 
     verify(executor.executeSql(
-        contains('WHERE "t"."id" < ? ORDER BY "t"."title" ASC'), [3]));
+        contains('WHERE "t"."id" < ?1 ORDER BY "t"."title" ASC'), [3]));
   });
 
   test('limit clause is kept', () async {
@@ -227,8 +227,8 @@ void main() {
 
     await query.get();
 
-    verify(executor
-        .executeSql(contains('WHERE "t"."id" < ? AND "c"."id" >= ?'), [5, 10]));
+    verify(executor.executeSql(
+        contains('WHERE "t"."id" < ?1 AND "c"."id" >= ?2'), [5, 10]));
   });
 
   test('supports custom columns and results', () async {
@@ -239,23 +239,19 @@ void main() {
 
     when(executor.execute(any)).thenAnswer((_) async {
       return queryResult([
-        {
-          'c.id': 3,
-          'c.desc': 'Description',
-          'c.description_in_upper_case': 'DESCRIPTION',
-          'c.priority': 1,
-          'c0': 11
-        }
+        {'c0': 3, 'c1': 'Description', 'c2': 1, 'c3': 'DESCRIPTION', 'c4': 11}
       ]);
     });
 
     final result = await query.getSingle();
 
     verify(executor.executeSql(
-      'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
-      '"c"."priority" AS "c.priority", "c"."description_in_upper_case" AS '
-      '"c.description_in_upper_case", LENGTH("c"."desc") AS "c0" '
-      'FROM "categories" "c";',
+      'SELECT "id" AS "c0",'
+      '"desc" AS "c1",'
+      '"priority" AS "c2",'
+      '"description_in_upper_case" AS "c3",'
+      'LENGTH("desc") AS "c4"'
+      ' FROM "categories" AS "c";',
     ));
 
     expect(
@@ -286,11 +282,11 @@ void main() {
     when(executor.execute(any)).thenAnswer((_) async {
       return queryResult([
         {
-          'c.id': 3,
-          'c.desc': 'Description',
-          'c.description_in_upper_case': 'DESCRIPTION',
-          'c.priority': 1,
-          'c0': 11,
+          'c0': 3,
+          'c1': 'Description',
+          'c2': 1,
+          'c3': 'DESCRIPTION',
+          'c4': 11,
         },
       ]);
     });
@@ -298,11 +294,11 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.executeSql(
-      'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", "c"."priority" AS "c.priority"'
-      ', "c"."description_in_upper_case" AS "c.description_in_upper_case", '
-      'LENGTH("c"."desc") AS "c0" '
-      'FROM "categories" "c" '
-      'INNER JOIN "todos" "t" ON "c"."id" = "t"."category";',
+      'SELECT "c"."id" AS "c0","c"."desc" AS "c1","c"."priority" AS "c2",'
+      '"c"."description_in_upper_case" AS "c3",'
+      'LENGTH("c"."desc") AS "c4" '
+      'FROM "categories" AS "c" '
+      'INNER JOIN "todos" AS "t" ON "c"."id" = "t"."category";',
       [],
     ));
 
@@ -340,11 +336,11 @@ void main() {
     when(executor.execute(any)).thenAnswer((_) async {
       return queryResult([
         {
-          'c.id': 3,
-          'c.desc': 'desc',
-          'c.priority': 0,
-          'c0': 10,
-          'c.description_in_upper_case': 'DESC',
+          'c0': 3,
+          'c1': 'desc',
+          'c2': 0,
+          'c3': 'DESC',
+          'c4': 10,
         }
       ]);
     });
@@ -352,15 +348,16 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.executeSql(
-        'SELECT "c"."id" AS "c.id", "c"."desc" AS "c.desc", '
-        '"c"."priority" AS "c.priority", '
-        '"c"."description_in_upper_case" AS "c.description_in_upper_case", '
-        'COUNT("t"."id") AS "c0" '
-        'FROM "categories" "c" INNER JOIN "todos" "t" ON "t"."category" = "c"."id" '
-        'GROUP BY "c"."id" HAVING COUNT("t"."id") >= ?;',
-        [10]));
+      'SELECT "c"."id" AS "c0","c"."desc" AS "c1",'
+      '"c"."priority" AS "c2","c"."description_in_upper_case" AS "c3",'
+      'COUNT("t"."id") AS "c4" '
+      'FROM "categories" AS "c" '
+      'INNER JOIN "todos" AS "t" ON "t"."category" = "c"."id" '
+      'GROUP BY "c"."id" HAVING COUNT("t"."id") >= ?1;',
+      [10],
+    ));
 
-    expect(result.readTableOrNull(todos), isNull);
+    expect(() => result.readTableOrNull(todos), throwsA(anything));
     expect(
       result.readTable(categories),
       const Category(
@@ -389,8 +386,8 @@ void main() {
     final row = await query.getSingle();
 
     verify(executor.executeSql(
-        'SELECT AVG(LENGTH("todos"."content")) AS "c0", '
-        'MAX(LENGTH("todos"."content")) AS "c1" FROM "todos";',
+        'SELECT AVG(LENGTH("content")) AS "c0",'
+        'MAX(LENGTH("content")) AS "c1" FROM "todos";',
         []));
 
     expect(row.read(avgLength), 3.0);
@@ -411,7 +408,7 @@ void main() {
     when(executor.execute(any)).thenAnswer((_) async {
       return queryResult([
         {
-          'categories.id': 2,
+          'c0': 2,
           'c1': 10,
         }
       ]);
@@ -420,7 +417,7 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.executeSql(
-      'SELECT "categories"."id" AS "categories.id", COUNT("todos"."id") AS "c1" '
+      'SELECT "categories"."id" AS "c0",COUNT("todos"."id") AS "c1" '
       'FROM "categories" INNER JOIN "todos" ON "todos"."category" = "categories"."id" '
       'GROUP BY "categories"."id";',
     ));
@@ -442,7 +439,7 @@ void main() {
     when(executor.execute(any)).thenAnswer((_) async {
       return queryResult([
         {
-          'categories.id': 2,
+          'c0': 2,
           'c1': 10,
         }
       ]);
@@ -451,7 +448,7 @@ void main() {
     final result = await query.getSingle();
 
     verify(executor.executeSql(
-        'SELECT "categories"."id" AS "categories.id", COUNT("todos"."id") AS "c1" '
+        'SELECT "categories"."id" AS "c0",COUNT("todos"."id") AS "c1" '
         'FROM "categories" INNER JOIN "todos" ON "todos"."category" = "categories"."id" '
         'GROUP BY "categories"."id";',
         []));
@@ -460,14 +457,10 @@ void main() {
     expect(result.read(todos.id.count()), equals(10));
   });
 
-  test('injects custom error message when a table is used multiple times',
-      () async {
-    when(executor.execute(any)).thenAnswer((_) => Future.error('nah'));
-
+  test('error when adding same table multiple times', () async {
     expect(
-      db.select(db.todosTable).cross(db.todosTable).get(),
-      throwsA(isA<DriftWrappedException>()
-          .having((e) => e.toString(), 'toString', contains('possible cause'))),
+      () => db.select(db.todosTable).cross(db.todosTable),
+      throwsA(isA<StateError>()),
     );
 
     // Joining with aliases should not throw
@@ -476,7 +469,7 @@ void main() {
 
     expect(
       db.select(t1).cross(t2).get(),
-      throwsA(isNot(isA<DriftWrappedException>())),
+      completes,
     );
   });
 
@@ -534,7 +527,7 @@ void main() {
         'SELECT "s"."c1" AS "c0" FROM "categories" '
         'INNER JOIN ('
         'SELECT "todos"."category" AS "c0",'
-        'SUM((LENGTH("todos"."title"))) AS "c1" FROM "todos" '
+        'SUM(LENGTH("todos"."title")) AS "c1" FROM "todos" '
         'GROUP BY "todos"."category") "s" '
         'ON "s"."c0" = "categories"."id";',
       ));

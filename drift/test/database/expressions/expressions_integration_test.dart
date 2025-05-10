@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:async/async.dart';
 import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
@@ -187,15 +188,16 @@ void main() {
 
       final subquery = subqueryExpression<String>(db.selectOnly(db.categories)
         ..addColumns([db.categories.description]));
-      final stream = (db.selectOnly(db.users)..addColumns([subquery]))
+      final stream = StreamQueue((db.selectOnly(db.users)
+            ..addColumns([subquery]))
           .map((row) => row.read(subquery))
-          .watchSingle();
+          .watchSingle());
 
-      expect(stream, emitsInOrder(['description', 'changed']));
-
+      await expectLater(stream, emits('description'));
       await db
           .update(db.categories)
           .write(const CategoriesCompanion(description: Value('changed')));
+      await expectLater(stream, emits('changed'));
     });
 
     test('custom expressions can introduces new tables to watch', () async {

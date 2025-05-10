@@ -44,7 +44,6 @@ void main() {
     );
 
     final compiler = dialect.createCompiler()..addTableColumnDefinition(column);
-    expect(compiler.statement.sql,
-        equals('"foo" INTEGER NOT NULL PRIMARY KEY custom'));
+    expect(compiler.statement.sql, equals('"foo" INTEGER PRIMARY KEY custom'));
   });
 }

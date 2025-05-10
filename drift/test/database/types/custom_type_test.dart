@@ -44,7 +44,7 @@ void main() {
     });
   });
 
-  test('for inserts', () async {
+  test('for inserts ', () async {
     final sqlite3Executor = MockSession();
     final postgresExecutor = MockSession();
 

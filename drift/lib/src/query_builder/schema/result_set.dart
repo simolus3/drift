@@ -21,7 +21,12 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
   };
 
   Row? Function(DriftRow) createMapperToDart(ResultSetStructure structure) {
-    return createMapperFromPositions(structure.tables[this]!);
+    final positions = structure.tables[this];
+    if (positions == null) {
+      throw StateError('Table $aliasOrName has not been selected from');
+    }
+
+    return createMapperFromPositions(positions);
   }
 
   Row? Function(DriftRow) createMapperFromPositions(

@@ -53,15 +53,16 @@ sealed class BaseSelectStatement<Self extends BaseSelectStatement<Self, Row>,
   }
 
   SelectStatement addColumn(Expression expression) {
-    structure.expressions[expression] ??= _nextPosition;
-    return _asSelectStatement();
+    return _asSelectStatement()
+      ..structure.expressions[expression] ??= _nextPosition;
   }
 
   SelectStatement addColumns(Iterable<Expression> expressions) {
+    final stmt = _asSelectStatement();
     for (final expression in expressions) {
-      structure.expressions[expression] ??= _nextPosition;
+      stmt.structure.expressions[expression] ??= _nextPosition;
     }
-    return _asSelectStatement();
+    return stmt;
   }
 
   @internal

@@ -17,6 +17,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   final DriftDatabaseImplementation implementation;
   Future<DriftSession>? _openingSession;
   DriftSession? _openedSession;
+  Future<void>? _closing;
 
   final Completer<StreamQueryStore> _openedStreamQueries = Completer();
   late StreamQueryStore _streamQueryStore;
@@ -126,7 +127,11 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   Migrator createMigrator() => Migrator(this);
 
   /// Closes this drift database and releases associated resources.
-  Future<void> close() async {
+  Future<void> close() {
+    return _closing ??= _closeInternal();
+  }
+
+  Future<void> _closeInternal() async {
     if (_openedSession case final opened?) {
       await opened.close();
     } else if (_openingSession case final opening?) {

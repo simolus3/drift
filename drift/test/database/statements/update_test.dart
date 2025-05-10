@@ -13,12 +13,15 @@ void main() {
   late MockSession executor;
   late MockStreamQueries streamQueries;
 
-  setUp(() {
+  setUp(() async {
     executor = MockSession();
     streamQueries = MockStreamQueries();
 
     final connection = createConnection(executor, streams: streamQueries);
     db = TodoDb(connection);
+
+    await db.initialize();
+    clearInteractions(executor);
   });
 
   group('generates update statements', () {
@@ -140,13 +143,13 @@ void main() {
             (BuiltinDriftType.text, 'Name'),
             (
               BuiltinDriftType.dateTime,
-              DateTime.fromMillisecondsSinceEpoch(1551297563000)
+              DateTime.utc(2025, 5, 10, 10),
             ),
           ]);
 
       verify(executor.executeSql(
           'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
-          ['Name', DateTime.fromMillisecondsSinceEpoch(1551297563000)]));
+          ['Name', '2025-05-10T10:00:00.000Z']));
     });
 
     test('returns information from executor', () async {

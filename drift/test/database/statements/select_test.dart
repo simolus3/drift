@@ -91,7 +91,7 @@ void main() {
           .get();
 
       verify(executor.executeSql(
-          'SELECT $usersColumns FROM "users" WHERE NOT ("name" = ?1) AND "id" > ?2;',
+          'SELECT $usersColumns FROM "users" WHERE NOT "name" = ?1 AND "id" > ?2;',
           ['Dash', 12]));
     });
 

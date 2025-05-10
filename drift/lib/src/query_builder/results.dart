@@ -136,6 +136,14 @@ final class DriftRow {
 
   Row readTable<Row extends Object, RS extends ResultSet<Row, RS>>(
       RS resultSet) {
-    return readTableOrNull(resultSet)!;
+    final parsed = readTableOrNull<Row, RS>(resultSet);
+    if (parsed == null) {
+      throw ArgumentError(
+          'Invalid table passed to readTable: ${resultSet.aliasOrName}. This row '
+          'does not contain values for that table. \n'
+          'Please use readTableOrNull for outer joins.');
+    }
+
+    return parsed;
   }
 }

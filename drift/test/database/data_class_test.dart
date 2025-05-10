@@ -36,6 +36,7 @@ void main() {
     test('can be overridden globally', () {
       final old = driftRuntimeOptions.defaultSerializer;
       driftRuntimeOptions.defaultSerializer = _MySerializer();
+      addTearDown(() => driftRuntimeOptions.defaultSerializer = old);
 
       final entry = TodoEntry(
         id: RowId(13),
@@ -51,12 +52,10 @@ void main() {
           'title': 'foo',
           'content': 'foo',
           'category': 'foo',
-          'target_date': 'foo',
+          'targetDate': 'foo',
           'status': 'foo',
         },
       );
-
-      driftRuntimeOptions.defaultSerializer = old;
     });
 
     test('can serialize and deserialize blob columns', () {

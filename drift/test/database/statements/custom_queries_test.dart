@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:drift/drift.dart';
+import 'package:drift/src/dialect/sqlite/types.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -48,7 +49,7 @@ void main() {
           'bool': true,
           'int': 3,
           'double': 3.14,
-          'dateTime': time.toIso8601String(),
+          'dateTime': const DateTimeType().sqlParameter(db.dialect, time),
           'blob': Uint8List.fromList([1, 2, 3]),
           'null': null,
         }

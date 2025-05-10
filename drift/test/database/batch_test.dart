@@ -218,13 +218,17 @@ void main() {
   });
 
   test('uses nested transactions', () async {
+    final transactions = executor.transactions;
+    when(transactions.begin(any))
+        .thenAnswer((_) async => MockSession(isTransaction: true));
+
     await db.transaction(() async {
       await db.batch((batch) {});
       await db.batch((batch) {});
     });
 
     verify(executor.begin(any)).called(1);
-    verify(executor.transactions.begin(any)).called(2);
+    verify(transactions.begin(any)).called(2);
   });
 
   test('starts a new transaction when not running in a transaction', () async {
