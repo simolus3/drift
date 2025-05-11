@@ -1,6 +1,6 @@
 import 'dart:js_interop';
 
-import 'package:drift/connections/sqlite3.dart';
+import 'package:drift/connections/sqlite/sqlite3.dart';
 import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:sqlite3/wasm.dart';

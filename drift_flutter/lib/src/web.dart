@@ -3,7 +3,7 @@ import 'package:drift/wasm.dart';
 
 import 'connect.dart';
 
-QueryExecutor driftDatabase({
+DriftDatabaseImplementation driftDatabase({
   required String name,
   DriftWebOptions? web,
   DriftNativeOptions? native,

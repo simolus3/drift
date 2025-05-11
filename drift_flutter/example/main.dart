@@ -5,17 +5,17 @@ part 'main.g.dart';
 
 void main() async {
   final database = ExampleDatabase();
-  await database.exampleTable.all().get();
+  await database.select(database.exampleTable).get();
 }
 
 class ExampleTable extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get description => text()();
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get description => text();
 }
 
 @DriftDatabase(tables: [ExampleTable])
 final class ExampleDatabase extends _$ExampleDatabase {
-  ExampleDatabase([QueryExecutor? implementation])
+  ExampleDatabase([DriftDatabaseImplementation? implementation])
       : super(implementation ?? driftDatabase(name: 'db'));
 
   @override

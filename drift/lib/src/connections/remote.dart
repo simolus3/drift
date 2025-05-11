@@ -57,13 +57,13 @@ import 'package:stream_channel/stream_channel.dart';
 
 import '' as global;
 
-import '../src/connections/connection.dart';
-import '../src/connections/remote/channel.dart';
-import '../src/connections/remote/client.dart';
-import '../src/connections/remote/protocol.dart';
-import '../src/connections/remote/serialize.dart';
-import '../src/connections/remote/server.dart';
-import '../src/query_builder/dialect.dart';
+import 'connection.dart';
+import 'remote/channel.dart';
+import 'remote/client.dart';
+import 'remote/protocol.dart';
+import 'remote/serialize.dart';
+import 'remote/server.dart';
+import '../query_builder/dialect.dart';
 
 /// Serves a drift database connection over any two-way communication channel.
 ///

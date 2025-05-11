@@ -4,8 +4,8 @@ import 'dart:isolate';
 import 'package:meta/meta.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../connections/remote.dart';
 import 'connection.dart';
+import 'remote.dart';
 
 // All of this is drift-internal and not exported, so:
 // ignore_for_file: public_member_api_docs

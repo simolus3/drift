@@ -15,7 +15,7 @@ import '../src/connections/remote/protocol.dart';
 import '../src/query_builder/dialect.dart';
 import '../src/runtime/database/connection_user.dart';
 import '../src/runtime/database/db_base.dart';
-import 'remote.dart';
+import '../src/connections/remote.dart';
 
 /// Defines utilities to run drift in a background isolate. In the operation
 /// mode created by these utilities, there's a single background isolate doing

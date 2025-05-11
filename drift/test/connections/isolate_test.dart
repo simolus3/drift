@@ -7,7 +7,7 @@ import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:drift/connections/isolate.dart';
-import 'package:drift/connections/sqlite3.dart';
+import 'package:drift/connections/sqlite/sqlite3.dart';
 import 'package:drift/dialect/postgres.dart';
 import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';

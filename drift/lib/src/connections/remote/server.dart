@@ -4,7 +4,7 @@ import 'package:drift/src/connections/connection_compat.dart';
 import 'package:drift/src/connections/remote/serialize.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../../../connections/remote.dart';
+import '../remote.dart';
 import '../../../dialect/sqlite.dart';
 import '../connection.dart';
 import 'channel.dart';

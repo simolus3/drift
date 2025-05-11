@@ -25,7 +25,7 @@ String isolateControlPortName(String databaseName) {
   return 'drift-db/$databaseName/control';
 }
 
-QueryExecutor driftDatabase({
+DriftDatabaseImplementation driftDatabase({
   required String name,
   DriftWebOptions? web,
   DriftNativeOptions? native,
