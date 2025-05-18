@@ -1,5 +1,6 @@
+import 'package:drift/connections/sqlite/native.dart';
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart' hide Table;
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,8 +9,9 @@ void main() {
 
   late _EmptyDatabase db;
   setUp(() {
-    db = _EmptyDatabase(DatabaseConnection(
-      NativeDatabase.memory(),
+    db = _EmptyDatabase(DriftConnection(
+      dialect: const SqliteDialect(),
+      openConnection: () => NativeDatabase.memoryImplementation(),
       closeStreamsSynchronously: true,
     ));
   });
@@ -19,6 +21,10 @@ void main() {
 
   testWidgets('can close streams implicitly', (tester) async {
     await tester.pumpWidget(_MyApp(db));
+
+    while (find.text('loading').tryEvaluate()) {
+      await tester.pumpAndSettle();
+    }
   });
 }
 
@@ -41,10 +47,14 @@ class _MyAppState extends State<_MyApp> {
         body: StreamBuilder(
           stream: stream,
           builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Text('loading');
+            }
+
             final items = snapshot.data ?? const [];
             return ListView(
               children: items
-                  .map((item) => ListTile(title: Text(item.data.toString())))
+                  .map((item) => ListTile(title: Text(item.row.toString())))
                   .toList(),
             );
           },
@@ -54,11 +64,12 @@ class _MyAppState extends State<_MyApp> {
   }
 }
 
-class _EmptyDatabase extends GeneratedDatabase {
-  _EmptyDatabase(super.executor);
+final class _EmptyDatabase extends GeneratedDatabase {
+  _EmptyDatabase(super.implementation);
 
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables => const [];
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities =>
+      const Iterable.empty();
 
   @override
   int get schemaVersion => 1;

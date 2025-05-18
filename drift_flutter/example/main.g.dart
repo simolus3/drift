@@ -4,72 +4,59 @@ part of 'main.dart';
 
 // ignore_for_file: type=lint
 class $ExampleTableTable extends ExampleTable
-    with TableInfo<$ExampleTableTable, ExampleTableData> {
+    with ResultSet<ExampleTableData, $ExampleTableTable>
+    implements GeneratedTable<ExampleTableData, $ExampleTableTable> {
   @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $ExampleTableTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  final String? alias;
+  $ExampleTableTable([this.alias]);
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
+  late final TableColumn<int> id = TableColumn<int>(
+      name: 'id',
+      type: BuiltinDriftType.int,
+      isNullable: false,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _descriptionMeta =
-      const VerificationMeta('description');
+      constraints: () =>
+          [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-      'description', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final TableColumn<String> description = TableColumn<String>(
+      name: 'description',
+      type: BuiltinDriftType.text,
+      isNullable: false,
+      requiredDuringInsert: true)
+    ..owningResultSet = this;
   @override
-  List<GeneratedColumn> get $columns => [id, description];
+  List<TableColumn> get columns => [id, description];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'example_table';
   @override
-  VerificationContext validateIntegrity(Insertable<ExampleTableData> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('description')) {
-      context.handle(
-          _descriptionMeta,
-          description.isAcceptableOrUnknown(
-              data['description']!, _descriptionMeta));
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
-    }
-    return context;
+  $ExampleTableTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {id};
+  @override
+  ExampleTableData? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
+    return (DriftRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return ExampleTableData(
+        id: row.readWithType(positions[0], BuiltinDriftType.int)!,
+        description: row.readWithType(positions[1], BuiltinDriftType.text)!,
+      );
+    };
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  ExampleTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return ExampleTableData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      description: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
-    );
-  }
-
-  @override
-  $ExampleTableTable createAlias(String alias) {
-    return $ExampleTableTable(attachedDatabase, alias);
+  $ExampleTableTable withAlias(String alias) {
+    return $ExampleTableTable(alias);
   }
 }
 
-class ExampleTableData extends DataClass
+class ExampleTableData extends LegacyDataClass
     implements Insertable<ExampleTableData> {
   final int id;
   final String description;
@@ -187,13 +174,10 @@ class ExampleTableCompanion extends UpdateCompanion<ExampleTableData> {
   }
 }
 
-abstract class _$ExampleDatabase extends GeneratedDatabase {
-  _$ExampleDatabase(QueryExecutor e) : super(e);
+abstract base class _$ExampleDatabase extends GeneratedDatabase {
+  _$ExampleDatabase(super.implementation);
   $ExampleDatabaseManager get managers => $ExampleDatabaseManager(this);
-  late final $ExampleTableTable exampleTable = $ExampleTableTable(this);
-  @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  late final $ExampleTableTable exampleTable = $ExampleTableTable();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [exampleTable];
 }

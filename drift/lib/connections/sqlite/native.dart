@@ -89,15 +89,27 @@ final class NativeDatabase {
     return DriftConnection(
       dialect: dialect,
       openConnection: () async {
-        return SqliteConnection(
-          await _openDatabase(
-            path: file.path,
+        return await blockingImplementation(file,
             sqlite3: sqlite3,
             setup: setup,
-          ),
-          cachePreparedStatements: cachePreparedStatements,
-        );
+            cachePreparedStatements: cachePreparedStatements);
       },
+    );
+  }
+
+  static Future<DriftSession> blockingImplementation(
+    File file, {
+    SqliteResolver sqlite3 = _defaultResolver,
+    DatabaseSetup? setup,
+    bool cachePreparedStatements = _cacheStatementsByDefault,
+  }) async {
+    return SqliteConnection(
+      await _openDatabase(
+        path: file.path,
+        sqlite3: sqlite3,
+        setup: setup,
+      ),
+      cachePreparedStatements: cachePreparedStatements,
     );
   }
 
@@ -110,15 +122,27 @@ final class NativeDatabase {
     return DriftConnection(
       dialect: dialect,
       openConnection: () async {
-        return SqliteConnection(
-          await _openDatabase(
-            path: null,
-            sqlite3: sqlite3,
-            setup: setup,
-          ),
+        return await memoryImplementation(
+          sqlite3: sqlite3,
+          setup: setup,
           cachePreparedStatements: cachePreparedStatements,
         );
       },
+    );
+  }
+
+  static Future<DriftSession> memoryImplementation({
+    SqliteResolver sqlite3 = _defaultResolver,
+    DatabaseSetup? setup,
+    bool cachePreparedStatements = _cacheStatementsByDefault,
+  }) async {
+    return SqliteConnection(
+      await _openDatabase(
+        path: null,
+        sqlite3: sqlite3,
+        setup: setup,
+      ),
+      cachePreparedStatements: cachePreparedStatements,
     );
   }
 
@@ -208,55 +232,78 @@ final class NativeDatabase {
     return DriftConnection.withImplementation(
       dialect: dialect,
       implementation: () async {
-        final receiveIsolate = ReceivePort();
-        final receive = StreamQueue(receiveIsolate.cast<DriftIsolate>());
-
-        Future<void> spawnIsolate(String kind) async {
-          await Isolate.spawn(
-            _NativeIsolateStartup.start,
-            _NativeIsolateStartup(
-              file.absolute.path,
-              cachePreparedStatements,
-              enableMigrations,
-              setup,
-              isolateSetup,
-              sqlite3,
-              receiveIsolate.sendPort,
-            ),
-            debugName: 'Drift isolate $kind for ${file.path}',
-          );
-        }
-
-        await spawnIsolate('worker');
-        final driftIsolate = await receive.next;
-
-        var (session, streams) =
-            await driftIsolate.connect(singleClientMode: true);
-
-        if (readPool != 0) {
-          final readers = <DriftSession>[];
-
-          for (var i = 0; i < readPool; i++) {
-            await spawnIsolate('reader');
-          }
-
-          for (var i = 0; i < readPool; i++) {
-            final spawned = await receive.next;
-
-            readers.add((await spawned.connect(singleClientMode: true)).$1);
-          }
-
-          session = DriftSessionPool(
-            write: session,
-            reads: readers,
-          );
-        }
-
-        await receive.cancel();
-        receiveIsolate.close();
-        return (session, streams);
+        return await createBackgroundImplementation(
+          file,
+          setup: setup,
+          sqlite3: sqlite3,
+          isolateSetup: isolateSetup,
+          enableMigrations: enableMigrations,
+          cachePreparedStatements: cachePreparedStatements,
+          readPool: readPool,
+        );
       },
     );
+  }
+
+  /// Opens the raw [DriftDatabaseImplementation] for a database connection in
+  /// a background isolate.
+  ///
+  /// To use this to open a database, use [createInBackground] instead.
+  static Future<DriftDatabaseImplementation> createBackgroundImplementation(
+    File file, {
+    DatabaseSetup? setup,
+    SqliteResolver sqlite3 = _defaultResolver,
+    IsolateSetup? isolateSetup,
+    bool enableMigrations = true,
+    bool cachePreparedStatements = _cacheStatementsByDefault,
+    int readPool = _defaultReadPoolSize,
+  }) async {
+    final receiveIsolate = ReceivePort();
+    final receive = StreamQueue(receiveIsolate.cast<DriftIsolate>());
+
+    Future<void> spawnIsolate(String kind) async {
+      await Isolate.spawn(
+        _NativeIsolateStartup.start,
+        _NativeIsolateStartup(
+          file.absolute.path,
+          cachePreparedStatements,
+          enableMigrations,
+          setup,
+          isolateSetup,
+          sqlite3,
+          receiveIsolate.sendPort,
+        ),
+        debugName: 'Drift isolate $kind for ${file.path}',
+      );
+    }
+
+    await spawnIsolate('worker');
+    final driftIsolate = await receive.next;
+
+    var (session, streams) = await driftIsolate.connect(singleClientMode: true);
+
+    if (readPool != 0) {
+      final readers = <DriftSession>[];
+
+      for (var i = 0; i < readPool; i++) {
+        await spawnIsolate('reader');
+      }
+
+      for (var i = 0; i < readPool; i++) {
+        final spawned = await receive.next;
+
+        readers.add((await spawned.connect(singleClientMode: true)).$1);
+      }
+
+      session = DriftSessionPool(
+        write: session,
+        reads: readers,
+      );
+    }
+
+    await receive.cancel();
+    receiveIsolate.close();
+    return (session, streams);
   }
 
   static Future<Database> _openDatabase({

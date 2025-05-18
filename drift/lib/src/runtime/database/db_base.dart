@@ -19,16 +19,13 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   DriftSession? _openedSession;
   Future<void>? _closing;
 
-  final Completer<StreamQueryStore> _openedStreamQueries = Completer();
-  late StreamQueryStore _streamQueryStore;
+  Completer<StreamQueryStore>? _underlyingStreamQueries;
+  StreamQueryStore? _streamQueryStore;
 
   bool enableMigrations = true;
 
   /// Opens a drift database backed by a given [implementation].
-  GeneratedDatabase(this.implementation) {
-    _streamQueryStore =
-        DelayedStreamQueryStore(_openedStreamQueries.future, rootConnection);
-  }
+  GeneratedDatabase(this.implementation);
 
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
@@ -73,9 +70,10 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
     if (_openingSession case final opening?) {
       return opening;
     } else {
-      return _openingSession = Future(() async {
+      return _openingSession = Future.sync(() async {
         final (inner, streams) = await implementation.open();
-        _openedStreamQueries.complete(streams);
+        _streamQueryStore ??= streams;
+        _underlyingStreamQueries?.complete(streams);
         _openedSession = inner;
 
         // Run migrations in a scoped connection zone so that they can use the
@@ -143,12 +141,22 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       final resolved = await opening;
 
       await resolved.close();
-      await _streamQueryStore.close();
+      await _streamQueryStore?.close();
     }
   }
 }
 
 @internal
 extension InternalGeneratedDatabase on GeneratedDatabase {
-  StreamQueryStore get rootStreamQueries => _streamQueryStore;
+  StreamQueryStore resolveRootStreamQueries() {
+    if (_streamQueryStore case final existing?) {
+      return existing;
+    } else {
+      assert(_underlyingStreamQueries == null);
+      final completer = _underlyingStreamQueries = Completer.sync();
+
+      return _streamQueryStore =
+          DelayedStreamQueryStore(completer.future, rootConnection);
+    }
+  }
 }

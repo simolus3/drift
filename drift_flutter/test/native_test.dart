@@ -6,9 +6,9 @@ import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:async/async.dart';
-import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/connections/sqlite/native.dart';
+import 'package:drift/drift.dart';
 import 'package:drift/internal/versioned_schema.dart';
-import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:drift_flutter/src/native.dart'
     show PingWithTimeout, hasConfiguredSqlite, portName;
@@ -117,7 +117,7 @@ void main() {
     test('synchronizes streams', () async {
       final database =
           SimpleDatabase(driftDatabase(name: 'database', native: options));
-      final stream = StreamQueue(database.simpleTable.all().watch());
+      final stream = StreamQueue(database.select(database.simpleTable).watch());
       await expectLater(stream, emits(isEmpty));
 
       // Insert with an independent connection on another isolate.
@@ -130,7 +130,9 @@ void main() {
 
         final database =
             SimpleDatabase(driftDatabase(name: 'database', native: options));
-        await database.simpleTable.insertOne(RawValuesInsertable({}));
+        await database
+            .into(database.simpleTable)
+            .insert(RawValuesInsertable({}));
         await database.close();
       });
 
@@ -161,11 +163,11 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
       }
 
-      final raw = SimpleDatabase(
-          NativeDatabase(File(d.path('applications/database.sqlite'))));
+      final raw = SimpleDatabase(NativeDatabase.blocking(
+          File(d.path('applications/database.sqlite'))));
       // This wouldn't work if the database is still open, as the exclusive
       // would block the write.
-      await raw.simpleTable.insertOne(RawValuesInsertable({}));
+      await raw.into(raw.simpleTable).insert(RawValuesInsertable({}));
     });
   });
 
@@ -199,29 +201,28 @@ void main() {
   });
 }
 
-class SimpleDatabase extends GeneratedDatabase {
-  SimpleDatabase(super.executor);
+final class SimpleDatabase extends GeneratedDatabase {
+  SimpleDatabase(super.implementation);
 
   late final simpleTable = VersionedTable(
     entityName: 'users',
     isStrict: true,
     withoutRowId: false,
-    attachedDatabase: attachedDatabase,
     columns: [
-      (name) => GeneratedColumn(
-            'id',
-            name,
-            false,
-            type: DriftSqlType.int,
+      (name) => TableColumn(
+            name: 'id',
+            isNullable: false,
+            type: BuiltinDriftType.int,
             requiredDuringInsert: false,
-            $customConstraints: 'NOT NULL PRIMARY KEY',
+            constraints: () =>
+                [ColumnPrimaryKeyConstraint(isAutoIncrementing: false)],
           ),
     ],
     tableConstraints: const [],
   );
 
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables => [simpleTable];
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities => [simpleTable];
 
   @override
   int get schemaVersion => 1;

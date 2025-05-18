@@ -4,10 +4,11 @@ library;
 
 export 'src/connect.dart';
 
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'src/connect.dart' as connect;
 
-/// Obtain a [QueryExecutor] to use for drift databases on the current platform.
+/// Obtain a [DriftConnection] to use for drift databases on the current platform.
 ///
 /// The result of this method can be passed to [GeneratedDatabase] constructors
 /// of drift databases:
@@ -27,8 +28,14 @@ import 'src/connect.dart' as connect;
 /// Typically, names only consist of alphanumerical characters and underscores.
 DriftConnection driftDatabase({
   required String name,
+  DriftDialect dialect = const SqliteDialect(),
   connect.DriftWebOptions? web,
   connect.DriftNativeOptions? native,
 }) {
-  return connect.driftDatabase(name: name, web: web, native: native);
+  return DriftConnection.withImplementation(
+    dialect: dialect,
+    implementation: () async {
+      return await connect.driftDatabase(name: name, web: web, native: native);
+    },
+  );
 }

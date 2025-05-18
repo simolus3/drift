@@ -18,8 +18,10 @@ final class DriftConnection {
   DriftConnection({
     required this.dialect,
     required Future<DriftSession> Function() openConnection,
+    bool closeStreamsSynchronously = false,
     StreamQueryStore? streamQueries,
-  }) : _openConnection = _wrapOpenSession(openConnection, streamQueries);
+  }) : _openConnection = _wrapOpenSession(
+            openConnection, streamQueries, closeStreamsSynchronously);
 
   DriftConnection.withImplementation({
     required this.dialect,
@@ -65,9 +67,16 @@ final class DriftConnection {
   static Future<DriftDatabaseImplementation> Function() _wrapOpenSession(
     Future<DriftSession> Function() session,
     StreamQueryStore? store,
+    bool closeStreamsSynchronously,
   ) {
     return () async {
-      return (await session(), store ?? LocalStreamQueryStore());
+      return (
+        await session(),
+        store ??
+            LocalStreamQueryStore(
+              closeStreamsSynchronously: closeStreamsSynchronously,
+            )
+      );
     };
   }
 }

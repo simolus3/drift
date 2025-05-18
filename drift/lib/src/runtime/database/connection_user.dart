@@ -47,7 +47,7 @@ abstract base class DatabaseConnectionUser {
     if (Zone.current[_zoneRootUserKey] case final scoped?) {
       return (scoped as _ScopedDatabaseSession)._streamQueries;
     } else {
-      return attachedDatabase.rootStreamQueries;
+      return attachedDatabase.resolveRootStreamQueries();
     }
   }
 

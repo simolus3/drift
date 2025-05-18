@@ -5,6 +5,7 @@
 library;
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart';
 import 'package:sqlite3/common.dart';
@@ -190,7 +191,7 @@ abstract interface class WasmProbeResult {
   /// optionally return the initial bytes of the database.
   /// When [enableMigrations] is set to `false`, drift will not check the
   /// `user_version` pragma when opening the database or run migrations.
-  Future<DatabaseConnection> open(
+  Future<DriftDatabaseImplementation> open(
     WasmStorageImplementation implementation,
     String name, {
     FutureOr<Uint8List?> Function()? initializeDatabase,
@@ -213,7 +214,7 @@ abstract interface class WasmProbeResult {
 final class WasmDatabaseResult {
   /// The drift database connection to pass to the [GeneratedDatabase.new]
   /// constructor of your database class to use the opened database.
-  final DatabaseConnection resolvedExecutor;
+  final DriftDatabaseImplementation resolvedExecutor;
 
   /// For your reference, the chosen storage implementation.
   ///

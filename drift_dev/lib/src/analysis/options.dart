@@ -133,7 +133,7 @@ class DriftOptions {
     this.generateNamedParameters = false,
     this.namedParametersAlwaysRequired = false,
     this.scopedDartComponents = true,
-    this.dialects = const {'sqlite': DriftSqliteDialect()},
+    this.dialects = _DialectsConverter._default,
     this.caseFromDartToSql = CaseFromDartToSql.snake,
     this.preamble,
     this.writeToColumnsMixins = false,
@@ -252,22 +252,25 @@ enum CaseFromDartToSql {
 }
 
 final class _DialectsConverter extends JsonConverter<
-    Map<String, RegisteredDriftDialect>, Map<Object?, Object?>> {
+    Map<String, RegisteredDriftDialect>, Map<Object?, Object?>?> {
   const _DialectsConverter();
 
   @override
-  Map<String, RegisteredDriftDialect> fromJson(Map<Object?, Object?> json) {
-    return json.cast<String, Object?>().map((k, v) {
-      final parsed = switch (k) {
-        'sqlite' => DriftSqliteDialect.fromJson(v as Map),
-        _ => CustomDriftDialect(k)
-      };
-      return MapEntry(k, parsed);
-    });
+  Map<String, RegisteredDriftDialect> fromJson(Map<Object?, Object?>? json) {
+    return json?.cast<String, Object?>().map((k, v) {
+          final parsed = switch (k) {
+            'sqlite' => DriftSqliteDialect.fromJson(v as Map),
+            _ => CustomDriftDialect(k)
+          };
+          return MapEntry(k, parsed);
+        }) ??
+        _default;
   }
 
   @override
   Map<String, Object?> toJson(Map<String, RegisteredDriftDialect> object) {
     return object.map((k, v) => MapEntry(k, v.toJson()));
   }
+
+  static const _default = {'sqlite': DriftSqliteDialect()};
 }

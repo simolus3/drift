@@ -21,9 +21,7 @@ final class SqliteCompiler extends StatementCompiler {
   }
 
   @override
-  void addCreateTableStatement(CreateTableStatement stmt) {
-    super.addCreateTableStatement(stmt);
-
+  void addTableModifiers(CreateTableStatement stmt) {
     final table = stmt.entity;
     final options = [
       if (table.withoutRowId) 'WITHOUT ROWID',
