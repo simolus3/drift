@@ -302,7 +302,7 @@ final class UuidType implements SqlType<UuidValue> {
   },
 )
 final class TodoDb extends _$TodoDb {
-  TodoDb([DriftDatabaseImplementation? e]) : super(e ?? _nullExecutor()) {
+  TodoDb([DriftConnection? e]) : super(e ?? _nullExecutor()) {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
 
@@ -327,8 +327,8 @@ final class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
   SomeDao(super.db);
 }
 
-DriftDatabaseImplementation _nullExecutor([DriftDialect? dialect]) {
-  return DriftDatabaseImplementation(
+DriftConnection _nullExecutor([DriftDialect? dialect]) {
+  return DriftConnection(
     dialect: dialect ?? const SqliteDialect(),
     openConnection: () async => throw UnimplementedError('_nullExecutor'),
   );

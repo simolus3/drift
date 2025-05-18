@@ -464,10 +464,14 @@ abstract base class DatabaseConnectionUser {
   ///
   /// If you use variables in your query (for instance with "?"), they will be
   /// bound to the [variables] you specify on this query.
-  Selectable<CustomRow> customSelect(String query,
-      {List<TypedNullableValue> variables = const [],
-      Set<ResultSet> readsFrom = const {}}) {
-    return CustomSelectStatement.unmapped(query, variables, readsFrom, this);
+  Selectable<CustomRow> customSelect(
+    String query, {
+    List<TypedNullableValue> variables = const [],
+    Set<ResultSet> readsFrom = const {},
+    bool isReadOnly = true,
+  }) {
+    return CustomSelectStatement.unmapped(
+        query, variables, readsFrom, this, isReadOnly);
   }
 
   Selectable<T> customSelectMapped<T>({
@@ -475,9 +479,10 @@ abstract base class DatabaseConnectionUser {
     required T Function(DriftRow) Function(DriftResultSet) createMapper,
     List<TypedNullableValue> variables = const [],
     Set<ResultSet> readsFrom = const {},
+    bool isReadOnly = true,
   }) {
     return CustomSelectStatement(
-        query, variables, readsFrom, createMapper, this);
+        query, variables, readsFrom, createMapper, this, isReadOnly);
   }
 
   /// Executes the custom sql [statement] on the database.

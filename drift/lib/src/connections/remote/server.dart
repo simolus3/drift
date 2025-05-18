@@ -13,7 +13,7 @@ import 'protocol.dart';
 /// Implements a [DriftServer] making a [DriftSession] available to clients.
 final class ServerImplementation implements DriftServer {
   /// The outermost [DriftSession] to expose to clients.
-  final DriftDatabaseImplementation connection;
+  final Future<DriftSession> Function() connection;
 
   /// Whether connections are allowed to shut the server down by sending a
   /// [ShutdownServerRequest].
@@ -48,8 +48,8 @@ final class ServerImplementation implements DriftServer {
   Future<DriftSession> _resolveSession() {
     if (!_session.isCompleted) {
       _session.complete(
-        connection.open().then((conn) => DriftCompatibilitySession(
-            inner: conn.$1, dialect: const SqliteDialect())),
+        connection().then((conn) => DriftCompatibilitySession(
+            inner: conn, dialect: const SqliteDialect())),
       );
     }
     return _session.future;

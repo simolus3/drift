@@ -5,201 +5,56 @@ import 'package:modular/src/search.drift.dart' as i1;
 import 'package:drift/internal/modular.dart' as i2;
 import 'package:modular/src/posts.drift.dart' as i3;
 
-typedef $SearchInPostsCreateCompanionBuilder = i1.SearchInPostsCompanion
-    Function({
-  required String author,
-  required String content,
-  i0.Value<int> rowid,
-});
-typedef $SearchInPostsUpdateCompanionBuilder = i1.SearchInPostsCompanion
-    Function({
-  i0.Value<String> author,
-  i0.Value<String> content,
-  i0.Value<int> rowid,
-});
-
-class $SearchInPostsFilterComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<String> get author => $composableBuilder(
-      column: $table.author, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => i0.ColumnFilters(column));
-}
-
-class $SearchInPostsOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<String> get author => $composableBuilder(
-      column: $table.author, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => i0.ColumnOrderings(column));
-}
-
-class $SearchInPostsAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.SearchInPosts> {
-  $SearchInPostsAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<String> get author =>
-      $composableBuilder(column: $table.author, builder: (column) => column);
-
-  i0.GeneratedColumn<String> get content =>
-      $composableBuilder(column: $table.content, builder: (column) => column);
-}
-
-class $SearchInPostsTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.SearchInPosts,
-    i1.SearchInPost,
-    i1.$SearchInPostsFilterComposer,
-    i1.$SearchInPostsOrderingComposer,
-    i1.$SearchInPostsAnnotationComposer,
-    $SearchInPostsCreateCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder,
-    (
-      i1.SearchInPost,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts, i1.SearchInPost>
-    ),
-    i1.SearchInPost,
-    i0.PrefetchHooks Function()> {
-  $SearchInPostsTableManager(i0.GeneratedDatabase db, i1.SearchInPosts table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              i1.$SearchInPostsFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$SearchInPostsOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$SearchInPostsAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<String> author = const i0.Value.absent(),
-            i0.Value<String> content = const i0.Value.absent(),
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.SearchInPostsCompanion(
-            author: author,
-            content: content,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required String author,
-            required String content,
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.SearchInPostsCompanion.insert(
-            author: author,
-            content: content,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $SearchInPostsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.SearchInPosts,
-    i1.SearchInPost,
-    i1.$SearchInPostsFilterComposer,
-    i1.$SearchInPostsOrderingComposer,
-    i1.$SearchInPostsAnnotationComposer,
-    $SearchInPostsCreateCompanionBuilder,
-    $SearchInPostsUpdateCompanionBuilder,
-    (
-      i1.SearchInPost,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts, i1.SearchInPost>
-    ),
-    i1.SearchInPost,
-    i0.PrefetchHooks Function()>;
-
 class SearchInPosts extends i0.Table
-    with
-        i0.TableInfo<SearchInPosts, i1.SearchInPost>,
-        i0.VirtualTableInfo<SearchInPosts, i1.SearchInPost> {
+    with i0.ResultSet<i1.SearchInPost, SearchInPosts>
+    implements
+        i0.GeneratedTable<i1.SearchInPost, SearchInPosts>,
+        i0.VirtualTableInfo<i1.SearchInPost, SearchInPosts> {
   @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  SearchInPosts(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _authorMeta =
-      const i0.VerificationMeta('author');
-  late final i0.GeneratedColumn<String> author = i0.GeneratedColumn<String>(
-      'author', aliasedName, false,
-      type: i0.DriftSqlType.string,
+  final String? alias;
+  SearchInPosts([this.alias]);
+  late final i0.TableColumn<String> author = i0.TableColumn<String>(
+      name: 'author',
+      type: i0.BuiltinDriftType.text,
+      isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: '');
-  static const i0.VerificationMeta _contentMeta =
-      const i0.VerificationMeta('content');
-  late final i0.GeneratedColumn<String> content = i0.GeneratedColumn<String>(
-      'content', aliasedName, false,
-      type: i0.DriftSqlType.string,
+      constraints: () => [i0.ColumnConstraint.customSql('')])
+    ..owningResultSet = this;
+  late final i0.TableColumn<String> content = i0.TableColumn<String>(
+      name: 'content',
+      type: i0.BuiltinDriftType.text,
+      isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: '');
+      constraints: () => [i0.ColumnConstraint.customSql('')])
+    ..owningResultSet = this;
   @override
-  List<i0.GeneratedColumn> get $columns => [author, content];
+  List<i0.TableColumn> get columns => [author, content];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'search_in_posts';
   @override
-  i0.VerificationContext validateIntegrity(
-      i0.Insertable<i1.SearchInPost> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('author')) {
-      context.handle(_authorMeta,
-          author.isAcceptableOrUnknown(data['author']!, _authorMeta));
-    } else if (isInserting) {
-      context.missing(_authorMeta);
-    }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
-    } else if (isInserting) {
-      context.missing(_contentMeta);
-    }
-    return context;
+  SearchInPosts asSelfType() => this;
+
+  @override
+  Set<i0.TableColumn> get primaryKey => const {};
+  @override
+  i1.SearchInPost? Function(i0.DriftRow) createMapperFromPositions(
+      List<i0.ColumnPosition> positions) {
+    return (i0.DriftRow row) {
+      // Not part of row if non-nullable column "author" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return i1.SearchInPost(
+        author: row.readWithType(positions[0], i0.BuiltinDriftType.text)!,
+        content: row.readWithType(positions[1], i0.BuiltinDriftType.text)!,
+      );
+    };
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => const {};
-  @override
-  i1.SearchInPost map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.SearchInPost(
-      author: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}author'])!,
-      content: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}content'])!,
-    );
-  }
-
-  @override
-  SearchInPosts createAlias(String alias) {
-    return SearchInPosts(attachedDatabase, alias);
+  SearchInPosts withAlias(String alias) {
+    return SearchInPosts(alias);
   }
 
   @override
@@ -209,7 +64,7 @@ class SearchInPosts extends i0.Table
       'fts5(author, content, content=posts, content_rowid=id)';
 }
 
-class SearchInPost extends i0.DataClass
+class SearchInPost extends i0.LegacyDataClass
     implements i0.Insertable<i1.SearchInPost> {
   final String author;
   final String content;
@@ -342,27 +197,38 @@ class SearchInPostsCompanion extends i0.UpdateCompanion<i1.SearchInPost> {
 }
 
 i0.Trigger get postsInsert => i0.Trigger(
-    'CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END',
-    'posts_insert');
+    'posts_insert',
+    i0.CustomComponent(
+        'CREATE TRIGGER posts_insert AFTER INSERT ON posts BEGIN INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END'));
 i0.Trigger get postsUpdate => i0.Trigger(
-    'CREATE TRIGGER posts_update AFTER UPDATE ON posts BEGIN INSERT INTO search_in_posts (search_in_posts, "rowid", author, content) VALUES (\'delete\', old.id, old.author, old.content);INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END',
-    'posts_update');
+    'posts_update',
+    i0.CustomComponent(
+        'CREATE TRIGGER posts_update AFTER UPDATE ON posts BEGIN INSERT INTO search_in_posts (search_in_posts, "rowid", author, content) VALUES (\'delete\', old.id, old.author, old.content);INSERT INTO search_in_posts ("rowid", author, content) VALUES (new.id, new.author, new.content);END'));
 i0.Trigger get postsDelete => i0.Trigger(
-    'CREATE TRIGGER posts_delete AFTER DELETE ON posts BEGIN INSERT INTO search_in_posts (search_in_posts, "rowid", author, content) VALUES (\'delete\', old.id, old.author, old.content);END',
-    'posts_delete');
+    'posts_delete',
+    i0.CustomComponent(
+        'CREATE TRIGGER posts_delete AFTER DELETE ON posts BEGIN INSERT INTO search_in_posts (search_in_posts, "rowid", author, content) VALUES (\'delete\', old.id, old.author, old.content);END'));
 
 class SearchDrift extends i2.ModularAccessor {
   SearchDrift(i0.GeneratedDatabase db) : super(db);
   i0.Selectable<i3.Post> search(String var1) {
-    return customSelect(
-        'WITH relevant_ports AS (SELECT "rowid" FROM search_in_posts WHERE search_in_posts MATCH ?1) SELECT posts.* FROM relevant_ports AS results INNER JOIN posts ON id = results."rowid"',
-        variables: [
-          i0.Variable<String>(var1)
-        ],
+    return customSelectMapped<i3.Post>(
+        query:
+            'WITH relevant_ports AS (SELECT "rowid" FROM search_in_posts WHERE search_in_posts MATCH ?1) SELECT posts.id AS _c0, posts.author AS _c1, posts.content AS _c2 FROM relevant_ports AS results INNER JOIN posts ON id = results."rowid"',
+        variables: [(dialect.textType, var1)],
         readsFrom: {
           searchInPosts,
           posts,
-        }).asyncMap(posts.mapFromRow);
+        },
+        createMapper: (i0.DriftResultSet resultSet) {
+          final map_0 = posts.createMapperFromPositions(const [
+            (index: 0, name: '_c0'),
+            (index: 1, name: '_c1'),
+            (index: 2, name: '_c2'),
+          ]);
+
+          return (i0.DriftRow row) => map_0(row)!;
+        });
   }
 
   i1.SearchInPosts get searchInPosts =>

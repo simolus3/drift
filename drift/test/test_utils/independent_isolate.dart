@@ -14,7 +14,7 @@ void main(List<String> args, SendPort message) {
 
 void spawnIsolate(SendPort sendConnectPortTo) async {
   final isolate = DriftIsolate.inCurrent(
-    () {
+    () async {
       final executor = MockSession();
       when(executor.execute(any)).thenAnswer((i) async {
         final args = i.positionalArguments[0] as StatementInfo;
@@ -33,7 +33,7 @@ void spawnIsolate(SendPort sendConnectPortTo) async {
         );
       });
 
-      return createConnection(executor);
+      return executor;
     },
     shutdownAfterLastDisconnect: true,
     killIsolateWhenDone: true,

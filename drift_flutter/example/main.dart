@@ -15,7 +15,7 @@ class ExampleTable extends Table {
 
 @DriftDatabase(tables: [ExampleTable])
 final class ExampleDatabase extends _$ExampleDatabase {
-  ExampleDatabase([DriftDatabaseImplementation? implementation])
+  ExampleDatabase([DriftConnection? implementation])
       : super(implementation ?? driftDatabase(name: 'db'));
 
   @override

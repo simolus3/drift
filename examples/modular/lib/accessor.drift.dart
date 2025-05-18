@@ -6,7 +6,7 @@ import 'package:modular/src/users.drift.dart' as i2;
 import 'package:drift/internal/modular.dart' as i3;
 import 'package:modular/src/user_queries.drift.dart' as i4;
 
-mixin $MyAccessorMixin on i0.DatabaseAccessor<i1.Database> {
+base mixin $MyAccessorMixin on i0.DatabaseAccessor<i1.Database> {
   i2.Users get users =>
       i3.ReadDatabaseContainer(attachedDatabase).resultSet<i2.Users>('users');
   i2.Follows get follows => i3.ReadDatabaseContainer(attachedDatabase)
@@ -20,7 +20,7 @@ mixin $MyAccessorMixin on i0.DatabaseAccessor<i1.Database> {
     $arrayStartIndex += generateduser.amountOfVariables;
     return customInsert(
       'INSERT INTO users ${generateduser.sql}',
-      variables: [...generateduser.introducedVariables],
+      variables: [...generateduser.variables],
       updates: {users},
     );
   }

@@ -1,13 +1,13 @@
 @TestOn('vm')
 library;
 
-import 'package:drift/native.dart';
-import 'package:drift/src/sqlite3/database.dart';
+import 'package:drift/connections/sqlite/native.dart';
+import 'package:drift/src/connections/sqlite3/connection.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
-import '../../generated/todos.dart';
-import '../../test_utils/database_vm.dart';
+import '../generated/todos.dart';
+import '../test_utils/database_vm.dart';
 
 void main() {
   preferLocalSqlite3();
@@ -39,11 +39,12 @@ void main() {
     await db.customInsert('insert into t values (1)');
 
     final before = await db.customSelect('select * from t').getSingle();
-    expect(before.data, {'c1': 1});
+    expect(before.row.byName('c1'), 1);
 
     await db.customStatement('alter table t add column c2');
 
     final after = await db.customSelect('select * from t').getSingle();
-    expect(after.data, {'c1': 1, 'c2': null});
+    expect(after.row.byName('c1'), 1);
+    expect(after.row.byName('c2'), null);
   });
 }

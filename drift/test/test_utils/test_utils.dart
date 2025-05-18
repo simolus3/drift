@@ -14,27 +14,14 @@ export 'mocks.dart';
 ])
 export 'test_utils.mocks.dart';
 
-DriftDatabaseImplementation createConnection(
+DriftConnection createConnection(
   DriftSession session, {
   StreamQueryStore? streams,
   DriftDialect? dialect,
 }) {
-  return DriftDatabaseImplementation(
+  return DriftConnection(
     dialect: dialect ?? const SqliteDialect(),
     openConnection: () async => session,
     streamQueries: streams,
   );
 }
-
-/*
-class PretendDialectInterceptor extends QueryInterceptor {
-  final SqlDialect _dialect;
-
-  PretendDialectInterceptor(this._dialect);
-
-  @override
-  SqlDialect dialect(QueryExecutor executor) {
-    return _dialect;
-  }
-}
-*/

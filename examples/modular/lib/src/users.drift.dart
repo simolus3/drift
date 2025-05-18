@@ -4,597 +4,86 @@ import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/users.drift.dart' as i1;
 import 'package:modular/src/preferences.dart' as i2;
 import 'dart:typed_data' as i3;
-import 'package:drift/internal/modular.dart' as i4;
 
-typedef $UsersCreateCompanionBuilder = i1.UsersCompanion Function({
-  i0.Value<int> id,
-  required String name,
-  i0.Value<String?> biography,
-  i0.Value<i2.Preferences?> preferences,
-  i0.Value<i3.Uint8List?> profilePicture,
-});
-typedef $UsersUpdateCompanionBuilder = i1.UsersCompanion Function({
-  i0.Value<int> id,
-  i0.Value<String> name,
-  i0.Value<String?> biography,
-  i0.Value<i2.Preferences?> preferences,
-  i0.Value<i3.Uint8List?> profilePicture,
-});
-
-class $UsersFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Users> {
-  $UsersFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get biography => $composableBuilder(
-      column: $table.biography, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnWithTypeConverterFilters<i2.Preferences?, i2.Preferences, String>
-      get preferences => $composableBuilder(
-          column: $table.preferences,
-          builder: (column) => i0.ColumnWithTypeConverterFilters(column));
-
-  i0.ColumnFilters<i3.Uint8List> get profilePicture => $composableBuilder(
-      column: $table.profilePicture,
-      builder: (column) => i0.ColumnFilters(column));
-}
-
-class $UsersOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Users> {
-  $UsersOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get biography => $composableBuilder(
-      column: $table.biography,
-      builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get preferences => $composableBuilder(
-      column: $table.preferences,
-      builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<i3.Uint8List> get profilePicture => $composableBuilder(
-      column: $table.profilePicture,
-      builder: (column) => i0.ColumnOrderings(column));
-}
-
-class $UsersAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Users> {
-  $UsersAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  i0.GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  i0.GeneratedColumn<String> get biography =>
-      $composableBuilder(column: $table.biography, builder: (column) => column);
-
-  i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
-      get preferences => $composableBuilder(
-          column: $table.preferences, builder: (column) => column);
-
-  i0.GeneratedColumn<i3.Uint8List> get profilePicture => $composableBuilder(
-      column: $table.profilePicture, builder: (column) => column);
-}
-
-class $UsersTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.Users,
-    i1.User,
-    i1.$UsersFilterComposer,
-    i1.$UsersOrderingComposer,
-    i1.$UsersAnnotationComposer,
-    $UsersCreateCompanionBuilder,
-    $UsersUpdateCompanionBuilder,
-    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.Users, i1.User>),
-    i1.User,
-    i0.PrefetchHooks Function()> {
-  $UsersTableManager(i0.GeneratedDatabase db, i1.Users table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              i1.$UsersFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$UsersOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$UsersAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<String> name = const i0.Value.absent(),
-            i0.Value<String?> biography = const i0.Value.absent(),
-            i0.Value<i2.Preferences?> preferences = const i0.Value.absent(),
-            i0.Value<i3.Uint8List?> profilePicture = const i0.Value.absent(),
-          }) =>
-              i1.UsersCompanion(
-            id: id,
-            name: name,
-            biography: biography,
-            preferences: preferences,
-            profilePicture: profilePicture,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required String name,
-            i0.Value<String?> biography = const i0.Value.absent(),
-            i0.Value<i2.Preferences?> preferences = const i0.Value.absent(),
-            i0.Value<i3.Uint8List?> profilePicture = const i0.Value.absent(),
-          }) =>
-              i1.UsersCompanion.insert(
-            id: id,
-            name: name,
-            biography: biography,
-            preferences: preferences,
-            profilePicture: profilePicture,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $UsersProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Users,
-    i1.User,
-    i1.$UsersFilterComposer,
-    i1.$UsersOrderingComposer,
-    i1.$UsersAnnotationComposer,
-    $UsersCreateCompanionBuilder,
-    $UsersUpdateCompanionBuilder,
-    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.Users, i1.User>),
-    i1.User,
-    i0.PrefetchHooks Function()>;
-typedef $FollowsCreateCompanionBuilder = i1.FollowsCompanion Function({
-  required int followed,
-  required int follower,
-  i0.Value<int> rowid,
-});
-typedef $FollowsUpdateCompanionBuilder = i1.FollowsCompanion Function({
-  i0.Value<int> followed,
-  i0.Value<int> follower,
-  i0.Value<int> rowid,
-});
-
-final class $FollowsReferences
-    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Follows, i1.Follow> {
-  $FollowsReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static i1.Users _followedTable(i0.GeneratedDatabase db) =>
-      i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').createAlias(
-          i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.Follows>('follows')
-                  .followed,
-              i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').id));
-
-  i1.$UsersProcessedTableManager get followed {
-    final $_column = $_itemColumn<int>('followed')!;
-
-    final manager = i1
-        .$UsersTableManager(
-            $_db, i4.ReadDatabaseContainer($_db).resultSet<i1.Users>('users'))
-        .filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_followedTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-
-  static i1.Users _followerTable(i0.GeneratedDatabase db) =>
-      i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').createAlias(
-          i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.Follows>('follows')
-                  .follower,
-              i4.ReadDatabaseContainer(db).resultSet<i1.Users>('users').id));
-
-  i1.$UsersProcessedTableManager get follower {
-    final $_column = $_itemColumn<int>('follower')!;
-
-    final manager = i1
-        .$UsersTableManager(
-            $_db, i4.ReadDatabaseContainer($_db).resultSet<i1.Users>('users'))
-        .filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_followerTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-}
-
-class $FollowsFilterComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Follows> {
-  $FollowsFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i1.$UsersFilterComposer get followed {
-    final i1.$UsersFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.followed,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$UsersFilterComposer(
-              $db: $db,
-              $table:
-                  i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i1.$UsersFilterComposer get follower {
-    final i1.$UsersFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.follower,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$UsersFilterComposer(
-              $db: $db,
-              $table:
-                  i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $FollowsOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Follows> {
-  $FollowsOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i1.$UsersOrderingComposer get followed {
-    final i1.$UsersOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.followed,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$UsersOrderingComposer(
-              $db: $db,
-              $table:
-                  i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i1.$UsersOrderingComposer get follower {
-    final i1.$UsersOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.follower,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$UsersOrderingComposer(
-              $db: $db,
-              $table:
-                  i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $FollowsAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Follows> {
-  $FollowsAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i1.$UsersAnnotationComposer get followed {
-    final i1.$UsersAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.followed,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$UsersAnnotationComposer(
-              $db: $db,
-              $table:
-                  i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i1.$UsersAnnotationComposer get follower {
-    final i1.$UsersAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.follower,
-        referencedTable:
-            i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$UsersAnnotationComposer(
-              $db: $db,
-              $table:
-                  i4.ReadDatabaseContainer($db).resultSet<i1.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $FollowsTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.Follows,
-    i1.Follow,
-    i1.$FollowsFilterComposer,
-    i1.$FollowsOrderingComposer,
-    i1.$FollowsAnnotationComposer,
-    $FollowsCreateCompanionBuilder,
-    $FollowsUpdateCompanionBuilder,
-    (i1.Follow, i1.$FollowsReferences),
-    i1.Follow,
-    i0.PrefetchHooks Function({bool followed, bool follower})> {
-  $FollowsTableManager(i0.GeneratedDatabase db, i1.Follows table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              i1.$FollowsFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$FollowsOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$FollowsAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<int> followed = const i0.Value.absent(),
-            i0.Value<int> follower = const i0.Value.absent(),
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.FollowsCompanion(
-            followed: followed,
-            follower: follower,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int followed,
-            required int follower,
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.FollowsCompanion.insert(
-            followed: followed,
-            follower: follower,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), i1.$FollowsReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: ({followed = false, follower = false}) {
-            return i0.PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends i0.TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
-                if (followed) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.followed,
-                    referencedTable: i1.$FollowsReferences._followedTable(db),
-                    referencedColumn:
-                        i1.$FollowsReferences._followedTable(db).id,
-                  ) as T;
-                }
-                if (follower) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.follower,
-                    referencedTable: i1.$FollowsReferences._followerTable(db),
-                    referencedColumn:
-                        i1.$FollowsReferences._followerTable(db).id,
-                  ) as T;
-                }
-
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ));
-}
-
-typedef $FollowsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Follows,
-    i1.Follow,
-    i1.$FollowsFilterComposer,
-    i1.$FollowsOrderingComposer,
-    i1.$FollowsAnnotationComposer,
-    $FollowsCreateCompanionBuilder,
-    $FollowsUpdateCompanionBuilder,
-    (i1.Follow, i1.$FollowsReferences),
-    i1.Follow,
-    i0.PrefetchHooks Function({bool followed, bool follower})>;
-
-class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
+class Users extends i0.Table
+    with i0.ResultSet<i1.User, Users>
+    implements i0.GeneratedTable<i1.User, Users> {
   @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Users(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
-  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
-      'id', aliasedName, false,
-      type: i0.DriftSqlType.int,
+  final String? alias;
+  Users([this.alias]);
+  late final i0.TableColumn<int> id = i0.TableColumn<int>(
+      name: 'id',
+      type: i0.BuiltinDriftType.int,
+      isNullable: false,
       requiredDuringInsert: false,
-      $customConstraints: 'NOT NULL PRIMARY KEY');
-  static const i0.VerificationMeta _nameMeta =
-      const i0.VerificationMeta('name');
-  late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: i0.DriftSqlType.string,
+      constraints: () =>
+          [i0.ColumnConstraint.customSql('NOT NULL PRIMARY KEY')])
+    ..owningResultSet = this;
+  late final i0.TableColumn<String> name = i0.TableColumn<String>(
+      name: 'name',
+      type: i0.BuiltinDriftType.text,
+      isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL');
-  static const i0.VerificationMeta _biographyMeta =
-      const i0.VerificationMeta('biography');
-  late final i0.GeneratedColumn<String> biography = i0.GeneratedColumn<String>(
-      'biography', aliasedName, true,
-      type: i0.DriftSqlType.string,
+      constraints: () => [i0.ColumnConstraint.customSql('NOT NULL')])
+    ..owningResultSet = this;
+  late final i0.TableColumn<String> biography = i0.TableColumn<String>(
+      name: 'biography',
+      type: i0.BuiltinDriftType.text,
+      isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '');
-  static const i0.VerificationMeta _preferencesMeta =
-      const i0.VerificationMeta('preferences');
-  late final i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
-      preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
-              type: i0.DriftSqlType.string,
+      constraints: () => [i0.ColumnConstraint.customSql('')])
+    ..owningResultSet = this;
+  late final i0.TableColumnWithTypeConverter<i2.Preferences?, String>
+      preferences = i0.TableColumn<String>(
+              name: 'preferences',
+              type: i0.BuiltinDriftType.text,
+              isNullable: true,
               requiredDuringInsert: false,
-              $customConstraints: '')
-          .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn);
-  static const i0.VerificationMeta _profilePictureMeta =
-      const i0.VerificationMeta('profilePicture');
-  late final i0.GeneratedColumn<i3.Uint8List> profilePicture =
-      i0.GeneratedColumn<i3.Uint8List>('profile_picture', aliasedName, true,
-          type: i0.DriftSqlType.blob,
+              constraints: () => [i0.ColumnConstraint.customSql('')])
+          .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn)
+        ..owningResultSet = this;
+  late final i0.TableColumn<i3.Uint8List> profilePicture =
+      i0.TableColumn<i3.Uint8List>(
+          name: 'profile_picture',
+          type: i0.BuiltinDriftType.byteArray,
+          isNullable: true,
           requiredDuringInsert: false,
-          $customConstraints: '');
+          constraints: () => [i0.ColumnConstraint.customSql('')])
+        ..owningResultSet = this;
   @override
-  List<i0.GeneratedColumn> get $columns =>
+  List<i0.TableColumn> get columns =>
       [id, name, biography, preferences, profilePicture];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'users';
   @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.User> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('biography')) {
-      context.handle(_biographyMeta,
-          biography.isAcceptableOrUnknown(data['biography']!, _biographyMeta));
-    }
-    context.handle(_preferencesMeta, const i0.VerificationResult.success());
-    if (data.containsKey('profile_picture')) {
-      context.handle(
-          _profilePictureMeta,
-          profilePicture.isAcceptableOrUnknown(
-              data['profile_picture']!, _profilePictureMeta));
-    }
-    return context;
+  Users asSelfType() => this;
+
+  @override
+  Set<i0.TableColumn> get primaryKey => {id};
+  @override
+  i1.User? Function(i0.DriftRow) createMapperFromPositions(
+      List<i0.ColumnPosition> positions) {
+    return (i0.DriftRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return i1.User(
+        id: row.readWithType(positions[0], i0.BuiltinDriftType.int)!,
+        name: row.readWithType(positions[1], i0.BuiltinDriftType.text)!,
+        biography: row.readWithType(positions[2], i0.BuiltinDriftType.text),
+        preferences: i1.Users.$converterpreferencesn
+            .fromSql(row.readWithType(positions[3], i0.BuiltinDriftType.text)),
+        profilePicture:
+            row.readWithType(positions[4], i0.BuiltinDriftType.byteArray),
+      );
+    };
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {id};
-  @override
-  i1.User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.User(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
-      biography: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}biography']),
-      preferences: i1.Users.$converterpreferencesn.fromSql(attachedDatabase
-          .typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
-      profilePicture: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
-    );
-  }
-
-  @override
-  Users createAlias(String alias) {
-    return Users(attachedDatabase, alias);
+  Users withAlias(String alias) {
+    return Users(alias);
   }
 
   static i0.JsonTypeConverter2<i2.Preferences, String, Map<String, Object?>>
@@ -606,7 +95,7 @@ class Users extends i0.Table with i0.TableInfo<Users, i1.User> {
   bool get dontWriteConstraints => true;
 }
 
-class User extends i0.DataClass implements i0.Insertable<i1.User> {
+class User extends i0.LegacyDataClass implements i0.Insertable<i1.User> {
   final int id;
   final String name;
   final String? biography;
@@ -818,71 +307,59 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   }
 }
 
-i0.Index get usersName =>
-    i0.Index('users_name', 'CREATE INDEX users_name ON users (name)');
+i0.Index get usersName => i0.Index('users_name',
+    i0.CustomComponent('CREATE INDEX users_name ON users (name)'));
 
-class Follows extends i0.Table with i0.TableInfo<Follows, i1.Follow> {
+class Follows extends i0.Table
+    with i0.ResultSet<i1.Follow, Follows>
+    implements i0.GeneratedTable<i1.Follow, Follows> {
   @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Follows(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _followedMeta =
-      const i0.VerificationMeta('followed');
-  late final i0.GeneratedColumn<int> followed = i0.GeneratedColumn<int>(
-      'followed', aliasedName, false,
-      type: i0.DriftSqlType.int,
+  final String? alias;
+  Follows([this.alias]);
+  late final i0.TableColumn<int> followed = i0.TableColumn<int>(
+      name: 'followed',
+      type: i0.BuiltinDriftType.int,
+      isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users(id)');
-  static const i0.VerificationMeta _followerMeta =
-      const i0.VerificationMeta('follower');
-  late final i0.GeneratedColumn<int> follower = i0.GeneratedColumn<int>(
-      'follower', aliasedName, false,
-      type: i0.DriftSqlType.int,
+      constraints: () =>
+          [i0.ColumnConstraint.customSql('NOT NULL REFERENCES users(id)')])
+    ..owningResultSet = this;
+  late final i0.TableColumn<int> follower = i0.TableColumn<int>(
+      name: 'follower',
+      type: i0.BuiltinDriftType.int,
+      isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users(id)');
+      constraints: () =>
+          [i0.ColumnConstraint.customSql('NOT NULL REFERENCES users(id)')])
+    ..owningResultSet = this;
   @override
-  List<i0.GeneratedColumn> get $columns => [followed, follower];
+  List<i0.TableColumn> get columns => [followed, follower];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'follows';
   @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Follow> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('followed')) {
-      context.handle(_followedMeta,
-          followed.isAcceptableOrUnknown(data['followed']!, _followedMeta));
-    } else if (isInserting) {
-      context.missing(_followedMeta);
-    }
-    if (data.containsKey('follower')) {
-      context.handle(_followerMeta,
-          follower.isAcceptableOrUnknown(data['follower']!, _followerMeta));
-    } else if (isInserting) {
-      context.missing(_followerMeta);
-    }
-    return context;
+  Follows asSelfType() => this;
+
+  @override
+  Set<i0.TableColumn> get primaryKey => {followed, follower};
+  @override
+  i1.Follow? Function(i0.DriftRow) createMapperFromPositions(
+      List<i0.ColumnPosition> positions) {
+    return (i0.DriftRow row) {
+      // Not part of row if non-nullable column "followed" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return i1.Follow(
+        followed: row.readWithType(positions[0], i0.BuiltinDriftType.int)!,
+        follower: row.readWithType(positions[1], i0.BuiltinDriftType.int)!,
+      );
+    };
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {followed, follower};
-  @override
-  i1.Follow map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.Follow(
-      followed: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}followed'])!,
-      follower: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}follower'])!,
-    );
-  }
-
-  @override
-  Follows createAlias(String alias) {
-    return Follows(attachedDatabase, alias);
+  Follows withAlias(String alias) {
+    return Follows(alias);
   }
 
   @override
@@ -892,7 +369,7 @@ class Follows extends i0.Table with i0.TableInfo<Follows, i1.Follow> {
   bool get dontWriteConstraints => true;
 }
 
-class Follow extends i0.DataClass implements i0.Insertable<i1.Follow> {
+class Follow extends i0.LegacyDataClass implements i0.Insertable<i1.Follow> {
   final int followed;
   final int follower;
   const Follow({required this.followed, required this.follower});
@@ -1022,7 +499,7 @@ class FollowsCompanion extends i0.UpdateCompanion<i1.Follow> {
   }
 }
 
-class PopularUser extends i0.DataClass {
+class PopularUser extends i0.LegacyDataClass {
   final int id;
   final String name;
   final String? biography;
@@ -1101,67 +578,76 @@ class PopularUser extends i0.DataClass {
               .equals(other.profilePicture, this.profilePicture));
 }
 
-class PopularUsers extends i0.ViewInfo<i1.PopularUsers, i1.PopularUser>
-    implements i0.HasResultSet {
-  final String? _alias;
+class PopularUsers extends i0.View
+    with i0.ResultSet<i1.PopularUser, i1.PopularUsers>
+    implements i0.GeneratedView<i1.PopularUser, i1.PopularUsers> {
   @override
-  final i0.GeneratedDatabase attachedDatabase;
-  PopularUsers(this.attachedDatabase, [this._alias]);
+  final String? alias;
+  final i0.GeneratedDatabase _attachedDatabase;
+  PopularUsers(this._attachedDatabase, [this.alias]);
   @override
-  List<i0.GeneratedColumn> get $columns =>
+  i0.BaseSelectStatement as() => throw UnimplementedError();
+  @override
+  List<i0.SchemaColumn> get columns =>
       [id, name, biography, preferences, profilePicture];
-  @override
-  String get aliasedName => _alias ?? entityName;
   @override
   String get entityName => 'popular_users';
   @override
-  Map<i0.SqlDialect, String> get createViewStatements => {
-        i0.SqlDialect.sqlite:
-            'CREATE VIEW popular_users AS SELECT * FROM users ORDER BY (SELECT count(*) FROM follows WHERE followed = users.id)',
-      };
-  @override
-  PopularUsers get asDslTable => this;
-  @override
-  i1.PopularUser map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.PopularUser(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
-      biography: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}biography']),
-      preferences: i1.Users.$converterpreferencesn.fromSql(attachedDatabase
-          .typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}preferences'])),
-      profilePicture: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
-    );
-  }
-
-  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
-      'id', aliasedName, false,
-      type: i0.DriftSqlType.int);
-  late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: i0.DriftSqlType.string);
-  late final i0.GeneratedColumn<String> biography = i0.GeneratedColumn<String>(
-      'biography', aliasedName, true,
-      type: i0.DriftSqlType.string);
-  late final i0.GeneratedColumnWithTypeConverter<i2.Preferences?, String>
-      preferences = i0.GeneratedColumn<String>('preferences', aliasedName, true,
-              type: i0.DriftSqlType.string)
-          .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn);
-  late final i0.GeneratedColumn<i3.Uint8List> profilePicture =
-      i0.GeneratedColumn<i3.Uint8List>('profile_picture', aliasedName, true,
-          type: i0.DriftSqlType.blob);
-  @override
-  PopularUsers createAlias(String alias) {
-    return PopularUsers(attachedDatabase, alias);
-  }
+  PopularUsers asSelfType() => this;
 
   @override
-  i0.Query? get query => null;
+  i1.PopularUser? Function(i0.DriftRow) createMapperFromPositions(
+      List<i0.ColumnPosition> positions) {
+    return (i0.DriftRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return i1.PopularUser(
+        id: row.readWithType(positions[0], i0.BuiltinDriftType.int)!,
+        name: row.readWithType(positions[1], i0.BuiltinDriftType.text)!,
+        biography: row.readWithType(positions[2], i0.BuiltinDriftType.text),
+        preferences: i1.Users.$converterpreferencesn
+            .fromSql(row.readWithType(positions[3], i0.BuiltinDriftType.text)),
+        profilePicture:
+            row.readWithType(positions[4], i0.BuiltinDriftType.byteArray),
+      );
+    };
+  }
+
+  late final i0.ViewColumn<int> id = i0.ViewColumn<int>.forDriftFile(
+      name: 'id', type: i0.BuiltinDriftType.int, isNullable: false)
+    ..owningResultSet = this;
+  late final i0.ViewColumn<String> name = i0.ViewColumn<String>.forDriftFile(
+      name: 'name', type: i0.BuiltinDriftType.text, isNullable: false)
+    ..owningResultSet = this;
+  late final i0.ViewColumn<String> biography =
+      i0.ViewColumn<String>.forDriftFile(
+          name: 'biography', type: i0.BuiltinDriftType.text, isNullable: true)
+        ..owningResultSet = this;
+  late final i0.ViewColumnWithTypeConverter<i2.Preferences?, String>
+      preferences = i0.ViewColumn<String>.forDriftFile(
+              name: 'preferences',
+              type: i0.BuiltinDriftType.text,
+              isNullable: true)
+          .withConverter<i2.Preferences?>(i1.Users.$converterpreferencesn)
+        ..owningResultSet = this;
+  late final i0.ViewColumn<i3.Uint8List> profilePicture =
+      i0.ViewColumn<i3.Uint8List>.forDriftFile(
+          name: 'profile_picture',
+          type: i0.BuiltinDriftType.byteArray,
+          isNullable: true)
+        ..owningResultSet = this;
   @override
-  Set<String> get readTables => const {'users', 'follows'};
+  PopularUsers withAlias(String alias) {
+    return PopularUsers(_attachedDatabase, alias);
+  }
+
+  @override
+  i0.SelectStatement? get query => null;
+  @override
+  i0.CustomComponent get sqlDefinition => i0.CustomComponent(
+      'CREATE VIEW popular_users AS SELECT * FROM users ORDER BY (SELECT count(*) FROM follows WHERE followed = users.id)');
+  @override
+  Set<String> get readsFrom => const {'users', 'follows'};
 }

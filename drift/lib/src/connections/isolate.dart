@@ -91,7 +91,7 @@ class RunningDriftServer {
 
   RunningDriftServer(
     this.self,
-    DriftDatabaseImplementation connection, {
+    Future<DriftSession> Function() connection, {
     this.killIsolateWhenDone = true,
     bool closeConnectionAfterShutdown = true,
     this.onlyAcceptSingleConnection = false,

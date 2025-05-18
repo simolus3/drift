@@ -2,727 +2,71 @@
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
 import 'package:modular/src/posts.drift.dart' as i1;
-import 'package:modular/src/users.drift.dart' as i2;
-import 'package:drift/internal/modular.dart' as i3;
 
-typedef $PostsCreateCompanionBuilder = i1.PostsCompanion Function({
-  i0.Value<int> id,
-  required int author,
-  i0.Value<String?> content,
-});
-typedef $PostsUpdateCompanionBuilder = i1.PostsCompanion Function({
-  i0.Value<int> id,
-  i0.Value<int> author,
-  i0.Value<String?> content,
-});
-
-final class $PostsReferences
-    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Posts, i1.Post> {
-  $PostsReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static i2.Users _authorTable(i0.GeneratedDatabase db) =>
-      i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').createAlias(
-          i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').author,
-              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id));
-
-  i2.$UsersProcessedTableManager get author {
-    final $_column = $_itemColumn<int>('author')!;
-
-    final manager = i2
-        .$UsersTableManager(
-            $_db, i3.ReadDatabaseContainer($_db).resultSet<i2.Users>('users'))
-        .filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_authorTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-
-  static i0.MultiTypedResultKey<i1.Likes, List<i1.Like>> _likesRefsTable(
-          i0.GeneratedDatabase db) =>
-      i0.MultiTypedResultKey.fromTable(
-          i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes'),
-          aliasName: i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').id,
-              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').post));
-
-  i1.$LikesProcessedTableManager get likesRefs {
-    final manager = i1
-        .$LikesTableManager(
-            $_db, i3.ReadDatabaseContainer($_db).resultSet<i1.Likes>('likes'))
-        .filter((f) => f.post.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_likesRefsTable($_db));
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-}
-
-class $PostsFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Posts> {
-  $PostsFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => i0.ColumnFilters(column));
-
-  i2.$UsersFilterComposer get author {
-    final i2.$UsersFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.author,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i2.$UsersFilterComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i0.Expression<bool> likesRefs(
-      i0.Expression<bool> Function(i1.$LikesFilterComposer f) f) {
-    final i1.$LikesFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i1.Likes>('likes'),
-        getReferencedColumn: (t) => t.post,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$LikesFilterComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i1.Likes>('likes'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-}
-
-class $PostsOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Posts> {
-  $PostsOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => i0.ColumnOrderings(column));
-
-  i2.$UsersOrderingComposer get author {
-    final i2.$UsersOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.author,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i2.$UsersOrderingComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $PostsAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Posts> {
-  $PostsAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  i0.GeneratedColumn<String> get content =>
-      $composableBuilder(column: $table.content, builder: (column) => column);
-
-  i2.$UsersAnnotationComposer get author {
-    final i2.$UsersAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.author,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i2.$UsersAnnotationComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i0.Expression<T> likesRefs<T extends Object>(
-      i0.Expression<T> Function(i1.$LikesAnnotationComposer a) f) {
-    final i1.$LikesAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i1.Likes>('likes'),
-        getReferencedColumn: (t) => t.post,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$LikesAnnotationComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i1.Likes>('likes'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-}
-
-class $PostsTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.Posts,
-    i1.Post,
-    i1.$PostsFilterComposer,
-    i1.$PostsOrderingComposer,
-    i1.$PostsAnnotationComposer,
-    $PostsCreateCompanionBuilder,
-    $PostsUpdateCompanionBuilder,
-    (i1.Post, i1.$PostsReferences),
-    i1.Post,
-    i0.PrefetchHooks Function({bool author, bool likesRefs})> {
-  $PostsTableManager(i0.GeneratedDatabase db, i1.Posts table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              i1.$PostsFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$PostsOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$PostsAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<int> author = const i0.Value.absent(),
-            i0.Value<String?> content = const i0.Value.absent(),
-          }) =>
-              i1.PostsCompanion(
-            id: id,
-            author: author,
-            content: content,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required int author,
-            i0.Value<String?> content = const i0.Value.absent(),
-          }) =>
-              i1.PostsCompanion.insert(
-            id: id,
-            author: author,
-            content: content,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), i1.$PostsReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: ({author = false, likesRefs = false}) {
-            return i0.PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (likesRefs)
-                  i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes')
-              ],
-              addJoins: <
-                  T extends i0.TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
-                if (author) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.author,
-                    referencedTable: i1.$PostsReferences._authorTable(db),
-                    referencedColumn: i1.$PostsReferences._authorTable(db).id,
-                  ) as T;
-                }
-
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (likesRefs)
-                    await i0.$_getPrefetchedData(
-                        currentTable: table,
-                        referencedTable:
-                            i1.$PostsReferences._likesRefsTable(db),
-                        managerFromTypedResult: (p0) =>
-                            i1.$PostsReferences(db, table, p0).likesRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) =>
-                                referencedItems.where((e) => e.post == item.id),
-                        typedResults: items)
-                ];
-              },
-            );
-          },
-        ));
-}
-
-typedef $PostsProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Posts,
-    i1.Post,
-    i1.$PostsFilterComposer,
-    i1.$PostsOrderingComposer,
-    i1.$PostsAnnotationComposer,
-    $PostsCreateCompanionBuilder,
-    $PostsUpdateCompanionBuilder,
-    (i1.Post, i1.$PostsReferences),
-    i1.Post,
-    i0.PrefetchHooks Function({bool author, bool likesRefs})>;
-typedef $LikesCreateCompanionBuilder = i1.LikesCompanion Function({
-  required int post,
-  required int likedBy,
-  i0.Value<int> rowid,
-});
-typedef $LikesUpdateCompanionBuilder = i1.LikesCompanion Function({
-  i0.Value<int> post,
-  i0.Value<int> likedBy,
-  i0.Value<int> rowid,
-});
-
-final class $LikesReferences
-    extends i0.BaseReferences<i0.GeneratedDatabase, i1.Likes, i1.Like> {
-  $LikesReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static i1.Posts _postTable(i0.GeneratedDatabase db) =>
-      i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').createAlias(
-          i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').post,
-              i3.ReadDatabaseContainer(db).resultSet<i1.Posts>('posts').id));
-
-  i1.$PostsProcessedTableManager get post {
-    final $_column = $_itemColumn<int>('post')!;
-
-    final manager = i1
-        .$PostsTableManager(
-            $_db, i3.ReadDatabaseContainer($_db).resultSet<i1.Posts>('posts'))
-        .filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_postTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-
-  static i2.Users _likedByTable(i0.GeneratedDatabase db) =>
-      i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').createAlias(
-          i0.$_aliasNameGenerator(
-              i3.ReadDatabaseContainer(db).resultSet<i1.Likes>('likes').likedBy,
-              i3.ReadDatabaseContainer(db).resultSet<i2.Users>('users').id));
-
-  i2.$UsersProcessedTableManager get likedBy {
-    final $_column = $_itemColumn<int>('liked_by')!;
-
-    final manager = i2
-        .$UsersTableManager(
-            $_db, i3.ReadDatabaseContainer($_db).resultSet<i2.Users>('users'))
-        .filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_likedByTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
-}
-
-class $LikesFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.Likes> {
-  $LikesFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i1.$PostsFilterComposer get post {
-    final i1.$PostsFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.post,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$PostsFilterComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i2.$UsersFilterComposer get likedBy {
-    final i2.$UsersFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.likedBy,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i2.$UsersFilterComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $LikesOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Likes> {
-  $LikesOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i1.$PostsOrderingComposer get post {
-    final i1.$PostsOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.post,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$PostsOrderingComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i2.$UsersOrderingComposer get likedBy {
-    final i2.$UsersOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.likedBy,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i2.$UsersOrderingComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $LikesAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.Likes> {
-  $LikesAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i1.$PostsAnnotationComposer get post {
-    final i1.$PostsAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.post,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i1.$PostsAnnotationComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i1.Posts>('posts'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i2.$UsersAnnotationComposer get likedBy {
-    final i2.$UsersAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.likedBy,
-        referencedTable:
-            i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i2.$UsersAnnotationComposer(
-              $db: $db,
-              $table:
-                  i3.ReadDatabaseContainer($db).resultSet<i2.Users>('users'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-}
-
-class $LikesTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.Likes,
-    i1.Like,
-    i1.$LikesFilterComposer,
-    i1.$LikesOrderingComposer,
-    i1.$LikesAnnotationComposer,
-    $LikesCreateCompanionBuilder,
-    $LikesUpdateCompanionBuilder,
-    (i1.Like, i1.$LikesReferences),
-    i1.Like,
-    i0.PrefetchHooks Function({bool post, bool likedBy})> {
-  $LikesTableManager(i0.GeneratedDatabase db, i1.Likes table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              i1.$LikesFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$LikesOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$LikesAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<int> post = const i0.Value.absent(),
-            i0.Value<int> likedBy = const i0.Value.absent(),
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.LikesCompanion(
-            post: post,
-            likedBy: likedBy,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int post,
-            required int likedBy,
-            i0.Value<int> rowid = const i0.Value.absent(),
-          }) =>
-              i1.LikesCompanion.insert(
-            post: post,
-            likedBy: likedBy,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), i1.$LikesReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: ({post = false, likedBy = false}) {
-            return i0.PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends i0.TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
-                if (post) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.post,
-                    referencedTable: i1.$LikesReferences._postTable(db),
-                    referencedColumn: i1.$LikesReferences._postTable(db).id,
-                  ) as T;
-                }
-                if (likedBy) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.likedBy,
-                    referencedTable: i1.$LikesReferences._likedByTable(db),
-                    referencedColumn: i1.$LikesReferences._likedByTable(db).id,
-                  ) as T;
-                }
-
-                return state;
-              },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ));
-}
-
-typedef $LikesProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.Likes,
-    i1.Like,
-    i1.$LikesFilterComposer,
-    i1.$LikesOrderingComposer,
-    i1.$LikesAnnotationComposer,
-    $LikesCreateCompanionBuilder,
-    $LikesUpdateCompanionBuilder,
-    (i1.Like, i1.$LikesReferences),
-    i1.Like,
-    i0.PrefetchHooks Function({bool post, bool likedBy})>;
-
-class Posts extends i0.Table with i0.TableInfo<Posts, i1.Post> {
+class Posts extends i0.Table
+    with i0.ResultSet<i1.Post, Posts>
+    implements i0.GeneratedTable<i1.Post, Posts> {
   @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Posts(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
-  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
-      'id', aliasedName, false,
-      type: i0.DriftSqlType.int,
+  final String? alias;
+  Posts([this.alias]);
+  late final i0.TableColumn<int> id = i0.TableColumn<int>(
+      name: 'id',
+      type: i0.BuiltinDriftType.int,
+      isNullable: false,
       requiredDuringInsert: false,
-      $customConstraints: 'PRIMARY KEY');
-  static const i0.VerificationMeta _authorMeta =
-      const i0.VerificationMeta('author');
-  late final i0.GeneratedColumn<int> author = i0.GeneratedColumn<int>(
-      'author', aliasedName, false,
-      type: i0.DriftSqlType.int,
+      constraints: () => [i0.ColumnConstraint.customSql('PRIMARY KEY')])
+    ..owningResultSet = this;
+  late final i0.TableColumn<int> author = i0.TableColumn<int>(
+      name: 'author',
+      type: i0.BuiltinDriftType.int,
+      isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users(id)');
-  static const i0.VerificationMeta _contentMeta =
-      const i0.VerificationMeta('content');
-  late final i0.GeneratedColumn<String> content = i0.GeneratedColumn<String>(
-      'content', aliasedName, true,
-      type: i0.DriftSqlType.string,
+      constraints: () =>
+          [i0.ColumnConstraint.customSql('NOT NULL REFERENCES users(id)')])
+    ..owningResultSet = this;
+  late final i0.TableColumn<String> content = i0.TableColumn<String>(
+      name: 'content',
+      type: i0.BuiltinDriftType.text,
+      isNullable: true,
       requiredDuringInsert: false,
-      $customConstraints: '');
+      constraints: () => [i0.ColumnConstraint.customSql('')])
+    ..owningResultSet = this;
   @override
-  List<i0.GeneratedColumn> get $columns => [id, author, content];
+  List<i0.TableColumn> get columns => [id, author, content];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'posts';
   @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Post> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('author')) {
-      context.handle(_authorMeta,
-          author.isAcceptableOrUnknown(data['author']!, _authorMeta));
-    } else if (isInserting) {
-      context.missing(_authorMeta);
-    }
-    if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
-    }
-    return context;
+  Posts asSelfType() => this;
+
+  @override
+  Set<i0.TableColumn> get primaryKey => {id};
+  @override
+  i1.Post? Function(i0.DriftRow) createMapperFromPositions(
+      List<i0.ColumnPosition> positions) {
+    return (i0.DriftRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return i1.Post(
+        id: row.readWithType(positions[0], i0.BuiltinDriftType.int)!,
+        author: row.readWithType(positions[1], i0.BuiltinDriftType.int)!,
+        content: row.readWithType(positions[2], i0.BuiltinDriftType.text),
+      );
+    };
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {id};
-  @override
-  i1.Post map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.Post(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
-      author: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}author'])!,
-      content: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}content']),
-    );
-  }
-
-  @override
-  Posts createAlias(String alias) {
-    return Posts(attachedDatabase, alias);
+  Posts withAlias(String alias) {
+    return Posts(alias);
   }
 
   @override
   bool get dontWriteConstraints => true;
 }
 
-class Post extends i0.DataClass implements i0.Insertable<i1.Post> {
+class Post extends i0.LegacyDataClass implements i0.Insertable<i1.Post> {
   final int id;
   final int author;
   final String? content;
@@ -866,75 +210,63 @@ class PostsCompanion extends i0.UpdateCompanion<i1.Post> {
   }
 }
 
-class Likes extends i0.Table with i0.TableInfo<Likes, i1.Like> {
+class Likes extends i0.Table
+    with i0.ResultSet<i1.Like, Likes>
+    implements i0.GeneratedTable<i1.Like, Likes> {
   @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  Likes(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _postMeta =
-      const i0.VerificationMeta('post');
-  late final i0.GeneratedColumn<int> post = i0.GeneratedColumn<int>(
-      'post', aliasedName, false,
-      type: i0.DriftSqlType.int,
+  final String? alias;
+  Likes([this.alias]);
+  late final i0.TableColumn<int> post = i0.TableColumn<int>(
+      name: 'post',
+      type: i0.BuiltinDriftType.int,
+      isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES posts(id)');
-  static const i0.VerificationMeta _likedByMeta =
-      const i0.VerificationMeta('likedBy');
-  late final i0.GeneratedColumn<int> likedBy = i0.GeneratedColumn<int>(
-      'liked_by', aliasedName, false,
-      type: i0.DriftSqlType.int,
+      constraints: () =>
+          [i0.ColumnConstraint.customSql('NOT NULL REFERENCES posts(id)')])
+    ..owningResultSet = this;
+  late final i0.TableColumn<int> likedBy = i0.TableColumn<int>(
+      name: 'liked_by',
+      type: i0.BuiltinDriftType.int,
+      isNullable: false,
       requiredDuringInsert: true,
-      $customConstraints: 'NOT NULL REFERENCES users(id)');
+      constraints: () =>
+          [i0.ColumnConstraint.customSql('NOT NULL REFERENCES users(id)')])
+    ..owningResultSet = this;
   @override
-  List<i0.GeneratedColumn> get $columns => [post, likedBy];
+  List<i0.TableColumn> get columns => [post, likedBy];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'likes';
   @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.Like> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('post')) {
-      context.handle(
-          _postMeta, post.isAcceptableOrUnknown(data['post']!, _postMeta));
-    } else if (isInserting) {
-      context.missing(_postMeta);
-    }
-    if (data.containsKey('liked_by')) {
-      context.handle(_likedByMeta,
-          likedBy.isAcceptableOrUnknown(data['liked_by']!, _likedByMeta));
-    } else if (isInserting) {
-      context.missing(_likedByMeta);
-    }
-    return context;
+  Likes asSelfType() => this;
+
+  @override
+  Set<i0.TableColumn> get primaryKey => const {};
+  @override
+  i1.Like? Function(i0.DriftRow) createMapperFromPositions(
+      List<i0.ColumnPosition> positions) {
+    return (i0.DriftRow row) {
+      // Not part of row if non-nullable column "post" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return i1.Like(
+        post: row.readWithType(positions[0], i0.BuiltinDriftType.int)!,
+        likedBy: row.readWithType(positions[1], i0.BuiltinDriftType.int)!,
+      );
+    };
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => const {};
-  @override
-  i1.Like map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.Like(
-      post: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}post'])!,
-      likedBy: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}liked_by'])!,
-    );
-  }
-
-  @override
-  Likes createAlias(String alias) {
-    return Likes(attachedDatabase, alias);
+  Likes withAlias(String alias) {
+    return Likes(alias);
   }
 
   @override
   bool get dontWriteConstraints => true;
 }
 
-class Like extends i0.DataClass implements i0.Insertable<i1.Like> {
+class Like extends i0.LegacyDataClass implements i0.Insertable<i1.Like> {
   final int post;
   final int likedBy;
   const Like({required this.post, required this.likedBy});

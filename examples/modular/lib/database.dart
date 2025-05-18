@@ -10,7 +10,7 @@ import 'database.drift.dart';
 }, daos: [
   MyAccessor
 ])
-class Database extends $Database {
+final class Database extends $Database {
   Database(super.e);
 
   @override

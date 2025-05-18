@@ -33,16 +33,18 @@ Future<WasmSqlite3> get sqlite3 {
   });
 }
 
-DriftDatabaseImplementation testInMemoryDatabase([DriftDialect? dialect]) {
+DriftConnection testInMemoryDatabase([DriftDialect? dialect]) {
   final resolvedDialect = dialect ?? const SqliteDialect();
 
-  return DriftDatabaseImplementation(
+  return DriftConnection(
     dialect: resolvedDialect,
-    openConnection: () async {
-      final sqlite = await sqlite3;
-      sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
-
-      return SqliteConnection(sqlite.openInMemory());
-    },
+    openConnection: openInMemoryDatabase,
   );
+}
+
+Future<DriftSession> openInMemoryDatabase() async {
+  final sqlite = await sqlite3;
+  sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
+
+  return SqliteConnection(sqlite.openInMemory());
 }

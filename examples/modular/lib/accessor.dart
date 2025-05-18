@@ -7,6 +7,7 @@ import 'database.dart';
   include: {'src/user_queries.drift'},
   queries: {'addUser': r'INSERT INTO users $user;'},
 )
-class MyAccessor extends DatabaseAccessor<Database> with $MyAccessorMixin {
+final class MyAccessor extends DatabaseAccessor<Database>
+    with $MyAccessorMixin {
   MyAccessor(super.attachedDatabase);
 }

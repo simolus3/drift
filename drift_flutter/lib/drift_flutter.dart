@@ -25,7 +25,7 @@ import 'src/connect.dart' as connect;
 /// On the web, this name is part of the FileSystem API path or the name of the
 /// IndexedDB database to use.
 /// Typically, names only consist of alphanumerical characters and underscores.
-DriftDatabaseImplementation driftDatabase({
+DriftConnection driftDatabase({
   required String name,
   connect.DriftWebOptions? web,
   connect.DriftNativeOptions? native,

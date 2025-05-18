@@ -28,6 +28,7 @@ final class CustomSelectStatement<T> with Selectable<T> {
   T Function(DriftRow) Function(DriftResultSet) createMapper;
 
   final DatabaseConnectionUser _db;
+  final bool isReadOnly;
 
   /// Constructs a new custom select statement for the query, the variables,
   /// the affected tables and the database.
@@ -37,20 +38,22 @@ final class CustomSelectStatement<T> with Selectable<T> {
     this.tables,
     this.createMapper,
     this._db,
+    this.isReadOnly,
   );
 
   static CustomSelectStatement<CustomRow> unmapped(
-    String query,
-    List<TypedNullableValue> variables,
-    Set<ResultSet> tables,
-    DatabaseConnectionUser db,
-  ) {
+      String query,
+      List<TypedNullableValue> variables,
+      Set<ResultSet> tables,
+      DatabaseConnectionUser db,
+      bool isReadOnly) {
     return CustomSelectStatement(
       query,
       variables,
       tables,
       (resultSet) => (row) => CustomRow(row.raw, db),
       db,
+      isReadOnly,
     );
   }
 
@@ -59,6 +62,7 @@ final class CustomSelectStatement<T> with Selectable<T> {
       query,
       variables: variables.toSql(_db.dialect),
       needsResultSet: true,
+      isReadOnly: isReadOnly,
     );
   }
 

@@ -62,6 +62,17 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
   @override
   Future<QueryResult> execute(StatementInfo statement) async {
     final sql = statement.sql;
+    if (statement.variables.isEmpty && !statement.needsResultSet) {
+      // Do this because it allows running multiple statements at once
+      database.execute(sql);
+
+      return QueryResult(
+        affectedRows: database.updatedRows,
+        resultSet: null,
+        lastInsertRowId: database.lastInsertRowId,
+      );
+    }
+
     final (stmt, isCached) = _getPreparedStatement(sql);
 
     try {
@@ -169,14 +180,14 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
     }
   }
 
-  /// Returns a [DriftDatabaseImplementation] backed by a SQLite
+  /// Returns a [DriftConnection] backed by a SQLite
   /// [sqlite.CommonDatabase] obtained by calling [open].
   ///
   /// Closing this [SqliteConnection] will close the database.
-  static DriftDatabaseImplementation synchronous(
+  static DriftConnection synchronous(
       {required sqlite.CommonDatabase Function() open,
       SqliteDialect dialect = const SqliteDialect()}) {
-    return DriftDatabaseImplementation(
+    return DriftConnection(
       dialect: dialect,
       openConnection: () async => SqliteConnection(open()),
     );

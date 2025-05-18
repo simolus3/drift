@@ -63,7 +63,6 @@ import 'remote/client.dart';
 import 'remote/protocol.dart';
 import 'remote/serialize.dart';
 import 'remote/server.dart';
-import '../query_builder/dialect.dart';
 
 /// Serves a drift database connection over any two-way communication channel.
 ///
@@ -78,7 +77,7 @@ abstract interface class DriftServer {
   /// clients can use [shutdown] to stop this server remotely.
   /// If [closeConnectionAfterShutdown] is set to `true` (the default), shutting
   /// down the server will also close the [connection].
-  factory DriftServer(DriftDatabaseImplementation connection,
+  factory DriftServer(Future<DriftSession> Function() connection,
       {bool allowRemoteShutdown = false,
       bool closeConnectionAfterShutdown = true}) {
     return ServerImplementation(
@@ -153,14 +152,13 @@ abstract interface class DriftServer {
 ///
 /// The optional [debugLog] can be enabled to print incoming and outgoing
 /// messages.
-DriftDatabaseImplementation connectToRemote({
+Future<DriftDatabaseImplementation> connectToRemote({
   required StreamChannel<Object?> channel,
-  required DriftDialect dialect,
   Object? tag,
   bool debugLog = false,
   bool serialize = true,
   bool singleClientMode = false,
-}) {
+}) async {
   final client = DriftClient(
     DriftChannel(channel.messageChannel(
       serialize: serialize,
@@ -170,11 +168,10 @@ DriftDatabaseImplementation connectToRemote({
     tag,
   );
 
-  return DriftDatabaseImplementation(
-    dialect: dialect,
-    openConnection: client.requestRootSession,
-    streamQueries: client.streamQueries,
-  );
+  final root = await client.requestRootSession();
+  final streamQueries = client.streamQueries;
+
+  return (root, streamQueries);
 }
 
 /// Sends a shutdown request over a channel.

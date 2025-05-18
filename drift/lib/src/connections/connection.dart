@@ -9,20 +9,24 @@ import '../runtime/streams/store_impl.dart';
 import '../runtime/streams/update_rules.dart';
 import 'result_set.dart';
 
-final class DriftDatabaseImplementation {
+typedef DriftDatabaseImplementation = (DriftSession, StreamQueryStore);
+
+final class DriftConnection {
   final DriftDialect dialect;
-  final Future<DriftSession> Function() _openConnection;
+  final Future<DriftDatabaseImplementation> Function() _openConnection;
 
-  final StreamQueryStore? streamQueries;
-
-  DriftDatabaseImplementation({
+  DriftConnection({
     required this.dialect,
     required Future<DriftSession> Function() openConnection,
-    this.streamQueries,
-  }) : _openConnection = openConnection;
+    StreamQueryStore? streamQueries,
+  }) : _openConnection = _wrapOpenSession(openConnection, streamQueries);
 
-  static DriftDatabaseImplementation delayed(
-      Future<DriftDatabaseImplementation> Function() open,
+  DriftConnection.withImplementation({
+    required this.dialect,
+    required Future<DriftDatabaseImplementation> Function() implementation,
+  }) : _openConnection = implementation;
+
+  static DriftConnection delayed(Future<DriftConnection> Function() open,
       {required DriftDialect dialect}) {
     final session = Completer<DriftSession>();
     final streamQueries = Completer<StreamQueryStore>();
@@ -41,7 +45,7 @@ final class DriftDatabaseImplementation {
       return session.future;
     }
 
-    return DriftDatabaseImplementation(
+    return DriftConnection(
       dialect: dialect,
       openConnection: () async {
         await request();
@@ -55,8 +59,16 @@ final class DriftDatabaseImplementation {
   }
 
   Future<(DriftSession, StreamQueryStore)> open() async {
-    final session = await _openConnection();
-    return (session, streamQueries ?? LocalStreamQueryStore());
+    return await _openConnection();
+  }
+
+  static Future<DriftDatabaseImplementation> Function() _wrapOpenSession(
+    Future<DriftSession> Function() session,
+    StreamQueryStore? store,
+  ) {
+    return () async {
+      return (await session(), store ?? LocalStreamQueryStore());
+    };
   }
 }
 

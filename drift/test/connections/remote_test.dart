@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:async/async.dart';
-import 'package:drift/connections/remote.dart';
 import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/src/connections/remote.dart';
 import 'package:drift/src/connections/remote/channel.dart';
 import 'package:drift/src/connections/remote/protocol.dart';
 import 'package:drift/src/connections/remote/serialize.dart';
@@ -21,8 +21,7 @@ import '../test_utils/test_utils.dart';
 void main() {
   test('closes channel in shutdown', () async {
     final controller = StreamChannelController<Object?>();
-    final server =
-        DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
+    final server = DriftServer(openInMemoryDatabase, allowRemoteShutdown: true);
     server.serve(controller.foreign);
 
     await shutdown(controller.local.expectedToClose);
@@ -30,16 +29,16 @@ void main() {
 
   test('can shutdown server on close', () async {
     final controller = StreamChannelController<Object?>();
-    final server =
-        DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
+    final server = DriftServer(openInMemoryDatabase, allowRemoteShutdown: true);
     server.serve(controller.foreign);
 
-    final client = connectToRemote(
+    final db = TodoDb(DriftConnection.withImplementation(
       dialect: const SqliteDialect(),
-      channel: controller.local.expectedToClose,
-      singleClientMode: true,
-    );
-    final db = TodoDb(client);
+      implementation: () => connectToRemote(
+        channel: controller.local.expectedToClose,
+        singleClientMode: true,
+      ),
+    ));
 
     await db.select(db.todosTable).get();
     await db.close();
@@ -51,24 +50,24 @@ void main() {
     'does not send table update notifications in single client mode',
     () async {
       final server =
-          DriftServer(testInMemoryDatabase(), allowRemoteShutdown: true);
+          DriftServer(openInMemoryDatabase, allowRemoteShutdown: true);
       final controller = StreamChannelController<Object?>();
       server.serve(controller.foreign, serialize: false);
 
-      final client = connectToRemote(
+      final db = TodoDb(DriftConnection.withImplementation(
         dialect: const SqliteDialect(),
-        channel:
-            controller.local.transformSink(StreamSinkTransformer.fromHandlers(
-          handleData: (data, out) {
-            expect(data, isNot(isA<NotifyTablesUpdated>()));
-            out.add(data);
-          },
-        )),
-        serialize: false,
-        singleClientMode: true,
-      );
-
-      final db = TodoDb(client);
+        implementation: () => connectToRemote(
+          channel:
+              controller.local.transformSink(StreamSinkTransformer.fromHandlers(
+            handleData: (data, out) {
+              expect(data, isNot(isA<NotifyTablesUpdated>()));
+              out.add(data);
+            },
+          )),
+          serialize: false,
+          singleClientMode: true,
+        ),
+      ));
       await db.select(db.todosTable).get();
       await db.close();
     },
@@ -219,21 +218,22 @@ void main() {
       ));
     });
 
-    final server = DriftServer(createConnection(executor));
+    final server = DriftServer(() async => executor);
     addTearDown(server.shutdown);
 
     final channelController = StreamChannelController<Object?>();
     server.serve(channelController.foreign.changeStream(_checkStreamOfSimple),
         serialize: true);
 
-    final connection = connectToRemote(
-      channel: channelController.local
-          .changeStream(_checkStreamOfSimple)
-          .expectedToClose,
-      serialize: true,
+    final db = TodoDb(DriftConnection.withImplementation(
       dialect: const SqliteDialect(),
-    );
-    final db = TodoDb(connection);
+      implementation: () => connectToRemote(
+        channel: channelController.local
+            .changeStream(_checkStreamOfSimple)
+            .expectedToClose,
+        serialize: true,
+      ),
+    ));
 
     await db.customSelect('SELECT ?, ?, ?, ?', variables: [
       (BuiltinDriftType.int64, BigInt.one),
@@ -320,15 +320,13 @@ void main() {
 
     when(outerTransaction.begin(any)).thenAnswer(newTransaction);
 
-    final server = DriftServer(DriftDatabaseImplementation(
-      dialect: const SqliteDialect(),
-      openConnection: () async => executor,
-    ));
+    final server = DriftServer(() async => executor);
     server.serve(controller.foreign);
     addTearDown(server.shutdown);
 
-    final db = TodoDb(connectToRemote(
-        dialect: const SqliteDialect(), channel: controller.local));
+    final db = TodoDb(DriftConnection.withImplementation(
+        dialect: const SqliteDialect(),
+        implementation: () => connectToRemote(channel: controller.local)));
     addTearDown(db.close);
 
     await db.transaction(() async {
@@ -363,15 +361,20 @@ void main() {
     final testEventQueue = StreamQueue(testEvents.stream);
     final lock = Lock();
 
-    final server = DriftServer(DriftDatabaseImplementation(
-      dialect: const SqliteDialect(),
-      openConnection: () async => executor,
-    ));
+    final server = DriftServer(() async => executor);
     controller.foreign.serveMulti(server);
     addTearDown(server.shutdown);
 
-    final a = TodoDb(multi.newRemoteConnection());
-    final b = TodoDb(multi.newRemoteConnection());
+    final a = TodoDb(
+      DriftConnection.withImplementation(
+          dialect: const SqliteDialect(),
+          implementation: multi.newRemoteConnection),
+    );
+    final b = TodoDb(
+      DriftConnection.withImplementation(
+          dialect: const SqliteDialect(),
+          implementation: multi.newRemoteConnection),
+    );
 
     final exclusiveA = MockSession();
     final exclusiveB = MockSession();
@@ -481,10 +484,10 @@ extension<T> on StreamChannel<T> {
 }
 
 extension on MultiChannel<Object?> {
-  DriftDatabaseImplementation newRemoteConnection() {
+  Future<DriftDatabaseImplementation> newRemoteConnection() async {
     final channel = virtualChannel();
     sink.add(channel.id);
 
-    return connectToRemote(channel: channel, dialect: const SqliteDialect());
+    return connectToRemote(channel: channel);
   }
 }

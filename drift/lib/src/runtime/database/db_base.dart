@@ -14,13 +14,15 @@ import 'connection_user.dart';
 abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   /// The used drift database implementation responsible for building queries
   /// and executing them.
-  final DriftDatabaseImplementation implementation;
+  final DriftConnection implementation;
   Future<DriftSession>? _openingSession;
   DriftSession? _openedSession;
   Future<void>? _closing;
 
   final Completer<StreamQueryStore> _openedStreamQueries = Completer();
   late StreamQueryStore _streamQueryStore;
+
+  bool enableMigrations = true;
 
   /// Opens a drift database backed by a given [implementation].
   GeneratedDatabase(this.implementation) {
@@ -108,14 +110,17 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
 
     final oldVersion = await session.schemaVersion;
     final strategy = _resolvedMigration;
-    final migrator = Migrator(this);
 
-    if (oldVersion == 0) {
-      await strategy.onCreate(migrator);
-      await session.writeSchemaVersion(schemaVersion);
-    } else if (oldVersion < schemaVersion) {
-      await strategy.onUpgrade(migrator, oldVersion, schemaVersion);
-      await session.writeSchemaVersion(schemaVersion);
+    if (enableMigrations) {
+      final migrator = Migrator(this);
+
+      if (oldVersion == 0) {
+        await strategy.onCreate(migrator);
+        await session.writeSchemaVersion(schemaVersion);
+      } else if (oldVersion < schemaVersion) {
+        await strategy.onUpgrade(migrator, oldVersion, schemaVersion);
+        await session.writeSchemaVersion(schemaVersion);
+      }
     }
 
     await strategy.beforeOpen?.call(
