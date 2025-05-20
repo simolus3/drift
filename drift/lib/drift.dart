@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 
 export 'src/connections/connection.dart';
+export 'src/connections/interceptor.dart';
 export 'src/connections/result_set.dart' show ColumnPosition, QueryResult;
 
 export 'src/dsl/columns.dart';

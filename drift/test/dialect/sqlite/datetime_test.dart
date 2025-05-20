@@ -25,7 +25,8 @@ void main() {
           ..statement.comma()
           ..addTableColumnDefinition(nullable);
 
-    expect(generatedAsText.statement.sql, '"name" TEXT NOT NULL,"name" TEXT ');
+    expect(
+        generatedAsText.statement.sql, '"name" TEXT NOT NULL,"name" TEXT NULL');
     expect(generatedAsTimestamp.statement.sql,
         '"name" INTEGER NOT NULL,"name" INTEGER ');
   });

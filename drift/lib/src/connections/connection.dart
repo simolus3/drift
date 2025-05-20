@@ -64,6 +64,19 @@ final class DriftConnection {
     return await _openConnection();
   }
 
+  /// Returns a [DriftConnection] that has the underlying [DriftSession]
+  /// replaced by the [change] function.
+  DriftConnection changeSession(
+      FutureOr<DriftSession> Function(DriftSession) change) {
+    return DriftConnection.withImplementation(
+      dialect: dialect,
+      implementation: () async {
+        final (session, streams) = await open();
+        return (await change(session), streams);
+      },
+    );
+  }
+
   static Future<DriftDatabaseImplementation> Function() _wrapOpenSession(
     Future<DriftSession> Function() session,
     StreamQueryStore? store,

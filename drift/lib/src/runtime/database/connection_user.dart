@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
+import '../../connections/interceptor.dart';
 import '../../connections/result_set.dart';
 import '../../query_builder.dart';
 import '../batch.dart';
@@ -224,6 +225,23 @@ abstract base class DatabaseConnectionUser {
     await Future(() => runInBatch(batch));
 
     return await runBatch(batch);
+  }
+
+  /// Executes [action] with calls intercepted by the given [interceptor]
+  ///
+  /// This can be used to, for instance, write a custom statement logger or to
+  /// retry failing statements automatically.
+  Future<T> runWithInterceptor<T>(Future<T> Function() action,
+      {required QueryInterceptor interceptor}) async {
+    final session = await currentSession();
+
+    return _runConnectionZoned(
+      _ScopedDatabaseSession(
+        session.interceptWith(interceptor),
+        currentStreamQueryStore(),
+      ),
+      action,
+    );
   }
 
   /// Obtains an exclusive lock on the current database context, runs [action]
