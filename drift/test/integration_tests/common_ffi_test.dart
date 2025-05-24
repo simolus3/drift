@@ -3,7 +3,8 @@ library;
 
 import 'dart:io';
 
-import 'package:drift/native.dart';
+import 'package:drift/connections/sqlite/native.dart';
+import 'package:drift/connections/sqlite/sqlite3.dart';
 import 'package:drift_testcases/tests.dart';
 import 'package:path/path.dart' show join;
 import 'package:sqlite3/sqlite3.dart' hide Database;
@@ -26,8 +27,8 @@ class DriftNativeExcecutor extends TestExecutor {
   }
 
   @override
-  DatabaseConnection createConnection() {
-    return DatabaseConnection(NativeDatabase(file));
+  DriftConnection createConnection() {
+    return SqliteConnection.synchronous(open: () => sqlite3.open(file.path));
   }
 
   @override
@@ -60,13 +61,13 @@ void main() {
     const nameInMain = 'main';
 
     // Prepare the file we're swapping in later
-    final dbForSetup = Database.executor(NativeDatabase(createdForSwap));
+    final dbForSetup = Database(NativeDatabase.blocking(createdForSwap));
     await dbForSetup.into(dbForSetup.users).insert(
         UsersCompanion.insert(name: nameInSwap, birthDate: DateTime.now()));
     await dbForSetup.close();
 
     // Open the main file
-    var db = Database.executor(NativeDatabase(mainFile));
+    var db = Database(NativeDatabase.blocking(mainFile));
     await db.into(db.users).insert(
         UsersCompanion.insert(name: nameInMain, birthDate: DateTime.now()));
     await db.close();
@@ -76,7 +77,7 @@ void main() {
         flush: true);
 
     // Re-open database
-    db = Database.executor(NativeDatabase(mainFile));
+    db = Database(NativeDatabase.blocking(mainFile));
     final users = await db.select(db.users).get();
 
     expect(

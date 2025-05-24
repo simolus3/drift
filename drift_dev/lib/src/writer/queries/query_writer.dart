@@ -453,12 +453,14 @@ class _MappingCodeWriter {
     };
   }
 
-  String columnPosition(ScalarResultColumn column, {bool addConst = true}) {
+  String columnPosition(ScalarResultColumn column, _ArgumentContext context,
+      {bool addConst = true}) {
     final specialName =
         _writer._transformer.newNameFor(column.sqlParserColumn!);
+    final name = context.applyPrefix((specialName ?? column.name));
 
     final prefix = addConst ? 'const' : '';
-    return '$prefix (index: ${column.index}, name: ${asDartLiteral(specialName ?? column.name)})';
+    return '$prefix (index: ${column.index}, name: ${asDartLiteral(name)})';
   }
 
   void write(
@@ -564,7 +566,7 @@ class _MappingCodeWriter {
   void _readScalar(ScalarResultColumn column, _ArgumentContext context) {
     final isNullable = context.isNullable || column.nullable;
 
-    final position = columnPosition(column);
+    final position = columnPosition(column, context);
     var code = 'row.readWithType($position, ${referenceType(column.sqlType)})';
     if (!isNullable) {
       code += '!';
@@ -597,7 +599,7 @@ class _MappingCodeWriter {
       final source = match.columnToSource[column]!;
 
       _outerSetup.write(columnPosition(
-        source,
+        source, context,
         addConst: false, // Is already const from list literal
       ));
       _outerSetup.write(',');

@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import '../data/sample_data.dart' as people;
@@ -66,13 +65,13 @@ void transactionTests(TestExecutor executor) {
     'nested transactions',
     () async {
       final db = Database(executor.createConnection());
-      await db.users.delete().go();
+      await db.delete(db.users).go();
 
       await db.transaction(() async {
         expect(await db.select(db.users).get(), isEmpty);
 
         await db.transaction(() async {
-          await db.users.insertOne(UsersCompanion.insert(
+          await db.into(db.users).insert(UsersCompanion.insert(
               name: 'first user', birthDate: DateTime.now()));
           expect(await db.select(db.users).get(), hasLength(1));
         });
@@ -81,7 +80,7 @@ void transactionTests(TestExecutor executor) {
 
         final rollback = Exception('rollback');
         await expectLater(db.transaction(() async {
-          await db.users.insertOne(UsersCompanion.insert(
+          await db.into(db.users).insert(UsersCompanion.insert(
               name: 'second user', birthDate: DateTime.now()));
           expect(await db.select(db.users).get(), hasLength(2));
 

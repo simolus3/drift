@@ -336,7 +336,8 @@ class QueryAnalyzer {
         final resolvedColumns = column.resolvedColumns;
 
         if (column is NestedStarResultColumn) {
-          final resolved = _resolveNestedResultTable(queryContext, column);
+          final resolved = _resolveNestedResultTable(
+              queryContext, column, currentColumnIndex);
 
           if (resolved != null) {
             currentColumnIndex += resolved.innerResultSet.underlyingColumnCount;
@@ -445,7 +446,9 @@ class QueryAnalyzer {
   /// that this result set should be handled as a nested type in Dart. For an
   /// example, see https://drift.simonbinder.eu/docs/using-sql/drift_files/#nested-results
   NestedResultTable? _resolveNestedResultTable(
-      _QueryHandlerContext queryContext, NestedStarResultColumn column) {
+      _QueryHandlerContext queryContext,
+      NestedStarResultColumn column,
+      int expandedColumnOffset) {
     final originalResult = column.resultSet;
     final result = originalResult?.unalias();
     final rawColumns = result?.resolvedColumns;
@@ -465,7 +468,7 @@ class QueryAnalyzer {
       ),
       rawColumns,
       null,
-      0,
+      expandedColumnOffset,
     );
 
     final analysis = JoinModel.of(column);

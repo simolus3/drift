@@ -8,15 +8,10 @@ targets:
           write_from_json_string_constructor: true
           raw_result_set_data: false
           named_parameters: false
-          sql:
-            # Generate multi-dialect code so that the tests can run on each DBMS we're
-            # working on (even though only sqlite is supported officially).
-            dialects:
-              - sqlite
-              - postgres
-              - mariadb
-            options:
+          generate_manager: false # not used for these tests
+          dialects:
+            sqlite:
               version: "3.37"
-              modules:
-                - json1
-                - fts5
+              modules: [json1, fts5]
+            postgres:
+            mariadb:

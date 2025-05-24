@@ -64,6 +64,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     final resultSet = RawResultSet.generate(
       1,
       (_, rs) => RawRow.byMap(resultSet: rs, values: rawValues),
+      columnNames: rawValues.keys.toList(),
     );
 
     final mappedResultSet =

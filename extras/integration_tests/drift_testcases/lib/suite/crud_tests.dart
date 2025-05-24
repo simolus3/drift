@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:test/test.dart';
 
 import '../tests.dart';
@@ -56,16 +58,6 @@ void crudTests(TestExecutor executor) {
     await executor.clearDatabaseAndClose(db);
   });
 
-  test('insert mode', () async {
-    final db = Database(executor.createConnection());
-    if (db.executor.dialect == SqlDialect.postgres) {
-      await expectLater(
-          db.into(db.users).insert(marcell, mode: InsertMode.insertOrReplace),
-          throwsA(isA<ArgumentError>()));
-    }
-    await executor.clearDatabaseAndClose(db);
-  });
-
   test('supports RETURNING', () async {
     final db = Database(executor.createConnection());
     final result = await db.returning(1, 2, true);
@@ -106,15 +98,16 @@ void crudTests(TestExecutor executor) {
 
     // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
     await db.customStatement(
-        switch (db.executor.dialect) {
-          SqlDialect.postgres =>
-            r'INSERT INTO friendships (first_user, second_user) VALUES ($1, $2)',
-          SqlDialect.mariadb =>
-            r'INSERT INTO friendships (first_user, second_user) VALUES (?, ?)',
-          _ =>
-            r'INSERT INTO friendships (first_user, second_user) VALUES (?1, ?2)',
-        },
-        <int>[1, 2]);
+      switch (db.dialect.known) {
+        KnownSqlDialect.postgres =>
+          r'INSERT INTO friendships (first_user, second_user) VALUES ($1, $2)',
+        KnownSqlDialect.mariadb =>
+          r'INSERT INTO friendships (first_user, second_user) VALUES (?, ?)',
+        _ =>
+          r'INSERT INTO friendships (first_user, second_user) VALUES (?1, ?2)',
+      },
+      [(BuiltinDriftType.int, 1), (BuiltinDriftType.int, 2)],
+    );
 
     expect(await db.friendsOf(1).get(), isNotEmpty);
     await executor.clearDatabaseAndClose(db);
@@ -128,8 +121,9 @@ void crudTests(TestExecutor executor) {
 
     Future<T?> evaluate<T extends Object>(Expression<T> expr) async {
       late final Expression<T> effectiveExpr;
-      final dialect = database.executor.dialect;
-      if (dialect == SqlDialect.postgres || dialect == SqlDialect.mariadb) {
+      final dialect = database.dialect.known;
+      if (dialect == KnownSqlDialect.postgres ||
+          dialect == KnownSqlDialect.mariadb) {
         // 'SELECT'ing values that don't come from a table return as String
         // by default, so we need to explicitly cast it to the expected type
         // https://www.postgresql.org/docs/current/typeconv-select.html

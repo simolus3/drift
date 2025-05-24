@@ -115,7 +115,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       if (oldVersion == 0) {
         await strategy.onCreate(migrator);
         await session.writeSchemaVersion(schemaVersion);
-      } else if (oldVersion < schemaVersion) {
+      } else if (oldVersion != schemaVersion) {
         await strategy.onUpgrade(migrator, oldVersion, schemaVersion);
         await session.writeSchemaVersion(schemaVersion);
       }

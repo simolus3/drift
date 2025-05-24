@@ -24,12 +24,13 @@ final class QueryResult {
 
 abstract base class RawResultSet
     with ListMixin<RawRow>, NonGrowableListMixin<RawRow> {
-  RawResultSet();
+  final List<String> columnNames;
+
+  RawResultSet({required this.columnNames});
 
   factory RawResultSet.generate(
-    int length,
-    RawRow Function(int index, RawResultSet resultSet) generate,
-  ) = _GeneratedResultSet;
+      int length, RawRow Function(int index, RawResultSet resultSet) generate,
+      {required List<String> columnNames}) = _GeneratedResultSet;
 
   @override
   void operator []=(int index, RawRow value) {
@@ -37,7 +38,7 @@ abstract base class RawResultSet
   }
 }
 
-abstract base class RawRow {
+abstract base class RawRow extends UnmodifiableMapBase<String, Object?> {
   final RawResultSet resultSet;
 
   RawRow({required this.resultSet});
@@ -62,6 +63,16 @@ abstract base class RawRow {
   Object? rawValue(ColumnPosition position);
 
   Object? byName(String name);
+
+  @override
+  Object? operator [](Object? key) => switch (key) {
+        String s => byName(s),
+        ColumnPosition pos => rawValue(pos),
+        _ => null,
+      };
+
+  @override
+  Iterable<String> get keys => resultSet.columnNames;
 }
 
 final class _GeneratedResultSet extends RawResultSet {
@@ -69,7 +80,8 @@ final class _GeneratedResultSet extends RawResultSet {
   final int length;
   final RawRow Function(int, RawResultSet) _generate;
 
-  _GeneratedResultSet(this.length, this._generate);
+  _GeneratedResultSet(this.length, this._generate,
+      {required super.columnNames});
 
   @override
   RawRow operator [](int index) => _generate(index, this);

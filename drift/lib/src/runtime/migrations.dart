@@ -1,7 +1,6 @@
 import '../../internal/versioned_schema.dart';
 import '../connections/connection.dart';
 import '../query_builder.dart';
-import '../query_builder/statements/statement.dart';
 import 'database/db_base.dart';
 
 /// Signature of a function that will be invoked when a database is created.

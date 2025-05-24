@@ -807,7 +807,7 @@ abstract base class StatementCompiler {
   void addRollback(RollbackStatement stmt) {
     statement.buffer.write('ROLLBACK');
     if (stmt.depth > 0) {
-      statement.buffer.write(' TO ${stmt.depth}');
+      statement.buffer.write(' TO s${stmt.depth}');
     }
     statement.buffer.write(';');
   }

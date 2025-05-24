@@ -1,5 +1,5 @@
 import 'package:build_test/build_test.dart';
-import 'package:drift/drift.dart';
+import 'package:drift_dev/src/analysis/dialect.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:drift_dev/src/writer/queries/query_writer.dart';
@@ -161,9 +161,11 @@ void main() {
         query: INSERT INTO tbl (id, text) VALUES(10, 'test') RETURNING id;
       ''',
       options: const DriftOptions.defaults(
-        sqliteAnalysisOptions:
-            // Assuming 3.35 because dso that returning works.
-            SqliteAnalysisOptions(version: SqliteVersion.v3(35)),
+        dialects: {
+          'sqlite3': DriftSqliteDialect(
+            version: SqliteVersion.v3(35),
+          ),
+        },
       ),
     );
     expect(generated, contains('.toList()'));
@@ -532,8 +534,10 @@ class ADrift extends i1.ModularAccessor {
 query (:foo AS TEXT): SELECT :foo;
 ''',
       options: const DriftOptions.defaults(
-        dialect: DialectOptions(
-            null, [SqlDialect.sqlite, SqlDialect.postgres], null),
+        dialects: {
+          'sqlite': DriftSqliteDialect(),
+          'postgres': DriftPostgresDialect(),
+        },
       ),
     );
 
@@ -558,7 +562,9 @@ CREATE TABLE examples (
 query: SELECT CAST ($status AS INT) AS status FROM examples;
 ''',
       options: const DriftOptions.defaults(
-        dialect: DialectOptions(null, [SqlDialect.sqlite], null),
+        dialects: {
+          'sqlite': DriftSqliteDialect(),
+        },
       ),
     );
 
@@ -573,5 +579,32 @@ query: SELECT CAST ($status AS INT) AS status FROM examples;
         ),
       ),
     );
+  });
+
+  test('generates correct mapping code', () async {
+    final result = await generateForQueryInDriftFile('''
+CREATE TABLE users (
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE friendships (
+  first_user INTEGER NOT NULL REFERENCES users (id),
+  second_user INTEGER NOT NULL REFERENCES users (id),
+
+  really_good_friends INTEGER NOT NULL DEFAULT 0
+);
+
+findFriends: SELECT
+          f.really_good_friends, "user".**
+       FROM friendships f
+         INNER JOIN users "user" ON "user".id IN (f.first_user, f.second_user) AND
+             "user".id != :user
+       WHERE (f.first_user = :user OR f.second_user = :user);
+''');
+
+    expect(result, contains(r'''
+final map_0 = users.createMapperFromPositions(const [ (index: 1, name: 'nested_0.id'), (index: 2, name: 'nested_0.name'),]);
+'''));
   });
 }

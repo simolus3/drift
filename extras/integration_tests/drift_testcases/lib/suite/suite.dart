@@ -7,7 +7,7 @@ import 'migrations.dart';
 import 'transactions.dart';
 
 abstract class TestExecutor {
-  DatabaseConnection createConnection();
+  DriftConnection createConnection();
 
   bool get supportsReturning => false;
   bool get supportsNestedTransactions => false;
@@ -39,8 +39,10 @@ void runAllTests(TestExecutor executor) {
 
   test('can close database without interacting with it', () async {
     final connection = executor.createConnection();
+    final (session, streams) = await connection.open();
 
-    await connection.executor.close();
+    await session.close();
+    await streams.close();
   });
 }
 

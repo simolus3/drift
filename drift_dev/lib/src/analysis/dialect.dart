@@ -99,6 +99,8 @@ final class CustomDriftDialect implements RegisteredDriftDialect {
 }
 
 final class DriftPostgresDialect implements RegisteredDriftDialect {
+  const DriftPostgresDialect();
+
   @override
   String get name => 'postgres';
 

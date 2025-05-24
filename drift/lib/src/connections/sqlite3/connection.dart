@@ -198,7 +198,8 @@ final class SqliteConnection implements DriftSession, DriftRootSession {
 final class SqliteResultSet extends RawResultSet {
   final sqlite.ResultSet resultSet;
 
-  SqliteResultSet({required this.resultSet});
+  SqliteResultSet({required this.resultSet})
+      : super(columnNames: resultSet.columnNames);
 
   @override
   RawRow operator [](int index) {

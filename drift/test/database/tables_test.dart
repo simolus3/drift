@@ -60,10 +60,14 @@ void main() {
     final structure = ResultSetStructure()
       ..addSelectStarFromSingleTable(db.todosTable);
     final resultSet = DriftResultSet(
-        structure,
-        RawResultSet.generate(
-            1, (_, rs) => RawRow.byMap(resultSet: rs, values: rowData)),
-        db.dialect);
+      structure,
+      RawResultSet.generate(
+        1,
+        (_, rs) => RawRow.byMap(resultSet: rs, values: rowData),
+        columnNames: rowData.keys.toList(),
+      ),
+      db.dialect,
+    );
 
     final todo = resultSet.single.readTable(db.todosTable);
     expect(

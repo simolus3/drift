@@ -31,7 +31,7 @@ void migrationTests(TestExecutor executor) {
 
   test('can use destructive migration', () async {
     final old = Database(executor.createConnection(), schemaVersion: 1);
-    await old.executor.ensureOpen(old);
+    await old.initialize();
     await old.close();
 
     final database = Database(executor.createConnection(), schemaVersion: 2);
@@ -46,11 +46,11 @@ void migrationTests(TestExecutor executor) {
 
   test('runs the migrator when downgrading', () async {
     var database = Database(executor.createConnection(), schemaVersion: 2);
-    await database.executor.ensureOpen(database); // Create the database
+    await database.initialize();
     await database.close();
 
     database = Database(executor.createConnection(), schemaVersion: 1);
-    await database.executor.ensureOpen(database); // Let the migrator run
+    await database.initialize(); // Let the migrator run
 
     expect(database.schemaVersionChangedFrom, 2);
     expect(database.schemaVersionChangedTo, 1);
@@ -60,7 +60,7 @@ void migrationTests(TestExecutor executor) {
 
   test('does not apply schema version when migration throws', () async {
     var database = Database(executor.createConnection(), schemaVersion: 1);
-    await database.executor.ensureOpen(database); // Create the database
+    await database.initialize(); // Create the database
     await database.close();
 
     database = Database(executor.createConnection(), schemaVersion: 2);
@@ -69,7 +69,7 @@ void migrationTests(TestExecutor executor) {
     );
 
     try {
-      await database.executor.ensureOpen(database);
+      await database.initialize();
       fail('Should have thrown');
     } catch (e) {
       //ignore
@@ -79,15 +79,15 @@ void migrationTests(TestExecutor executor) {
     // Open it one last time, the schema version should still be at 1
     database = Database(executor.createConnection(), schemaVersion: 1);
 
-    QueryRow result;
-    if (database.executor.dialect == SqlDialect.sqlite) {
+    CustomRow result;
+    if (database.dialect.known == KnownSqlDialect.sqlite) {
       result = await database.customSelect('PRAGMA user_version').getSingle();
     } else {
       result = await database
           .customSelect('SELECT version FROM __schema')
           .getSingle();
     }
-    expect(result.data.values.single, 1);
+    expect(result.row.values.single, 1);
 
     await executor.clearDatabaseAndClose(database);
   });

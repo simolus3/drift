@@ -356,19 +356,6 @@ abstract class DatabaseConnectionUser {
     }
   }
 
-  /// Executes [action] with calls intercepted by the given [interceptor]
-  ///
-  /// This can be used to, for instance, write a custom statement logger or to
-  /// retry failing statements automatically.
-  Future<T> runWithInterceptor<T>(Future<T> Function() action,
-      {required QueryInterceptor interceptor}) async {
-    return await resolvedEngine.doWhenOpened((executor) {
-      final inner = _ExclusiveExecutor(this,
-          executor: executor.interceptWith(interceptor));
-      return _runConnectionZoned(inner, action);
-    });
-  }
-
   /// Runs [calculation] in a forked [Zone] that has its [resolvedEngine] set
   /// to the [user].
   @protected

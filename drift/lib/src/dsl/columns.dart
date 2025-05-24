@@ -147,6 +147,32 @@ extension type BaseColumnBuilder<T extends Object>._(SchemaColumn<T> _never)
   Column<T> call() => _never;
 }
 
+/// Annotation to use on column getters inside of a [Table] to define the name
+/// of the column in the json used by [DataClass.toJson].
+///
+/// Example:
+/// ```dart
+/// class Users extends Table {
+///   IntColumn get id => integer().autoIncrement()();
+///   @JsonKey('user_name')
+///   TextColumn get name => text().nullable()();
+/// }
+/// ```
+/// When calling `toJson()` on a `User` object, the output will be a map
+/// with the keys "id" and "user_name". The output would be "id" and "name" if
+/// the [JsonKey] annotation was omitted.
+@Deprecated(
+    'JSON support in drift is deprecated. Use other builders, like `json_serializable`, for this.')
+class JsonKey {
+  /// The key in the json map to use for this [Column]. See the documentation
+  /// for [JsonKey] for details.
+  final String key;
+
+  /// An annotation to tell drift how the name of a column should appear in
+  /// generated json. See the documentation for [JsonKey] for details.
+  const JsonKey(this.key);
+}
+
 /// A column builder is used to specify which columns should appear in a table.
 /// All of the methods defined in this class and its subclasses are not meant to
 /// be called at runtime. Instead, the generator will take a look at your

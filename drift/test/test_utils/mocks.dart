@@ -14,7 +14,10 @@ QueryResult queryResult(
     resultSet: switch (rows) {
       null => null,
       _ => RawResultSet.generate(
-          rows.length, (i, rs) => RawRow.byMap(resultSet: rs, values: rows[i]))
+          rows.length,
+          (i, rs) => RawRow.byMap(resultSet: rs, values: rows[i]),
+          columnNames: rows.isEmpty ? const [] : rows[0].keys.toList(),
+        )
     },
     affectedRows: affectedRows,
     lastInsertRowId: lastInsertRowId,
@@ -45,7 +48,11 @@ final class MockSession extends Mock
       final statement = i.positionalArguments[0] as StatementInfo;
       if (statement.needsResultSet) {
         return QueryResult(
-          resultSet: RawResultSet.generate(0, (_, __) => throw 'unreachable'),
+          resultSet: RawResultSet.generate(
+            0,
+            (_, __) => throw 'unreachable',
+            columnNames: const [],
+          ),
           affectedRows: 0,
           lastInsertRowId: 0,
         );

@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:drift/dialect/sqlite.dart';
 import 'package:drift/drift.dart';
 import 'package:json_annotation/json_annotation.dart' as j;
 
@@ -9,29 +11,30 @@ part 'database.g.dart';
 
 class Users extends Table {
   /// The user id
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer().autoIncrement();
 
   // The user name
-  TextColumn get name => text()();
+  TextColumn get name => text();
 
   /// The users birth date
   ///
   /// Mapped from json `born_on`
+  // ignore: deprecated_member_use
   @JsonKey('born_on')
-  DateTimeColumn get birthDate => dateTime()();
+  DateTimeColumn get birthDate => dateTime();
 
-  BlobColumn get profilePicture => blob().nullable()();
+  BlobColumn get profilePicture => blob().nullable();
 
   TextColumn get preferences =>
-      text().map(const PreferenceConverter()).nullable()();
+      text().map(const PreferenceConverter()).nullable();
 }
 
 class Friendships extends Table {
-  IntColumn get firstUser => integer()();
-  IntColumn get secondUser => integer()();
+  IntColumn get firstUser => integer();
+  IntColumn get secondUser => integer();
 
   BoolColumn get reallyGoodFriends =>
-      boolean().withDefault(const Constant(false))();
+      boolean().withDefault(const Literal(false));
 
   @override
   Set<Column> get primaryKey => {firstUser, secondUser};
@@ -83,14 +86,12 @@ class PreferenceConverter extends NullAwareTypeConverter<Preferences, String> {
     'returning': 'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *;',
   },
 )
-class Database extends _$Database {
+final class Database extends _$Database {
   /// We make the schema version configurable to test migrations
   @override
   final int schemaVersion;
 
-  Database(DatabaseConnection super.e, {this.schemaVersion = 2});
-
-  Database.executor(QueryExecutor db) : this(DatabaseConnection(db));
+  Database(super.implementation, {this.schemaVersion = 2});
 
   /// It will be set in the onUpgrade callback. Null if no migration occurred
   int? schemaVersionChangedFrom;
@@ -176,12 +177,12 @@ class Database extends _$Database {
       reallyGoodFriends: friendsValue,
     );
 
-    if (connection.executor.dialect == SqlDialect.sqlite) {
+    if (dialect.known == KnownSqlDialect.sqlite) {
       await into(friendships)
-          .insert(companion, mode: InsertMode.insertOrReplace);
-    } else if (connection.executor.dialect == SqlDialect.postgres) {
-      await into(friendships)
-          .insert(companion, mode: InsertMode.insertOrIgnore);
+          .mode(InsertMode.insertOrReplace)
+          .insert(companion);
+    } else {
+      await into(friendships).insert(companion);
     }
   }
 

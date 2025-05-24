@@ -3,115 +3,92 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-class $UsersTable extends Users with TableInfo<$UsersTable, User> {
+class $UsersTable extends Users
+    with ResultSet<User, $UsersTable>
+    implements GeneratedTable<User, $UsersTable> {
   @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  final String? alias;
+  $UsersTable([this.alias]);
   @override
-  late final GeneratedColumn<int> id =
-      GeneratedColumn<int>('id', aliasedName, false,
-          hasAutoIncrement: true,
-          type: DriftSqlType.int,
-          requiredDuringInsert: false,
-          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
-            SqlDialect.sqlite: 'PRIMARY KEY AUTOINCREMENT',
-            SqlDialect.postgres: 'PRIMARY KEY AUTOINCREMENT',
-            SqlDialect.mariadb: 'PRIMARY KEY AUTO_INCREMENT',
-          }));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  late final TableColumn<int> id = TableColumn<int>(
+      name: 'id',
+      type: BuiltinDriftType.int,
+      isNullable: false,
+      requiredDuringInsert: false,
+      constraints: () =>
+          [const ColumnPrimaryKeyConstraint(isAutoIncrementing: true)])
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _birthDateMeta =
-      const VerificationMeta('birthDate');
+  late final TableColumn<String> name = TableColumn<String>(
+      name: 'name',
+      type: BuiltinDriftType.text,
+      isNullable: false,
+      requiredDuringInsert: true)
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<DateTime> birthDate = GeneratedColumn<DateTime>(
-      'birth_date', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const VerificationMeta _profilePictureMeta =
-      const VerificationMeta('profilePicture');
+  late final TableColumn<DateTime> birthDate = TableColumn<DateTime>(
+      name: 'birth_date',
+      type: BuiltinDriftType.dateTime,
+      isNullable: false,
+      requiredDuringInsert: true)
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<Uint8List> profilePicture =
-      GeneratedColumn<Uint8List>('profile_picture', aliasedName, true,
-          type: DriftSqlType.blob, requiredDuringInsert: false);
-  static const VerificationMeta _preferencesMeta =
-      const VerificationMeta('preferences');
+  late final TableColumn<Uint8List> profilePicture = TableColumn<Uint8List>(
+      name: 'profile_picture',
+      type: BuiltinDriftType.byteArray,
+      isNullable: true,
+      requiredDuringInsert: false)
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumnWithTypeConverter<Preferences?, String>
-      preferences = GeneratedColumn<String>('preferences', aliasedName, true,
-              type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<Preferences?>($UsersTable.$converterpreferences);
+  late final TableColumnWithTypeConverter<Preferences?, String> preferences =
+      TableColumn<String>(
+              name: 'preferences',
+              type: BuiltinDriftType.text,
+              isNullable: true,
+              requiredDuringInsert: false)
+          .withConverter<Preferences?>($UsersTable.$converterpreferences)
+        ..owningResultSet = this;
   @override
-  List<GeneratedColumn> get $columns =>
+  List<TableColumn> get columns =>
       [id, name, birthDate, profilePicture, preferences];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'users';
   @override
-  VerificationContext validateIntegrity(Insertable<User> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('birth_date')) {
-      context.handle(_birthDateMeta,
-          birthDate.isAcceptableOrUnknown(data['birth_date']!, _birthDateMeta));
-    } else if (isInserting) {
-      context.missing(_birthDateMeta);
-    }
-    if (data.containsKey('profile_picture')) {
-      context.handle(
-          _profilePictureMeta,
-          profilePicture.isAcceptableOrUnknown(
-              data['profile_picture']!, _profilePictureMeta));
-    }
-    context.handle(_preferencesMeta, const VerificationResult.success());
-    return context;
+  $UsersTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {id};
+  @override
+  User? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
+    return (DriftRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return User(
+        id: row.readWithType(positions[0], BuiltinDriftType.int)!,
+        name: row.readWithType(positions[1], BuiltinDriftType.text)!,
+        birthDate: row.readWithType(positions[2], BuiltinDriftType.dateTime)!,
+        profilePicture:
+            row.readWithType(positions[3], BuiltinDriftType.byteArray),
+        preferences: $UsersTable.$converterpreferences
+            .fromSql(row.readWithType(positions[4], BuiltinDriftType.text)),
+      );
+    };
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return User(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      birthDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date'])!,
-      profilePicture: attachedDatabase.typeMapping
-          .read(DriftSqlType.blob, data['${effectivePrefix}profile_picture']),
-      preferences: $UsersTable.$converterpreferences.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}preferences'])),
-    );
-  }
-
-  @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
+  $UsersTable withAlias(String alias) {
+    return $UsersTable(alias);
   }
 
   static TypeConverter<Preferences?, String?> $converterpreferences =
       const PreferenceConverter();
 }
 
-class User extends DataClass implements Insertable<User> {
+class User extends LegacyDataClass implements Insertable<User> {
   /// The user id
   final int id;
   final String name;
@@ -171,7 +148,8 @@ class User extends DataClass implements Insertable<User> {
   }
   factory User.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
-      User.fromJson(DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+      User.fromJson(
+          LegacyDataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
@@ -327,94 +305,67 @@ class UsersCompanion extends UpdateCompanion<User> {
 }
 
 class $FriendshipsTable extends Friendships
-    with TableInfo<$FriendshipsTable, Friendship> {
+    with ResultSet<Friendship, $FriendshipsTable>
+    implements GeneratedTable<Friendship, $FriendshipsTable> {
   @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $FriendshipsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _firstUserMeta =
-      const VerificationMeta('firstUser');
+  final String? alias;
+  $FriendshipsTable([this.alias]);
   @override
-  late final GeneratedColumn<int> firstUser = GeneratedColumn<int>(
-      'first_user', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _secondUserMeta =
-      const VerificationMeta('secondUser');
+  late final TableColumn<int> firstUser = TableColumn<int>(
+      name: 'first_user',
+      type: BuiltinDriftType.int,
+      isNullable: false,
+      requiredDuringInsert: true)
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<int> secondUser = GeneratedColumn<int>(
-      'second_user', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  static const VerificationMeta _reallyGoodFriendsMeta =
-      const VerificationMeta('reallyGoodFriends');
+  late final TableColumn<int> secondUser = TableColumn<int>(
+      name: 'second_user',
+      type: BuiltinDriftType.int,
+      isNullable: false,
+      requiredDuringInsert: true)
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<bool> reallyGoodFriends =
-      GeneratedColumn<bool>('really_good_friends', aliasedName, false,
-          type: DriftSqlType.bool,
-          requiredDuringInsert: false,
-          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
-            SqlDialect.sqlite: 'CHECK ("really_good_friends" IN (0, 1))',
-            SqlDialect.postgres: '',
-            SqlDialect.mariadb: 'CHECK (`really_good_friends` IN (0, 1))',
-          }),
-          defaultValue: const Constant(false));
+  late final TableColumn<bool> reallyGoodFriends = TableColumn<bool>(
+      name: 'really_good_friends',
+      type: BuiltinDriftType.bool,
+      isNullable: false,
+      requiredDuringInsert: false,
+      constraints: () => [ColumnDefaultConstraint<bool>(const Literal(false))])
+    ..owningResultSet = this;
   @override
-  List<GeneratedColumn> get $columns =>
-      [firstUser, secondUser, reallyGoodFriends];
+  List<TableColumn> get columns => [firstUser, secondUser, reallyGoodFriends];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'friendships';
   @override
-  VerificationContext validateIntegrity(Insertable<Friendship> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('first_user')) {
-      context.handle(_firstUserMeta,
-          firstUser.isAcceptableOrUnknown(data['first_user']!, _firstUserMeta));
-    } else if (isInserting) {
-      context.missing(_firstUserMeta);
-    }
-    if (data.containsKey('second_user')) {
-      context.handle(
-          _secondUserMeta,
-          secondUser.isAcceptableOrUnknown(
-              data['second_user']!, _secondUserMeta));
-    } else if (isInserting) {
-      context.missing(_secondUserMeta);
-    }
-    if (data.containsKey('really_good_friends')) {
-      context.handle(
-          _reallyGoodFriendsMeta,
-          reallyGoodFriends.isAcceptableOrUnknown(
-              data['really_good_friends']!, _reallyGoodFriendsMeta));
-    }
-    return context;
+  $FriendshipsTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {firstUser, secondUser};
+  @override
+  Friendship? Function(DriftRow) createMapperFromPositions(
+      List<ColumnPosition> positions) {
+    return (DriftRow row) {
+      // Not part of row if non-nullable column "firstUser" is missing
+      if (row.raw.rawValue(positions[0]) == null) {
+        return null;
+      }
+      return Friendship(
+        firstUser: row.readWithType(positions[0], BuiltinDriftType.int)!,
+        secondUser: row.readWithType(positions[1], BuiltinDriftType.int)!,
+        reallyGoodFriends:
+            row.readWithType(positions[2], BuiltinDriftType.bool)!,
+      );
+    };
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {firstUser, secondUser};
-  @override
-  Friendship map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Friendship(
-      firstUser: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}first_user'])!,
-      secondUser: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}second_user'])!,
-      reallyGoodFriends: attachedDatabase.typeMapping.read(
-          DriftSqlType.bool, data['${effectivePrefix}really_good_friends'])!,
-    );
-  }
-
-  @override
-  $FriendshipsTable createAlias(String alias) {
-    return $FriendshipsTable(attachedDatabase, alias);
+  $FriendshipsTable withAlias(String alias) {
+    return $FriendshipsTable(alias);
   }
 }
 
-class Friendship extends DataClass implements Insertable<Friendship> {
+class Friendship extends LegacyDataClass implements Insertable<Friendship> {
   final int firstUser;
   final int secondUser;
   final bool reallyGoodFriends;
@@ -451,7 +402,7 @@ class Friendship extends DataClass implements Insertable<Friendship> {
   factory Friendship.fromJsonString(String encodedJson,
           {ValueSerializer? serializer}) =>
       Friendship.fromJson(
-          DataClass.parseJson(encodedJson) as Map<String, dynamic>,
+          LegacyDataClass.parseJson(encodedJson) as Map<String, dynamic>,
           serializer: serializer);
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
@@ -577,458 +528,155 @@ class FriendshipsCompanion extends UpdateCompanion<Friendship> {
   }
 }
 
-abstract class _$Database extends GeneratedDatabase {
-  _$Database(QueryExecutor e) : super(e);
-  $DatabaseManager get managers => $DatabaseManager(this);
-  late final $UsersTable users = $UsersTable(this);
-  late final $FriendshipsTable friendships = $FriendshipsTable(this);
+abstract base class _$Database extends GeneratedDatabase {
+  _$Database(super.implementation);
+  late final $UsersTable users = $UsersTable();
+  late final $FriendshipsTable friendships = $FriendshipsTable();
   Selectable<User> mostPopularUsers(int amount) {
-    return customSelect(
-        switch (executor.dialect) {
-          SqlDialect.sqlite =>
-            'SELECT * FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT ?1',
-          SqlDialect.postgres =>
-            'SELECT * FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT \$1',
-          SqlDialect.mariadb ||
-          _ =>
-            'SELECT * FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT ?',
-        },
-        variables: [
-          Variable<int>(amount)
-        ],
+    return customSelectMapped<User>(
+        query:
+            'SELECT id AS _c0, name AS _c1, birth_date AS _c2, profile_picture AS _c3, preferences AS _c4 FROM users AS u ORDER BY (SELECT COUNT(*) FROM friendships WHERE first_user = u.id OR second_user = u.id) DESC LIMIT ?1',
+        variables: [(dialect.intType, amount)],
         readsFrom: {
           users,
           friendships,
-        }).asyncMap(users.mapFromRow);
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = users.createMapperFromPositions(const [
+            (index: 0, name: '_c0'),
+            (index: 1, name: '_c1'),
+            (index: 2, name: '_c2'),
+            (index: 3, name: '_c3'),
+            (index: 4, name: '_c4'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        });
   }
 
   Selectable<int> amountOfGoodFriends(int user) {
-    return customSelect(
-        switch (executor.dialect) {
-          SqlDialect.sqlite =>
+    return customSelectMapped<int>(
+        query:
             'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = TRUE AND(f.first_user = ?1 OR f.second_user = ?1)',
-          SqlDialect.postgres =>
-            'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = TRUE AND(f.first_user = \$1 OR f.second_user = \$1)',
-          SqlDialect.mariadb ||
-          _ =>
-            'SELECT COUNT(*) AS _c0 FROM friendships AS f WHERE f.really_good_friends = TRUE AND(f.first_user = ? OR f.second_user = ?)',
-        },
-        variables: executor.dialect.desugarDuplicateVariables([
-          Variable<int>(user)
-        ], [
-          1,
-          1,
-        ]),
+        variables: [(dialect.intType, user)],
         readsFrom: {
           friendships,
-        }).map((QueryRow row) => row.read<int>('_c0'));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$int = dialect.intType;
+
+          return (DriftRow row) =>
+              row.readWithType(const (index: 0, name: '_c0'), type$int)!;
+        });
   }
 
   Selectable<FriendshipsOfResult> friendshipsOf(int user) {
-    return customSelect(
-        switch (executor.dialect) {
-          SqlDialect.sqlite =>
+    return customSelectMapped<FriendshipsOfResult>(
+        query:
             'SELECT f.really_good_friends,"user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences" FROM friendships AS f INNER JOIN users AS user ON user.id IN (f.first_user, f.second_user) AND user.id != ?1 WHERE(f.first_user = ?1 OR f.second_user = ?1)',
-          SqlDialect.postgres =>
-            'SELECT f.really_good_friends,"user"."id" AS "nested_0.id", "user"."name" AS "nested_0.name", "user"."birth_date" AS "nested_0.birth_date", "user"."profile_picture" AS "nested_0.profile_picture", "user"."preferences" AS "nested_0.preferences" FROM friendships AS f INNER JOIN users AS "user" ON "user".id IN (f.first_user, f.second_user) AND "user".id != \$1 WHERE(f.first_user = \$1 OR f.second_user = \$1)',
-          SqlDialect.mariadb ||
-          _ =>
-            'SELECT f.really_good_friends,`user`.`id` AS `nested_0.id`, `user`.`name` AS `nested_0.name`, `user`.`birth_date` AS `nested_0.birth_date`, `user`.`profile_picture` AS `nested_0.profile_picture`, `user`.`preferences` AS `nested_0.preferences` FROM friendships AS f INNER JOIN users AS user ON user.id IN (f.first_user, f.second_user) AND user.id != ? WHERE(f.first_user = ? OR f.second_user = ?)',
-        },
-        variables: executor.dialect.desugarDuplicateVariables([
-          Variable<int>(user)
-        ], [
-          1,
-          1,
-          1,
-        ]),
+        variables: [(dialect.intType, user)],
         readsFrom: {
           friendships,
           users,
-        }).asyncMap((QueryRow row) async => FriendshipsOfResult(
-          reallyGoodFriends: row.read<bool>('really_good_friends'),
-          user: await users.mapFromRow(row, tablePrefix: 'nested_0'),
-        ));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$bool = dialect.boolType;
+          final map_0 = users.createMapperFromPositions(const [
+            (index: 1, name: 'nested_0.id'),
+            (index: 2, name: 'nested_0.name'),
+            (index: 3, name: 'nested_0.birth_date'),
+            (index: 4, name: 'nested_0.profile_picture'),
+            (index: 5, name: 'nested_0.preferences'),
+          ]);
+
+          return (DriftRow row) => FriendshipsOfResult(
+                reallyGoodFriends: row.readWithType(
+                    const (index: 0, name: 'really_good_friends'), type$bool)!,
+                user: map_0(row)!,
+              );
+        });
   }
 
   Selectable<int> userCount() {
-    return customSelect('SELECT COUNT(id) AS _c0 FROM users',
+    return customSelectMapped<int>(
+        query: 'SELECT COUNT(id) AS _c0 FROM users',
         variables: [],
         readsFrom: {
           users,
-        }).map((QueryRow row) => row.read<int>('_c0'));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$int = dialect.intType;
+
+          return (DriftRow row) =>
+              row.readWithType(const (index: 0, name: '_c0'), type$int)!;
+        });
   }
 
   Selectable<Preferences?> settingsFor(int user) {
-    return customSelect(
-        switch (executor.dialect) {
-          SqlDialect.sqlite => 'SELECT preferences FROM users WHERE id = ?1',
-          SqlDialect.postgres => 'SELECT preferences FROM users WHERE id = \$1',
-          SqlDialect.mariadb ||
-          _ =>
-            'SELECT preferences FROM users WHERE id = ?',
-        },
-        variables: [
-          Variable<int>(user)
-        ],
+    return customSelectMapped<Preferences?>(
+        query: 'SELECT preferences FROM users WHERE id = ?1',
+        variables: [(dialect.intType, user)],
         readsFrom: {
           users,
-        }).map((QueryRow row) => $UsersTable.$converterpreferences
-        .fromSql(row.readNullable<String>('preferences')));
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final type$text = dialect.textType;
+
+          return (DriftRow row) => $UsersTable.$converterpreferences.fromSql(row
+              .readWithType(const (index: 0, name: 'preferences'), type$text));
+        });
   }
 
   Selectable<User> usersById(List<int> var1) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
-    return customSelect('SELECT * FROM users WHERE id IN ($expandedvar1)',
-        variables: [
-          for (var $ in var1) Variable<int>($)
-        ],
+    return customSelectMapped<User>(
+        query:
+            'SELECT id AS _c0, name AS _c1, birth_date AS _c2, profile_picture AS _c3, preferences AS _c4 FROM users WHERE id IN ($expandedvar1)',
+        variables: [for (var $ in var1) (dialect.intType, $)],
         readsFrom: {
           users,
-        }).asyncMap(users.mapFromRow);
+        },
+        createMapper: (DriftResultSet resultSet) {
+          final map_0 = users.createMapperFromPositions(const [
+            (index: 0, name: '_c0'),
+            (index: 1, name: '_c1'),
+            (index: 2, name: '_c2'),
+            (index: 3, name: '_c3'),
+            (index: 4, name: '_c4'),
+          ]);
+
+          return (DriftRow row) => map_0(row)!;
+        });
   }
 
   Future<List<Friendship>> returning(int var1, int var2, bool var3) {
     return customWriteReturning(
-        switch (executor.dialect) {
-          SqlDialect.sqlite =>
-            'INSERT INTO friendships VALUES (?1, ?2, ?3) RETURNING *',
-          SqlDialect.postgres =>
-            'INSERT INTO friendships VALUES (\$1, \$2, \$3) RETURNING *',
-          SqlDialect.mariadb ||
-          _ =>
-            'INSERT INTO friendships VALUES (?, ?, ?) RETURNING *',
-        },
+        'INSERT INTO friendships VALUES (?1, ?2, ?3) RETURNING *',
         variables: [
-          Variable<int>(var1),
-          Variable<int>(var2),
-          Variable<bool>(var3)
+          (dialect.intType, var1),
+          (dialect.intType, var2),
+          (dialect.boolType, var3)
         ],
         updates: {
           friendships
-        }).then((rows) => Future.wait(rows.map(friendships.mapFromRow)));
+        }).then((rows) {
+      final map_0 = friendships.createMapperFromPositions(const [
+        (index: 0, name: 'first_user'),
+        (index: 1, name: 'second_user'),
+        (index: 2, name: 'really_good_friends'),
+      ]);
+
+      return rows.map((row) => map_0(row)!).toList();
+    });
   }
 
-  @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [users, friendships];
 }
 
-typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
-  Value<int> id,
-  required String name,
-  required DateTime birthDate,
-  Value<Uint8List?> profilePicture,
-  Value<Preferences?> preferences,
-});
-typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
-  Value<int> id,
-  Value<String> name,
-  Value<DateTime> birthDate,
-  Value<Uint8List?> profilePicture,
-  Value<Preferences?> preferences,
-});
-
-class $$UsersTableFilterComposer extends Composer<_$Database, $UsersTable> {
-  $$UsersTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get birthDate => $composableBuilder(
-      column: $table.birthDate, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<Uint8List> get profilePicture => $composableBuilder(
-      column: $table.profilePicture,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnWithTypeConverterFilters<Preferences?, Preferences, String>
-      get preferences => $composableBuilder(
-          column: $table.preferences,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
-}
-
-class $$UsersTableOrderingComposer extends Composer<_$Database, $UsersTable> {
-  $$UsersTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get birthDate => $composableBuilder(
-      column: $table.birthDate, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<Uint8List> get profilePicture => $composableBuilder(
-      column: $table.profilePicture,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get preferences => $composableBuilder(
-      column: $table.preferences, builder: (column) => ColumnOrderings(column));
-}
-
-class $$UsersTableAnnotationComposer extends Composer<_$Database, $UsersTable> {
-  $$UsersTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get birthDate =>
-      $composableBuilder(column: $table.birthDate, builder: (column) => column);
-
-  GeneratedColumn<Uint8List> get profilePicture => $composableBuilder(
-      column: $table.profilePicture, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<Preferences?, String> get preferences =>
-      $composableBuilder(
-          column: $table.preferences, builder: (column) => column);
-}
-
-class $$UsersTableTableManager extends RootTableManager<
-    _$Database,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableAnnotationComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder,
-    (User, BaseReferences<_$Database, $UsersTable, User>),
-    User,
-    PrefetchHooks Function()> {
-  $$UsersTableTableManager(_$Database db, $UsersTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$UsersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$UsersTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$UsersTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<DateTime> birthDate = const Value.absent(),
-            Value<Uint8List?> profilePicture = const Value.absent(),
-            Value<Preferences?> preferences = const Value.absent(),
-          }) =>
-              UsersCompanion(
-            id: id,
-            name: name,
-            birthDate: birthDate,
-            profilePicture: profilePicture,
-            preferences: preferences,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-            required DateTime birthDate,
-            Value<Uint8List?> profilePicture = const Value.absent(),
-            Value<Preferences?> preferences = const Value.absent(),
-          }) =>
-              UsersCompanion.insert(
-            id: id,
-            name: name,
-            birthDate: birthDate,
-            profilePicture: profilePicture,
-            preferences: preferences,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $UsersTable,
-    User,
-    $$UsersTableFilterComposer,
-    $$UsersTableOrderingComposer,
-    $$UsersTableAnnotationComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder,
-    (User, BaseReferences<_$Database, $UsersTable, User>),
-    User,
-    PrefetchHooks Function()>;
-typedef $$FriendshipsTableCreateCompanionBuilder = FriendshipsCompanion
-    Function({
-  required int firstUser,
-  required int secondUser,
-  Value<bool> reallyGoodFriends,
-  Value<int> rowid,
-});
-typedef $$FriendshipsTableUpdateCompanionBuilder = FriendshipsCompanion
-    Function({
-  Value<int> firstUser,
-  Value<int> secondUser,
-  Value<bool> reallyGoodFriends,
-  Value<int> rowid,
-});
-
-class $$FriendshipsTableFilterComposer
-    extends Composer<_$Database, $FriendshipsTable> {
-  $$FriendshipsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get firstUser => $composableBuilder(
-      column: $table.firstUser, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get secondUser => $composableBuilder(
-      column: $table.secondUser, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get reallyGoodFriends => $composableBuilder(
-      column: $table.reallyGoodFriends,
-      builder: (column) => ColumnFilters(column));
-}
-
-class $$FriendshipsTableOrderingComposer
-    extends Composer<_$Database, $FriendshipsTable> {
-  $$FriendshipsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get firstUser => $composableBuilder(
-      column: $table.firstUser, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get secondUser => $composableBuilder(
-      column: $table.secondUser, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get reallyGoodFriends => $composableBuilder(
-      column: $table.reallyGoodFriends,
-      builder: (column) => ColumnOrderings(column));
-}
-
-class $$FriendshipsTableAnnotationComposer
-    extends Composer<_$Database, $FriendshipsTable> {
-  $$FriendshipsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get firstUser =>
-      $composableBuilder(column: $table.firstUser, builder: (column) => column);
-
-  GeneratedColumn<int> get secondUser => $composableBuilder(
-      column: $table.secondUser, builder: (column) => column);
-
-  GeneratedColumn<bool> get reallyGoodFriends => $composableBuilder(
-      column: $table.reallyGoodFriends, builder: (column) => column);
-}
-
-class $$FriendshipsTableTableManager extends RootTableManager<
-    _$Database,
-    $FriendshipsTable,
-    Friendship,
-    $$FriendshipsTableFilterComposer,
-    $$FriendshipsTableOrderingComposer,
-    $$FriendshipsTableAnnotationComposer,
-    $$FriendshipsTableCreateCompanionBuilder,
-    $$FriendshipsTableUpdateCompanionBuilder,
-    (Friendship, BaseReferences<_$Database, $FriendshipsTable, Friendship>),
-    Friendship,
-    PrefetchHooks Function()> {
-  $$FriendshipsTableTableManager(_$Database db, $FriendshipsTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$FriendshipsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$FriendshipsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$FriendshipsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> firstUser = const Value.absent(),
-            Value<int> secondUser = const Value.absent(),
-            Value<bool> reallyGoodFriends = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              FriendshipsCompanion(
-            firstUser: firstUser,
-            secondUser: secondUser,
-            reallyGoodFriends: reallyGoodFriends,
-            rowid: rowid,
-          ),
-          createCompanionCallback: ({
-            required int firstUser,
-            required int secondUser,
-            Value<bool> reallyGoodFriends = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
-          }) =>
-              FriendshipsCompanion.insert(
-            firstUser: firstUser,
-            secondUser: secondUser,
-            reallyGoodFriends: reallyGoodFriends,
-            rowid: rowid,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$FriendshipsTableProcessedTableManager = ProcessedTableManager<
-    _$Database,
-    $FriendshipsTable,
-    Friendship,
-    $$FriendshipsTableFilterComposer,
-    $$FriendshipsTableOrderingComposer,
-    $$FriendshipsTableAnnotationComposer,
-    $$FriendshipsTableCreateCompanionBuilder,
-    $$FriendshipsTableUpdateCompanionBuilder,
-    (Friendship, BaseReferences<_$Database, $FriendshipsTable, Friendship>),
-    Friendship,
-    PrefetchHooks Function()>;
-
-class $DatabaseManager {
-  final _$Database _db;
-  $DatabaseManager(this._db);
-  $$UsersTableTableManager get users =>
-      $$UsersTableTableManager(_db, _db.users);
-  $$FriendshipsTableTableManager get friendships =>
-      $$FriendshipsTableTableManager(_db, _db.friendships);
-}
-
-class FriendshipsOfResult {
+final class FriendshipsOfResult {
   final bool reallyGoodFriends;
   final User user;
   FriendshipsOfResult({
