@@ -438,10 +438,10 @@ abstract base class DatabaseConnectionUser {
 
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
-  InsertStatement<Row, RS>
+  InsertStatement<Row, RS, DatabaseConnectionUser>
       into<Row extends Object, RS extends GeneratedTable<Row, RS>>(
           GeneratedTable<Row, RS> table) {
-    return InsertStatement<Row, RS>(this, table);
+    return InsertStatement<Row, RS, DatabaseConnectionUser>(this, table);
   }
 
   /// Starts an [UpdateStatement] for the given table. You can use that

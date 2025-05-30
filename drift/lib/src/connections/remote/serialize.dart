@@ -181,7 +181,9 @@ final class _ProtocolMessageEncoder
           _tag_BeginTransactionRequest,
           input.id,
           input.parentId,
-          null,
+          [
+            input.options.deferForeignKeys,
+          ],
         ],
       GetSchemaVersion() => [
           _tag_GetSchemaVersionRequest,
@@ -283,9 +285,13 @@ final class _ProtocolMessageDecoder
         return StartExclusiveRequest(payload[0] as int,
             parentId: payload[1] as int);
       case _tag_BeginTransactionRequest:
-        assert(payload[2] == null);
+        final rawOptions = payload[2] as List;
+        final options = TransactionOptions(
+          deferForeignKeys: rawOptions[0] as bool,
+        );
+
         return BeginTransactionRequest(payload[0] as int,
-            parentId: payload[1] as int, options: TransactionOptions());
+            parentId: payload[1] as int, options: options);
       case _tag_GetSchemaVersionRequest:
         return GetSchemaVersion(payload[0] as int,
             sessionId: payload[1] as int);

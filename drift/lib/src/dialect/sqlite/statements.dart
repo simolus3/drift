@@ -36,14 +36,14 @@ enum InsertMode {
 }
 
 /// Provides the SQLite-specific [mode] function for insert statements.
-extension SetInsertMode<Row extends Object, RS extends GeneratedTable<Row, RS>>
-    on InsertStatement<Row, RS> {
+extension SetInsertMode<Row extends Object, RS extends GeneratedTable<Row, RS>,
+    DB extends DatabaseConnectionUser?> on InsertStatement<Row, RS, DB> {
   /// Applies the [InsertMode] for this statement.
   ///
   /// This is a SQLite-specific API that can be used to customize how the insert
   /// statement behaves with conflicts. For a variant that is better suited for
   /// different SQL dialects, see [DoUpdate].
-  InsertStatement<Row, RS> mode(InsertMode mode) {
+  InsertStatement<Row, RS, DB> mode(InsertMode mode) {
     dialectSpecificOptions[insertModeKey] = mode;
     return this;
   }

@@ -76,7 +76,9 @@ final class Batch {
       insert<Row extends Object, RS extends GeneratedTable<Row, RS>>(
           GeneratedTable<Row, RS> table, Insertable<Row> row,
           {UpsertClause<Row, RS>? onConflict}) {
-    final stmt = InsertStatement<Row, RS>(_database, table)..values(row);
+    final stmt =
+        InsertStatement<Row, RS, DatabaseConnectionUser>(_database, table)
+          ..values(row);
     if (onConflict != null) {
       stmt.onConflict(onConflict);
     }

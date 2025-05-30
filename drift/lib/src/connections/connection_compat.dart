@@ -118,6 +118,12 @@ without awaiting every statement in it.''');
       return _startNested(() async {
         await _inner.execute(StatementInfo(
             _dialect.compile(BeginStatement(depth: _transactionDepth + 1))));
+
+        if (options.deferForeignKeys == true) {
+          await _inner.execute(
+              StatementInfo.fromText('pragma defer_foreign_keys = on;'));
+        }
+
         return DriftCompatibilityTransaction._(
             false, _inner, _dialect, _transactionDepth + 1);
       });

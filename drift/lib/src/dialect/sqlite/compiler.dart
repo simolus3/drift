@@ -152,8 +152,7 @@ final class SqliteCompiler extends StatementCompiler {
   }
 
   @override
-  void addInsertStatementMode(
-      InsertStatement<Object, GeneratedTable<Object, dynamic>> insert) {
+  void addInsertStatementMode(InsertStatement insert) {
     final mode =
         insert.dialectSpecificOptions[insertModeKey] ?? InsertMode.insert;
     statement.buffer

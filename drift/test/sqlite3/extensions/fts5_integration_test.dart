@@ -1,6 +1,7 @@
 @Tags(['integration'])
 library;
 
+import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 
 import '../../generated/custom_tables.dart';
@@ -10,8 +11,11 @@ void main() {
   test('fts5 integration test', () async {
     final db = CustomTablesDb(testInMemoryDatabase());
 
-    await db.into(db.email).insert(EmailCompanion.insert(
-        sender: 'foo@example.org', title: 'Hello world', body: 'Test email'));
+    await db.email.insertOne(
+      EmailCompanion.insert(
+          sender: 'foo@example.org', title: 'Hello world', body: 'Test email'),
+      database: db,
+    );
 
     await db.into(db.email).insert(EmailCompanion.insert(
         sender: 'another@example.org', title: 'Good morning', body: 'hello'));

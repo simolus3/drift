@@ -240,4 +240,11 @@ extension ApplyMapping on Iterable<TypedNullableValue> {
 final class TransactionOptions {
   // We might eventually use this to implement read-only transactions, which can
   // be used to optimize connection pools.
+
+  /// Whether foreign keys should only be checked at the end of the transaction
+  /// instead of at each statement.
+  final bool? deferForeignKeys;
+
+  /// @nodoc
+  const TransactionOptions({this.deferForeignKeys});
 }

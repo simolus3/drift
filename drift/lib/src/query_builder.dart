@@ -39,4 +39,5 @@ export 'query_builder/statements/update.dart';
 export 'query_builder/statements/query.dart';
 
 export 'query_builder/results.dart';
+export 'query_builder/on_table.dart';
 export 'query_builder/types.dart';

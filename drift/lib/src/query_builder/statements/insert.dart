@@ -15,13 +15,15 @@ import 'select.dart';
 import 'statement.dart';
 
 /// An `INSERT` statement in SQL.
-final class InsertStatement<Row extends Object,
-    RS extends GeneratedTable<Row, RS>> extends SqlStatement {
+final class InsertStatement<
+    Row extends Object,
+    RS extends GeneratedTable<Row, RS>,
+    DB extends DatabaseConnectionUser?> extends SqlStatement {
   /// The table we're inserting into.
   final GeneratedTable<Row, RS> table;
 
   /// The database used to run this insert statement.
-  final DatabaseConnectionUser _database;
+  final DB _database;
 
   /// The values to use for the rows being inserted.
   InsertSource? source;
@@ -48,7 +50,7 @@ final class InsertStatement<Row extends Object,
   ///
   /// Typically, [row] is an instance of the companion class drift generates for
   /// tables, which allows specifying which columns to use.
-  InsertStatement<Row, RS> values(Insertable<Row> row) {
+  InsertStatement<Row, RS, DB> values(Insertable<Row> row) {
     _checkNoSource();
 
     final rawValues = row.toColumns(true);
@@ -95,7 +97,7 @@ final class InsertStatement<Row extends Object,
   /// target column, and values are expressions added to the select statement.
   ///
   /// For an example, see the [documentation website](https://drift.simonbinder.eu/docs/advanced-features/joins/#using-selects-as-insert)
-  InsertStatement<Row, RS> fromSelect(
+  InsertStatement<Row, RS, DB> fromSelect(
     BaseSelectStatement select, {
     required Map<TableColumn, Expression> columns,
   }) {
@@ -120,7 +122,7 @@ final class InsertStatement<Row extends Object,
     return this;
   }
 
-  InsertStatement<Row, RS> onConflict(UpsertClause<Row, RS> upsert) {
+  InsertStatement<Row, RS, DB> onConflict(UpsertClause<Row, RS> upsert) {
     assert(upsertClause == null, 'upsert clause already set');
     upsertClause = upsert;
     return this;
@@ -130,7 +132,12 @@ final class InsertStatement<Row extends Object,
   void compileWith(StatementCompiler compiler) {
     compiler.addInsertStatement(this);
   }
+}
 
+extension InsertStatementWithDatabase<
+    Row extends Object,
+    RS extends GeneratedTable<Row, RS>,
+    DB extends DatabaseConnectionUser> on InsertStatement<Row, RS, DB> {
   Future<QueryResult> _run() async {
     final result = await _database.runStatement(this);
     if (result.affectedRows case final rows? when rows > 0) {
@@ -296,6 +303,20 @@ final class InsertStatement<Row extends Object,
   /// [DoUpdate.target].
   Future<int> insertOnConflictUpdate(Insertable<Row> entity) {
     return insert(entity, onConflict: DoUpdate((_) => entity));
+  }
+}
+
+/// Exposes the [onDatabase] method to add a database to this insert statement.
+extension InsertStatementWithoutDatabase<Row extends Object,
+    RS extends GeneratedTable<Row, RS>> on InsertStatement<Row, RS, Null> {
+  /// Attaches a [DatabaseConnectionUser] to this [InsertStatement] so that it
+  /// can be executed.
+  InsertStatement<Row, RS, DatabaseConnectionUser> onDatabase(
+      DatabaseConnectionUser db) {
+    return InsertStatement(db, table)
+      ..source = source
+      ..upsertClause = upsertClause
+      ..returning = returning;
   }
 }
 
