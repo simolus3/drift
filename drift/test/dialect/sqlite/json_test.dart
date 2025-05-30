@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:convert/convert.dart';
-import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:drift/drift.dart';
 import 'package:sqlite3/common.dart';
 import 'package:test/test.dart';

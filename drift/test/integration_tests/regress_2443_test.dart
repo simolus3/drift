@@ -1,7 +1,7 @@
 @TestOn('vm')
 library;
 
-import 'package:drift/native.dart';
+import 'package:drift/sqlite3/native.dart';
 import 'package:drift/drift.dart';
 import 'package:test/test.dart';
 

@@ -4,26 +4,25 @@ library;
 
 import 'dart:typed_data';
 
-import '../src/runtime/query_builder/query_builder.dart';
-import '../src/runtime/types/mapping.dart';
+import '../../src/query_builder.dart';
 
 /// The type used for the `_shape` column in virtual `GEOPOLY` tables.
 ///
 /// This type is responsible for representing shape values in Dart. It is
 /// created by drift when the `geopoly` extension is enabled and a `CREATE
 /// VIRTUAL TABLE USING geopoly` table is declared in a `.drift` file.
-final class GeopolyPolygonType implements CustomSqlType<GeopolyPolygon> {
+final class GeopolyPolygonType implements SqlType<GeopolyPolygon> {
   /// Default constant constructor for the geopoly type.
   const GeopolyPolygonType();
 
   @override
-  String mapToSqlLiteral(GeopolyPolygon dartValue) {
+  String sqlLiteral(DriftDialect dialect, GeopolyPolygon value) {
     throw UnimplementedError();
   }
 
   @override
-  Object mapToSqlParameter(GeopolyPolygon dartValue) {
-    switch (dartValue) {
+  Object sqlParameter(DriftDialect dialect, GeopolyPolygon value) {
+    switch (value) {
       case GeopolyPolygonString(:final value):
         return value;
       case GeopolyPolygonBlob(:final value):
@@ -32,16 +31,16 @@ final class GeopolyPolygonType implements CustomSqlType<GeopolyPolygon> {
   }
 
   @override
-  GeopolyPolygon read(Object fromSql) {
-    return switch (fromSql) {
-      Uint8List() => GeopolyPolygon.blob(fromSql),
-      String() => GeopolyPolygon.text(fromSql),
+  GeopolyPolygon dartValue(DriftDialect dialect, Object databaseValue) {
+    return switch (databaseValue) {
+      Uint8List() => GeopolyPolygon.blob(databaseValue),
+      String() => GeopolyPolygon.text(databaseValue),
       _ => throw UnimplementedError(),
     };
   }
 
   @override
-  String sqlTypeName(GenerationContext context) {
+  String typeName(DriftDialect dialect) {
     throw UnimplementedError();
   }
 }

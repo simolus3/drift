@@ -1,4 +1,4 @@
-import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/connection_pool.dart';
 import 'package:mockito/mockito.dart';

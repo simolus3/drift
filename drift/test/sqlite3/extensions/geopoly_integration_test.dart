@@ -2,12 +2,13 @@
 library;
 
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:drift/extensions/geopoly.dart';
-import 'package:sqlite3/sqlite3.dart';
+import 'package:drift/sqlite3/dialect.dart';
+import 'package:drift/sqlite3/native.dart';
+import 'package:drift/sqlite3/extensions/geopoly.dart';
+import 'package:sqlite3/sqlite3.dart' hide ResultSet;
 import 'package:test/test.dart';
 
-import '../test_utils/database_vm.dart';
+import '../../test_utils/database_vm.dart';
 
 part 'geopoly_integration_test.g.dart';
 
@@ -20,10 +21,10 @@ void main() {
       final database = _GeopolyTestDatabase(NativeDatabase.memory());
       expect(database.geopolyTest.shape.type, isA<GeopolyPolygonType>());
 
-      final id =
-          await database.geopolyTest.insertOne(GeopolyTestCompanion.insert(
-        shape: Value(GeopolyPolygon.text('[[0,0],[1,0],[0.5,1],[0,0]]')),
-      ));
+      final id = await database.into(database.geopolyTest).insert(
+          GeopolyTestCompanion.insert(
+              shape:
+                  Value(GeopolyPolygon.text('[[0,0],[1,0],[0.5,1],[0,0]]'))));
 
       final area = await database.area(id).getSingle();
       expect(area, 0.5);
@@ -43,7 +44,7 @@ bool _canUseGeopoly() {
 }
 
 @DriftDatabase(include: {'geopoly.drift'})
-class _GeopolyTestDatabase extends _$_GeopolyTestDatabase {
+final class _GeopolyTestDatabase extends _$_GeopolyTestDatabase {
   _GeopolyTestDatabase(super.e);
 
   @override

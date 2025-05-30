@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
+import 'package:drift/sqlite3/native.dart';
 
 DatabaseConnection createConnection() {
   var counter = 0;

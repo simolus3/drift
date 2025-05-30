@@ -16,12 +16,12 @@ import 'dart:isolate';
 import 'package:async/async.dart';
 import 'package:sqlite3/sqlite3.dart';
 
-import '../../dialect/sqlite.dart';
-import '../../src/connections/connection.dart';
-import '../../src/connections/connection_pool.dart';
-import '../../src/query_builder.dart';
-import '../isolate.dart';
-import 'sqlite3.dart';
+import 'dialect.dart';
+import '../src/connections/connection.dart';
+import '../src/connections/connection_pool.dart';
+import '../src/query_builder.dart';
+import '../connections/isolate.dart';
+import '../connections/sqlite/sqlite3.dart';
 
 /// Signature of a function that can perform setup work on a [database] before
 /// drift is fully ready.
@@ -62,8 +62,6 @@ final class NativeDatabase {
   // when changing this, also update the documentation in `drift_vm_database_factory`.
   static const _cacheStatementsByDefault = true;
   static const _defaultReadPoolSize = 0;
-
-  NativeDatabase(File file);
 
   /// Creates a database that will store its result in the [file], creating it
   /// if it doesn't exist.

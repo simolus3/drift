@@ -9,7 +9,7 @@ import 'package:async/async.dart';
 import 'package:drift/connections/isolate.dart';
 import 'package:drift/connections/sqlite/sqlite3.dart';
 import 'package:drift/dialect/postgres.dart';
-import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/remote/channel.dart';
 import 'package:mockito/mockito.dart';

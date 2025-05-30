@@ -234,18 +234,20 @@ abstract base class StatementCompiler {
       {bool isWatching = true, UpdateKind? write}) {
     final resolved = resultSet.resultSet;
     if (resolved case final SqlComponent component) {
-      return component.compileWith(this);
+      component.compileWith(this);
+    } else {
+      if (isWatching) {
+        statement.watchedTables.add(resultSet.resultSet);
+      }
+      if (write != null && resolved is GeneratedTable) {
+        statement.isReadOnly = false;
+        statement.possibleUpdates
+            .add(TableUpdate.onTable(resolved, kind: write));
+      }
+
+      addReference(resultSet.resultSet.entityName);
     }
 
-    if (isWatching) {
-      statement.watchedTables.add(resultSet.resultSet);
-    }
-    if (write != null && resolved is GeneratedTable) {
-      statement.isReadOnly = false;
-      statement.possibleUpdates.add(TableUpdate.onTable(resolved, kind: write));
-    }
-
-    addReference(resultSet.resultSet.entityName);
     if (resultSet.resultSet.alias case final alias?) {
       statement.buffer.write(' AS ');
       addReference(alias);
@@ -255,6 +257,17 @@ abstract base class StatementCompiler {
   void addCreateTableStatement(CreateTableStatement stmt) {
     statement.supportsVariables = false;
     final table = stmt.entity;
+
+    if (table case final VirtualTableInfo virtual) {
+      statement.buffer.write('CREATE VIRTUAL TABLE ');
+      if (stmt.ifNotExists) {
+        statement.buffer.write('IF NOT EXISTS ');
+      }
+      addReference(table.entityName);
+      statement.buffer.write(' USING ${virtual.moduleAndArgs}');
+      return;
+    }
+
     statement.buffer.write('CREATE TABLE ');
     if (stmt.ifNotExists) {
       statement.buffer.write('IF NOT EXISTS ');

@@ -4,7 +4,7 @@ export 'dart:typed_data' show Uint8List;
 export 'runtime/type_converter.dart' show TypeConverter, JsonTypeConverter2;
 export 'runtime/query_builder/query_builder.dart' show TableInfo;
 
-export '../extensions/geopoly.dart';
+export '../sqlite3/extensions/geopoly.dart';
 
 // new drift3
 

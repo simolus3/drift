@@ -1,4 +1,4 @@
-import 'package:drift/native.dart';
+import 'package:drift/sqlite3/native.dart';
 
 import '../../generated/todos.dart';
 

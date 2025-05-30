@@ -5,7 +5,7 @@ import 'package:drift/src/connections/remote/serialize.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import '../remote.dart';
-import '../../../dialect/sqlite.dart';
+import '../../../sqlite3/dialect.dart';
 import '../connection.dart';
 import 'channel.dart';
 import 'protocol.dart';

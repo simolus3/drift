@@ -4,7 +4,7 @@ library;
 
 import 'dart:math';
 
-import '../drift.dart';
+import '../../../drift.dart';
 
 /// Raises [base] to the power of [exponent].
 ///
@@ -102,7 +102,7 @@ extension DriftNativeStringExtensions on Expression<String> {
   /// [Turkish İ Problem](https://haacked.com/archive/2012/07/05/turkish-i-problem-and-why-you-should-care.aspx/)
   Expression<bool> containsCase(String substring,
       {bool caseSensitive = false}) {
-    return FunctionCallExpression('moor_contains', [
+    return FunctionCallExpression('drift_contains', [
       this,
       Variable<String>(substring),
       if (caseSensitive) const Literal<int>(1) else const Literal<int>(0),

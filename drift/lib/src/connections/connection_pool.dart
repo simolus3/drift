@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../../dialect/sqlite.dart';
+import '../../sqlite3/dialect.dart';
 import 'connection.dart';
 import 'connection_compat.dart';
 import 'result_set.dart';

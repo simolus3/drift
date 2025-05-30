@@ -2,13 +2,14 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 
-import 'package:drift/drift.dart' hide isNull;
-import 'package:drift/extensions/json1.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:test/test.dart';
 
-import '../generated/todos.dart';
-import '../test_utils/test_utils.dart';
+import '../../generated/todos.dart';
+import '../../test_utils/test_utils.dart';
 
 void main() {
   const jsonObject = {
@@ -40,7 +41,7 @@ void main() {
   });
 
   test('json_each', () async {
-    final function = Variable<String>(json.encode(jsonObject)).jsonEach(db);
+    final function = Variable<String>(json.encode(jsonObject)).jsonEach();
     final rows = await db.select(function).get();
 
     expect(rows, hasLength(2));
@@ -56,13 +57,15 @@ void main() {
   });
 
   test('json_tree', () async {
+    await db.initialize();
+
     // Make sure we can use aliases as well
-    final function = Variable<String>(json.encode(jsonObject)).jsonTree(db);
+    final function = Variable<String>(json.encode(jsonObject)).jsonTree();
     final parent = db.alias(function, 'parent');
 
     final query = db
         .selectOnly(function)
-        .join([leftOuterJoin(parent, parent.id.equalsExp(function.parent))])
+        .leftOuter(parent, on: parent.id.equalsExp(function.parent))
       ..addColumns([function.atom, parent.id])
       ..where(function.atom.isNotNull());
 
@@ -98,10 +101,8 @@ void main() {
     });
 
     test('json_group_array', () async {
-      final query = db.select(db.categories).join([
-        leftOuterJoin(
-            db.todosTable, db.todosTable.category.equalsExp(db.categories.id))
-      ]);
+      final query = db.select(db.categories).leftOuter(db.todosTable,
+          on: db.todosTable.category.equalsExp(db.categories.id));
 
       final stringArray = jsonGroupArray(db.todosTable.id,
           orderBy: OrderBy([OrderingTerm.desc(db.todosTable.id)]));
@@ -117,10 +118,8 @@ void main() {
     });
 
     test('json_group_object', () async {
-      final query = db.select(db.categories).join([
-        leftOuterJoin(
-            db.todosTable, db.todosTable.category.equalsExp(db.categories.id))
-      ]);
+      final query = db.select(db.categories).leftOuter(db.todosTable,
+          on: db.todosTable.category.equalsExp(db.categories.id));
 
       final stringObject = jsonGroupObject({
         db.todosTable.title: db.todosTable.content,
@@ -146,8 +145,9 @@ void main() {
 
   group('jsonb', () {
     setUp(() async {
-      await db.categories
-          .insertOne(CategoriesCompanion.insert(description: '_'));
+      await db
+          .into(db.categories)
+          .insert(CategoriesCompanion.insert(description: '_'));
     });
 
     Expression<Uint8List> jsonb(Object? dart) {

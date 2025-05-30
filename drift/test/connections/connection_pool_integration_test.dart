@@ -4,8 +4,8 @@ library;
 import 'dart:io';
 
 import 'package:drift/connections/isolate.dart';
-import 'package:drift/connections/sqlite/native.dart';
-import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/sqlite3/native.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/connection_pool.dart';
 import 'package:path/path.dart' show join;

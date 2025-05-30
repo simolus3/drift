@@ -3,8 +3,8 @@ library;
 
 import 'package:test/test.dart';
 
-import '../generated/custom_tables.dart';
-import '../test_utils/test_utils.dart';
+import '../../generated/custom_tables.dart';
+import '../../test_utils/test_utils.dart';
 
 void main() {
   test('fts5 integration test', () async {

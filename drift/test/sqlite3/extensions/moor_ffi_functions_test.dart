@@ -1,16 +1,16 @@
 import 'package:drift/drift.dart';
-import 'package:drift/extensions/native.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:test/test.dart';
 
-import '../generated/todos.dart';
-import '../test_utils/test_utils.dart';
+import '../../generated/todos.dart';
+import '../../test_utils/test_utils.dart';
 
 void main() {
-  const a = CustomExpression<double>('a');
-  const b = CustomExpression<double>('b');
+  final a = Expression<double>.custom('a');
+  final b = Expression<double>.custom('b');
 
   test('pow', () {
-    expect(sqlPow(a, b), generates('pow(a, b)'));
+    expect(sqlPow(a, b), generates('pow(a,b)'));
   });
 
   test('sqrt', () => expect(sqlSqrt(a), generates('sqrt(a)')));
@@ -22,12 +22,12 @@ void main() {
   test('atan', () => expect(sqlAtan(a), generates('atan(a)')));
 
   test('containsCase', () {
-    const c = CustomExpression<String>('a');
+    final c = Expression<String>.custom('a');
 
-    expect(c.containsCase('foo'), generates('moor_contains(a, ?, 0)', ['foo']));
+    expect(c.containsCase('foo'), generates('drift_contains(a,?1,0)', ['foo']));
     expect(
       c.containsCase('foo', caseSensitive: true),
-      generates('moor_contains(a, ?, 1)', ['foo']),
+      generates('drift_contains(a,?1,1)', ['foo']),
     );
   });
 

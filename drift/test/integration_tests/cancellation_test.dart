@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
-import 'package:drift/native.dart';
+import 'package:drift/sqlite3/native.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';

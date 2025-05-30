@@ -3,7 +3,7 @@
 library;
 
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
+import 'package:drift/sqlite3/native.dart';
 import 'package:drift/src/runtime/cancellation_zone.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';

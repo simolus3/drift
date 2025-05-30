@@ -49,6 +49,12 @@ final class BinaryExpression<T extends Object> extends Expression<T> {
 
 /// Binary operators supported by drift.
 enum BinaryOperator implements SqlComponent {
+  /// A `->` operator in SQL.
+  jsonExtractAsJson(Precedence.stringConcatenation, '->'),
+
+  /// A `->>` operator in SQL.
+  jsonExtractAsValue(Precedence.stringConcatenation, '->>'),
+
   /// A `||` operator in SQL.
   stringConcatenation(Precedence.stringConcatenation, '||'),
 

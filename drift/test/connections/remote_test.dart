@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:async/async.dart';
-import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/src/connections/remote.dart';
 import 'package:drift/src/connections/remote/channel.dart';

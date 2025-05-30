@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
