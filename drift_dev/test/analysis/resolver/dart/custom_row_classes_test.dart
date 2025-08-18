@@ -587,4 +587,48 @@ class _$UserInsertable implements i0.Insertable<i1.User> {
 ''')),
     }, result.dartOutputs, result.writer);
   });
+
+  test('generates insertable for inherited getter', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+@UseRowClass(User, generateInsertable: true)
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get some => text()();
+}
+
+mixin class HasId {
+  final int id;
+}
+
+class User with HasId {
+  User({required this.id, required this.some});
+
+  final String some;
+}
+''',
+      },
+      modularBuild: true,
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    checkOutputs({
+      'a|lib/a.drift.dart': decodedMatches(contains(r'''
+class _$UserInsertable implements i0.Insertable<i1.User> {
+  i1.User _object;
+  _$UserInsertable(this._object);
+  @override
+  Map<String, i0.Expression> toColumns(bool nullToAbsent) {
+    return i2.UsersCompanion(
+      id: i0.Value(_object.id),
+      some: i0.Value(_object.some),
+    ).toColumns(false);
+  }
+}
+''')),
+    }, result.dartOutputs, result.writer);
+  });
 }

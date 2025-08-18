@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show BuiltinDriftType;
@@ -99,12 +99,21 @@ class ColumnParser {
   /// migrations), there might not be a `creationTime` in scope for the check
   /// constraint. So, we annotate these references in [AnnotatedDartCode] and
   /// use that information when generating code to transform the code.
-  final Map<Element, String> _columnsInSameTable;
+  final Map<Element2, String> _columnsInSameTable;
 
   ColumnParser(this._resolver, this._columnsInSameTable);
 
+  /// Generates [AnnotatedDartCode] representing [node].
+  ///
+  /// In [node], references to a column in the same table are tagged which
+  /// allows the writer to reconstruct them properly.
+  AnnotatedDartCode _ast(AstNode node) {
+    return AnnotatedDartCode.build(
+        (b) => b.addAstNode(node, taggedElements: _columnsInSameTable));
+  }
+
   Future<PendingColumnInformation?> parse(
-      ColumnDeclaration columnDeclaration, Element element) async {
+      ColumnDeclaration columnDeclaration, Element2 element) async {
     final expr = columnDeclaration.expression;
 
     // In drift < v3, columns were declared like this: text()(). In drift v3,
@@ -143,7 +152,7 @@ class ColumnParser {
           final expression = remainingExpr.argumentList.arguments.single;
 
           final custom = readCustomType(
-            element.library!,
+            element.library2!,
             expression,
             helper,
             (message) => _resolver.reportError(
@@ -164,9 +173,9 @@ class ColumnParser {
       }
 
       // See if the method called is annotated with DriftColumnDeclarationBuilder
-      final resolvedMethod = calledMethod.staticElement;
+      final resolvedMethod = calledMethod.element;
       if (resolvedMethod != null) {
-        for (final annotation in resolvedMethod.metadata) {
+        for (final annotation in resolvedMethod.metadataIfAnnotatable) {
           final value = annotation.computeConstantValue();
           if (value == null || value.type == null) {
             continue;
@@ -182,19 +191,19 @@ class ColumnParser {
                   .byName(builtin.getField('name')!.toStringValue()!));
               return true;
             } else if (custom != null && !custom.isNull) {
-              final element = custom.toFunctionValue()!;
+              final element = custom.toFunctionValue2()!;
               final customType = helper.asSqlType(element.returnType)!;
 
               columnType = ColumnType.custom(CustomColumnType(
                 AnnotatedDartCode.build((b) {
                   // element is either a static or a top-level function.
-                  if (element.enclosingElement3 is LibraryElement) {
+                  if (element.enclosingElement2 is LibraryElement2) {
                     b.addTopLevelElement(element);
                   } else {
                     b.addTopLevelElement(
-                        element.enclosingElement3 as ClassElement);
+                        element.enclosingElement2 as ClassElement2);
                     b.addText(
-                        '.${element.name.isEmpty ? 'new' : element.name}');
+                        '.${element.name3!.isEmpty ? 'new' : element.name3}');
                   }
                   b.addText('()');
                 }),
@@ -261,8 +270,8 @@ class ColumnParser {
             break;
           }
 
-          final staticElement = first.staticElement;
-          if (staticElement is! ClassElement) {
+          final staticElement = first.element;
+          if (staticElement is! ClassElement2) {
             _resolver.reportError(DriftAnalysisError.inDartAst(
               element,
               first,
@@ -415,11 +424,11 @@ class ColumnParser {
         case _methodDefault:
           final args = remainingExpr.argumentList;
           final expression = args.arguments.single;
-          foundDefaultExpression = AnnotatedDartCode.ast(expression);
+          foundDefaultExpression = _ast(expression);
           break;
         case _methodClientDefault:
-          clientDefaultExpression = AnnotatedDartCode.ast(
-              remainingExpr.argumentList.arguments.single);
+          clientDefaultExpression =
+              _ast(remainingExpr.argumentList.arguments.single);
           break;
         case _methodMap:
           final args = remainingExpr.argumentList;
@@ -444,15 +453,15 @@ class ColumnParser {
           }
 
           if (generatedExpression != null) {
-            final code = AnnotatedDartCode.ast(generatedExpression);
+            final code = _ast(generatedExpression);
             foundConstraints.add(ColumnGeneratedAs(code, stored));
           }
           break;
         case _methodCheck:
           final expr = remainingExpr.argumentList.arguments.first;
+          final ast = _ast(expr);
 
-          foundConstraints.add(DartCheckExpression(AnnotatedDartCode.build(
-              (b) => b.addAstNode(expr, taggedElements: _columnsInSameTable))));
+          foundConstraints.add(DartCheckExpression(ast));
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -467,7 +476,7 @@ class ColumnParser {
     AppliedTypeConverter? converter;
     if (mappedAs != null) {
       converter = readTypeConverter(
-        element.library!,
+        element.library2!,
         mappedAs,
         columnType!,
         nullable,
@@ -561,7 +570,7 @@ class ColumnParser {
         sqlType: columnType!,
         nullable: nullable,
         nameInSql: sqlName,
-        nameInDart: element.name!,
+        nameInDart: element.name3!,
         declaration: DriftDeclaration.dartElement(element),
         typeConverter: converter,
         clientDefaultCode: clientDefaultExpression,
@@ -591,15 +600,15 @@ class ColumnParser {
     }[name]!;
   }
 
-  String? _readJsonKey(Element getter) {
-    final annotations = getter.metadata;
+  String? _readJsonKey(Element2 getter) {
+    final annotations = getter.metadataIfAnnotatable;
     final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
       final valueType = value?.type;
 
       return valueType is InterfaceType &&
           isFromDrift(valueType) &&
-          valueType.element.name == 'JsonKey';
+          valueType.element3.name3 == 'JsonKey';
     });
 
     if (object == null) return null;
@@ -607,15 +616,15 @@ class ColumnParser {
     return object.computeConstantValue()!.getField('key')!.toStringValue();
   }
 
-  String? _readReferenceName(Element getter) {
-    final annotations = getter.metadata;
+  String? _readReferenceName(Element2 getter) {
+    final annotations = getter.metadataIfAnnotatable;
     final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
       final valueType = value?.type;
 
       return valueType is InterfaceType &&
           isFromDrift(valueType) &&
-          valueType.element.name == 'ReferenceName';
+          valueType.element3.name3 == 'ReferenceName';
     });
 
     if (object == null) return null;

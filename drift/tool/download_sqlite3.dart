@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 
 typedef SqliteVersion = ({String version, String year});
 
-const SqliteVersion latest = (version: '3460000', year: '2024');
+const SqliteVersion latest = (version: '3490100', year: '2025');
 const SqliteVersion minimum = (version: '3290000', year: '2019');
 
 Future<void> main(List<String> args) async {
@@ -22,10 +22,10 @@ Future<void> main(List<String> args) async {
 
 extension on SqliteVersion {
   String get autoconfUrl =>
-      'https://www.sqlite.org/$year/sqlite-autoconf-$version.tar.gz';
+      'https://sqlite.org/$year/sqlite-autoconf-$version.tar.gz';
 
   String get windowsUrl =>
-      'https://www.sqlite.org/$year/sqlite-dll-win-x64-$version.zip';
+      'https://sqlite.org/$year/sqlite-dll-win-x64-$version.zip';
 }
 
 Future<void> _downloadAndCompile(String name, SqliteVersion version,
@@ -64,7 +64,8 @@ Future<void> _downloadAndCompile(String name, SqliteVersion version,
     final windowsUri = version.windowsUrl;
     final sqlite3Zip = p.join(temporaryDirPath, 'sqlite3.zip');
     final client = Client();
-    final response = await client.send(Request('GET', Uri.parse(windowsUri)));
+    final response = await client
+        .send(Request('GET', Uri.parse(windowsUri))..followRedirects = true);
     if (response.statusCode != 200) {
       print(
           'Could not download $windowsUri, status code ${response.statusCode}');
@@ -88,22 +89,31 @@ Future<void> _downloadAndCompile(String name, SqliteVersion version,
     exit(0);
   }
 
-  await _run('curl ${version.autoconfUrl} --output sqlite.tar.gz',
+  await _run('curl -L ${version.autoconfUrl} --output sqlite.tar.gz',
       workingDirectory: temporaryDirPath);
   await _run('tar zxvf sqlite.tar.gz', workingDirectory: temporaryDirPath);
 
   final sqlitePath =
       p.join(temporaryDirPath, 'sqlite-autoconf-${version.version}');
-  await _run('./configure', workingDirectory: sqlitePath);
+
+  await _run(
+    // Builds since 3.48.0, it looks like fts5 is no longer enabled by default
+    switch (name) {
+      'latest' => './configure --all',
+      _ => './configure'
+    },
+    workingDirectory: sqlitePath,
+  );
   await _run('make -j', workingDirectory: sqlitePath);
 
   await File(p.join(sqlitePath, 'sqlite3')).copy(p.join(target, 'sqlite3'));
+  final libsPath = name == 'latest' ? sqlitePath : p.join(sqlitePath, '.libs');
 
   if (Platform.isLinux) {
-    await File(p.join(sqlitePath, '.libs', 'libsqlite3.so'))
+    await File(p.join(libsPath, 'libsqlite3.so'))
         .copy(p.join(target, 'libsqlite3.so'));
   } else if (Platform.isMacOS) {
-    await File(p.join(sqlitePath, '.libs', 'libsqlite3.dylib'))
+    await File(p.join(libsPath, 'libsqlite3.dylib'))
         .copy(p.join(target, 'libsqlite3.dylib'));
   }
 

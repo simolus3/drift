@@ -1,13 +1,11 @@
 // #docregion worker
 // Note: This snippet describes a legacy API! Please consider migrating to
 // `package:drift/wasm.dart`, which has builtin support for web workers!
-import 'dart:html';
+import 'dart:html'; // ignore: deprecated_member_use
 
 import 'package:drift/drift.dart';
-// ignore: deprecated_member_use
-import 'package:drift/web.dart';
-// ignore: deprecated_member_use
-import 'package:drift/web/worker.dart';
+import 'package:drift/web.dart'; // ignore: deprecated_member_use
+import 'package:drift/web/worker.dart'; // ignore: deprecated_member_use
 
 void main() {
   // Load sql.js library in the worker

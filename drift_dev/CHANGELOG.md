@@ -1,9 +1,63 @@
-## 2.24.1-dev
+## 2.28.2-dev
+
+- Fix generating code for `typedef`s with different parameters than the type they point to.
+- Support `analyzer` version 8.x
+
+## 2.28.1
+
+- Support `package:build` version 3.
+
+## 2.28.0
+
+- Include preamble from drift build options in generated schema code.
+- Fix generated code not copying function expressions correctly.
+
+## 2.27.0
+
+- Fix generating versioned schema code for columns referencing other columns in
+  `generatedAs` expressions.
+- Use proper impport statements when generating schema code.
+- Schema validation: Allow ignoring column constraints.
+
+## 2.26.1
+
+- Fix `generatedAs` not being generated for versioned schema imports.
+- Avoid the use of the shared database cache in the `SchemaVerifier`
+  implementation.
+- Fix crash when `drift_dev schema dump` is used on SQLite databases with
+  triggers, views or indexes.
+- CLI: Don't exit with code `0` when no command was selected.
+
+## 2.26.0
+
+- Fix warning on Dart-defined views referencing the same table multiple times.
+- Don't generate unnecessary verification code.
+- Suggest a test with data integrity when adding a new column without a default
+  value in `make-migrations`.
+
+## 2.25.2
+
+- Fix `generateInsertable: true` on `@UseRowClass` not respecting inherited
+  getters.
+- Fix lints in generated test code for `make-migrations`.
+
+## 2.25.1
+
+- Fix schema exports ignoring `store_date_time_values_as_text: true` when Dart
+  tables with default constraints on columns are involved.
+
+## 2.25.0
 
 - Fix incorrect code when applying non-nullable type converters with a nullable
   JSON type to nullable column.
 - Fix missing outputs for drift files only consisting of imports in modular
   generation mode.
+- Allow generating manager references across different files in modular
+  generation mode.
+- Fix class names with dollar signs not being escaped in drift-generated
+  `toString()`.
+- Make-migrations command: Use `flutter_test` if the core `test` package is
+  unavailable and warn when database class needs changes for test.
 
 ## 2.24.0
 

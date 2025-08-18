@@ -66,21 +66,13 @@ dev_dependencies:
     final config =
         PackageConfig.parseBytes(await File.fromUri(uri!).readAsBytes(), uri);
 
-    final driftDevUrl =
-        config.packages.singleWhere((e) => e.name == 'drift_dev').root;
-    final moorUrl = driftDevUrl.resolve('../extras/assets/old_moor_package/');
-    final moorFlutterUrl =
-        driftDevUrl.resolve('../extras/assets/old_moor_flutter_package/');
-
     final appUri = '${File(appRoot).absolute.uri}/';
     final newConfig = PackageConfig([
-      ...config.packages,
+      // Include all packages in the drift monorepo, outside of examples/
+      ...config.packages
+          .where((pkg) => !pkg.root.toFilePath().contains('examples')),
       Package('app', Uri.parse(appUri),
           packageUriRoot: Uri.parse('${appUri}lib/')),
-      // Also include old moor packages to test migration from moor to drift
-      Package('moor', moorUrl, packageUriRoot: Uri.parse('${moorUrl}lib/')),
-      Package('moor_flutter', moorFlutterUrl,
-          packageUriRoot: Uri.parse('${moorFlutterUrl}lib/')),
     ]);
     final configBuffer = StringBuffer();
     PackageConfig.writeString(newConfig, configBuffer);

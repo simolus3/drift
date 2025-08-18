@@ -23,7 +23,7 @@ there are different ways to open a DevTools instance:
    also have ways to open DevTools after starting your app.
 
 Drift contributes a DevTools extension that is available to all apps depending on `drift`.
-The first time you're using the extension, you may have to enable it explicitly. For that,
+The first time you're using the extension, you may have to [enable it explicitly](https://docs.flutter.dev/tools/devtools/extensions#configure-extension-enablement-states). For that,
 click on the extensions icon at the top of the DevTools window:
 
 ![Screenshot of an DevTools window, with the extensions button in the window bar highlighted](../images/tools/devtools/setup_0.png)

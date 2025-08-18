@@ -188,4 +188,29 @@ class Author {
       'a|lib/a.drift.dart': decodedMatches(isNot(contains('Object??'))),
     }, result.dartOutputs, result.writer);
   });
+
+  test('does not write unecessary verification metas', () async {
+    final result = await emulateDriftBuild(inputs: {
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+enum ThemeSetting {
+  dark,
+  light,
+  system,
+}
+
+class GlobalSettings extends Table {
+  Column<String> get themeSetting => textEnum<ThemeSetting>()();
+
+  IntColumn get foo => integer()();
+}
+''',
+    }, modularBuild: true);
+
+    checkOutputs({
+      'a|lib/a.drift.dart':
+          decodedMatches(isNot(contains('_themeSettingMeta'))),
+    }, result.dartOutputs, result.writer);
+  });
 }

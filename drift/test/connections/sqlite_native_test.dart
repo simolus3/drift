@@ -317,6 +317,45 @@ CREATE TABLE groups (
 
     await db.customSelect('SELECT * FROM groups').get();
   });
+
+  group('custom sqlite bindings', () {
+    test('synchronous file', () async {
+      final mockSqlite = _MockSqlite();
+
+      final db = NativeDatabase(
+        File('/dev/null'),
+        sqlite3: () => mockSqlite,
+      );
+
+      await expectLater(
+          TodoDb(db).customSelect('SELECT 1').get(), throwsA(anything));
+
+      expect(mockSqlite.openedPaths, contains('/dev/null'));
+    });
+
+    test('createInBackground', () async {
+      final db = NativeDatabase.createInBackground(
+        File('/dev/null'),
+        sqlite3: _MockSqlite.new,
+      );
+
+      await expectLater(
+          TodoDb(db).customSelect('SELECT 1').get(),
+          throwsA(isA<Object>().having(
+              (e) => e.toString(), 'toString', contains('mock sqlite open'))));
+    });
+
+    test('memory', () async {
+      final mockSqlite = _MockSqlite();
+
+      final db = NativeDatabase.memory(sqlite3: () => mockSqlite);
+
+      await expectLater(
+          TodoDb(db).customSelect('SELECT 1').get(),
+          throwsA(isA<Object>().having((e) => e.toString(), 'toString',
+              contains('mock sqlite openInMemory'))));
+    });
+  });
 }
 
 extension on Database {
@@ -339,5 +378,31 @@ extension on Database {
     }
 
     return count;
+  }
+}
+
+final class _MockSqlite implements Sqlite3 {
+  final openedPaths = <String>[];
+  bool didOpenInMemory = false;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    throw 'stub';
+  }
+
+  @override
+  Database open(String filename,
+      {String? vfs,
+      OpenMode mode = OpenMode.readWriteCreate,
+      bool uri = false,
+      bool? mutex}) {
+    openedPaths.add(filename);
+    throw UnimplementedError('mock sqlite open');
+  }
+
+  @override
+  Database openInMemory({String? vfs}) {
+    didOpenInMemory = true;
+    throw UnimplementedError('mock sqlite openInMemory');
   }
 }

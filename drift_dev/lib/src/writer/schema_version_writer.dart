@@ -10,7 +10,7 @@ import 'writer.dart';
 
 class SchemaVersion {
   final int version;
-  final List<DriftSchemaElement> schema;
+  final List<DriftElement> schema;
   final Map<String, Object?> options;
 
   SchemaVersion(this.version, this.schema, this.options);
@@ -384,12 +384,26 @@ class SchemaVersionWriter {
         ..writeDriftRef('DatabaseSchemaEntity')
         ..write('> entities = [');
 
+      final engine =
+          sql.SqlEngine(sql.EngineOptions(version: sql.SqliteVersion.current));
       for (final entity in version.schema) {
         // Creata field for the entity and include it in the list
-        final fieldName =
-            _writeEntity(element: entity, definition: versionScope.leaf());
+        if (entity is DriftSchemaElement) {
+          final fieldName =
+              _writeEntity(element: entity, definition: versionScope.leaf());
 
-        allEntitiesWriter.write('$fieldName,');
+          allEntitiesWriter.write('$fieldName,');
+        } else if (entity is DefinedSqlQuery &&
+            entity.mode == QueryMode.atCreate) {
+          final code = DatabaseWriter.createOnCreate(
+            versionScope,
+            entity,
+            SqlQuery.astOnly(
+                engine: engine, name: entity.name, sql: entity.sql),
+          );
+
+          allEntitiesWriter.write('$code, ');
+        }
       }
 
       allEntitiesWriter.write('];');

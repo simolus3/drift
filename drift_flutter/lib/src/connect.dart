@@ -1,3 +1,6 @@
+/// @docimport `package:sqlite3/sqlite3.dart`
+library;
+
 export 'unsupported.dart'
     if (dart.library.js_interop) 'web.dart'
     if (dart.library.ffi) 'native.dart';
@@ -5,6 +8,7 @@ export 'unsupported.dart'
 export 'package:drift/src/web/wasm_setup/types.dart';
 // ignore: implementation_imports
 import 'package:drift/src/web/wasm_setup/types.dart';
+import 'package:sqlite3/common.dart';
 
 /// Web-specific options used to open drift databases.
 ///
@@ -101,6 +105,20 @@ final class DriftNativeOptions {
   /// not be changed by `drift_flutter`.
   final Future<String?> Function()? tempDirectoryPath;
 
+  /// An optional callback to be invoked when opening an underlying database
+  /// connection.
+  ///
+  /// Because the connection options are cross-platform, the function is
+  /// declared to get invoked with a [CommonDatabase] instance, but at runtime
+  /// will only get called with native [Database] instances. If you need to
+  /// access functionality not available on the common interface, cast as
+  /// necessary.
+  ///
+  /// This function is sent across isolates because that's where connections are
+  /// actually opened, so this function must not capture closed variables that
+  /// can't be sent over isolates.
+  final void Function(CommonDatabase db)? setup;
+
   /// Create drift options effective when opening drift databases on native
   /// platforms.
   const DriftNativeOptions({
@@ -108,6 +126,7 @@ final class DriftNativeOptions {
     this.databasePath,
     this.databaseDirectory,
     this.tempDirectoryPath,
+    this.setup,
   }) : assert(
           databasePath == null || databaseDirectory == null,
           'databasePath and databaseDirectory must not both be set.',

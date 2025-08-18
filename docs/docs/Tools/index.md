@@ -79,7 +79,7 @@ The `schema export` command does just that. It takes a path to a Dart source fil
 a drift database as an argument:
 
 ```
-$ dart run drift_dev schema dump path/to/database.dart
+$ dart run drift_dev schema export path/to/database.dart
 ```
 
 It will output all statements that would be run by drift if the database were freshly created,

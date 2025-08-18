@@ -15,6 +15,7 @@ import 'package:web_wasm/initialization_mode.dart';
 import 'package:webdriver/async_io.dart';
 // ignore: implementation_imports
 import 'package:drift/src/web/wasm_setup/types.dart';
+import 'package:webdriver/support/async.dart';
 
 class TestAssetServer {
   final BuildDaemonClient buildRunner;
@@ -107,6 +108,12 @@ class DriftWebDriver {
 
   DriftWebDriver(this.server, this.driver);
 
+  /// Wait for the Dart code on the test page to finish its main method, which
+  /// it signals by creating an element.
+  Future<void> waitReady() async {
+    await waitFor(() => driver.findElement(By.id('ready')));
+  }
+
   Future<
       ({
         Set<WasmStorageImplementation> storages,
@@ -194,5 +201,16 @@ class DriftWebDriver {
     await driver.executeAsync('delete_database(arguments[0], arguments[1])', [
       json.encode([storageApi.name, name]),
     ]);
+  }
+
+  Future<bool> exportDatabase(WebStorageApi storageApi, String name) async {
+    return await driver
+        .executeAsync('export_database(arguments[0], arguments[1])', [
+      json.encode([storageApi.name, name]),
+    ]);
+  }
+
+  Future<bool> isDart2wasm() async {
+    return await driver.executeAsync('isDart2wasm("", arguments[0])', []);
   }
 }

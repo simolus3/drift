@@ -241,11 +241,15 @@ In database rows, columns to which a type converter has been applied are storing
 `toSql()`. Drift will apply the type converter automatically when reading or writing rows, but they
 are not applied automatically when creating your own [expressions]('dart_api/expressions.md').
 For example, filtering for values with [`column.equals`](https://drift.simonbinder.eu/api/drift/expression/equals)
-will compare not apply  the type converter, you'd be comparing the underlying database values.
+will compare not apply the type converter, you'd be comparing the underlying database values.
 
 On columns with type converters, [`equalsValue`](https://drift.simonbinder.eu/api/drift/generatedcolumnwithtypeconverter/equalsvalue)
-can be used instead - unlike `equals`, `equasValue` will apply the converter before emtting a comparison in SQL.
+can be used instead - unlike `equals`, `equasValue` will apply the converter before emitting a comparison in SQL.
 If you need to apply the converter for other comparisons as well, you can do that manually with `column.converter.toSql`.
 
 For variables used in queries that are part of a [drift file]('sql_api/drift_files.md'), type converters will be
 applied by default if the `apply_converters_on_variables` [builder option]('generation_options/index.md') is enabled (which it is by default).
+
+When reading custom expressions that should have a type converter attached to them, you'd have to first read the underlying
+SQL value and then apply your type converter manually.
+To map nullable values through an otherwise non-nullable type converter, you can use the `NullAwareTypeConverter.wrapFromSql` utility method.

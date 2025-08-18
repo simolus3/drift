@@ -2,11 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:devtools_app_shared/service.dart';
+import 'package:devtools_app_shared/utils.dart';
 import 'package:devtools_extensions/devtools_extensions.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/internal/versioned_schema.dart';
 // ignore: invalid_use_of_internal_member, implementation_imports
 import 'package:drift/src/runtime/devtools/shared.dart';
+// ignore: invalid_use_of_internal_member, implementation_imports
+import 'package:drift/src/runtime/executor/stream_queries.dart';
 // ignore: implementation_imports
 import 'package:drift/src/remote/protocol.dart';
 import 'package:logging/logging.dart';
@@ -115,6 +118,10 @@ class RemoteDatabase {
     return response.json!['r'];
   }
 
+  Future<void> close() async {
+    await _tableUpdates.close();
+  }
+
   static Future<RemoteDatabase> resolve(
     TrackedDatabase database,
     EvalOnDartLibrary eval,
@@ -145,7 +152,10 @@ final class RemoteDatabaseAsDatabase extends GeneratedDatabase {
   final List<DatabaseSchemaEntity> allSchemaEntities = [];
 
   RemoteDatabaseAsDatabase(this.database)
-      : super(RemoteQueryExecutor(database)) {
+      : super(DatabaseConnection(
+          RemoteQueryExecutor(database),
+          streamQueries: RemoteStreamQueries(database),
+        )) {
     for (final entry in database.description.entities) {
       final parsed = switch (entry.type) {
         'table' => VersionedTable(
@@ -245,6 +255,38 @@ final class RemoteQueryExecutor extends QueryExecutor {
     await runCustom(statement, args);
     return 0;
   }
+}
+
+// ignore: invalid_use_of_internal_member
+final class RemoteStreamQueries extends StreamQueryStore {
+  final RemoteDatabase remote;
+
+  RemoteStreamQueries(this.remote) {
+    remote.tableUpdates.forEach((update) {
+      _logger.fine('Received update notification: $update.');
+
+      handleTableUpdates(update.toSet(), true);
+    });
+  }
+
+  @override
+  void handleTableUpdates(Set<TableUpdate> updates,
+      [bool comesFromServer = false]) {
+    super.handleTableUpdates(updates);
+
+    if (!comesFromServer) {
+      remote._driftRequest(
+        'notify-update',
+        payload: {
+          'updates': json.encode([
+            for (final update in updates) {'table': update.table}
+          ])
+        },
+      );
+    }
+  }
+
+  static final _logger = Logger('RemoteStreamQueries');
 }
 
 extension on ColumnDescription {

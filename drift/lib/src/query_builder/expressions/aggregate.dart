@@ -62,6 +62,12 @@ extension BaseAggregate<DT extends Object> on Expression<DT> {
   ///
   /// {@macro drift_aggregate_filter}
   ///
+  /// {@template drift_aggregate_order_by}
+  /// To control the order of the concatenated elements, you can use [orderBy].
+  /// Note that [orderBy] is only available from sqlite 3.44, released on
+  /// 2023-11-01. Most devices will use an older sqlite version.
+  /// {@endtemplate}
+  ///
   /// See also:
   ///  - the sqlite documentation: https://www.sqlite.org/lang_aggfunc.html#groupconcat
   ///  - the conceptually similar [Iterable.join]
@@ -69,6 +75,7 @@ extension BaseAggregate<DT extends Object> on Expression<DT> {
     String separator = ',',
     bool distinct = false,
     Expression<bool>? filter,
+    OrderBy? orderBy,
   }) {
     const sqliteDefaultSeparator = ',';
 
@@ -86,6 +93,7 @@ extension BaseAggregate<DT extends Object> on Expression<DT> {
       ],
       distinct: distinct,
       filter: filter,
+      orderBy: orderBy,
     );
   }
 }

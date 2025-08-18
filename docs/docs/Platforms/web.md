@@ -17,7 +17,7 @@ description: Drift support in Flutter and Dart web apps.
 Using modern browser APIs such as WebAssembly and the Origin-Private File System API,
 you can use drift databases for the web version of your Flutter and Dart applications.
 Just like the core drift APIs, web support is platform-agnostic:
-Drift web supports Flutter Web, AngularDart, plain `dart:html` or any other Dart web framework.
+Drift web supports Flutter Web, AngularDart, jaspr, plain `package:web/` or any other Dart web framework.
 
 While an official sqlite3 build for the web exists, it is fairly large and doesn't support most browsers.
 Drift uses a custom sqlite3 build with a Dart interface sharing a lot of code with the existing native
@@ -145,34 +145,48 @@ Also, note that the `sqlite3.wasm` file needs to be served with a `Content-Type`
     If the headers break your app, you should not enable them - drift will fall back
     to another (potentially slower) implementation in that case.
 
-
-
-
 ### Setup in Dart
 
 From a perspective of the Dart code used, drift on the web is similar to drift on other platforms.
 You can follow the [getting started guide](../setup.md) as a general setup guide.
 
-Instead of using a `NativeDatabase` in your database classes, you can use the `WasmDatabase` optimized for
-the web:
+=== "Flutter (sqlite3)"
 
-{{ load_snippet('connect','lib/snippets/platforms/web.dart.excerpt.json') }}
+    If you're using `package:drift_flutter` to setup your database, you enable web support by passing
+    `DriftWebOptions` with URIs to the WebAssembly module and the drift worker:
 
-When you call `WasmDatabase.open`, drift will automatically find a suitable persistence implementation
-supported by the current browser.
+    {{ load_snippet('flutter','lib/snippets/platforms/web.dart.excerpt.json',indent=4) }}
+
+    If you need more control on how you're opening web databases (e.g. to prefer certain storage
+    APIs, see the manual setup for Dart in the next tab).
+
+=== "Dart (sqlite3)"
+
+    Instead of using a `NativeDatabase` in your database classes, you can use the `WasmDatabase` optimized
+    for the web:
+
+    {{ load_snippet('connect','lib/snippets/platforms/web.dart.excerpt.json',indent=4) }}
+
+    When you call `WasmDatabase.open`, drift will automatically find a suitable persistence implementation
+    supported by the current browser.
 
 A full example that works on the web (and all other platforms supported by drift) is available
 [here](https://github.com/simolus3/drift/tree/develop/examples/app).
 
-## Sharing code between native apps and web
+## Manual code sharing between native apps and web
 
-If you want to share your database code between native applications and web apps, import only the
+`package:drift_flutter` provides a single method to open databases that works both for native and
+web apps.
+
+If you're not using that package, e.g. because you need more control on how you're opening databases,
+you can still support all platforms with a single codebase.
+To share your database code between native applications and web apps, import only the
 core `package:drift/drift.dart` library into your database file.
-And instead of passing a `NativeDatabase` or `WebDatabase` to the `super` constructor, make the
-`QueryExecutor` customizable:
+And instead of passing a `NativeDatabase` or `WasmDatabase` to the `super` constructor of the generated
+database class, ensure that the `QueryExecutor` is customizable, like shown here:
 
 ```dart
-// don't import drift/web.dart or drift/native.dart in shared code
+// don't import drift/wasm.dart or drift/native.dart in shared code
 import 'package:drift/drift.dart';
 
 @DriftDatabase(/* ... */)
@@ -181,7 +195,15 @@ class SharedDatabase extends _$SharedDatabase {
 }
 ```
 
-In native Flutter apps, you can create an instance of your database with
+Next, set up conditional exports to open your database by creating the following files:
+
+1. `native.dart`, which will contain the native implementation.
+2. `web.dart`, for web support.
+3. `unsupported.dart`, as a stub library to set up conditional exports.
+4. `shared.dart`, which will contain the conditional exports.
+
+In native Flutter apps, you can create an instance of your database with a snippet like this
+(also explained further in [the setup guide](../setup.md#open)):
 
 ```dart
 // native.dart
@@ -197,14 +219,34 @@ SharedDatabase constructDb() {
 }
 ```
 
-On the web, you can use
+On the web, you can use:
 
 ```dart
 // web.dart
-import 'package:drift/web.dart';
+import 'package:drift/wasm.dart';
 
 SharedDatabase constructDb() {
   return SharedDatabase(connectOnWeb());
+}
+
+DatabaseConnection connectOnWeb() {
+  return DatabaseConnection.delayed(Future(() async {
+    final result = await WasmDatabase.open(
+      databaseName: 'my_app_db', // prefer to only use valid identifiers here
+      sqlite3Uri: Uri.parse('sqlite3.wasm'),
+      driftWorkerUri: Uri.parse('drift_worker.dart.js'),
+    );
+
+    if (result.missingFeatures.isNotEmpty) {
+      // Depending how central local persistence is to your app, you may want
+      // to show a warning to the user if only unrealiable implemetentations
+      // are available.
+      print('Using ${result.chosenImplementation} due to missing browser '
+          'features: ${result.missingFeatures}');
+    }
+
+    return result.resolvedExecutor;
+  }));
 }
 ```
 
@@ -277,6 +319,18 @@ There's nothing your app or drift could do about them. If persistence is importa
 and drift has chosen the `unsafeIndexedDb` or the `inMemory` implementation due to a lack of proper
 persistence support, you may want to show a warning to the user explaining that they have to upgrade
 their browser.
+
+### Customizing how databases are opened
+
+To customize which implementation drift uses, you can use the `WasmDatabase.probe` API. Without directly
+opening a database, it returns information about which databases exist in the current context and which
+features are available in the browser.
+
+`WasmDatabase.probe` returns a `WasmProbeResult`, which can then be used to:
+
+1. `open()` the database.
+2. `deleteDatabase()` to delete a specific database at a specified location.
+3. `exportDatabase()`, to export it as a `Uint8List`.
 
 ### Custom functions and database setup
 

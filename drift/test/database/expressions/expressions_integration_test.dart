@@ -87,6 +87,14 @@ void main() {
               eval(db.todosTable.content.groupConcat(distinct: true),
                   onTable: db.todosTable),
               completion('entry 0,entry 1,entry 2,entry 3,entry 4'));
+          expect(
+              eval(
+                  db.todosTable.content.groupConcat(
+                      distinct: true,
+                      orderBy:
+                          OrderBy([OrderingTerm.desc(db.todosTable.content)])),
+                  onTable: db.todosTable),
+              completion('entry 4,entry 3,entry 2,entry 1,entry 0'));
         });
 
         test('filter', () {
@@ -96,6 +104,41 @@ void main() {
                     .groupConcat(filter: db.users.id.isGreaterThanValue(3)),
                 onTable: db.users),
             completion('4,5,6'),
+          );
+        });
+
+        test('order by', () {
+          expect(
+            eval(
+                db.users.id.groupConcat(
+                    orderBy: OrderBy([OrderingTerm.desc(db.users.id)])),
+                onTable: db.users),
+            completion('6,5,4,3,2'),
+          );
+          expect(
+            eval(
+                db.users.id.groupConcat(
+                    orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
+                    separator: '-'),
+                onTable: db.users),
+            completion('6-5-4-3-2'),
+          );
+          expect(
+            eval(
+                db.users.id.groupConcat(
+                    orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
+                    filter: db.users.id.isBiggerThanValue(3)),
+                onTable: db.users),
+            completion('6,5,4'),
+          );
+          expect(
+            eval(
+                db.users.id.groupConcat(
+                    orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
+                    separator: '-',
+                    filter: db.users.id.isBiggerThanValue(3)),
+                onTable: db.users),
+            completion('6-5-4'),
           );
         });
       });
@@ -246,6 +289,30 @@ void main() {
         expect(await eval(const Literal<int>(null).isIn([])), isFalse);
         expect(await eval(const Literal<int>(null).isNotIn([])), isTrue);
       });
+    });
+
+    test('window functions', () async {
+      for (var length = 1; length <= 10; length++) {
+        await db.todosTable
+            .insertOne(TodosTableCompanion.insert(content: 'a' * length));
+      }
+
+      final lengthRanking = WindowFunctionExpression(
+        db.todosTable.id.count(),
+        orderBy: [OrderingTerm.desc(db.todosTable.content.length)],
+      );
+      final query = db.selectOnly(db.todosTable)
+        ..addColumns([db.todosTable.id, lengthRanking])
+        ..orderBy([OrderingTerm.asc(db.todosTable.id)]);
+
+      expect(
+        await query
+            .map((row) => [row.read(db.todosTable.id), row.read(lengthRanking)])
+            .get(),
+        [
+          for (var i = 1; i <= 10; i++) [i, 11 - i],
+        ],
+      );
     });
   });
 }

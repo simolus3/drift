@@ -26,6 +26,28 @@ class MyDatabase extends _$MyDatabase {
     expect(db.schemaVersion, 13);
   });
 
+  test('parses schema version from constant field', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+@DriftDatabase()
+class MyDatabase extends _$MyDatabase {
+  @override
+  int get schemaVersion => latestSchemaVersion;
+
+  static const latestSchemaVersion = 13;
+}
+''',
+    });
+
+    final fileState = await backend.driver.fullyAnalyze(mainUri);
+    backend.expectNoErrors();
+
+    final db = fileState.analyzedElements.single as DriftDatabase;
+    expect(db.schemaVersion, 13);
+  });
+
   test('parses schema version field', () async {
     final backend = await TestBackend.inTest({
       'a|lib/main.dart': r'''

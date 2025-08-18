@@ -1,3 +1,7 @@
+## 0.41.1
+
+- Support new features introduced in SQLite version 3.50.0.
+
 ## 0.41.0
 
 - Replace `ColonNamedVariable` with `NamedVariable` for all named variables.

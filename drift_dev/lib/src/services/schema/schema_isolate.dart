@@ -31,6 +31,7 @@ class SchemaIsolate {
     final imports = LibraryImportManager();
     final writer = Writer(
       DriftOptions.fromJson({
+        ...options.options.toJson(),
         'generate_manager': false,
         'skip_verification_code': true,
         'data_class_to_companions': false,
@@ -79,6 +80,7 @@ class SchemaIsolate {
       declaredQueries: const [],
       declaredTables: const [],
       declaredViews: const [],
+      hasConstructorArgumentForConnection: false,
     );
     final resolved =
         ResolvedDatabaseAccessor(const {}, const [], options.elements);
@@ -143,11 +145,13 @@ class SchemaIsolate {
   }
 
   static Future<List<CreateStatement>> collectStatements({
+    required DriftOptions options,
     required List<DriftElement> allElements,
     required List<DriftSchemaElement> elementFilter,
     File? dumpStartupCode,
   }) async {
     final result = await _startAndRun((
+      options: options,
       dialect: null,
       elements: allElements,
       dumpStartupCode: dumpStartupCode,
@@ -173,6 +177,7 @@ class SchemaIsolate {
 }
 
 typedef SchemaIsolateOptions = ({
+  DriftOptions options,
   List<DriftElement> elements,
   DriftDialect? dialect,
   File? dumpStartupCode,

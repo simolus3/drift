@@ -1,5 +1,7 @@
 @TestOn('browser')
-import 'dart:html';
+
+import 'dart:async';
+import 'dart:js_interop';
 
 import 'package:drift/drift.dart';
 // ignore: deprecated_member_use
@@ -7,6 +9,7 @@ import 'package:drift/web.dart';
 import 'package:drift_testcases/database/database.dart';
 import 'package:drift_testcases/suite/suite.dart';
 import 'package:test/test.dart';
+import 'package:web/web.dart';
 
 class WebExecutor extends TestExecutor {
   final String name = 'db';
@@ -42,7 +45,17 @@ class WebExecutorIndexedDb extends TestExecutor {
 
   @override
   Future deleteData() async {
-    await window.indexedDB?.deleteDatabase('moor_databases');
+    final request = window.indexedDB.deleteDatabase('moor_databases');
+    final completer = Completer.sync();
+
+    request
+      ..onerror = () {
+        completer.completeError('deleting indexeddb failed');
+      }.toJS
+      ..onsuccess = () {
+        completer.complete();
+      }.toJS;
+    return await completer.future;
   }
 }
 

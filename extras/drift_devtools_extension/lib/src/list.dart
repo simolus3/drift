@@ -1,7 +1,8 @@
-import 'package:devtools_app_shared/service.dart';
 import 'package:devtools_app_shared/ui.dart';
+import 'package:devtools_app_shared/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:rxdart/transformers.dart';
 import 'package:vm_service/vm_service.dart';
 import 'package:path/path.dart' as p;
@@ -17,7 +18,7 @@ class TrackedDatabase {
   String get typeName => database.classRef!.name!;
 }
 
-final _databaseListChanged = AutoDisposeStreamProvider<void>((ref) {
+final _databaseListChanged = StreamProvider.autoDispose<void>((ref) {
   return Stream.fromFuture(ref.watch(serviceProvider.future))
       .switchMap((serviceProvider) {
     return serviceProvider.onExtensionEvent.where((event) {
@@ -27,7 +28,7 @@ final _databaseListChanged = AutoDisposeStreamProvider<void>((ref) {
 });
 
 final databaseList =
-    AutoDisposeFutureProvider<List<TrackedDatabase>>((ref) async {
+    FutureProvider.autoDispose<List<TrackedDatabase>>((ref) async {
   ref
     ..watch(hotRestartEventProvider)
     ..watch(_databaseListChanged);
@@ -59,7 +60,7 @@ final databaseList =
   }));
 });
 
-final selectedDatabase = AutoDisposeStateNotifierProvider<
+final selectedDatabase = StateNotifierProvider.autoDispose<
     StateController<TrackedDatabase?>, TrackedDatabase?>((ref) {
   final controller = StateController<TrackedDatabase?>(null);
 

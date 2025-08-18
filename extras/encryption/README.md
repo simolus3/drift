@@ -1,21 +1,19 @@
-Moor version that uses the
-[sqflite_sqlcipher](https://github.com/davidmartos96/sqflite_sqlcipher) instead of
-sqflite.
+Drift version that uses the [sqflite_sqlcipher](https://github.com/davidmartos96/sqflite_sqlcipher) package instead of sqflite.
 
 ## Using this
-For general notes on using moor, see [this guide](https://drift.simonbinder.eu/getting-started/).
+For general notes on using drift, see [this guide](https://drift.simonbinder.eu/setup/).
 
-Instead of using `moor_flutter`, use this:
+Instead of using `drift_flutter`, use this:
+
 ```yaml
 dependencies:
-  moor: "$latest version"
-  encrypted_moor:
+  drift: ^2.26.0
+  encrypted_drift:
    git:
     url: https://github.com/simolus3/drift.git
     path: extras/encryption
 ```
 
-To use this, you can stop depending on `moor_flutter`. Then, instead of using
-a `FlutterQueryExecutor`, import `package:moor/moor.dart` and `package:encrypted_moor/encrypted_moor.dart`.
+Instead of importing `package:drift_sqflite/drift_sqflite.dart` (or `package:drift/native.dart`) in your apps, you would then import both `package:drift/drift.dart` and `package:encrypted_drift/encrypted_drift.dart`.
 
-You can then replace the `FlutterQueryExecutor` with an `EncryptedExecutor`.
+Finally, you can replace `SqfliteQueryExecutor` (or a `NativeDatabase`) with an `EncryptedExecutor`.

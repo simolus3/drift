@@ -10,7 +10,7 @@ tedious. You can avoid this by extracting some queries into classes that are
 available from your main database class. Consider the following code:
 
 ```dart
-part '../Dart API/todos_dao.g.dart';
+part 'todos_dao.g.dart';
 
 // the _TodosDaoMixin will be created by drift. It contains all the necessary
 // fields for the tables. The <MyDatabase> type annotation is the database class
@@ -19,11 +19,11 @@ part '../Dart API/todos_dao.g.dart';
 class TodosDao extends DatabaseAccessor<MyDatabase> with _$TodosDaoMixin {
   // this constructor is required so that the main database can create an instance
   // of this object.
-  TodosDao(MyDatabase db) : super(db);
+  TodosDao(super.db);
 
-  Stream<List<TodoEntry>> todosInCategory(Category category) {
+  Stream<List<TodoEntry>> todosInCategory(Category? category) {
     if (category == null) {
-      return (select(todos)..where((t) => isNull(t.category))).watch();
+      return (select(todos)..where((t) => t.category.isNull())).watch();
     } else {
       return (select(todos)..where((t) => t.category.equals(category.id)))
           .watch();

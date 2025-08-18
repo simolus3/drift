@@ -38,7 +38,7 @@ class _SuggestionWithCode extends Matcher {
 }
 
 class _SuggestsMatcher extends CustomMatcher {
-  _SuggestsMatcher(matcher)
+  _SuggestsMatcher(Object? matcher)
       : super('Suggestions containing', 'suggestions', matcher);
 
   @override

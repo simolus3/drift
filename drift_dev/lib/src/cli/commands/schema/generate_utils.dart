@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
 import 'package:collection/collection.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 import '../../../analysis/results/file_results.dart';
 import '../../../analysis/results/results.dart';
@@ -106,16 +107,24 @@ class GenerateUtils {
       'generate_manager': false,
     });
 
+    final imports = LibraryImportManager()
+      ..enforceAlias(AnnotatedDartCode.drift, null)
+      // Internal URL of the generated file, just skip the import prefix.
+      ..enforceAlias(Uri.parse('${SchemaReader.elementUri}.drift.dart'), null);
+
     final writer = Writer(
       options,
       generationOptions: GenerationOptions(
         forSchema: version,
         writeCompanions: companions,
         writeDataClasses: dataClasses,
-        imports: NullImportManager(),
+        imports: imports,
       ),
     );
+    imports.linkToWriter(writer);
 
+    // We need to use the core drift package without an import alias because it
+    // can be referenced in snippets that are part of the schema files.
     writer.leaf()
       ..writeln(_prefix)
       ..writeln("import 'package:drift/drift.dart';");
@@ -127,10 +136,20 @@ class GenerateUtils {
       declaredQueries: const [],
       declaredTables: const [],
       declaredViews: const [],
+      hasConstructorArgumentForConnection: false,
     );
+
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
+    final definedQueries = {
+      for (final query in schema.schema.whereType<DefinedSqlQuery>())
+        query:
+            SqlQuery.astOnly(engine: engine, name: query.name, sql: query.sql),
+    };
+
     final resolved =
         ResolvedDatabaseAccessor(const {}, const [], schema.schema);
-    final input = DatabaseGenerationInput(database, resolved, const {}, null);
+    final input =
+        DatabaseGenerationInput(database, resolved, definedQueries, null);
 
     DatabaseWriter(input, writer.child()).write();
 

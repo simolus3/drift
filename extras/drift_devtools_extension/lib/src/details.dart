@@ -1,4 +1,4 @@
-import 'package:devtools_app_shared/service.dart';
+import 'package:devtools_app_shared/utils.dart';
 import 'package:drift_devtools_extension/src/schema_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +9,7 @@ import 'list.dart';
 import 'remote_database.dart';
 import 'service.dart';
 
-final loadedDatabase = AutoDisposeFutureProvider((ref) async {
+final loadedDatabase = FutureProvider.autoDispose((ref) async {
   final selected = ref.watch(selectedDatabase);
   final eval = await ref.watch(driftEvalProvider.future);
 

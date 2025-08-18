@@ -197,10 +197,10 @@ class MatchExistingTypeForQuery {
       if (desiredType is InterfaceType) {
         // For interface types (we assume classes), see if we can fit the query
         // into the classes' default constructor.
-        final element = desiredType.element;
+        final element = desiredType.element3;
 
-        final constructor = desiredType.lookUpConstructor(
-            constructorName ?? '', element.library);
+        final constructor =
+            desiredType.lookUpConstructor2(constructorName, element.library2);
         if (constructor == null) {
           if (constructorName == null) {
             reportError(
@@ -215,22 +215,22 @@ class MatchExistingTypeForQuery {
         }
 
         // Match parameters to columns by name
-        for (final parameter in constructor.parameters) {
-          final column = unmatchedColumnsByName.remove(parameter.name);
+        for (final parameter in constructor.formalParameters) {
+          final column = unmatchedColumnsByName.remove(parameter.name3);
 
           if (column != null) {
             final verified = _verifyArgument(column, parameter.type,
-                'Parameter ${parameter.name}', reportError);
+                'Parameter ${parameter.name3}', reportError);
             if (verified == null) continue;
 
             if (parameter.isPositional) {
               positionalColumns.add(verified);
             } else {
-              namedColumns[parameter.name] = verified;
+              namedColumns[parameter.name3!] = verified;
             }
           } else if (!parameter.isOptional) {
             reportError(
-                'Unexpected parameter ${parameter.name} has no matching column.');
+                'Unexpected parameter ${parameter.name3} has no matching column.');
           }
         }
       }
@@ -360,7 +360,7 @@ class MatchExistingTypeForQuery {
       // A nested query has its own type, which we can recursively try to
       // structure in the existing type.
       final asList =
-          existingTypeForColumn.asInstanceOf(typeProvider.listElement);
+          existingTypeForColumn.asInstanceOf2(typeProvider.listElement2);
       if (asList == null) {
         reportError('$name must be a List');
         return null;

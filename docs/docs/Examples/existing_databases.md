@@ -38,8 +38,6 @@ flutter:
 
 To initialize the database before using drift, you need to extract the asset from your
 app onto the device.
-In drift, you can use a [LazyDatabase](https://pub.dev/documentation/drift/latest/drift/LazyDatabase-class.html)
-to perform that work just before your drift database is opened:
 
 ```dart
 import 'package:drift/drift.dart';
@@ -78,6 +76,21 @@ LazyDatabase _openConnection() {
   });
 }
 ```
+
+===  "Using `drift_flutter`"
+
+    {{ load_snippet('(full)','lib/snippets/examples/existing_databases_flutter.dart.excerpt.json',indent=4) }}
+
+===  "Using `package:drift/native.dart`"
+
+    In drift, you can use a [LazyDatabase](https://pub.dev/documentation/drift/latest/drift/LazyDatabase-class.html)
+    to perform that work just before your drift database is opened:
+
+    {{ load_snippet('(full)','lib/snippets/examples/existing_databases_native.dart.excerpt.json',indent=4) }}
+
+
+!!! warning
+    This snippet only works on native platforms. See [existing databases on the web](../Platforms/web.md#using-existing-databases) for web support.
 
 Finally, use that method to open your database:
 

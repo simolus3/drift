@@ -17,7 +17,11 @@ import 'package:sqlite3/sqlite3.dart';
 /// pointer of an sqlite3 database handle in that database.
 /// At an early stage of their `main()` method, users can now use
 /// `VmDatabase.closeExistingInstances()` to release those resources.
-final DatabaseTracker tracker = DatabaseTracker();
+DatabaseTracker tracker(Sqlite3 sqlite3) {
+  return _instance ??= DatabaseTracker(sqlite3);
+}
+
+DatabaseTracker? _instance;
 
 /// Internal class that we don't export to drift users. See [tracker] for why
 /// this is necessary.
@@ -25,7 +29,7 @@ class DatabaseTracker {
   final Database _db;
 
   /// Creates a new tracker with necessary tables.
-  DatabaseTracker()
+  DatabaseTracker(Sqlite3 sqlite3)
       : _db = sqlite3.open(
           'file:drift_connection_store?mode=memory&cache=shared',
           uri: true,

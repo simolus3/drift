@@ -1,6 +1,8 @@
 @TestOn('vm')
 library;
 
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:postgres/postgres.dart' as pg;
@@ -117,6 +119,12 @@ void main() {
         await eval(Variable(berlinWallFell, PgTypes.date)
             .isBiggerOrEqualValue(moonLanding)),
         isTrue);
+  });
+
+  test('serialize datetime', () {
+    expect(json.encode(PgDate(year: 2025, month: 6, day: 14)), '"2025-06-14"');
+    expect(json.encode(PgDateTime(DateTime(2025, 6, 14, 15, 16, 17))),
+        '"2025-06-14 15:16:17.000"');
   });
 
   test('bigint', () async {

@@ -1,9 +1,9 @@
 on:
   workflow_call:
     outputs:
-      dart_version:
-        description: Version of the Dart SDK used during the setup run, useful for dependency restoring
-        value: ${{ jobs.dart_dependencies.outputs.dart_version }}
+      flutter_version:
+        description: Version of the Flutter SDK used during the setup run.
+        value: ${{ jobs.dart_dependencies.outputs.flutter_version }}
 
 jobs:
   # Compile the latest sqlite3 library, which will be used to run tests in drift
@@ -47,22 +47,22 @@ jobs:
     name: Get and cache Dart dependencies
     runs-on: ubuntu-latest
     outputs:
-      dart_version: ${{ steps.dart_version.outputs.version }}
+      flutter_version: ${{ steps.setup_flutter.outputs.VERSION }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
-      - name: Get Dart version
-        id: dart_version
-        run: |
-          version=`cat $DART_HOME/version`
-          echo "Running on Dart $version"
-          echo "version=$version" >> $GITHUB_STATE
+      - name: Set up Flutter
+        id: setup_flutter
+        uses: subosito/flutter-action@v2
+        with:
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
       - uses: actions/cache@v4
         with:
           path: "${{ env.PUB_CACHE }}"
-          key: dart-dependencies-${{ steps.dart_version.outputs.version }}-${{ hashFiles('**/pubspec.yaml') }}
+          key: dart-dependencies-${{ steps.setup_flutter.outputs.VERSION }}-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
-            dart-dependencies-${{ steps.dart_version.outputs.version }}-
+            dart-dependencies-${{ steps.setup_flutter.outputs.VERSION }}-
             dart-dependencies-
       - name: Setup melos
         run: dart pub global activate melos && dart pub get

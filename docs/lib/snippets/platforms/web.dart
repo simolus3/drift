@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 // ignore: deprecated_member_use
 import 'package:drift/web.dart';
+import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:sqlite3/wasm.dart';
 
@@ -45,6 +46,18 @@ class MyWebDatabase extends _$MyWebDatabase {
 // #docregion connect
 }
 // #enddocregion connect
+
+// #docregion flutter
+QueryExecutor connectWithDriftFlutter() {
+  return driftDatabase(
+    name: 'my_app_db',
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.dart.js'),
+    ),
+  );
+}
+// #enddocregion flutter
 
 DatabaseConnection connectWithExisting() {
   // #docregion existing

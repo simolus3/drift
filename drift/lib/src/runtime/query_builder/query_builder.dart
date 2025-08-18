@@ -54,6 +54,7 @@ part 'expressions/in.dart';
 part 'expressions/null_check.dart';
 part 'expressions/text.dart';
 part 'expressions/variables.dart';
+part 'expressions/window.dart';
 part 'generation_context.dart';
 part 'migration.dart';
 part 'schema/column_impl.dart';

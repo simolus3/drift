@@ -174,8 +174,6 @@ class $ShoppingCartsTable extends i3.ShoppingCarts
       requiredDuringInsert: false,
       defaultConstraints:
           i0.GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const i0.VerificationMeta _entriesMeta =
-      const i0.VerificationMeta('entries');
   @override
   late final i0.GeneratedColumnWithTypeConverter<i3.ShoppingCartEntries, String>
       entries = i0.GeneratedColumn<String>('entries', aliasedName, false,
@@ -198,7 +196,6 @@ class $ShoppingCartsTable extends i3.ShoppingCarts
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    context.handle(_entriesMeta, const i0.VerificationResult.success());
     return context;
   }
 

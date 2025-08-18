@@ -1,5 +1,8 @@
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/dart.dart';
+import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 import 'package:test/test.dart';
 
@@ -86,6 +89,29 @@ extension MyStringUtils on String {
           'i1': 'dart:core',
         },
       );
+    });
+
+    test('includes commas for function definitions', () {
+      // Regression test for https://github.com/simolus3/drift/issues/3608
+      final file = parseString(content: '''
+final x = (json) => (json! as Map<String, dynamic>).map(
+            (k, v) => MapEntry(k, v as List<int>),
+          );
+''');
+
+      final variable =
+          file.unit.childEntities.single as TopLevelVariableDeclaration;
+      final initializer = variable.variables.variables.single.initializer!;
+      final ast = AnnotatedDartCode.ast(initializer);
+
+      final writer = Writer(
+        const DriftOptions.defaults(),
+        generationOptions: GenerationOptions(imports: NullImportManager()),
+      );
+
+      final code = writer.dartCode(ast);
+      expect(code,
+          '(json) => (json! as Map<String,dynamic>).map((k, v) => MapEntry(k,v as List<int>))');
     });
   });
 }

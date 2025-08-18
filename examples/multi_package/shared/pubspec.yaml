@@ -1,8 +1,9 @@
 name: shared
 publish_to: none
+resolution: workspace
 
 environment:
-  sdk: ^3.2.5
+  sdk: ^3.5.0
 
 # Add regular dependencies here.
 dependencies:
@@ -11,6 +12,6 @@ dependencies:
   drift_dev: ^2.15.0
 
 dev_dependencies:
-  lints: ^2.1.0
+  lints: any # resolved by workspace, updated globally
   test: ^1.24.0
   build_runner: ^2.4.8

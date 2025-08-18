@@ -3,15 +3,15 @@ library;
 
 import 'dart:convert';
 
-import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/src/backends/build/preprocess_builder.dart';
 import 'package:test/test.dart';
 
+import '../../utils.dart';
+
 void main() {
   test('writes types from expressions in moor files', () async {
-    final writer = InMemoryAssetWriter();
-    final reader = await PackageAssetReader.currentIsolate();
+    final env = await driftTestEnvironment(rootPackage: 'foo');
 
     await testBuilder(
       PreprocessBuilder(),
@@ -39,12 +39,10 @@ class MyConverter extends TypeConverter<DateTime, int> {
 }
         ''',
       },
-      writer: writer,
-      reader: reader,
+      readerWriter: env,
     );
 
-    final output =
-        utf8.decode(writer.assets[AssetId.parse('foo|main.drift_prep.json')]!);
+    final output = env.readGenerated('foo|main.drift_prep.json');
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {
@@ -56,8 +54,7 @@ class MyConverter extends TypeConverter<DateTime, int> {
   });
 
   test('finds dart files over transitive imports', () async {
-    final writer = InMemoryAssetWriter();
-    final reader = await PackageAssetReader.currentIsolate();
+    final env = await driftTestEnvironment(rootPackage: 'foo');
 
     await testBuilder(
       PreprocessBuilder(),
@@ -87,12 +84,10 @@ class MyConverter extends TypeConverter<DateTime, int> {
 }
         ''',
       },
-      writer: writer,
-      reader: reader,
+      readerWriter: env,
     );
 
-    final output =
-        utf8.decode(writer.assets[AssetId.parse('foo|main.drift_prep.json')]!);
+    final output = env.readGenerated('foo|main.drift_prep.json');
     final serialized = json.decode(output);
 
     expect(serialized['const MyConverter()'], {

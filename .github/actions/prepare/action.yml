@@ -2,14 +2,21 @@ name: Prepare
 description: Prepare CI environment to test a component of drift
 
 inputs:
-  dart_version:
-    description: Dart version, to restore the dependency cache
+  flutter_version:
+    description: Flutter version to use.
     required: true
 
 runs:
   using: "composite"
   steps:
-    - uses: dart-lang/setup-dart@v1
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+        flutter-version: ${{ inputs.flutter_version }}
+        cache: true
+        cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+        cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
 
     # Setup sqlite3
     - name: Download sqlite3
@@ -31,9 +38,9 @@ runs:
     - uses: actions/cache@v4
       with:
         path: "${{ env.PUB_CACHE }}"
-        key: dart-dependencies-${{ inputs.dart_version }}-${{ hashFiles('**/pubspec.yaml') }}
+        key: dart-dependencies-${{ inputs.flutter_version }}-${{ hashFiles('**/pubspec.yaml') }}
         restore-keys: |
-          dart-dependencies-${{ inputs.dart_version }}-
+          dart-dependencies-${{ inputs.flutter_version }}-
           dart-dependencies-
     - name: Setup melos
       run: dart pub global activate melos && dart pub get

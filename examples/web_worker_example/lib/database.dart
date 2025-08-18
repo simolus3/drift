@@ -4,7 +4,7 @@ part 'database.g.dart';
 
 @DriftDatabase(include: {'src/tables.drift'})
 class MyDatabase extends _$MyDatabase {
-  MyDatabase(DatabaseConnection conn) : super(conn);
+  MyDatabase(DatabaseConnection super.e);
 
   @override
   int get schemaVersion => 1;

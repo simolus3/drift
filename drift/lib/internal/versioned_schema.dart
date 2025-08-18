@@ -110,7 +110,6 @@ abstract base class VersionedSchema {
       // We can only reliably do this for sqlite3 at the moment since managing
       // schema versions happens at a lower layer and is not current exposed to
       // the query builder.
-
       if (session.root case final root?) {
         await root.writeSchemaVersion(newVersion);
       }

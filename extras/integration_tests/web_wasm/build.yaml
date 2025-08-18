@@ -1,8 +1,38 @@
 targets:
+  dart2js_archives:
+    auto_apply_builders: false
+    dependencies: [":$default", ":worker"]
+    builders:
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: true
+  worker:
+    auto_apply_builders: false
+    dependencies: [":$default"]
+    builders:
+      build_web_compilers:entrypoint:
+        enabled: true
+        generate_for:
+          - web/worker.dart
+        options:
+          compiler: dart2js
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false
+
   $default:
     builders:
       build_web_compilers:entrypoint:
         generate_for:
-          - web/**
+          include:
+            - "example/**"
+            - web/**
+          # This one is compiled in the other target
+          exclude:
+            - web/worker.dart
         options:
-          compiler: dart2js
+          compilers:
+            dart2js:
+            dart2wasm:
+          loader: # We're using our own loader to test dart2js + dart2wasm separately
+      # We have a designated target for this step.
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false

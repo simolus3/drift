@@ -22,6 +22,13 @@ class FileAnalyzer {
     final knownTypes = await driver.knownTypes;
     final typeMapping = await driver.typeMapping;
 
+    for (final file in driver.cache.crawl(state).toList()) {
+      await driver.resolveElements(file.ownUri);
+
+      result.allAvailableElements
+          .addAll(file.analysis.values.map((e) => e.result).whereType());
+    }
+
     if (state.extension == '.dart') {
       for (final elementAnalysis in state.analysis.values) {
         final element = elementAnalysis.result;

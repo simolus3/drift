@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
 import 'package:sqlparser/sqlparser.dart' hide AnalysisError;
@@ -168,7 +168,7 @@ class DriftFileImport {
 }
 
 class DiscoveredDartLibrary extends DiscoveredFileState {
-  final LibraryElement library;
+  final LibraryElement2 library;
 
   @override
   final List<DriftImport> importDependencies;

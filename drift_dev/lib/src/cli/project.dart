@@ -18,6 +18,7 @@ class DriftProject {
   final DriftOptions options;
 
   final Directory directory;
+  PackageConfig? _packageConfig;
   Version? _languageVersion;
 
   DriftProject(this.buildConfig, this.directory)
@@ -39,12 +40,16 @@ class DriftProject {
     }).whereType();
   }
 
+  Future<PackageConfig?> get packageConfig async {
+    return _packageConfig ??= await findPackageConfig(directory);
+  }
+
   Future<Version> inferLanguageVersion() async {
     if (_languageVersion != null) {
       return _languageVersion!;
     }
 
-    final config = await findPackageConfig(directory);
+    final config = await packageConfig;
     if (config == null) {
       return _languageVersion = DartFormatter.latestLanguageVersion;
     }

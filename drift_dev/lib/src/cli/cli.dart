@@ -14,12 +14,13 @@ import 'commands/migrate.dart';
 import 'commands/schema.dart';
 import 'logging.dart';
 
-Future run(List<String> args) async {
+Future<void> run(List<String> args) async {
   final cli = DriftDevCli();
   try {
     return await cli.run(args);
   } on UsageException catch (e) {
     print(e);
+    throw ExitCodeException();
   }
 }
 
@@ -67,6 +68,9 @@ class DriftDevCli {
     project = await DriftProject.readFromDir(Directory.current);
 
     await _runner.runCommand(results);
+    if (results.command == null) {
+      throw ExitCodeException.usage();
+    }
   }
 
   Never exit(String message) {
@@ -88,5 +92,24 @@ class FatalToolError implements Exception {
   @override
   String toString() {
     return 'Fatal error: $message';
+  }
+}
+
+/// An exception that will make [run] call [exit] with the given [code].
+///
+/// This is an exception so that it can be caught and expected for tests.
+final class ExitCodeException implements Exception {
+  final int code;
+
+  ExitCodeException([this.code = 1]);
+
+  ExitCodeException.usage() : code = 64;
+
+  @override
+  int get hashCode => Object.hash(ExitCodeException, code);
+
+  @override
+  bool operator ==(Object other) {
+    return other is ExitCodeException && other.code == code;
   }
 }

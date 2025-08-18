@@ -1815,9 +1815,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           final type$0 = const CustomTextType();
           final type$int = dialect.intType;
           final map_0 = withConstraints.createMapperFromPositions(const [
-            (index: 0, name: 'a'),
-            (index: 1, name: 'b'),
-            (index: 2, name: 'c'),
+            (index: 2, name: 'nested_0.a'),
+            (index: 3, name: 'nested_0.b'),
+            (index: 4, name: 'nested_0.c'),
           ]);
 
           return (DriftRow row) => MultipleResult(
@@ -1971,8 +1971,8 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         },
         createMapper: (DriftResultSet resultSet) {
           final map_0 = withDefaults.createMapperFromPositions(const [
-            (index: 0, name: 'a'),
-            (index: 1, name: 'b'),
+            (index: 0, name: 'nested_0.a'),
+            (index: 1, name: 'nested_0.b'),
           ]);
 
           return (DriftRow row) => NestedResult(
@@ -1996,13 +1996,13 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         createMapper: (DriftResultSet resultSet) {
           final type$int = dialect.intType;
           final map_0 = config.createMapperFromPositions(const [
-            (index: 0, name: 'config_key'),
-            (index: 1, name: 'config_value'),
-            (index: 2, name: 'sync_state'),
-            (index: 3, name: 'sync_state_implicit'),
+            (index: 2, name: 'nested_0.config_key'),
+            (index: 3, name: 'nested_0.config_value'),
+            (index: 4, name: 'nested_0.sync_state'),
+            (index: 5, name: 'nested_0.sync_state_implicit'),
           ]);
           final map_1 = noIds.createMapperFromPositions(const [
-            (index: 0, name: 'payload'),
+            (index: 6, name: 'nested_1.payload'),
           ]);
 
           return (DriftRow row) => MyCustomResultClass(

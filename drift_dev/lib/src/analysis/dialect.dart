@@ -2,7 +2,7 @@ import 'package:charcode/ascii.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' hide JsonKey;
 import 'package:drift/drift.dart' show DriftDialect, KnownSqlDialect;
-import 'package:drift/dialect/sqlite.dart';
+import 'package:drift/sqlite3/dialect.dart';
 import 'package:string_scanner/string_scanner.dart';
 
 part '../generated/analysis/dialect.g.dart';

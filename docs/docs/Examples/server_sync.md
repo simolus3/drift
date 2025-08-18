@@ -35,7 +35,36 @@ in which he shares the approach used by Visible to sync local changes to the ser
 Additional approaches are also discussed in [this issue](https://github.com/simolus3/drift/issues/136) and
 [here](https://github.com/simolus3/drift/discussions/2880).
 
+Jan Zimola has published [a demo](https://github.com/Musta-Pollo/custom_supabase_drift_doc_sync) for data
+sync using the WatermelonDB protocol for synchronization (with a Dart implementation for clients and a pgSQL-based
+implementation for servers). The server code is generic and does not depend on the actual tables, only on their interface.
+It uses code generation to automate most of the client logic.
+
+## PowerSync
+
+<small>
+_Disclosure_: Drift maintainer Simon Binder [works at the team maintaining PowerSync](https://www.powersync.com/blog/simon-binder-joins-powersync).
+While this page only reflects his personal opinion, please keep that in mind and perhaps consult other sources on sync options for Dart too.
+</small>
+
+PowerSync is sync solution with [stable and official Flutter support](https://docs.powersync.com/client-sdk-references/flutter).
+Using a sync service available as a managed cloud offering or for self-hosting, you define buckets of data to make available to individual users.
+A client SDK for Dart/Flutter connects to this service to automatically sync changes from backend databases in real-time.
+
+While PowerSync automatically collects client-side changes, you're still responsible for uploading these to your backend (which can then validate them).
+For managed Postgres databases such as Supabase, using row-level security and [direct uploads from clients](https://docs.powersync.com/integration-guides/supabase-+-powersync)
+avoids the use of a separate backend.
+
+PowerSync also offers a [package for drift support](https://docs.powersync.com/client-sdk-references/flutter/flutter-orm-support#example-implementation) (currently in Alpha)
+that will make your query streams update in real-time for changes from the backend.
+[This example](https://github.com/powersync-ja/powersync.dart/tree/main/demos/supabase-todolist-drift) shows how PowerSync can be integrated into a drift app.
+
 ## ElectricSQL
+
+!!! note "This section may be outdated"
+
+    The Dart package for Electric referenced here refers to an [older version of Electric SQL](https://legacy.electric-sql.com/),
+    the current version of Electric does not appear to be available to Dart apps.
 
 [ElectricSQL](https://electric-sql.com/) is a solution you can self-host to synchronize PostgreSQL databases
 with clients.

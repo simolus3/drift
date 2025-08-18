@@ -30,6 +30,7 @@ adding a package to open database on the respective platform.
     dependencies:
       drift: ^{{ versions.drift }}
       drift_flutter: ^{{ versions.drift_flutter }}
+      path_provider: ^{{ versions.path_provider }}
 
     dev_dependencies:
       drift_dev: ^{{ versions.drift_dev }}
@@ -39,18 +40,8 @@ adding a package to open database on the respective platform.
     Alternatively, you can achieve the same result using the following command:
 
     ```
-    dart pub add drift drift_flutter dev:drift_dev dev:build_runner
+    dart pub add drift drift_flutter path_provider dev:drift_dev dev:build_runner
     ```
-
-    Please note that `drift_flutter` depends on `sqlite3_flutter_libs`, which includes a compiled
-    copy of sqlite3 in your app. On Android, that package will include sqlite3 for the following
-    architectures: `armv8`, `armv7`, `x86` and `x86_64`.
-    Most Flutter apps don't run on 32-bit x86 devices without further setup, so you should
-    [add a snippet](https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3_flutter_libs#included-platforms)
-    to your `build.gradle` if you don't need `x86` builds.
-    Otherwise, the Play Store might allow users on `x86` devices to install your app even though it is not
-    supported.
-    In Flutter's current native build system, drift unfortunately can't do that for you.
 
 ===  "Dart (sqlite3)"
 

@@ -172,16 +172,26 @@ String pathForOpfs(String databaseName) {
   return 'drift_db/$databaseName';
 }
 
-/// Collects all drift OPFS databases.
-Future<List<String>> opfsDatabases() async {
+/// returns the [FileSystemDirectoryHandle] containing all drift databases, or
+/// null if it doesn't exist.
+Future<FileSystemDirectoryHandle?> opfsDriftDirectoryHandle() async {
   final storage = _storageManager;
-  if (storage == null) return const [];
+  if (storage == null) return null;
 
   var directory = await storage.getDirectory().toDart;
   try {
-    directory = await directory.getDirectoryHandle('drift_db').toDart;
+    return await directory.getDirectoryHandle('drift_db').toDart;
   } on Object {
-    // The drift_db folder doesn't exist, so there aren't any databases.
+    // fine, an error probably means that the database didn't exist in the first
+    // place.
+    return null;
+  }
+}
+
+/// Collects all drift OPFS databases.
+Future<List<String>> opfsDatabases() async {
+  final directory = await opfsDriftDirectoryHandle();
+  if (directory == null) {
     return const [];
   }
 

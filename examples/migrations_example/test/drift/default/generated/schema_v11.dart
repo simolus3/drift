@@ -1,4 +1,7 @@
 // dart format width=80
+// coverage:ignore-file
+
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i2;
 // GENERATED CODE, DO NOT EDIT BY HAND.
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart';
@@ -23,7 +26,7 @@ class Users extends Table with TableInfo<Users, UsersData> {
   late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
       'birthday', aliasedName, true,
       check: () =>
-          ComparableExpr(birthday).isBiggerThan(Constant(DateTime(1900))),
+          i2.ComparableExpr(birthday).isBiggerThan(i2.Constant(DateTime(1900))),
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false);
   late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(

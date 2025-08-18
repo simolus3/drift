@@ -124,6 +124,10 @@ final class PgDateTime implements PgTimeValue, Comparable<PgDateTime> {
   int compareTo(PgDateTime other) {
     return dateTime.compareTo(other.dateTime);
   }
+
+  Object? toJson() {
+    return toString();
+  }
 }
 
 /// A wrapper for the Postgres `date` type, which stores dates (year, month,
@@ -164,6 +168,10 @@ final class PgDate implements PgTimeValue, Comparable<PgDate> {
   @override
   int compareTo(PgDate other) {
     return _dateTime.compareTo(other._dateTime);
+  }
+
+  Object? toJson() {
+    return toString();
   }
 }
 

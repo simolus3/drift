@@ -6,6 +6,9 @@ import 'query.dart';
 class FileAnalysisResult {
   final List<DriftAnalysisError> analysisErrors = [];
 
+  /// All elements either declared in this file or transitively imported.
+  final List<DriftElement> allAvailableElements = [];
+
   final Map<DriftElementId, SqlQuery> resolvedQueries = {};
   final Map<DriftElementId, ResolvedDatabaseAccessor> resolvedDatabases = {};
 }

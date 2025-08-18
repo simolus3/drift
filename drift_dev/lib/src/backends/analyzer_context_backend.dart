@@ -2,7 +2,7 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/file_system/file_system.dart';
 import 'package:analyzer/file_system/overlay_file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
@@ -74,14 +74,14 @@ class AnalysisContextBackend extends DriftBackend {
   }
 
   @override
-  Future<AstNode?> loadElementDeclaration(Element element) async {
-    final library = element.library;
+  Future<AstNode?> loadElementDeclaration(Element2 element) async {
+    final library = element.library2;
     if (library == null) return null;
 
     final info =
-        await context.currentSession.getResolvedLibraryByElement(library);
+        await context.currentSession.getResolvedLibraryByElement2(library);
     if (info is ResolvedLibraryResult) {
-      return info.getElementDeclaration(element)?.node;
+      return info.getFragmentDeclaration(element.firstFragment)?.node;
     } else {
       return null;
     }
@@ -100,10 +100,10 @@ class AnalysisContextBackend extends DriftBackend {
   bool get canReadDart => true;
 
   @override
-  Future<LibraryElement> readDart(Uri uri) async {
+  Future<LibraryElement2> readDart(Uri uri) async {
     final result = await context.currentSession.getLibraryByUri(uri.toString());
     if (result is LibraryElementResult) {
-      return result.element;
+      return result.element2;
     }
 
     throw NotALibraryException(uri);
@@ -160,7 +160,7 @@ class AnalysisContextBackend extends DriftBackend {
   }
 
   @override
-  Future<Element?> resolveTopLevelElement(
+  Future<Element2?> resolveTopLevelElement(
       Uri context, String reference, Iterable<Uri> imports) async {
     // Create a fake file next to the content
     final path = _pathOfUri(context)!;
@@ -184,9 +184,7 @@ class AnalysisContextBackend extends DriftBackend {
           await this.context.currentSession.getResolvedLibrary(pathForTemp);
 
       if (result is ResolvedLibraryResult) {
-        return result.element.definingCompilationUnit.scope
-            .lookup(reference)
-            .getter;
+        return result.element2.firstFragment.scope.lookup(reference).getter2;
       }
     } finally {
       provider.removeOverlay(path);

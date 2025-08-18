@@ -393,6 +393,16 @@ class _DriftBuildRun {
     ModularAccessorWriter(writer.child(), entrypointState, driver).write();
 
     if (options.generateManager) {
+      final all = entrypointState.fileAnalysis?.allAvailableElements
+              .whereType<DriftTable>() ??
+          const Iterable.empty();
+
+      for (final element in all) {
+        if (element.id.libraryUri != entrypointState.ownUri) {
+          managerWriter.addTableWithoutGeneration(element);
+        }
+      }
+
       managerWriter.writeTableManagers();
     }
   }
@@ -458,6 +468,7 @@ class _DriftBuildRun {
     if (mode.isMonolithic) {
       final generationOptions = GenerationOptions(
         imports: ImportManagerForPartFiles(await buildStep.inputLibrary),
+        writePreamble: !mode.appliesCombiningBuilderFromSourceGen,
       );
       writer = Writer(options, generationOptions: generationOptions);
     } else {
@@ -472,30 +483,21 @@ class _DriftBuildRun {
   }
 
   Future<void> _emitCode() {
-    final output = StringBuffer();
-
-    if (!mode.appliesCombiningBuilderFromSourceGen) {
-      final preamble = options.preamble;
-      if (preamble != null) {
-        output.writeln(preamble);
-      }
-    }
-
-    output.writeln('// ignore_for_file: type=lint');
+    writer.header.writeln('// ignore_for_file: type=lint');
 
     if (mode == DriftGenerationMode.monolithicPart) {
       final originalFile = buildStep.inputId.pathSegments.last;
 
       if (overriddenLanguageVersion != null) {
         // Part files need to have the same version as the main library.
-        output.writeln('// @dart=${overriddenLanguageVersion!.majorMinor}');
+        writer.header
+            .writeln('// @dart=${overriddenLanguageVersion!.majorMinor}');
       }
 
-      output.writeln('part of ${asDartLiteral(originalFile)};');
+      writer.header.writeln('part of ${asDartLiteral(originalFile)};');
     }
-    output.write(writer.writeGenerated());
 
-    var code = output.toString();
+    var code = writer.writeGenerated();
 
     try {
       code = formatDartCode(

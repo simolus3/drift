@@ -54,11 +54,17 @@ abstract class SchemaVerifier<DB extends CommonDatabase> {
   /// the database into the expected schema. If the comparison fails, a
   /// [SchemaMismatch] exception will be thrown.
   ///
-  /// If [validateDropped] is enabled (defaults to `false`), the method also
-  /// validates that no further tables, triggers or views apart from those
-  /// expected exist.
-  Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
-      {bool validateDropped = false});
+  /// The [ValidationOptions] can be used to make the schema validation more
+  /// strict (e.g. by enabling [ValidationOptions.validateDropped] to ensure
+  /// that no old tables continue to exist if they're not referenced in the new
+  /// schema) or more lenient (e.g. by disabling
+  /// [ValidationOptions.validateColumnConstraints]).
+  Future<void> migrateAndValidate(
+    GeneratedDatabase db,
+    int expectedVersion, {
+    ValidationOptions options = const ValidationOptions(),
+    @Deprecated('Use field in ValidationOptions instead') bool? validateDropped,
+  });
 
   /// Utility function used by generated tests to verify that migrations
   /// modify the database schema as expected.
@@ -146,4 +152,46 @@ class InitializedSchema<DB extends CommonDatabase> {
   /// });
   /// ```
   DatabaseConnection newConnection() => _createConnection();
+
+  /// [CommonDatabase.dispose]s the underlying [rawDatabase] backing the initial
+  /// schema.
+  ///
+  /// Not calling this method technically leaks resources, but [rawDatabase] is
+  /// an in-memory database that also has finalizers closing it when it's not
+  /// used anymore. Further, unit tests are typically short-lived processes, so
+  /// forgetting to call [close] does not have terrible side-effects.
+  void close() => rawDatabase.dispose();
+}
+
+/// Options that control how schemas are compared to find mismatches.
+final class ValidationOptions {
+  /// When enabled (defaults to `false`), validate that no furhter tables,
+  /// triggers or views apart from those expected exist.
+  final bool validateDropped;
+
+  /// When enabled (defualts to `true`), validate column constraints.
+  ///
+  /// When disabled, schema verification passes even without
+  final bool validateColumnConstraints;
+
+  const ValidationOptions({
+    this.validateDropped = false,
+    this.validateColumnConstraints = true,
+  });
+
+  /// Returns new [ValidationOptions] with the [ValidationOptions.validateDropped]
+  /// field replaced if [validateDropped] is not null.validateDropped
+  ///
+  /// This is used for backwards-compatibility when [validateDropped] was the
+  /// only option and no [ValidationOptions] class existed.
+  ValidationOptions applyDeprecatedValidateDroppedParam(bool? validateDropped) {
+    if (validateDropped case final changed?) {
+      return ValidationOptions(
+        validateColumnConstraints: validateColumnConstraints,
+        validateDropped: changed,
+      );
+    } else {
+      return this;
+    }
+  }
 }

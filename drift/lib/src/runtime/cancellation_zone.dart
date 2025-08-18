@@ -75,8 +75,11 @@ extension NonNullableCancellationExtension<T extends Object>
 }
 
 /// Thrown inside a cancellation zone when it has been cancelled.
-@internal
-class CancellationException implements Exception {
+///
+/// Drift throws this exception internally to cancel an ongoing operation, e.g.
+/// to save resources when a query stream subscription is canceled while drift
+/// is preparing to run its statement.
+final class CancellationException implements Exception {
   /// Default const constructor
   const CancellationException();
 

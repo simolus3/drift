@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:logging/logging.dart';
 import 'package:sqlite3/common.dart';
@@ -63,6 +63,27 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
   backend.contents = entities.values.join('\n');
 
   final file = await driver.resolveElements(uri);
+  final engine = driver.newSqlEngine();
+  for (final element in file.analysis.values) {
+    final result = element.result;
+    switch (result) {
+      case DriftTrigger():
+        result.parsedStatement = engine
+            .parse(entities[element.ownId.name]!)
+            .rootNode as CreateTriggerStatement;
+      case DriftIndex():
+        result.parsedStatement = engine
+            .parse(entities[element.ownId.name]!)
+            .rootNode as CreateIndexStatement;
+      case DriftView():
+        if (result.source case final SqlViewSource source) {
+          source.parsedStatement = engine
+              .parse(entities[element.ownId.name]!)
+              .rootNode as CreateViewStatement;
+        }
+    }
+  }
+
   return [
     for (final entry in file.analysis.values)
       if (entry.result != null) entry.result!
@@ -82,7 +103,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
       throw UnsupportedError('Dart analyzer not available here');
 
   @override
-  Future<Never> loadElementDeclaration(Element element) async {
+  Future<Never> loadElementDeclaration(Element2 element) async {
     _noAnalyzer();
   }
 
@@ -95,7 +116,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   bool get canReadDart => false;
 
   @override
-  Future<LibraryElement> readDart(Uri uri) async {
+  Future<LibraryElement2> readDart(Uri uri) async {
     _noAnalyzer();
   }
 
@@ -106,7 +127,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   }
 
   @override
-  Future<Element?> resolveTopLevelElement(
+  Future<Element2?> resolveTopLevelElement(
       Uri context, String reference, Iterable<Uri> imports) {
     _noAnalyzer();
   }

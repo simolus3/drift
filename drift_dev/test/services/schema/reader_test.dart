@@ -25,6 +25,27 @@ CREATE VIEW user_ids AS SELECT id FROM users;
     );
   });
 
+  test('keeps information about generatedAs', () async {
+    final [table as DriftTable] = await _analyzeAndSerialize('''
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  entity_json TEXT NOT NULL GENERATED ALWAYS AS (json_object('id', id, 'type', 'users')) VIRTUAL
+);
+''');
+
+    final [id, name, entityJson] = table.columns;
+    expect(id.isGenerated, isFalse);
+    expect(name.isGenerated, isFalse);
+    expect(entityJson.isGenerated, isTrue);
+    expect(
+      entityJson.constraints,
+      contains(
+        isA<ColumnGeneratedAs>().having((e) => e.stored, 'stored', false),
+      ),
+    );
+  });
+
   test('can read old index format', () async {
     final reader = SchemaReader.readJson(
       json.decode('''

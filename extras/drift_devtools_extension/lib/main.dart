@@ -1,5 +1,6 @@
 import 'package:devtools_app_shared/ui.dart';
 import 'package:devtools_extensions/devtools_extensions.dart';
+import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Split;
@@ -11,6 +12,7 @@ import 'src/details.dart';
 import 'src/list.dart';
 
 void main() {
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   runApp(const ProviderScope(child: DriftDevToolsExtension()));
 
   if (kDebugMode) {

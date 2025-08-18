@@ -35,9 +35,9 @@ run_webdev(){
     # The below command will compile the dart code in `/web` to js & run build_runner
     if [ $1 -eq 1 ]; then
         echo "Running dev build"
-        dart run webdev build -o web:build/web -- --delete-conflicting-outputs
+        dart pub global run webdev build -o web:build/web -- --delete-conflicting-outputs
     else
-        dart run webdev build -o web:build/web -- --delete-conflicting-outputs --release
+        dart pub global run webdev build -o web:build/web -- --delete-conflicting-outputs --release
     fi
     if [ $? -ne 0 ]; then
         echo "Failed to build the project"

@@ -1,8 +1,9 @@
 name: flutter_web_worker_example
 description: An absolute bare-bones flutter web app.
+resolution: workspace
 
 environment:
-  sdk: "^3.3.0"
+  sdk: "^3.5.0"
   flutter: ">=2.5.2"
 
 dependencies:
@@ -15,5 +16,5 @@ dependencies:
 dev_dependencies:
   build_runner: ^2.1.4
   build_web_compilers: ^4.0.3
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   drift_dev:

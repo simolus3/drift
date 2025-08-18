@@ -23,7 +23,6 @@ class $CategoriesTable extends Categories
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _colorMeta = const VerificationMeta('color');
   @override
   late final GeneratedColumnWithTypeConverter<Color, int> color =
       GeneratedColumn<int>('color', aliasedName, false,
@@ -50,7 +49,6 @@ class $CategoriesTable extends Categories
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    context.handle(_colorMeta, const VerificationResult.success());
     return context;
   }
 
@@ -932,7 +930,8 @@ class $$CategoriesTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (todoEntriesRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<Category, $CategoriesTable,
+                            TodoEntry>(
                         currentTable: table,
                         referencedTable: $$CategoriesTableReferences
                             ._todoEntriesRefsTable(db),

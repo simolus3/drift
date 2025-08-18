@@ -1,4 +1,5 @@
 import 'package:devtools_app_shared/ui.dart';
+import 'package:drift_dev/api/migrations_common.dart';
 // ignore: implementation_imports
 import 'package:drift_dev/src/services/schema/find_differences.dart';
 // ignore: implementation_imports
@@ -30,7 +31,7 @@ final schemaStateProvider =
     AsyncNotifierProvider.autoDispose<SchemaVerifier, SchemaStatus>(
         SchemaVerifier._);
 
-class SchemaVerifier extends AutoDisposeAsyncNotifier<SchemaStatus> {
+class SchemaVerifier extends AsyncNotifier<SchemaStatus> {
   RemoteDatabase? _database;
   CommonSqlite3? _sqlite3;
 
@@ -68,7 +69,7 @@ class SchemaVerifier extends AutoDisposeAsyncNotifier<SchemaStatus> {
       }
 
       try {
-        verify(expected, actual, true);
+        verify(expected, actual, const ValidationOptions());
         return SchemaComparisonResult(
           schemaValid: true,
           message: 'The schema of the database matches its Dart and .drift '

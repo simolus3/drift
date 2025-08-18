@@ -1,9 +1,10 @@
 name: drift
 description: Drift is a reactive library to store relational data in Dart and Flutter applications.
-version: 2.24.0
+version: 2.28.1
 repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues
+resolution: workspace
 
 topics:
   - drift
@@ -13,7 +14,7 @@ funding:
   - https://github.com/sponsors/simolus3
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
   async: ^2.10.0
@@ -28,21 +29,20 @@ dependencies:
 
 dev_dependencies:
   archive: ^4.0.2
-  analyzer: ^6.4.1
-  build_test: ^2.2.2
-  build_runner_core: ^8.0.0
+  analyzer: ^7.0.0
+  build_test: ^3.2.0-0
+  build_runner_core: ^9.2.0-0
   build_verify: ^3.1.0
-  build_web_compilers: ^4.1.0
+  build_web_compilers: ^4.2.0
   drift_dev: any
   drift_testcases:
     path: ../extras/integration_tests/drift_testcases
   http: ^1.2.1
-  lints: ^5.1.0
+  lints: ^6.0.0
   uuid: ^4.5.1
-  build_runner: ^2.4.14
+  build_runner: ^2.6.0-0
   test: ^1.25.0
-  # Version 5.4.5 has broken formatting, we need to wait for https://github.com/dart-lang/mockito/pull/792
-  mockito: 5.4.4
+  mockito: ^5.4.6
   shelf: ^1.4.0
   test_descriptor: ^2.0.1
   vm_service: ^15.0.0

@@ -366,6 +366,38 @@ final class _ProbeResult implements WasmProbeResult {
         }
     }
   }
+
+  @override
+  Future<Uint8List?> exportDatabase(ExistingDatabase database) async {
+    switch (database.$1) {
+      case WebStorageApi.indexedDb:
+        final vfs = await IndexedDbFileSystem.open(dbName: database.$2);
+        if (vfs.xAccess('/database', 0) != 0) {
+          final (file: file, outFlags: _) =
+              vfs.xOpen(Sqlite3Filename('/database'), 0);
+          final buffer = Uint8List(file.xFileSize());
+          file.xRead(buffer, 0);
+          file.xClose();
+
+          await vfs.close();
+          return buffer;
+        } else {
+          return null;
+        }
+      case WebStorageApi.opfs:
+        final dir = await opfsDriftDirectoryHandle();
+        if (dir == null) {
+          return null;
+        }
+
+        final databaseDir = await dir.getDirectoryHandle(database.$2).toDart;
+        final handle = await databaseDir.getFileHandle('database').toDart;
+        final file = await handle.getFile().toDart;
+        final contents = await file.arrayBuffer().toDart;
+
+        return contents.toDart.asUint8List();
+    }
+  }
 }
 
 Stream<WasmInitializationMessage> _readMessages(

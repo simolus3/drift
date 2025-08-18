@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show BuiltinDriftType, UpdateKind;
@@ -190,6 +190,7 @@ class ElementSerializer {
           'daos': [
             for (final dao in element.accessors) _serializeElementReference(dao)
           ],
+          'has_constructor_arg': element.hasConstructorArgumentForConnection,
         }
       };
     } else {
@@ -411,7 +412,7 @@ class ElementDeserializer {
   ElementDeserializer(this.driver, this._currentlyReading);
 
   Future<DartType> _readDartType(Uri import, int typeId) async {
-    LibraryElement? element;
+    LibraryElement2? element;
     final helpers = driver.cache.typeHelperLibraries;
 
     if (helpers.containsKey(import)) {
@@ -425,7 +426,8 @@ class ElementDeserializer {
       throw ArgumentError('Unknown serialized type: Helper does not exist.');
     }
 
-    final typedef = element.exportNamespace.get('T$typeId') as TypeAliasElement;
+    final typedef =
+        element.exportNamespace.get2('T$typeId') as TypeAliasElement2;
 
     return typedef.aliasedType;
   }
@@ -666,7 +668,7 @@ class ElementDeserializer {
         } else if (sourceKind == 'dart') {
           TableReferenceInDartView readReference(Map json) {
             final id = DriftElementId.fromJson(json['table'] as Map);
-            final reference = references.singleWhere((e) => e.id == id);
+            final reference = references.firstWhere((e) => e.id == id);
             return TableReferenceInDartView(
                 reference as DriftTable, json['name'] as String);
           }
@@ -743,6 +745,8 @@ class ElementDeserializer {
                 await _readElementReference(dao as Map<String, Object?>)
                     as DatabaseAccessor,
             ],
+            hasConstructorArgumentForConnection:
+                json['has_constructor_arg'] as bool,
           );
         } else {
           assert(type == 'dao');
@@ -949,7 +953,7 @@ class CouldNotDeserializeException implements Exception {
   String toString() => message;
 }
 
-class _PendingReferenceToOwnTable extends DriftColumnConstraint {
+final class _PendingReferenceToOwnTable extends CustomColumnConstraint {
   final String referencedColumn;
   final ReferenceAction? onUpdate, onDelete;
   final bool initiallyDeferred;

@@ -1,4 +1,5 @@
 import 'package:riverpod/riverpod.dart';
+import 'package:riverpod/legacy.dart';
 
 import '../../database/database.dart';
 

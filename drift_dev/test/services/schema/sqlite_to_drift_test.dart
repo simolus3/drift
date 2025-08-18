@@ -23,12 +23,19 @@ void main() {
       elements,
       unorderedEquals([
         isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
-        isA<DriftIndex>().having((e) => e.schemaName, 'schemaName', 'my_idx'),
-        isA<DriftView>().having((e) => e.schemaName, 'schemaName', 'my_view'),
+        isA<DriftIndex>()
+            .having((e) => e.schemaName, 'schemaName', 'my_idx')
+            .having((e) => e.parsedStatement, 'parsedStatement', isNotNull),
+        isA<DriftView>()
+            .having((e) => e.schemaName, 'schemaName', 'my_view')
+            .having((e) => (e.source as SqlViewSource).parsedStatement,
+                'parsedStatement', isNotNull),
         isA<DriftTrigger>()
-            .having((e) => e.schemaName, 'schemaName', 'my_trigger'),
+            .having((e) => e.schemaName, 'schemaName', 'my_trigger')
+            .having((e) => e.parsedStatement, 'parsedStatement', isNotNull),
         isA<DriftTrigger>()
-            .having((e) => e.schemaName, 'schemaName', 'my_view_trigger'),
+            .having((e) => e.schemaName, 'schemaName', 'my_view_trigger')
+            .having((e) => e.parsedStatement, 'parsedStatement', isNotNull),
       ]),
     );
   });

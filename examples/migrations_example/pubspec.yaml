@@ -1,15 +1,16 @@
 name: migrations_example
 publish_to: none
 version: 1.0.0
+resolution: workspace
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
   drift:
   drift_dev:
 
 dev_dependencies:
-  lints: ^4.0.0
+  lints: any # resolved by workspace, updated globally
   build_runner: ^2.0.0
   test: ^1.15.4

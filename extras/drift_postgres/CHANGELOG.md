@@ -1,3 +1,7 @@
+## 1.3.1
+
+- Add `toJson()` method to `PgDate` and `PgDateTime`.
+
 ## 1.3.0
 
 - Add support for array types supported by the `postgres` package: booleans,

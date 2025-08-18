@@ -666,6 +666,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'sqlite_version':
       case 'typeof':
       case 'timediff':
+      case 'unistr':
+      case 'unistr_quote':
         return ResolveResult(_textType);
       case 'datetime':
         return ResolveResult(

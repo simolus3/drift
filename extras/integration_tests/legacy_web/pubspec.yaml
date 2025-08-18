@@ -1,24 +1,19 @@
 name: legacy_web
 description: Run integration tests for drift/web
 publish_to: none
+resolution: workspace
+
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ^3.5.0
 
 dependencies:
   drift: ^2.0.0-dev
   drift_testcases:
     path: ../drift_testcases
+  web: ^1.1.0
 
 dev_dependencies:
   test: ^1.18.0
   build_runner:
   build_web_compilers:
   drift_dev: ^2.0.0-dev
-
-dependency_overrides:
-  drift:
-    path: ../../../drift
-  drift_dev:
-    path: ../../../drift_dev
-  sqlparser:
-    path: ../../../sqlparser

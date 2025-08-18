@@ -208,6 +208,9 @@ abstract interface class WasmProbeResult {
   /// drift 2.11 release or later. This method will not work when using an older
   /// worker.
   Future<void> deleteDatabase(ExistingDatabase database);
+
+  /// Attempts to read an [ExistingDatabase] from storage.
+  Future<Uint8List?> exportDatabase(ExistingDatabase database);
 }
 
 /// The result of opening a WASM database with default options.

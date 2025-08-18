@@ -54,6 +54,10 @@ class DriftDatabase extends BaseDriftAccessor {
   /// versioned file.
   final int? schemaVersion;
 
+  /// Whether the database class has an unnamed constructor with a positional
+  /// argument accepting a `QueryExecutor` or `DatabaseConnection` instance.
+  final bool hasConstructorArgumentForConnection;
+
   final List<DatabaseAccessor> accessors;
 
   DriftDatabase({
@@ -63,6 +67,7 @@ class DriftDatabase extends BaseDriftAccessor {
     required super.declaredViews,
     required super.declaredIncludes,
     required super.declaredQueries,
+    required this.hasConstructorArgumentForConnection,
     this.schemaVersion,
     this.accessors = const [],
   });

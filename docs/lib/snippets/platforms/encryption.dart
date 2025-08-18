@@ -78,10 +78,18 @@ void databases() {
 
       if (await existing.exists() && !await encrypted.exists()) {
         // We have an existing database to migrate.
-        sqlite3.open(existingDatabasePath)
+        final plaintextDb = sqlite3.open(existingDatabasePath)
           ..execute("ATTACH DATABASE '${escapeString(encryptedDatabasePath)}' "
               "AS encrypted KEY '${escapeString(yourKey)}';")
-          ..execute("SELECT sqlcipher_export('encrypted');")
+          ..execute("SELECT sqlcipher_export('encrypted');");
+
+        // sqlcipher_export doesn't apply the user_version pragma used by drift
+        // to implement migrations. The version of the encrypted database must
+        // match the previous state.
+        final userVersion =
+            plaintextDb.select('PRAGMA user_version;').first.columnAt(0) as int;
+        plaintextDb
+          ..execute('PRAGMA encrypted.user_version = $userVersion;')
           ..execute('DETACH DATABASE encrypted;')
           ..dispose();
 

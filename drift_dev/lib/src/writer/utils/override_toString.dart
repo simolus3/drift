@@ -1,5 +1,7 @@
 // ignore_for_file: file_names
 
+import '../../utils/string_escaper.dart';
+
 /// Generates a `toString` override into the [into] buffer.
 ///
 /// The override looks like this:
@@ -21,7 +23,7 @@ void overrideToString(
 ) {
   into
     ..write('@override\nString toString() {')
-    ..write("return (StringBuffer('$className(')");
+    ..write("return (StringBuffer('${escapeForDart(className)}(')");
 
   for (var i = 0; i < properties.length; i++) {
     final property = properties[i];

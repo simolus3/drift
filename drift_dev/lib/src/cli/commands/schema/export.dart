@@ -48,6 +48,7 @@ class ExportSchemaCommand extends Command {
         await cli.readElementsFromSource(File(rest.single).absolute);
 
     final options = (
+      options: cli.project.options,
       dialect: dialect,
       elements: elements,
       dumpStartupCode: argResults!.exportSchemaStartupCode,

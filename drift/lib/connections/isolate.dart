@@ -148,9 +148,6 @@ class DriftIsolate {
   /// The [opener] function will be used to open the [DatabaseConnection] used
   /// by the isolate.
   ///
-  /// Because [opener] will be called on another isolate with its own memory,
-  /// it must either be a top-level member or a static class method.
-  ///
   /// To close the isolate later, use [shutdownAll]. Or, if you know that only
   /// a single client will connect, set `singleClientMode: true` in [connect].
   /// That way, the drift isolate will shutdown when the client is closed.

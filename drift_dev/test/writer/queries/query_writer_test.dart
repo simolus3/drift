@@ -11,12 +11,17 @@ import '../../analysis/test_utils.dart';
 import '../../utils.dart';
 
 void main() {
-  Future<String> generateForQueryInDriftFile(String driftFile,
-      {DriftOptions options = const DriftOptions.defaults(
-        generateNamedParameters: true,
-      )}) async {
-    final state = await TestBackend.inTest({'a|lib/main.drift': driftFile},
-        options: options);
+  Future<String> generateForQueryInDriftFile(
+    String driftFile, {
+    DriftOptions options = const DriftOptions.defaults(
+      generateNamedParameters: true,
+    ),
+    Map<String, String> additionalSources = const {},
+  }) async {
+    final state = await TestBackend.inTest(
+      {'a|lib/main.drift': driftFile, ...additionalSources},
+      options: options,
+    );
     final file = await state.analyze('package:a/main.drift');
     state.expectNoErrors();
 
@@ -606,5 +611,27 @@ findFriends: SELECT
     expect(result, contains(r'''
 final map_0 = users.createMapperFromPositions(const [ (index: 1, name: 'nested_0.id'), (index: 2, name: 'nested_0.name'),]);
 '''));
+  });
+
+  test('can generate into generic class via typedef', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3625.
+    final generated = await generateForQueryInDriftFile(r'''
+import 'type.dart';
+
+query WITH SyncedString: SELECT '' AS entity, FALSE as synchronized;
+''', additionalSources: {
+      'a|lib/type.dart': '''
+class Synced<T> {
+  final T entity;
+  final bool synchronized;
+
+  const Synced({required this.entity, required this.synchronized});
+}
+
+typedef SyncedString = Synced<String>;
+''',
+    });
+
+    expect(generated, contains('Selectable<SyncedString> query('));
   });
 }

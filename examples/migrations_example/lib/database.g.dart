@@ -1216,7 +1216,7 @@ class $$UsersTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (groupsRefs)
-                    await $_getPrefetchedData(
+                    await $_getPrefetchedData<User, $UsersTable, Group>(
                         currentTable: table,
                         referencedTable:
                             $$UsersTableReferences._groupsRefsTable(db),

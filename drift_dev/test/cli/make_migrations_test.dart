@@ -156,6 +156,59 @@ targets:
             ]))
         .validate();
   });
+
+  group('suggests data migration test', () {
+    test('when adding new column without default', () async {
+      project = await TestDriftProject.create([
+        d.dir('lib', [
+          d.file('db.dart', '''
+import 'package:drift/drift.dart';
+
+class Examples extends Table {
+  IntColumn get id => integer().autoIncrement()();
+}
+
+@DriftDatabase(tables: [Examples])
+class MyDatabase {
+    @override
+    int get schemaVersion => 1;
+}
+''')
+        ]),
+        d.file('build.yaml', """
+targets:
+  \$default:
+    builders:
+      drift_dev:
+        options:
+          databases:
+            my_database: lib/db.dart""")
+      ]);
+      await project.runDriftCli(['make-migrations']);
+      await File(p.join(project.root.path, 'lib/db.dart')).writeAsString('''
+import 'package:drift/drift.dart';
+
+class Examples extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get content => text()();
+}
+
+@DriftDatabase(tables: [Examples])
+class MyDatabase {
+    @override
+    int get schemaVersion => 2;
+}
+''');
+
+      expect(
+        () => project.runDriftCli(['make-migrations'], dropPrints: false),
+        prints(allOf(
+          contains('Your latest migration might benefit from a test with data'),
+          contains('Added column "content" in "examples" without a default'),
+        )),
+      );
+    });
+  });
 }
 
 const _dbContent = '''

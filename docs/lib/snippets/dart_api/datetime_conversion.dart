@@ -3,6 +3,10 @@ import 'package:drift/drift.dart';
 extension MigrateToTextDateTimes on GeneratedDatabase {
   // #docregion unix-to-text
   Future<void> migrateFromUnixTimestampsToText(Migrator m) async {
+    // Note: When using step-by-step migrations (e.g. `from1To2: async (m, s) {...}`),
+    // use `s.entities.whereType<TableInfo>()` instead of `allTables`. The
+    // `allTables` getter returns all tables of the current schema, which may
+    // be incorrect.
     for (final table in allTables) {
       final dateTimeColumns =
           table.$columns.where((c) => c.type == DriftSqlType.dateTime);
@@ -28,6 +32,10 @@ extension MigrateToTextDateTimes on GeneratedDatabase {
 extension MigrateToTimestamps on GeneratedDatabase {
   // #docregion text-to-unix
   Future<void> migrateFromTextDateTimesToUnixTimestamps(Migrator m) async {
+    // Note: When using step-by-step migrations (e.g. `from1To2: async (m, s) {...}`),
+    // use `s.entities.whereType<TableInfo>()` instead of `allTables`. The
+    // `allTables` getter returns all tables of the current schema, which may
+    // be incorrect.
     for (final table in allTables) {
       final dateTimeColumns =
           table.$columns.where((c) => c.type == DriftSqlType.dateTime);

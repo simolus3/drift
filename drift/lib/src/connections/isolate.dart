@@ -36,7 +36,13 @@ Future<(StreamChannel, bool)> connectToServer(
   // If the isolate accepts the connection, it sends us a send port back which
   // is then used for the rest of the communication.
   final receive = ReceivePort('drift client receive');
-  serverConnectPort.send([receive.sendPort, serialize]);
+  serverConnectPort.send([
+    receive.sendPort,
+    serialize,
+    // The server isolate will use addOnExitListener to mark the connection as
+    // closed when the isolate shuts down.
+    Isolate.current.controlPort
+  ]);
 
   final controller =
       StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
@@ -105,16 +111,21 @@ class RunningDriftServer {
           closeConnectionAfterShutdown: closeConnectionAfterShutdown,
         ) {
     final subscription = connectPort.listen((message) {
-      if (message is List && message.length == 2) {
+      if (message
+          case [
+            final sendPort as SendPort,
+            final serialize as bool,
+            final closeOnExit as SendPort
+          ]) {
         if (onlyAcceptSingleConnection) {
           connectPort.close();
         }
 
-        final sendPort = message[0]! as SendPort;
-        final serialize = message[1]! as bool;
+        final clientIsolate = Isolate(closeOnExit);
         final receiveForConnection =
             ReceivePort('drift channel #${_counter++}');
-        sendPort.send(receiveForConnection.sendPort);
+        final sendPortForRemote = receiveForConnection.sendPort;
+        sendPort.send(sendPortForRemote);
 
         final controller = StreamChannelController<Object?>(
             allowForeignErrors: false, sync: true);
@@ -122,11 +133,6 @@ class RunningDriftServer {
           if (message == disconnectMessage) {
             // Client closed the connection
             controller.local.sink.close();
-
-            if (onlyAcceptSingleConnection) {
-              // The only connection was closed, so shut down the server.
-              server.shutdown();
-            }
           } else {
             controller.local.sink.add(message);
           }
@@ -137,9 +143,12 @@ class RunningDriftServer {
           sendPort.send(disconnectMessage);
         });
 
+        clientIsolate.addOnExitListener(sendPortForRemote,
+            response: disconnectMessage);
         _activeConnections++;
         server.serve(controller.foreign, serialize: serialize).whenComplete(() {
           _activeConnections--;
+          clientIsolate.removeErrorListener(sendPortForRemote);
 
           if (_activeConnections == 0 && shutDownAfterLastDisconnect) {
             server.shutdown();

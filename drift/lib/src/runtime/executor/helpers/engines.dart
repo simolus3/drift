@@ -298,6 +298,10 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
   late QueryDelegate impl;
   final SupportedTransactionDelegate _delegate;
 
+  /// If this is a nested transaction, the parent [QueryDelegate] to pass to
+  /// [SupportedTransactionDelegate.startNested].
+  final _WrappingTransactionExecutor? parentTransaction;
+
   // We're doing some async hacks for database implementations which manage
   // transactions for us (e.g. sqflite where we do `transaction((t) => ...)`)
   // and can only use the transaction in that callback.
@@ -321,7 +325,8 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
   final Completer<void> _completerForCallback = Completer();
   Completer<void>? _opened, _finished;
 
-  _WrappingTransactionExecutor(super.db, this._delegate);
+  _WrappingTransactionExecutor(super.db, this._delegate,
+      {this.parentTransaction});
 
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
@@ -333,11 +338,19 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
       _opened = opened = Completer();
       _createdIn.run(() {
         Future<void> launchTransaction() async {
-          final result = _delegate.startTransaction((transaction) async {
+          Future<void> transactionCallback(QueryDelegate transaction) async {
             opened!.complete();
             impl = transaction;
             await _completerForCallback.future;
-          });
+          }
+
+          final result = switch (parentTransaction) {
+            null => _delegate.startTransaction(transactionCallback),
+            final parent => Future(() async {
+                await parent.ensureOpen(user);
+                await _delegate.startNested!(parent.impl, transactionCallback);
+              }),
+          };
 
           if (result is Future) {
             _finished = Completer()
@@ -394,6 +407,19 @@ class _WrappingTransactionExecutor extends _TransactionExecutor {
     _closed = true;
     await _finished?.future;
   }
+
+  @override
+  TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
+    if (_delegate.startNested != null) {
+      return _WrappingTransactionExecutor(_db, _delegate,
+          parentTransaction: this);
+    } else {
+      throw UnsupportedError('Nested transactions');
+    }
+  }
+
+  @override
+  bool get supportsNestedTransactions => _delegate.startNested != null;
 }
 
 /// A database engine (implements [QueryExecutor]) that delegates the relevant

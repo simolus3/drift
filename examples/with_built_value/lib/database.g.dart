@@ -83,8 +83,9 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
   _$Foo _build() {
     final _$result = _$v ??
         new _$Foo._(
-            driftGeneratedField: BuiltValueNullFieldError.checkNotNull(
-                driftGeneratedField, r'Foo', 'driftGeneratedField'));
+          driftGeneratedField: BuiltValueNullFieldError.checkNotNull(
+              driftGeneratedField, r'Foo', 'driftGeneratedField'),
+        );
     replace(_$result);
     return _$result;
   }

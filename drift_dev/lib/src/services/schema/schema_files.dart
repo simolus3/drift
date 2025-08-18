@@ -7,7 +7,7 @@ import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:logging/logging.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
-import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn;
+import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
 
 import '../../analysis/options.dart';
 import '../../analysis/resolver/shared/data_class.dart';
@@ -80,6 +80,7 @@ class SchemaWriter {
     if (requiresRuntimeInformation.isNotEmpty) {
       try {
         final statements = await SchemaIsolate.collectStatements(
+          options: options,
           allElements: elements,
           elementFilter: requiresRuntimeInformation,
           dumpStartupCode: dumpStartupCode,
@@ -302,19 +303,37 @@ class SchemaWriter {
   }
 
   dynamic _dslFeatureData(DriftColumnConstraint feature) {
-    if (feature is PrimaryKeyColumn) {
-      return feature.isAutoIncrement ? 'auto-increment' : 'primary-key';
-    } else if (feature is LimitingTextLength) {
-      return <String, Object?>{
-        'allowed-lengths': {
-          'min': feature.minLength,
-          'max': feature.maxLength,
+    return switch (feature) {
+      UniqueColumn() => 'unique',
+      PrimaryKeyColumn(:final bool isAutoIncrement) =>
+        isAutoIncrement ? 'auto-increment' : 'primary-key',
+      ForeignKeyReference() => {
+          'foreign_key': {
+            'to': {
+              'table': feature.otherColumn.owner.schemaName,
+              'column': feature.otherColumn.nameInSql,
+            },
+            'initially_deferred': feature.initiallyDeferred,
+            'on_update': feature.onUpdate?.name,
+            'on_delete': feature.onDelete?.name,
+          },
         },
-      };
-    } else if (feature is DartCheckExpression) {
-      return <String, Object?>{'check': feature.toJson()};
-    }
-    return 'unknown';
+      ColumnGeneratedAs() => {
+          'generated_as': feature.toJson(),
+        },
+      DartCheckExpression() => {
+          'check': feature.toJson(),
+        },
+      LimitingTextLength() => {
+          'allowed-lengths': {
+            'min': feature.minLength,
+            'max': feature.maxLength,
+          }
+        },
+      CustomColumnConstraint() ||
+      DefaultConstraintsFromSchemaFile() =>
+        'unknown',
+    };
   }
 
   static final _logger = Logger('drift_dev.SchemaWriter');
@@ -408,8 +427,12 @@ class SchemaReader {
         entity = _readView(content);
         break;
       case 'special-query':
-        // Not relevant for the schema.
-        return;
+        entity = _readQuery(
+          content,
+          id: id,
+          references:
+              references.map((id) => _entitiesById[id]).nonNulls.toList(),
+        );
       default:
         throw ArgumentError(
             'Could not read schema file: Unknown entity $rawData');
@@ -575,6 +598,24 @@ class SchemaReader {
     );
   }
 
+  DefinedSqlQuery _readQuery(
+    Map<String, dynamic> content, {
+    required int id,
+    required List<DriftElement> references,
+  }) {
+    return DefinedSqlQuery(
+      _id('create$id'),
+      _declaration,
+      references: references,
+      sql: content['sql'] as String,
+      sqlOffset: -1,
+      mode: switch (content['scenario']) {
+        'create' => QueryMode.atCreate,
+        _ => throw ArgumentError.value(content, 'content', 'Unknown scenario'),
+      },
+    );
+  }
+
   static final _dialectByName = SqlDialect.values.asNameMap();
 
   DriftColumn _readColumn(Map<String, dynamic> data) {
@@ -620,24 +661,21 @@ class SchemaReader {
   }
 
   DriftColumnConstraint? _columnFeature(dynamic data) {
-    if (data == 'auto-increment') return PrimaryKeyColumn(true);
-    if (data == 'primary-key') return PrimaryKeyColumn(false);
-
-    if (data is Map<String, dynamic>) {
-      final allowedLengths = data['allowed-lengths'] as Map<String, dynamic>?;
-      final check = data['check'] as Map<String, dynamic>?;
-
-      if (allowedLengths != null) {
-        return LimitingTextLength(
-          minLength: allowedLengths['min'] as int?,
-          maxLength: allowedLengths['max'] as int?,
-        );
-      } else if (check != null) {
-        return DartCheckExpression.fromJson(check);
-      }
-    }
-
-    return null;
+    return switch (data) {
+      'unique' => UniqueColumn(),
+      'auto-increment' => PrimaryKeyColumn(true),
+      'primary-key' => PrimaryKeyColumn(false),
+      {'generated_as': final value as Map<String, Object?>} =>
+        ColumnGeneratedAs.fromJson(value),
+      {'check': final value as Map<String, Object?>} =>
+        DartCheckExpression.fromJson(value),
+      {'allowed-lengths': final value as Map<String, Object?>} =>
+        LimitingTextLength(
+          minLength: value['min'] as int?,
+          maxLength: value['max'] as int?,
+        ),
+      _ => null,
+    };
   }
 }
 

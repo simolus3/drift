@@ -4,8 +4,6 @@ import 'package:args/command_runner.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 
-import '../../../analysis/options.dart';
-import '../../../analysis/results/element.dart';
 import '../../../writer/import_manager.dart';
 import '../../../writer/schema_version_writer.dart';
 import '../../../writer/writer.dart';
@@ -59,7 +57,7 @@ class StepsGenerationUtil {
       DriftDevCli cli, Map<int, ExportedSchema> schemas) async {
     final imports = LibraryImportManager();
     final writer = Writer(
-      const DriftOptions.defaults(),
+      cli.project.options,
       generationOptions: GenerationOptions(imports: imports),
     );
     imports.linkToWriter(writer);
@@ -68,7 +66,7 @@ class StepsGenerationUtil {
       for (final MapEntry(key: version, value: schema) in schemas.entries)
         SchemaVersion(
           version,
-          schema.schema.whereType<DriftSchemaElement>().toList(),
+          schema.schema,
           schema.options,
         ),
     ];

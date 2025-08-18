@@ -43,14 +43,23 @@ extension VerifySelf on GeneratedDatabase {
   /// database, (perhaps in a [MigrationStrategy.beforeOpen] callback) to verify
   /// that your database schema is what drift expects.
   ///
-  /// When [validateDropped] is enabled (it is by default), this method also
-  /// verifies that all schema elements that you've deleted at some point are no
-  /// longer present in your runtime schema.
+  /// The [common.ValidationOptions] can be used to make the schema validation
+  /// more strict (e.g. by enabling [common.ValidationOptions.validateDropped]
+  /// to ensure that no old tables continue to exist if they're not referenced
+  /// in the new schema) or more lenient (e.g. by disabling
+  /// [common.ValidationOptions.validateColumnConstraints]).
   ///
   /// This variant of [validateDatabaseSchema] is only supported on native
   /// platforms (Android, iOS, macOS, Linux and Windows).
-  Future<void> validateDatabaseSchema({bool validateDropped = true}) async {
-    await verifyDatabase(this, validateDropped, NativeDatabase.memory);
+  Future<void> validateDatabaseSchema({
+    common.ValidationOptions options = const common.ValidationOptions(),
+    @Deprecated('Use field in ValidationOptions instead') bool? validateDropped,
+  }) async {
+    await verifyDatabase(
+      this,
+      options.applyDeprecatedValidateDroppedParam(validateDropped),
+      NativeDatabase.memory,
+    );
   }
 }
 

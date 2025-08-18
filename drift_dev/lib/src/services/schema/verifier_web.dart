@@ -12,12 +12,14 @@ final class WebSchemaVerifier extends VerifierImplementation<CommonDatabase>
   WebSchemaVerifier(this.sqlite3, super.helper, {super.setup});
 
   @override
-  CommonDatabase newInMemoryDatabase(String uri) {
-    return sqlite3.open(uri, uri: true);
+  CommonDatabase newInMemoryDatabase() {
+    return sqlite3.openInMemory();
   }
 
   @override
-  QueryExecutor wrapOpened(CommonDatabase db) {
-    return WasmDatabase.opened(db);
+  QueryExecutor wrapOpened(CommonDatabase db,
+      {required bool closeUnderlyingOnClose}) {
+    return WasmDatabase.opened(db,
+        closeUnderlyingOnClose: closeUnderlyingOnClose);
   }
 }

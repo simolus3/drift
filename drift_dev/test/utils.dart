@@ -6,8 +6,16 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build/experiments.dart';
+import 'package:build/src/state/asset_finder.dart';
+import 'package:build/src/state/asset_path_provider.dart';
+import 'package:build/src/state/filesystem.dart';
+import 'package:build/src/state/filesystem_cache.dart';
+import 'package:build/src/state/generated_asset_hider.dart';
+import 'package:build/src/state/reader_writer.dart';
 import 'package:build_resolvers/build_resolvers.dart';
 import 'package:build_test/build_test.dart';
+import 'package:build_test/src/in_memory_reader_writer.dart';
+import 'package:build/src/state/reader_state.dart';
 import 'package:crypto/crypto.dart';
 import 'package:drift_dev/integrations/build.dart';
 import 'package:glob/glob.dart';
@@ -48,6 +56,31 @@ final _packageConfig = Future(() async {
   return await loadPackageConfigUri(uri);
 });
 
+Future<TestReaderWriter> driftTestEnvironment(
+    {String rootPackage = 'a'}) async {
+  final rw = TestReaderWriter(rootPackage: rootPackage);
+  final reader = await PackageAssetReader.currentIsolate();
+  for (final package in [
+    'async',
+    'convert',
+    'collection',
+    'drift',
+    'meta',
+    'stream_channel',
+    'sqlite3',
+    'path',
+    'stack_trace',
+    'typed_data',
+  ]) {
+    await for (final asset
+        in reader.findAssets(Glob('lib/**'), package: package)) {
+      rw.testing.writeBytes(asset, await reader.readAsBytes(asset));
+    }
+  }
+
+  return rw;
+}
+
 Future<DriftBuildResult> emulateDriftBuild({
   required Map<String, String> inputs,
   BuilderOptions options = const BuilderOptions({}),
@@ -57,18 +90,12 @@ Future<DriftBuildResult> emulateDriftBuild({
   _resolvers.reset();
   logger ??= Logger.detached('emulateDriftBuild');
 
-  final writer = InMemoryAssetWriter();
-  final reader = MultiAssetReader([
-    WrittenAssetReader(writer),
-    InMemoryAssetReader(
-      rootPackage: 'a',
-      sourceAssets: {
-        for (final entry in inputs.entries) makeAssetId(entry.key): entry.value,
-      },
-    ),
-    await PackageAssetReader.currentIsolate(),
-  ]);
   final readAssets = <(Type, String), Set<AssetId>>{};
+  final deletedAssets = <AssetId>[];
+  final env = await driftTestEnvironment();
+  inputs.forEach((id, contents) {
+    env.testing.writeString(makeAssetId(id), contents);
+  });
 
   final stages = [
     preparingBuilder(options),
@@ -90,13 +117,13 @@ Future<DriftBuildResult> emulateDriftBuild({
         if (inputId.package != 'a') continue;
 
         if (expectedOutputs(stage, inputId).isNotEmpty) {
-          final readerForPhase = _TrackingAssetReader(reader);
+          final readerForPhase = _TrackingAssetReader(env);
 
           await runBuilder(
             stage,
             [inputId],
             readerForPhase,
-            writer,
+            env,
             _resolvers,
             logger: logger,
             packageConfig: await _packageConfig,
@@ -107,42 +134,43 @@ Future<DriftBuildResult> emulateDriftBuild({
         }
       }
     } else if (stage is PostProcessBuilder) {
-      final deleted = <AssetId>[];
-
-      for (final assetId in writer.assets.keys) {
+      for (final assetId in env.testing.assetsWritten) {
         final shouldBuild =
             stage.inputExtensions.any((e) => assetId.path.endsWith(e));
         if (shouldBuild) {
           await runPostProcessBuilder(
             stage,
             assetId,
-            reader,
-            writer,
+            env,
+            env,
             logger,
             addAsset: (_) {},
-            deleteAsset: deleted.add,
+            deleteAsset: (id) {
+              env.delete(id);
+              deletedAssets.add(id);
+            },
           );
         }
       }
-      deleted.forEach(writer.assets.remove);
     }
   }
 
   logger.clearListeners();
-  return DriftBuildResult(writer, readAssets);
+  return DriftBuildResult(env, readAssets, deletedAssets);
 }
 
 class DriftBuildResult {
-  final InMemoryAssetWriter writer;
+  final TestReaderWriter writer;
+  final List<AssetId> deleted;
 
   /// Asset ids read for each (builder, input id) combination.
   final Map<(Type, String), Set<AssetId>> readAssetsByBuilder;
 
-  DriftBuildResult(this.writer, this.readAssetsByBuilder);
+  DriftBuildResult(this.writer, this.readAssetsByBuilder, this.deleted);
 
   Iterable<AssetId> get dartOutputs {
-    return writer.assets.keys.where((e) {
-      return e.extension == '.dart';
+    return writer.testing.assetsWritten.where((e) {
+      return e.extension == '.dart' && !deleted.contains(e);
     });
   }
 
@@ -151,8 +179,8 @@ class DriftBuildResult {
   }
 }
 
-class _TrackingAssetReader implements AssetReader {
-  final AssetReader _inner;
+class _TrackingAssetReader implements AssetReader, AssetReaderState {
+  final TestReaderWriter _inner;
 
   final Set<AssetId> read = {};
 
@@ -193,10 +221,54 @@ class _TrackingAssetReader implements AssetReader {
     _trackRead(id);
     return _inner.readAsString(id, encoding: encoding);
   }
+
+  @override
+  AssetFinder get assetFinder => _inner.assetFinder;
+
+  @override
+  AssetPathProvider get assetPathProvider => _inner.assetPathProvider;
+
+  @override
+  FilesystemCache get cache => _inner.cache;
+
+  @override
+  AssetReaderWriter copyWith(
+      {FilesystemCache? cache, GeneratedAssetHider? generatedAssetHider}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Filesystem get filesystem => _inner.filesystem;
+
+  @override
+  GeneratedAssetHider get generatedAssetHider => _inner.generatedAssetHider;
+}
+
+extension ReaderWriterUtils on TestReaderWriter {
+  String readGenerated(String assetId) {
+    var id = AssetId.parse(assetId);
+    if (!testing.exists(id)) {
+      id = AssetId(
+        (this as InMemoryAssetReaderWriter).rootPackage,
+        '.dart_tool/build/generated/${id.package}/${id.path}',
+      );
+
+      // If neither succeeded then the asset was output but written somewhere
+      // unexpected.
+      if (!testing.exists(id)) {
+        throw StateError(
+          'Internal error: "$assetId" was recorded as output, but the file '
+          'could not be found. All assets: ${testing.assets}',
+        );
+      }
+    }
+
+    return testing.readString(id);
+  }
 }
 
 class IsValidDartFile extends CustomMatcher {
-  IsValidDartFile(valueOrMatcher)
+  IsValidDartFile(dynamic valueOrMatcher)
       : super(
           'A syntactically-valid Dart source file',
           'parsed unit',

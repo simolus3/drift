@@ -121,8 +121,7 @@ class _LocalStorageImpl implements DriftWebStorage, CustomSchemaVersionSave {
 
   @override
   int? get schemaVersion {
-    final versionStr = _localStorage[_versionKey];
-    // ignore: avoid_returning_null
+    final versionStr = _localStorage.getItem(_versionKey);
     if (versionStr == null) return null;
 
     return int.tryParse(versionStr);
@@ -153,7 +152,7 @@ class _LocalStorageImpl implements DriftWebStorage, CustomSchemaVersionSave {
   @override
   Future<void> store(Uint8List data) {
     final binStr = bin2str.encode(data);
-    _localStorage[_persistenceKey] = binStr;
+    _localStorage.setItem(_persistenceKey, binStr);
 
     return Future.value();
   }

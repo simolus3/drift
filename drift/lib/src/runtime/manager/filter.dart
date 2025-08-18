@@ -28,6 +28,9 @@ abstract class _BaseColumnFilters<T extends Object> {
   /// Create a filter that checks if the column is null.
   Expression<bool> isNull() => $composableFilter(column.isNull());
 
+  /// Create a filter that checks if the column is not null.
+  Expression<bool> isNotNull() => $composableFilter(column.isNotNull());
+
   /// Returns a copy of these column filters where all the filters are inverted
   /// ```dart
   /// myColumn.not.equals(5); // All columns that aren't null and have a value that is not equal to 5

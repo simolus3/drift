@@ -1,9 +1,10 @@
 name: web_wasm
 description: Integration tests for the drift wasm implementation
 publish_to: none
+resolution: workspace
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.5.0
 
 dependencies:
   collection: ^1.17.2
@@ -13,15 +14,15 @@ dependencies:
   shelf: ^1.4.1
   shelf_proxy: ^1.0.4
   path: ^1.8.3
-  js: ^0.7.0
   package_config: ^2.1.0
   async: ^2.11.0
   http: ^1.0.0
   sqlite3: ^2.0.0
+  web: ^1.1.0
 
 dev_dependencies:
   build_runner: ^2.4.5
-  build_web_compilers: ^4.0.0
+  build_web_compilers: ^4.1.0
   drift_dev:
-  lints: ^4.0.0
+  lints: any # resolved by workspace, updated globally
   test: ^1.24.3

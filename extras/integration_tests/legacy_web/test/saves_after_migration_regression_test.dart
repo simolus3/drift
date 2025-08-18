@@ -1,10 +1,10 @@
 @TestOn('browser')
-import 'dart:html';
 
 import 'package:drift/drift.dart';
 // ignore: deprecated_member_use
 import 'package:drift/web.dart';
 import 'package:test/test.dart';
+import 'package:web/web.dart' show window;
 
 part 'saves_after_migration_regression_test.g.dart';
 

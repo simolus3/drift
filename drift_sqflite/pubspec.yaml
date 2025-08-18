@@ -4,6 +4,7 @@ version: 2.0.1
 repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues
+resolution: workspace
 
 topics:
   - drift
@@ -14,7 +15,7 @@ funding:
   - https://github.com/sponsors/simolus3
 
 environment:
-  sdk: '>=2.12.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
   drift: ^2.0.0
@@ -26,7 +27,7 @@ dependencies:
 dev_dependencies:
   integration_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
   drift_testcases:

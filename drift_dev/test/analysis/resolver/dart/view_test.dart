@@ -188,4 +188,32 @@ abstract class CommonNames extends View {
 '''))
     }, result.dartOutputs, result.writer);
   });
+
+  test('can use views referencing same table multiple times', () async {
+    await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+}
+
+class UsersView extends View {
+  Users get a;
+  Users get b;
+
+  @override
+  Query as() => select([a.id, b.name])
+      .from(a)
+      .join([
+        innerJoin(b, b.name.equalsExp(a.id))
+      ]);
+}
+''',
+      },
+      logger: loggerThat(neverEmits(anything)),
+    );
+  });
 }

@@ -25,14 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.27
-          cache: true
-          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
-          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - name: Bootstrap Dart packages
         run: melos bootstrap --scope drift_docs,drift,app
         working-directory: .
@@ -40,6 +33,7 @@ jobs:
         env:
           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
         run: |
+          dart pub global activate webdev
           chmod +x ./docs.sh
           ./docs.sh build
       - name: Analyze Dart and Drift sources
@@ -89,7 +83,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - run: melos bootstrap --scope drift
         working-directory: .
       # analysis
@@ -121,7 +115,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - run: melos bootstrap --scope drift
         working-directory: .
       # Using build_runner test allows compiling the tests with ddc, which is much faster than
@@ -146,7 +140,7 @@ jobs:
   #     - uses: actions/checkout@v4
   #     - uses: ./.github/actions/prepare
   #       with:
-  #         dart_version: ${{ needs.setup.outputs.dart_version }}
+  #         flutter_version: ${{ needs.setup.outputs.flutter_version }}
   #     - run: melos bootstrap --scope drift
   #       working-directory: .
   #     - run: dart test -p ${{ matrix.browser }} --compiler dart2js --total-shards 4 --shard-index ${{ matrix.shard }}
@@ -159,14 +153,15 @@ jobs:
         working-directory: drift
     strategy:
       matrix:
-        browser: [chrome, firefox]
+        browser: [chrome] # Dart 3.7 unfortunately broke tests with dart2wasm on Firefox
+        # browser: [chrome, firefox]
     name: "Drift web unit tests, dart2wasm, ${{ matrix.browser }}"
     steps:
       # setup
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - run: melos bootstrap --scope drift
         working-directory: .
       - run: dart test -p ${{ matrix.browser }} --compiler dart2wasm
@@ -183,7 +178,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - run: melos bootstrap --scope drift_dev --scope drift
         working-directory: .
       # analysis
@@ -204,7 +199,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - run: dart pub upgrade
       # analysis
       - run: dart format -o none --set-exit-if-changed .
@@ -248,7 +243,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - run: melos bootstrap --no-flutter
         working-directory: .
       - name: Postgres integration tests
@@ -284,7 +279,9 @@ jobs:
     needs: [setup]
     strategy:
       matrix:
-        flutter: ["3.27"]
+        # We currently don't support <3.35.1 because we depend on melos v7, which needs Dart 3.9.0.
+        # Generally, we try to support the latest two stable Flutter releases.
+        flutter: ["3.35.1"]
 
     steps:
       - uses: actions/checkout@v4
@@ -327,17 +324,22 @@ jobs:
         working-directory: examples/app
       - run: flutter analyze
         working-directory: examples/app
+      - run: flutter analyze
+        working-directory: drift_flutter
+      - run: flutter test
+        working-directory: drift_flutter
       - run: flutter test
         working-directory: examples/app
   migration_integration_tests:
     name: "Integration tests for migration tooling"
     needs: [setup]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - run: melos bootstrap --scope migrations_example
         working-directory: .
       - name: Run build
@@ -360,17 +362,18 @@ jobs:
     name: "Web integration tests"
     needs: [drift]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare
         with:
-          dart_version: ${{ needs.setup.outputs.dart_version }}
+          flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - uses: nanasess/setup-chromedriver@v2
       - run: melos bootstrap --scope web_wasm
         working-directory: .
       - name: Test
         working-directory: extras/integration_tests/web_wasm
-        run: dart test
+        run: dart test -P gh_actions
 #  upload_coverage:
 #    runs-on: ubuntu-20.04
 #    needs: [moor, sqlparser]

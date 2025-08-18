@@ -247,7 +247,7 @@ class _Relation {
 
 // Helper for checking if a table is the same as another
 extension on DriftTable {
-  bool equals(other) {
+  bool equals(dynamic other) {
     if (identical(this, other)) {
       return true;
     } else if (other is! DriftTable) {

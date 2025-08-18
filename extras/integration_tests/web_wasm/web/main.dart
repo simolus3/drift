@@ -1,11 +1,13 @@
 import 'dart:convert';
-import 'dart:html';
-import 'dart:js_util';
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 import 'package:http/http.dart' as http;
+import 'package:web/web.dart'
+    show document, EventStreamProviders, HTMLDivElement;
 import 'package:web_wasm/initialization_mode.dart';
 import 'package:web_wasm/src/database.dart';
 import 'package:sqlite3/wasm.dart';
@@ -21,6 +23,10 @@ InitializationMode initializationMode = InitializationMode.none;
 int schemaVersion = 1;
 
 void main() {
+  _addCallbackForWebDriver('isDart2wasm', (_) async {
+    const isWasm = bool.fromEnvironment('dart.tool.dart2wasm');
+    return isWasm.toJS;
+  });
   _addCallbackForWebDriver('detectImplementations', _detectImplementations);
   _addCallbackForWebDriver('detectImplementationsWrongUri', (arg) async {
     driftWorkerUri = Uri.parse('wrong.js');
@@ -29,6 +35,7 @@ void main() {
   _addCallbackForWebDriver('open', _open);
   _addCallbackForWebDriver('close', (arg) async {
     await openedDatabase?.close();
+    return null;
   });
   _addCallbackForWebDriver('insert', _insert);
   _addCallbackForWebDriver('get_rows', _getRows);
@@ -36,11 +43,11 @@ void main() {
   _addCallbackForWebDriver('wait_for_update', _waitForUpdate);
   _addCallbackForWebDriver('enable_initialization', (arg) async {
     initializationMode = InitializationMode.values.byName(arg!);
-    return true;
+    return true.toJS;
   });
   _addCallbackForWebDriver('set_schema_version', (arg) async {
     schemaVersion = int.parse(arg!);
-    return true;
+    return true.toJS;
   });
   _addCallbackForWebDriver('delete_database', (arg) async {
     final result = await WasmDatabase.probe(
@@ -53,6 +60,20 @@ void main() {
     await result.deleteDatabase(
       (WebStorageApi.byName[decoded[0] as String]!, decoded[1] as String),
     );
+    return null;
+  });
+  _addCallbackForWebDriver('export_database', (arg) async {
+    final result = await WasmDatabase.probe(
+      sqlite3Uri: sqlite3WasmUri,
+      driftWorkerUri: driftWorkerUri,
+    );
+
+    final decoded = json.decode(arg!);
+
+    final exported = await result.exportDatabase(
+      (WebStorageApi.byName[decoded[0] as String]!, decoded[1] as String),
+    );
+    return (exported != null).toJS;
   });
   _addCallbackForWebDriver('do_exclusive', (arg) async {
     final database = openedDatabase!;
@@ -62,9 +83,14 @@ void main() {
             .insertOne(TestTableCompanion.insert(content: 'from exclusive'));
       });
     });
+
+    return null;
   });
 
-  document.getElementById('selfcheck')?.onClick.listen((event) async {
+  final selfcheckBtn = document.getElementById('selfcheck')!;
+  EventStreamProviders.clickEvent
+      .forElement(selfcheckBtn)
+      .listen((event) async {
     print('starting');
     final database = await WasmDatabase.open(
       databaseName: dbName,
@@ -76,22 +102,30 @@ void main() {
     print('selected storage: ${database.chosenImplementation}');
     print('missing features: ${database.missingFeatures}');
   });
+
+  document.body!.appendChild(HTMLDivElement()..id = 'ready');
 }
 
-void _addCallbackForWebDriver(String name, Future Function(String?) impl) {
-  setProperty(globalThis, name,
-      allowInterop((String? arg, Function callback) async {
-    Object? result;
+void _addCallbackForWebDriver(
+    String name, Future<JSAny?> Function(String?) impl) {
+  globalContext.setProperty(
+    name.toJS,
+    (JSString? arg, JSFunction callback) {
+      Future(() async {
+        JSAny? result;
 
-    try {
-      result = await impl(arg);
-    } catch (e, s) {
-      final console = getProperty(globalThis, 'console');
-      callMethod(console, 'error', [e, s]);
-    }
+        try {
+          result = await impl(arg?.toDart);
+        } catch (e, s) {
+          final console = globalContext['console']! as JSObject;
+          console.callMethod(
+              'error'.toJS, e.toString().toJS, s.toString().toJS);
+        }
 
-    callMethod(callback, 'call', [null, result]);
-  }));
+        callback.callAsFunction(null, result);
+      });
+    }.toJS,
+  );
 }
 
 Future<Uint8List?> _initializeDatabase() async {
@@ -129,7 +163,7 @@ Future<Uint8List?> _initializeDatabase() async {
   }
 }
 
-Future<String> _detectImplementations(String? _) async {
+Future<JSString> _detectImplementations(String? _) async {
   final result = await WasmDatabase.probe(
     sqlite3Uri: sqlite3WasmUri,
     driftWorkerUri: driftWorkerUri,
@@ -140,10 +174,10 @@ Future<String> _detectImplementations(String? _) async {
     'impls': result.availableStorages.map((r) => r.name).toList(),
     'missing': result.missingFeatures.map((r) => r.name).toList(),
     'existing': result.existingDatabases.map((r) => [r.$1.name, r.$2]).toList(),
-  });
+  }).toJS;
 }
 
-Future<void> _open(String? implementationName) async {
+Future<JSAny?> _open(String? implementationName) async {
   DatabaseConnection connection;
 
   if (implementationName != null) {
@@ -191,29 +225,32 @@ Future<void> _open(String? implementationName) async {
     tableUpdates = StreamQueue(db.testTable.all().watch());
     await tableUpdates!.next;
   }
+  return null;
 }
 
-Future<void> _waitForUpdate(String? _) async {
+Future<JSAny?> _waitForUpdate(String? _) async {
   await tableUpdates!.next;
+  return null;
 }
 
-Future<void> _insert(String? _) async {
+Future<JSAny?> _insert(String? _) async {
   final db = openedDatabase!;
   await db
       .into(db.testTable)
       .insert(TestTableCompanion.insert(content: DateTime.now().toString()));
+  return null;
 }
 
-Future<int> _getRows(String? _) async {
+Future<JSNumber> _getRows(String? _) async {
   final db = openedDatabase!;
   final count = countAll();
 
   final query = db.selectOnly(db.testTable)..addColumns([count]);
-  return await query.map((row) => row.read(count)!).getSingle();
+  return (await query.map((row) => row.read(count)!).getSingle()).toJS;
 }
 
-Future<bool> _hasTables(String? _) async {
+Future<JSBoolean> _hasTables(String? _) async {
   final db = openedDatabase!;
   final rows = await db.customSelect('SELECT * FROM sqlite_schema').get();
-  return rows.isNotEmpty;
+  return rows.isNotEmpty.toJS;
 }

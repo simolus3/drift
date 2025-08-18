@@ -1,3 +1,4 @@
+import 'package:drift_dev/api/migrations_common.dart';
 import 'package:drift_dev/src/services/schema/find_differences.dart';
 import 'package:test/test.dart';
 
@@ -87,6 +88,16 @@ void main() {
               'Not equal: `PRIMARY KEY NOT NULL` (expected) and `` (actual)'),
         );
       });
+
+      test('ignored column constraints diff', () {
+        final result = compare(
+          Input('a', 'CREATE TABLE a (id INTEGER PRIMARY KEY NOT NULL);'),
+          Input('a', 'CREATE TABLE a (id INTEGER);'),
+          options: const ValidationOptions(validateColumnConstraints: false),
+        );
+
+        expect(result, hasNoChanges);
+      });
     });
 
     test('of different type', () {
@@ -104,8 +115,12 @@ void main() {
   });
 }
 
-CompareResult compare(Input a, Input b) {
-  return FindSchemaDifferences([a], [b], false).compare();
+CompareResult compare(
+  Input a,
+  Input b, {
+  ValidationOptions options = const ValidationOptions(),
+}) {
+  return FindSchemaDifferences([a], [b], options).compare();
 }
 
 Matcher hasChanges = _matchChanges(false);

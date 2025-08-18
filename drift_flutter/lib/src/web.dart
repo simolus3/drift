@@ -20,14 +20,17 @@ DriftConnection driftDatabase({
       driftWorkerUri: web.driftWorker,
     );
 
-    if (result.missingFeatures.isNotEmpty) {
-      // Depending how central local persistence is to your app, you may want
-      // to show a warning to the user if only unrealiable implemetentations
-      // are available.
-      print('Using ${result.chosenImplementation} due to missing browser '
-          'features: ${result.missingFeatures}');
-    }
-
+    (web.onResult ?? _defaultResultHandler)(result);
     return result.resolvedExecutor;
   }));
+}
+
+void _defaultResultHandler(WasmDatabaseResult result) {
+  if (result.missingFeatures.isNotEmpty) {
+    // Depending how central local persistence is to your app, you may want
+    // to show a warning to the user if only unrealiable implemetentations
+    // are available.
+    print('Using ${result.chosenImplementation} due to missing browser '
+        'features: ${result.missingFeatures}');
+  }
 }

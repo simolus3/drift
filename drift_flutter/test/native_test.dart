@@ -169,6 +169,24 @@ void main() {
       // would block the write.
       await raw.into(raw.simpleTable).insert(RawValuesInsertable({}));
     });
+
+    test('can use setup', () async {
+      final database = SimpleDatabase(driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+          shareAcrossIsolates: true,
+          setup: (db) => db.createFunction(
+            functionName: 'hello_dart',
+            function: (_) => 'Hello from Dart!',
+          ),
+        ),
+      ));
+      addTearDown(database.close);
+
+      final [row] =
+          await database.customSelect('SELECT hello_dart() as r;').get();
+      expect(row.data['r'], 'Hello from Dart!');
+    });
   });
 
   group('pingWithTimeout', () {
@@ -197,6 +215,50 @@ void main() {
       expect(await isolate.pingWithTimeout(), true); // Still reachable!
 
       isolate.resume(resume);
+    });
+  });
+
+  test('can use setup', () async {
+    final database = SimpleDatabase(driftDatabase(
+      name: 'database',
+      native: DriftNativeOptions(
+        setup: (db) => db.createFunction(
+          functionName: 'hello_dart',
+          function: (_) => 'Hello from Dart!',
+        ),
+      ),
+    ));
+    addTearDown(database.close);
+
+    final [row] =
+        await database.customSelect('SELECT hello_dart() as r;').get();
+    expect(row.data['r'], 'Hello from Dart!');
+  });
+
+  group('works with widget tests', () {
+    // Regression test for https://github.com/simolus3/drift/issues/3556
+    late SimpleDatabase db;
+
+    setUp(() async {
+      db = SimpleDatabase(
+        DatabaseConnection(
+          NativeDatabase.memory(),
+          closeStreamsSynchronously: true,
+        ),
+      );
+    });
+
+    tearDown(() async {
+      await db.close();
+      await db.close();
+    });
+
+    testWidgets('when closing', (tester) async {
+      await db.customSelect('SELECT 1').get();
+
+      tester.runAsync(() async {
+        await db.close();
+      });
     });
   });
 }

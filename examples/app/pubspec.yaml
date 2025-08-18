@@ -1,11 +1,12 @@
 name: app
 description: A cross-platform todo tracker built with drift.
 publish_to: "none"
+resolution: workspace
 
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -13,22 +14,22 @@ dependencies:
   drift: ^2.23.1
   drift_dev: ^2.23.1
   drift_flutter: ^0.2.4
-  file_picker: ^8.0.0
+  file_picker: ^10.0.0
   flutter_colorpicker: ^1.0.3
-  flutter_riverpod: ^2.3.0
-  go_router: ^14.2.0
-  intl: ^0.19.0
+  flutter_riverpod: ^3.0.0-dev
+  go_router: ^16.1.0
+  intl: ^0.20.2
   sqlite3_flutter_libs: ^0.5.5
   sqlite3: ^2.0.0
   path_provider: ^2.0.9
   path: ^1.8.0
-  riverpod: ^2.3.0
+  riverpod: ^3.0.0-dev
   stack_trace: ^1.11.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   build_runner: ^2.1.8
   # We use this to compile the shared web worker for the web database. This dependency
   # isn't required for most apps. You only need it if you want to target the web, use
@@ -36,7 +37,7 @@ dev_dependencies:
   # Either way, using this package with Flutter requires a delicate setup described in
   # `build.yaml`.
   build_web_compilers: ^4.0.0
-  build: ^2.2.1
+  build: ^3.0.0-0
 
 flutter:
   uses-material-design: true

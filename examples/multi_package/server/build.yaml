@@ -11,15 +11,10 @@ targets:
         enabled: true
         options: &options
           # Drift build options, as per https://drift.simonbinder.eu/docs/advanced-features/builder_options/
-          store_date_time_values_as_text: true
           named_parameters: true
-          sql:
+          dialects:
             # The server itself will only support postgres
-            dialects:
-              - postgres
-            options:
-              version: "3.45"
-              modules: [fts5]
+            postgres:
       drift_dev:modular:
         enabled: true
         # We use yaml anchors to give the two builders the same options

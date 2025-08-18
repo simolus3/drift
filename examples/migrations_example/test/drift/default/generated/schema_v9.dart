@@ -1,4 +1,6 @@
 // dart format width=80
+// coverage:ignore-file
+
 // GENERATED CODE, DO NOT EDIT BY HAND.
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart';

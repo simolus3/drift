@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 
 import '../results/element.dart';
 import 'state.dart';
@@ -11,7 +11,7 @@ class DriftAnalysisCache {
   final Map<Uri, FileState> knownFiles = {};
   final Map<DriftElementId, DriftElementKind> discoveredElements = {};
 
-  final Map<Uri, LibraryElement?> typeHelperLibraries = {};
+  final Map<Uri, LibraryElement2?> typeHelperLibraries = {};
 
   FileState stateForUri(Uri uri) {
     return knownFiles[uri] ?? notifyFileChanged(uri);

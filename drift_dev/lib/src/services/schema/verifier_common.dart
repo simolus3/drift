@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:drift/drift.dart';
 import 'package:drift_dev/api/migrations_common.dart';
 import 'package:sqlite3/common.dart';
@@ -7,7 +5,7 @@ import 'package:sqlite3/common.dart';
 import 'find_differences.dart';
 
 /// Attempts to recognize whether [name] is likely the name of an internal
-/// sqlite3 table (like `sqlite3_sequence`) that we should not consider when
+/// sqlite3 table (like `sqlite_sequence`) that we should not consider when
 /// comparing schemas.
 bool isInternalElement(String name, List<String> virtualTables) {
   // Skip sqlite-internal tables, https://www.sqlite.org/fileformat2.html#intschema
@@ -22,10 +20,9 @@ bool isInternalElement(String name, List<String> virtualTables) {
 }
 
 void verify(List<Input> referenceSchema, List<Input> actualSchema,
-    bool validateDropped) {
+    ValidationOptions options) {
   final result =
-      FindSchemaDifferences(referenceSchema, actualSchema, validateDropped)
-          .compare();
+      FindSchemaDifferences(referenceSchema, actualSchema, options).compare();
 
   if (!result.noChanges) {
     throw SchemaMismatch(result.describe());
@@ -34,7 +31,7 @@ void verify(List<Input> referenceSchema, List<Input> actualSchema,
 
 Future<void> verifyDatabase(
   GeneratedDatabase db,
-  bool validateDropped,
+  ValidationOptions options,
   QueryExecutor Function() open,
 ) async {
   final virtualTables = db.allTables
@@ -59,7 +56,7 @@ Future<void> verifyDatabase(
     await referenceDb.close();
   }
 
-  verify(referenceSchema, schemaOfThisDatabase, validateDropped);
+  verify(referenceSchema, schemaOfThisDatabase, options);
 }
 
 /// Thrown when the actual schema differs from the expected schema.
@@ -79,19 +76,22 @@ Expando<List<Input>> expectedSchema = Expando();
 abstract base class VerifierImplementation<DB extends CommonDatabase>
     implements SchemaVerifier<DB> {
   final SchemaInstantiationHelper helper;
-  final Random _random = Random();
 
   final void Function(DB)? setup;
 
   VerifierImplementation(this.helper, {this.setup});
 
-  DB newInMemoryDatabase(String uri);
+  DB newInMemoryDatabase();
 
-  QueryExecutor wrapOpened(DB db);
+  QueryExecutor wrapOpened(DB db, {required bool closeUnderlyingOnClose});
 
   @override
-  Future<void> migrateAndValidate(GeneratedDatabase db, int expectedVersion,
-      {bool validateDropped = false}) async {
+  Future<void> migrateAndValidate(
+    GeneratedDatabase db,
+    int expectedVersion, {
+    ValidationOptions options = const ValidationOptions(),
+    bool? validateDropped,
+  }) async {
     final virtualTables = <String>[
       for (final table in db.allTables)
         if (table is VirtualTableInfo) table.entityName,
@@ -113,25 +113,15 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
     await db.executor.ensureOpen(_DelegatingUser(expectedVersion, db));
     final actualSchema = await db.executor.collectSchemaInput(virtualTables);
 
-    verify(referenceSchema, actualSchema, validateDropped);
+    verify(
+      referenceSchema,
+      actualSchema,
+      options.applyDeprecatedValidateDroppedParam(validateDropped),
+    );
   }
 
-  String _randomString() {
-    const charCodeLowerA = 97;
-    const charCodeLowerZ = 122;
-    const length = 16;
-
-    final buffer = StringBuffer();
-    for (var i = 0; i < length; i++) {
-      buffer.writeCharCode(
-          _random.nextInt(charCodeLowerZ - charCodeLowerA) + charCodeLowerA);
-    }
-
-    return buffer.toString();
-  }
-
-  DB _setupDatabase(String uri) {
-    final database = newInMemoryDatabase(uri);
+  DB _setupDatabase() {
+    final database = newInMemoryDatabase();
     try {
       database.config.doubleQuotedStringLiterals = false;
     } on SqliteException {
@@ -148,23 +138,18 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
 
   @override
   Future<InitializedSchema<DB>> schemaAt(int version) async {
-    // Use distinct executors for setup and use, allowing us to close the helper
-    // db here and avoid creating it twice.
-    // https://www.sqlite.org/inmemorydb.html#sharedmemdb
-    final uri = 'file:mem${_randomString()}?mode=memory&cache=shared';
-    final dbForSetup = _setupDatabase(uri);
-    final dbForUse = _setupDatabase(uri);
+    final rawDb = _setupDatabase();
 
-    final executor = wrapOpened(dbForSetup);
+    final executor = wrapOpened(rawDb, closeUnderlyingOnClose: false);
     final db = helper.databaseForVersion(executor, version);
 
     // Opening the helper database will instantiate the schema for us
     await executor.ensureOpen(db);
     await db.close();
 
-    return InitializedSchema(dbForUse, () {
-      final db = _setupDatabase(uri);
-      return DatabaseConnection(wrapOpened(db));
+    return InitializedSchema(rawDb, () {
+      return DatabaseConnection(
+          wrapOpened(rawDb, closeUnderlyingOnClose: false));
     });
   }
 

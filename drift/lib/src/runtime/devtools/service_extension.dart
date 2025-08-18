@@ -95,6 +95,13 @@ class DriftServiceExtension {
           });
         });
         return true;
+      case 'notify-update':
+        final database = tracked.database;
+        database.notifyUpdates({
+          for (final update in json.decode(parameters['updates']!) as List)
+            TableUpdate(update['table'] as String),
+        });
+        return true;
       default:
         throw UnsupportedError('Method $action');
     }

@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -128,9 +128,9 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
 
     if (hint != null && hint.converter.isDriftEnumTypeConverter) {
       final enumElement =
-          (hint.converter.dartType as InterfaceType).element as EnumElement;
+          (hint.converter.dartType as InterfaceType).element3 as EnumElement2;
       final entryCount =
-          enumElement.fields.where((e) => e.isEnumConstant).length;
+          enumElement.fields2.where((e) => e.isEnumConstant).length;
 
       var value = e.value;
       final parent = e.parent;
@@ -155,7 +155,7 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
           linter.sqlParserErrors.add(AnalysisError(
             type: AnalysisErrorType.other,
             message: 'From context, it seems like this int literal is written '
-                'into a column with an enum type `${enumElement.name}`. However, '
+                'into a column with an enum type `${enumElement.name3}`. However, '
                 'that enum only has $entryCount values, the constant index is '
                 'too large.',
             relevantNode: span,
@@ -307,14 +307,14 @@ class _LintingVisitor extends RecursiveVisitor<void, void> {
 
     if (hint != null && hint.converter.isDriftEnumTypeConverter) {
       final enumElement =
-          (hint.converter.dartType as InterfaceType).element as EnumElement;
-      final field = enumElement.getField(e.value);
+          (hint.converter.dartType as InterfaceType).element3 as EnumElement2;
+      final field = enumElement.getField2(e.value);
 
       if (field == null || !field.isEnumConstant) {
         linter.sqlParserErrors.add(AnalysisError(
           type: AnalysisErrorType.other,
           message: 'From context, it seems like this text literal is written '
-              'into a column with an enum type `${enumElement.name}`. However, '
+              'into a column with an enum type `${enumElement.name3}`. However, '
               'that enum declares no member with this name.',
           relevantNode: e,
         ));

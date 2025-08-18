@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 
+import 'schema_versions.dart';
+
 part 'migrations.g.dart';
 
 const kDebugMode = false;
@@ -74,20 +76,18 @@ class MyDatabase extends _$MyDatabase {
     // #enddocregion structured
   }
 
-  MigrationStrategy get changeType {
-    const yourOldVersion = 4;
-    // #docregion change_type
-    return MigrationStrategy(
-      onUpgrade: (m, old, to) async {
-        if (old <= yourOldVersion) {
-          await m.alterTable(
-            TableMigration(todos, columnTransformer: {
-              todos.category: todos.category.cast<int>(),
-            }),
-          );
-        }
+  Future<void> changeTypeSnippet() async {
+    stepByStep(
+      // #docregion change_type
+      from1To2: (m, schema) async {
+        await m.alterTable(
+          TableMigration(schema.todos, columnTransformer: {
+            todos.category: schema.todos.category.cast<int>(),
+          }),
+        );
       },
+      // #enddocregion change_type
+      from2To3: (m, schema) async {},
     );
-    // #enddocregion change_type
   }
 }

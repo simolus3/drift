@@ -3,7 +3,6 @@ targets:
     builders:
       drift_dev:
         options:
-          sql:
-            dialects:
-              - sqlite # remove this line if you only need postgres
-              - postgres
+          dialects:
+            sqlite:
+            postgres: # remove this line if you only need postgres

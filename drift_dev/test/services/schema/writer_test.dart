@@ -2,15 +2,18 @@
 library;
 
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:build_config/build_config.dart';
 import 'package:drift/backends.dart';
 import 'package:drift_dev/src/analysis/options.dart';
-import 'package:drift_dev/src/analysis/results/file_results.dart';
-import 'package:drift_dev/src/analysis/results/results.dart';
+import 'package:drift_dev/src/cli/cli.dart';
+import 'package:drift_dev/src/cli/commands/schema.dart';
+import 'package:drift_dev/src/cli/commands/schema/generate_utils.dart';
+import 'package:drift_dev/src/cli/project.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';
-import 'package:drift_dev/src/writer/database_writer.dart';
-import 'package:drift_dev/src/writer/import_manager.dart';
-import 'package:drift_dev/src/writer/writer.dart';
+import 'package:drift_dev/src/utils/string_escaper.dart';
+import 'package:test_descriptor/test_descriptor.dart';
 import 'package:test/test.dart';
 
 import '../../analysis/test_utils.dart';
@@ -34,6 +37,7 @@ import 'main.dart';
 CREATE TABLE "groups" (
   id INT NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
+  name2 TEXT NOT NULL GENERATED ALWAYS AS (upper(name)) VIRTUAL,
 
   UNIQUE(name)
 );
@@ -62,6 +66,8 @@ CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN
 END;
 
 simple_query: SELECT * FROM my_view; -- not part of the schema
+
+@create: INSERT INTO "groups" ("name") VALUES ('test');
       ''',
         'a|lib/main.dart': '''
 import 'package:drift/drift.dart';
@@ -120,7 +126,7 @@ class Database {}
         schemaWithOptions['options'], {'store_date_time_values_as_text': true});
   });
 
-  test('can generate code from schema json', () {
+  test('can generate code from schema json', () async {
     final serializedSchema = json.decode(
             // Column types used to be serialized under a different format, test
             // reading that as well.
@@ -128,32 +134,24 @@ class Database {}
         as Map<String, dynamic>;
     final reader = SchemaReader.readJson(serializedSchema);
 
-    final writer = Writer(
-      const DriftOptions.defaults(),
-      generationOptions: GenerationOptions(
-        forSchema: 1,
-        writeCompanions: true,
-        writeDataClasses: true,
-        imports: NullImportManager(),
-      ),
+    final fakeBuildConfig = runInBuildConfigZone(() {
+      return BuildConfig(buildTargets: {});
+    }, 'drift_dev', []);
+    final generated = await GenerateUtils.generateSchemaCode(
+      DriftDevCli()
+        ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
+      1,
+      ExportedSchema(reader.entities.toList(), {}),
+      false,
+      false,
     );
 
-    final database = DriftDatabase(
-      id: DriftElementId(SchemaReader.elementUri, 'database'),
-      declaration: DriftDeclaration(SchemaReader.elementUri, 0, 'database'),
-      declaredIncludes: const [],
-      declaredQueries: const [],
-      declaredTables: const [],
-      declaredViews: const [],
-    );
-    final resolved =
-        ResolvedDatabaseAccessor(const {}, const [], reader.entities.toList());
-    final input = DatabaseGenerationInput(database, resolved, const {}, null);
-
-    DatabaseWriter(input, writer.child()).write();
-    final generated = writer.writeGenerated();
     expect(generated,
         contains('ComparableExpr(settings.length).isBiggerThanValue(10)'));
+    expect(
+        generated,
+        contains(
+            "OnCreateQuery('INSERT INTO \"groups\" (name) VALUES (\\'test\\')')"));
   });
 
   test('can export Dart-defined views', () async {
@@ -203,6 +201,61 @@ class Database {}
       'columns': anything,
     });
   });
+
+  group('generates correct datetime mode', () {
+    Future<void> runTest(bool storeAsText, String expectedDefault) async {
+      final options =
+          DriftOptions.defaults(storeDateTimeValuesAsText: storeAsText);
+      final backend = await TestBackend.inTest(
+        {
+          'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class MyTable extends Table {
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
+@DriftDatabase(tables: [MyTable])
+class Database {}
+''',
+        },
+        options: options,
+      );
+
+      final file = await backend.analyze('package:a/main.dart');
+      backend.expectNoErrors();
+
+      final db = file.fileAnalysis!.resolvedDatabases.values.single;
+
+      final schemaJson =
+          await SchemaWriter(db.availableElements, options: options)
+              .createSchemaJson();
+      final serializedTable = (schemaJson['entities'] as List)[0];
+      final data = serializedTable['data'];
+      expect(data, {
+        'name': 'my_table',
+        'was_declared_in_moor': false,
+        'is_virtual': false,
+        'without_rowid': false,
+        'columns': hasLength(1),
+        'constraints': [],
+      });
+
+      expect(
+        data['columns'][0]['default_dart'],
+        'const CustomExpression(${asDartLiteral(expectedDefault)})',
+      );
+    }
+
+    test('with integer times', () async {
+      await runTest(
+          false, "CAST(strftime('%s', CURRENT_TIMESTAMP) AS INTEGER)");
+    });
+
+    test('with text times', () async {
+      await runTest(true, 'CURRENT_TIMESTAMP');
+    });
+  });
 }
 
 const expected = r'''
@@ -244,6 +297,32 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": []
+                    },
+                    {
+                        "name": "name2",
+                        "getter_name": "name2",
+                        "moor_type": "string",
+                        "nullable": false,
+                        "customConstraints": "NOT NULL GENERATED ALWAYS AS (upper(name)) VIRTUAL",
+                        "default_dart": null,
+                        "default_client_dart": null,
+                        "dsl_features": [
+                          {
+                            "generated_as": {
+                              "dart_expression": {
+                                "elements": [
+                                  "const ",
+                                  {
+                                    "lexeme": "CustomExpression",
+                                    "import_uri": "package:drift/drift.dart"
+                                  },
+                                  "('upper(name)')"
+                                ]
+                              },
+                              "stored": false
+                            }
+                          }
+                        ]
                     }
                 ],
                 "is_virtual": false,
@@ -400,7 +479,14 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [
-                            "unknown"
+                            {
+                              "foreign_key": {
+                                "to": {"table": "groups", "column": "id"},
+                                "initially_deferred": false,
+                                "on_update": null,
+                                "on_delete": null
+                              }
+                            }
                         ]
                     },
                     {
@@ -412,7 +498,14 @@ const expected = r'''
                         "default_dart": null,
                         "default_client_dart": null,
                         "dsl_features": [
-                            "unknown"
+                            {
+                              "foreign_key": {
+                                "to": {"table": "users", "column": "id"},
+                                "initially_deferred": false,
+                                "on_update": null,
+                                "on_delete": null
+                              }
+                            }
                         ]
                     },
                     {
@@ -502,6 +595,15 @@ const expected = r'''
                 "name": "my_view_trigger",
                 "sql": "CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN\n  UPDATE \"groups\" SET id = old.id;\nEND;"
             }
+        },
+        {
+          "id": 8,
+          "references": [0],
+          "type": "special-query",
+          "data": {
+            "scenario": "create",
+            "sql": "INSERT INTO \"groups\" (\"name\") VALUES ('test')"
+          }
         }
     ]
 }

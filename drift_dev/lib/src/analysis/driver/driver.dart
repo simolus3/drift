@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../backend.dart';
@@ -57,7 +57,7 @@ class DriftAnalysisDriver {
   final DriftBackend backend;
   final DriftAnalysisCache cache = DriftAnalysisCache();
   final DriftOptions options;
-  final bool _isTesting;
+  final bool isTesting;
 
   Future<KnownDriftTypes?>? _loadingTypes;
 
@@ -66,8 +66,8 @@ class DriftAnalysisDriver {
   DriftAnalysisDriver(
     this.backend,
     this.options, {
-    bool isTesting = false,
-  }) : _isTesting = isTesting;
+    this.isTesting = false,
+  });
 
   SqlEngine newSqlEngine() {
     final dialect = options.sqliteDialect;
@@ -275,7 +275,7 @@ class DriftAnalysisDriver {
         if (e is! CouldNotResolveElementException) {
           backend.log.warning('Could not analyze $id', e, s);
 
-          if (_isTesting) rethrow;
+          if (isTesting) rethrow;
         }
 
         return null;
@@ -380,7 +380,7 @@ abstract class AnalysisResultCacheReader {
 
   Future<CachedDiscoveryResults?> readDiscovery(Uri uri);
 
-  Future<LibraryElement?> readTypeHelperFor(Uri uri);
+  Future<LibraryElement2?> readTypeHelperFor(Uri uri);
 
   Future<String?> readElementCacheFor(Uri uri);
 }

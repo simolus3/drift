@@ -267,7 +267,7 @@ class B extends Table {
       final result = state.discovery as DiscoveredDartLibrary;
       expect(result.locallyDefinedElements, [
         isA<DiscoveredDartTable>()
-            .having((e) => e.dartElement.name, 'dartElement.name', 'A')
+            .having((e) => e.dartElement.name3, 'dartElement.name', 'A')
       ]);
     });
   });

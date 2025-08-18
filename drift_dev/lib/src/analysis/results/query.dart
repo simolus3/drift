@@ -183,6 +183,22 @@ abstract class SqlQuery {
 
   SqlQuery(this.name, this.elements, this.elementSources);
 
+  /// Generates a [SqlQuery] without any [elements] that just contains a parsed
+  /// AST node.
+  factory SqlQuery.astOnly(
+      {required SqlEngine engine, required String name, required String sql}) {
+    final result = engine.parse(sql);
+
+    return UpdatingQuery(
+      name,
+      engine.analyzeParsed(result),
+      result.rootNode,
+      const [],
+      const [],
+      const [],
+    );
+  }
+
   /// Whether any element in [elements] has more than one definite
   /// [elementSources] pointing to it.
   bool get referencesAnyElementMoreThanOnce {

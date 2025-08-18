@@ -1,9 +1,10 @@
 name: encrypted_drift
 description: Encryption support for drift, built with sqflite_sqlcipher
 version: 1.1.0
+resolution: workspace
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
   flutter: ^3.0.0
 
 dependencies:
@@ -16,7 +17,7 @@ dependencies:
 dev_dependencies:
   drift_testcases:
     path: ../integration_tests/drift_testcases
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
   integration_test:

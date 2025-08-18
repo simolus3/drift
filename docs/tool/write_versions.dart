@@ -20,6 +20,7 @@ class _VersionsBuilder extends Builder {
       'drift_flutter',
       'drift_postgres',
       'sqlite3',
+      'path_provider',
       'postgres',
     ];
 

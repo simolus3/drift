@@ -144,7 +144,7 @@ Future<DriftDatabaseImplementation> _openShared({
 typedef _EntrypointMessage = ({
   String name,
   String path,
-  DriftNativeOptions? options,
+  DriftNativeOptions options,
   SendPort sendResponses,
 });
 

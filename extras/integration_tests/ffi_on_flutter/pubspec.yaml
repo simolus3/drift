@@ -1,11 +1,12 @@
 name: flutter_db
 description: Testing drift's `NativeDatabase` on Flutter.
 version: 1.0.0+1
+resolution: workspace
 
 publish_to: none
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.5.0"
   flutter: ">=3.10.0"
 
 dependencies:
@@ -20,13 +21,9 @@ dependencies:
 
 dev_dependencies:
   test: ^1.18.0
-  flutter_lints: ^2.0.1
+  flutter_lints: ^6.0.0
   integration_test:
     sdk: flutter
-
-dependency_overrides:
-  drift:
-    path: ../../../drift
 
 flutter:
   assets:

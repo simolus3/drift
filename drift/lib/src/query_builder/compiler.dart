@@ -705,6 +705,19 @@ abstract base class StatementCompiler {
     });
   }
 
+  void addLikeExpression(LikeExpression expr) {
+    writeExpression(expr, () {
+      expr.left.compileWith(this);
+      statement.buffer.write(' LIKE ');
+      expr.right.compileWith(this);
+
+      if (expr.escape case final escape?) {
+        statement.buffer.write(' ESCAPE ');
+        escape.compileWith(this);
+      }
+    });
+  }
+
   void addLimit(Limit limit) {
     statement.buffer.write('LIMIT ${limit.amount}');
 

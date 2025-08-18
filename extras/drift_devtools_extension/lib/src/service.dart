@@ -4,6 +4,7 @@ import 'package:devtools_app_shared/service.dart';
 import 'package:devtools_extensions/devtools_extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:vm_service/vm_service.dart';
 
@@ -44,7 +45,7 @@ final serviceProvider = StreamProvider<VmService>((ref) {
 });
 
 final _libraryEvalProvider =
-    FutureProviderFamily<EvalOnDartLibrary, String>((ref, libraryPath) async {
+    FutureProvider.family<EvalOnDartLibrary, String>((ref, libraryPath) async {
   final service = await ref.watch(serviceProvider.future);
 
   final eval = EvalOnDartLibrary(

@@ -1,9 +1,10 @@
 name: with_built_value
 publish_to: none
 version: 1.0.0
+resolution: workspace
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: ^3.5.0
 
 dependencies:
   drift: ^2.11.0

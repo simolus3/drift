@@ -160,6 +160,43 @@ void main() {
     await db.close();
   }, tags: 'background_isolate');
 
+  test('can close isolate when using DatabaseConnection.delayed', () async {
+    final spawned = ReceivePort();
+    final done = ReceivePort();
+
+    await Isolate.spawn(_createBackground, spawned.sendPort,
+        onExit: done.sendPort);
+    // The isolate should eventually exit!
+    expect(done.first, completion(anything));
+
+    final connection = DatabaseConnection.delayed(Future(() async {
+      final drift = await spawned.first as DriftIsolate;
+      return drift.connect(singleClientMode: true);
+    }));
+    final db = TodoDb(connection);
+    await db.close();
+  }, tags: 'background_isolate');
+
+  test('can close server when client isolate exits', () async {
+    final shutdownCalled = Completer<void>();
+    final isolate = DriftIsolate.inCurrent(
+      () => NativeDatabase.memory(),
+      shutdownAfterLastDisconnect: true,
+      beforeShutdown: shutdownCalled.complete,
+    );
+
+    await Isolate.run(() async {
+      final connection = await isolate.connect();
+      // Ensure the statement works
+      await TodoDb(connection).customStatement('SELECT 1');
+
+      // Close the isolate without closing the database
+    });
+
+    // This should still shut down the server.
+    await shutdownCalled.future;
+  });
+
   test('shutting down will close the underlying executor', () async {
     final mockExecutor = MockSession();
     final isolate =

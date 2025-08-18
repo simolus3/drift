@@ -3,8 +3,8 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:web/web.dart' hide WorkerOptions;
 import 'package:sqlite3/wasm.dart';
+import 'package:web/web.dart' hide WorkerOptions;
 
 import 'types.dart';
 
@@ -177,7 +177,7 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
 
   factory SharedWorkerCompatibilityResult.fromJsPayload(JSArray payload) {
     final asList = payload.toDart;
-    final asBooleans = asList.cast<bool>();
+    bool asBoolean(int index) => (asList[index] as JSBoolean).toDart;
 
     final List<ExistingDatabase> existingDatabases;
     var version = ProtocolVersion.legacy;
@@ -193,11 +193,11 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
     }
 
     return SharedWorkerCompatibilityResult(
-      canSpawnDedicatedWorkers: asBooleans[0],
-      dedicatedWorkersCanUseOpfs: asBooleans[1],
-      canUseIndexedDb: asBooleans[2],
-      indexedDbExists: asBooleans[3],
-      opfsExists: asBooleans[4],
+      canSpawnDedicatedWorkers: asBoolean(0),
+      dedicatedWorkersCanUseOpfs: asBoolean(1),
+      canUseIndexedDb: asBoolean(2),
+      indexedDbExists: asBoolean(3),
+      opfsExists: asBoolean(4),
       existingDatabases: existingDatabases,
       version: version,
     );

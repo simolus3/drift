@@ -10,12 +10,14 @@ final class NativeSchemaVerifier extends VerifierImplementation<Database>
   NativeSchemaVerifier(super.helper, {super.setup});
 
   @override
-  Database newInMemoryDatabase(String uri) {
-    return sqlite3.open(uri, uri: true);
+  Database newInMemoryDatabase() {
+    return sqlite3.openInMemory();
   }
 
   @override
-  QueryExecutor wrapOpened(Database db) {
-    return NativeDatabase.opened(db);
+  QueryExecutor wrapOpened(Database db,
+      {required bool closeUnderlyingOnClose}) {
+    return NativeDatabase.opened(db,
+        closeUnderlyingOnClose: closeUnderlyingOnClose);
   }
 }

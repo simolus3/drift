@@ -1,6 +1,7 @@
-import 'dart:html';
+import 'dart:js_interop';
 
 import 'package:drift/wasm.dart';
+import 'package:web/web.dart';
 import 'package:web_worker_example/database.dart';
 
 void main() async {
@@ -10,22 +11,24 @@ void main() async {
     driftWorkerUri: Uri.parse('/worker.dart.js'),
   );
 
+  print('Opened WASM database: ${connection.chosenImplementation}');
+
   final db = MyDatabase(connection.resolvedExecutor);
 
   final output = document.getElementById('output')!;
-  final input = document.getElementById('field')! as InputElement;
-  final submit = document.getElementById('submit')! as ButtonElement;
+  final input = document.getElementById('field')! as HTMLInputElement;
+  final submit = document.getElementById('submit')! as HTMLButtonElement;
 
   db.allEntries().watch().listen((rows) {
-    output.innerHtml = '';
+    output.innerHTML = ''.toJS;
 
     for (final row in rows) {
-      output.children.add(Element.li()..text = row.value);
+      output.appendChild(HTMLLIElement()..textContent = row.value);
     }
   });
 
   submit.onClick.listen((event) {
-    db.addEntry(input.value ?? '');
-    input.value = null;
+    db.addEntry(input.value);
+    input.value = '';
   });
 }

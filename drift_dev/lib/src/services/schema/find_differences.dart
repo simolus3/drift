@@ -2,6 +2,7 @@ import 'package:sqlparser/sqlparser.dart';
 // ignore: implementation_imports
 import 'package:sqlparser/src/utils/ast_equality.dart';
 
+import '../../../api/migrations_common.dart';
 import '../../analysis/drift_native_functions.dart';
 
 class Input {
@@ -21,9 +22,7 @@ class FindSchemaDifferences {
   /// The actual schema entities
   final List<Input> actualSchema;
 
-  /// When set, [actualSchema] may not contain more entities than
-  /// [referenceSchema].
-  final bool validateDropped;
+  final ValidationOptions options;
 
   final SqlEngine _engine = SqlEngine(
     EngineOptions(enabledExtensions: const [
@@ -33,8 +32,7 @@ class FindSchemaDifferences {
     ]),
   );
 
-  FindSchemaDifferences(
-      this.referenceSchema, this.actualSchema, this.validateDropped);
+  FindSchemaDifferences(this.referenceSchema, this.actualSchema, this.options);
 
   CompareResult compare() {
     return _compareNamed<Input>(
@@ -42,7 +40,7 @@ class FindSchemaDifferences {
       actual: actualSchema,
       name: (e) => e.name,
       compare: _compareInput,
-      validateActualInReference: validateDropped,
+      validateActualInReference: options.validateDropped,
     );
   }
 
@@ -170,13 +168,15 @@ class FindSchemaDifferences {
           'Different types: Expected ${ref.typeName}, got ${act.typeName}');
     }
 
-    try {
-      enforceEqualIterable(ref.constraints, act.constraints);
-    } catch (e) {
-      final firstSpan = ref.constraints.spanOrNull?.text ?? '';
-      final secondSpan = act.constraints.spanOrNull?.text ?? '';
-      return FoundDifference(
-          'Not equal: `$firstSpan` (expected) and `$secondSpan` (actual)');
+    if (options.validateColumnConstraints) {
+      try {
+        enforceEqualIterable(ref.constraints, act.constraints);
+      } catch (e) {
+        final firstSpan = ref.constraints.spanOrNull?.text ?? '';
+        final secondSpan = act.constraints.spanOrNull?.text ?? '';
+        return FoundDifference(
+            'Not equal: `$firstSpan` (expected) and `$secondSpan` (actual)');
+      }
     }
 
     return const Success();

@@ -71,6 +71,12 @@ void main() {
             .count(),
         1);
 
+    // Not Null Checks
+    expect(
+        await db.managers.tableWithEveryColumnType
+            .filter((f) => f.aReal.isNotNull())
+            .count(),
+        2);
     expect(
         await db.managers.tableWithEveryColumnType
             .filter((f) => f.aReal.not.isNull())

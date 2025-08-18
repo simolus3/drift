@@ -135,7 +135,7 @@ abstract class TableOrViewWriter {
         // For records, the argument syntax is already a valid record literal.
         emitter.writeDart(AnnotatedDartCode.type(info.targetType));
 
-        if (ctor.isNotEmpty) {
+        if (ctor != 'new') {
           buffer
             ..write('.')
             ..write(ctor);

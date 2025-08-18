@@ -13,10 +13,42 @@
 - Add `BatchStatement` and `BatchResult` API to obtain the results of running statements
   within a `Batch`.
 
-## 2.25.0-dev
+## 2.28.1
 
-- Report `SqliteException`s occurring on workers as a `SqliteException`
-  instance. Previously, they were sent as strings only.
+- Add `escapeChar` argument to `like()` to generate an `ESCAPE` clause.
+- Native database: Cache prepared statements by default.
+
+## 2.28.0
+
+- Query delegates: Support nested transactions in `SupportedTransactionDelegate`.
+- Add `WasmProbeResult.exportDatabase` to export an existing web database as a `Uint8List`.
+- Fix drift server isolates leaking when their only client isolate exits without closing the database.
+
+## 2.27.0
+
+- Allow passing `sqlite3` callback to `NativeDatabase` to customize how SQLite
+  bindings are obtained.
+
+## 2.26.1
+
+- Add `isNotNull()` column filter for the manager APIs.
+- Add optional `orderBy` parameter to more aggregate function extension.
+
+## 2.26.0
+
+- Add support for window functions with `WindowFunctionExpression`.
+
+## 2.25.1
+
+- Fix shared worker feature detection when the main app is compiled with
+  `dart2wasm`.
+
+## 2.25.0
+
+- Report `SqliteException`s occurring on workers as `SqliteException`
+  instances. Previously, they were sent as strings only.
+- Fix `LazyDatabase` being closed without ever being used potentially leaking
+  resources.
 
 ## 2.24.0
 

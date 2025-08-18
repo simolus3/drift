@@ -93,9 +93,12 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// can't provide analysis warnings when using recent sqlite3 features.
   static const SqliteVersion minimum = SqliteVersion.v3(34);
 
-  /// Version `3.47.0` added `if` as an alternative spelling for `iif` and
+  /// Version `3.50.0` added the `unistr` and `unistr_quote` functions.
+  static const SqliteVersion v3_50 = SqliteVersion.v3(48);
+
+  /// Version `3.48.0` added `if` as an alternative spelling for `iif` and
   /// introduces a two-argument version of `iif`.
-  static const SqliteVersion v3_48 = SqliteVersion.v3(46);
+  static const SqliteVersion v3_48 = SqliteVersion.v3(48);
 
   /// Version `3.46.0` added `json_pretty` and allows underscore characters
   /// between digits in numeric literals.

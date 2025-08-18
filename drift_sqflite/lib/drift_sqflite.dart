@@ -2,7 +2,7 @@
 ///
 /// The [SqfliteQueryExecutor] class can be used as a drift database
 /// implementation based on the `sqflite` package.
-library drift_sqflite;
+library;
 
 import 'dart:async';
 import 'dart:io';

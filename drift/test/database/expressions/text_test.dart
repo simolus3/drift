@@ -13,6 +13,13 @@ void main() {
     expect(expression.likeExp(expression), generates('col LIKE col'));
   });
 
+  test('can generate escape clause', () {
+    expect(expression.like('pattern', escapeChar: '?'),
+        generates("col LIKE ? ESCAPE '?'", ['pattern']));
+    expect(expression.likeExp(expression, escape: expression),
+        generates('col LIKE col ESCAPE col'));
+  });
+
   test('generates regexp expressions', () {
     expect(
       expression.regexp('fo+'),

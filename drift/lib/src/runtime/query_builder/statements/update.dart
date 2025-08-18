@@ -82,6 +82,9 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
   Future<List<D>> writeReturning(Insertable<D> entity) async {
     writeReturningClause = true;
     await write(entity, dontExecute: true);
+    if (_updatedFields.isEmpty) {
+      return const [];
+    }
 
     final ctx = constructQuery();
     final rows = await database.withCurrentExecutor((e) {

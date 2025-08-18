@@ -12,15 +12,17 @@ extension StringExpressionOperators on Expression<String> {
   /// Whether this column matches the given pattern. For details on what patters
   /// are valid and how they are interpreted, check out
   /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
-  Expression<bool> like(String regex) {
-    return likeExp(Variable.withString(regex));
+  Expression<bool> like(String regex, {String? escapeChar}) {
+    return likeExp(Variable.withString(regex),
+        escape: Variable<String>(escapeChar));
   }
 
   /// Whether this column matches the given expression. For details on what patters
   /// are valid and how they are interpreted, check out
   /// [this tutorial](http://www.sqlitetutorial.net/sqlite-like/).
-  Expression<bool> likeExp(Expression<String> regex) {
-    return BinaryExpression(this, BinaryOperator.like, regex);
+  Expression<bool> likeExp(Expression<String> regex,
+      {Expression<String>? escape}) {
+    return LikeExpression(this, regex, escape: escape);
   }
 
   /// Whether this expression contains [substring].
@@ -119,6 +121,44 @@ extension StringExpressionOperators on Expression<String> {
       start,
       if (length != null) length,
     ]);
+  }
+}
+
+/// A `LIKE` expression in SQL, with an optional `ESCAPE` clause.
+final class LikeExpression extends Expression<bool> {
+  /// The string being searched.
+  final Expression<String> left;
+
+  /// The text to search for.
+  final Expression<String> right;
+
+  /// An optional custom escape character for [right].
+  final Expression<String>? escape;
+
+  /// @nodoc
+  LikeExpression(
+    this.left,
+    this.right, {
+    required this.escape,
+  });
+
+  @override
+  int get hashCode => Object.hash(left, right, escape);
+
+  @override
+  bool operator ==(Object other) {
+    return other is LikeExpression &&
+        other.left == left &&
+        other.right == right &&
+        other.escape == escape;
+  }
+
+  @override
+  Precedence get precedence => BinaryOperator.like.precedence;
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    return compiler.addLikeExpression(this);
   }
 }
 

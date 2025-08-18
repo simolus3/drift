@@ -1,6 +1,6 @@
 /// Experimental Drift integration for MariaDB.
 @experimental
-library drift.mariadb;
+library;
 
 import 'package:meta/meta.dart';
 

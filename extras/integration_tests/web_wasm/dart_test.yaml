@@ -1,0 +1,10 @@
+tags:
+  firefox:
+  chrome:
+  dart2js:
+  dart2wasm:
+
+presets:
+  gh_actions:
+    # Firefox tests with dart2wasm are currently broken
+    exclude_tags: firefox && dart2wasm

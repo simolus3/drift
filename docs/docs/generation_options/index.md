@@ -84,7 +84,7 @@ At the moment, drift supports these options:
   can be enabled to speed up builds. This option has no effect with the default or the modular builder.
 - `fatal_warnings`: When enabled (defaults to `false`), warnings found by `drift_dev` in the build process (like syntax errors in SQL queries or
   unresolved references in your Dart tables) will cause the build to fail.
-- `preamble`: This option is useful when using drift as a standalone part "../Generation options"builder or when running a
+- `preamble`: This option is useful when using drift as a [standalone part](in_other_builders.md) builder or when running a
   modular build. In these setups, the `preamble` option defined by the [source_gen package](https://pub.dev/packages/source_gen#preamble)
   would have no effect, which is why it has been added as an option for the drift builders.
 - `generate_manager`: When enabled (defaults to `true`), managers will be generated for each table in the database. These managers help perform simple actions without boilerplate.

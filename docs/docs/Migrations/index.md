@@ -5,13 +5,13 @@ description: Tooling and APIs to safely change the schema of your database.
 
 ---
 
-Drift ensures type-safe queries through a strict schema. To change this schema, you must write migrations. 
+Drift ensures type-safe queries through a strict schema. To change this schema, you must write migrations.
 Drift provides a range of APIs, command-line tools, and testing utilities to make writing and verifying database migrations easier and more reliable.
 
 ## Guided Migrations
 
-Drift offers an all-in-one command for writing and testing migrations.  
-This tool helps you write your schema changes incrementally and generates tests to verify that your migrations are correct.
+Drift provides built-in tools to help you write and test migrations.
+This enables you to write your schema changes incrementally, while test utilities give you confidence that your schema migrations are correct.
 
 ### Configuration
 
@@ -24,7 +24,7 @@ targets:
       drift_dev:
         options:
           databases:
-            # Required: A name for the database and it's path
+            # Required: A name for the database and its path
             my_database: lib/database.dart
 
             # Optional: Add more databases
@@ -42,7 +42,7 @@ targets:
     builders:
       drift_dev:
         options:
-          # The directory where the test files are stored: 
+          # The directory where the test files are stored:
           test_dir: test/drift/ # (default)
 
           # The directory where the schema files are stored:
@@ -58,7 +58,6 @@ dart run drift_dev make-migrations
 ```
 Once this initial schema file is saved, you can start making changes to your database schema.
 
-
 Once you're happy with the changes, bump the `schemaVersion` in your database class and run the command again.
 
 ```bash
@@ -68,15 +67,43 @@ dart run drift_dev make-migrations
 This command will generate the following files:
 
 - A step-by-step migration file will be generated next to your database class. Use this function to write your migrations incrementally. See the [step-by-step migration guide](step_by_step.md) for more information.
-
-
 - Drift will also generate a test file for your migrations. After you've written your migration, run the tests to verify that your migrations are written correctly. This files will also contain a sample data integrity test for the first migration.
-
 
 If you get stuck along the way, don't hesitate to [open a discussion about it](https://github.com/simolus3/drift/discussions).
 
+#### Example
 
-### Example
+After you've changed the schema of your database and ran the `make-migrations` command, it's time to
+write a migration. If your database was defined in a `database.dart` file, Drift will have generated a
+`database.steps.dart` file next to it. That file will contain a compressed representation of all your
+schema versions going forward, which makes writing migrations much easier:
+
+```dart title="database.dart"
+import 'package:drift/drift.dart';
+
+import 'database.steps.dart';
+
+part 'database.g.dart';
+
+@DriftDatabase(...)
+class MyDatabase extends _$MyDatabase {
+  MyDatabase(super.e);
+
+  @override
+  int get schemaVersion => 2; // bump because the tables have changed.
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: stepByStep(
+        from1To2: (m, schema) async {
+          await m.createTable(schema.groups);
+        },
+      ),
+    );
+  }
+}
+```
 
 See the [example](https://github.com/simolus3/drift/tree/develop/examples/migrations_example) in the drift repository for a complete example of how to use the `make-migrations` command.
 

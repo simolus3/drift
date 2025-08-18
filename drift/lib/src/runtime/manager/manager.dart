@@ -223,7 +223,7 @@ class TableManagerState<
       withReferenceMapper: _withReferenceMapper,
       prefetchHooksCallback: _prefetchHooksCallback,
       addedColumns: addedColumns ?? this.addedColumns,
-      prefetchedData: prefetchedDataAsTypedResult ?? this._prefetchedData,
+      prefetchedData: prefetchedDataAsTypedResult ?? _prefetchedData,
       prefetchHooks: prefetchHooks ?? this.prefetchHooks,
       filter: filter ?? this.filter,
       joinBuilders: joinBuilders ?? this.joinBuilders,

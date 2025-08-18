@@ -11,12 +11,10 @@ targets:
         enabled: true
         options: &options
           # Drift build options, as per https://drift.simonbinder.eu/docs/advanced-features/builder_options/
-          store_date_time_values_as_text: true
           named_parameters: true
-          sql:
-            dialects:
-              - sqlite
-            options:
+          dialects:
+            sqlite:
+              store_date_time_values_as_text: true
               version: "3.45"
               modules: [fts5]
       drift_dev:modular:

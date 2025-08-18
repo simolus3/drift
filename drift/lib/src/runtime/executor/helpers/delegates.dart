@@ -185,6 +185,20 @@ abstract class SupportedTransactionDelegate extends TransactionDelegate {
   /// The returned future should complete once the transaction has been commited
   /// or was rolled back.
   FutureOr<void> startTransaction(Future Function(QueryDelegate) run);
+
+  /// An optional method used to implement nested transactions.
+  ///
+  /// If the underlying database API supports nested transactions, this can be
+  /// used to expose that functionality to drift. The method will only be called
+  /// in [startTransaction] callbacks, and is otherwise expected to have a
+  /// similiar behavior: `outer`  is the delegate passed to the callback in
+  /// [startTransaction], and `block` is the function that should run in a
+  /// nested transaction.
+  /// If it throws, the nested transaction should be rolled back.
+  FutureOr<void> Function(
+    QueryDelegate outer,
+    Future<void> Function(QueryDelegate) block,
+  )? get startNested => null;
 }
 
 /// A [TransactionDelegate] for database APIs that have it's own transaction

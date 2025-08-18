@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:collection/collection.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
@@ -49,6 +49,9 @@ class DriftResolver {
       }
     } on CouldNotDeserializeException catch (e, s) {
       driver.backend.log.warning('Could not deserialize $element', e, s);
+      if (driver.isTesting) {
+        rethrow;
+      }
     }
 
     // We can't resolve the element from cache, so we need to resolve it.
@@ -168,19 +171,19 @@ class DriftResolver {
   /// Resolves a Dart element reference, if the referenced Dart [element]
   /// defines an element understood by drift.
   Future<ResolveReferencedElementResult> resolveDartReference(
-      DriftElementId owner, Element element) async {
-    final uri = await driver.backend.uriOfDart(element.library!);
+      DriftElementId owner, Element2 element) async {
+    final uri = await driver.backend.uriOfDart(element.library2!);
     final state = driver.cache.stateForUri(uri);
 
     final existing = state.definedElements.firstWhereOrNull(
-        (existing) => existing.dartElementName == element.name);
+        (existing) => existing.dartElementName == element.name3);
 
     if (existing != null) {
       return resolveReferencedElement(owner, existing.ownId);
     } else {
       return InvalidReferenceResult(
         InvalidReferenceError.noElementWichSuchName,
-        'The referenced element, ${element.name}, is not understood by drift.',
+        'The referenced element, ${element.name3}, is not understood by drift.',
       );
     }
   }
@@ -249,7 +252,7 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
   }
 
   Future<E?> resolveDartReferenceOrReportError<E extends DriftElement>(
-    Element reference,
+    Element2 reference,
     DriftAnalysisError Function(String msg) createError,
   ) async {
     final result =
