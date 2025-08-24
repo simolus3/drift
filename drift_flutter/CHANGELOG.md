@@ -1,3 +1,7 @@
+## 0.2.6
+
+- Add `initializeDatabase` parameter to `DriftWebOptions` to enable loading initial database.
+
 ## 0.2.5
 
 - Fix `DriftWebOptions.onResult` not being called.

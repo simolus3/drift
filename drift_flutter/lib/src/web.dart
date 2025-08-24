@@ -18,6 +18,7 @@ QueryExecutor driftDatabase({
       databaseName: name,
       sqlite3Uri: web.sqlite3Wasm,
       driftWorkerUri: web.driftWorker,
+      initializeDatabase: web.initializeDatabase,
     );
 
     (web.onResult ?? _defaultResultHandler)(result);
