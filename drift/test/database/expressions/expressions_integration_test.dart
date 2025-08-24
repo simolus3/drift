@@ -127,7 +127,7 @@ void main() {
             eval(
                 db.users.id.groupConcat(
                     orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
-                    filter: db.users.id.isBiggerThanValue(3)),
+                    filter: db.users.id.isGreaterThanValue(3)),
                 onTable: db.users),
             completion('6,5,4'),
           );
@@ -136,7 +136,7 @@ void main() {
                 db.users.id.groupConcat(
                     orderBy: OrderBy([OrderingTerm.desc(db.users.id)]),
                     separator: '-',
-                    filter: db.users.id.isBiggerThanValue(3)),
+                    filter: db.users.id.isGreaterThanValue(3)),
                 onTable: db.users),
             completion('6-5-4'),
           );
@@ -293,8 +293,9 @@ void main() {
 
     test('window functions', () async {
       for (var length = 1; length <= 10; length++) {
-        await db.todosTable
-            .insertOne(TodosTableCompanion.insert(content: 'a' * length));
+        await db
+            .into(db.todosTable)
+            .insert(TodosTableCompanion.insert(content: 'a' * length));
       }
 
       final lengthRanking = WindowFunctionExpression(

@@ -19,6 +19,7 @@ import 'expressions/subquery.dart';
 import 'expressions/text.dart';
 import 'expressions/tuple.dart';
 import 'expressions/variables.dart';
+import 'expressions/window.dart';
 import 'results.dart';
 import 'schema/column.dart';
 import 'schema/column_constraints.dart';
@@ -228,6 +229,46 @@ abstract base class StatementCompiler {
       statement.buffer.write(' AND ');
       expression.higher.compileWith(this);
     });
+  }
+
+  void addFrameType(FrameType f) {
+    statement.buffer.write(f.type);
+  }
+
+  void addFrameExclude(FrameExclude f) {
+    statement.buffer.write(f.exclude);
+  }
+
+  void addFrameBoundaryElement(num exp) {
+    if (exp == 0) {
+      statement.buffer.write('CURRENT ROW');
+    } else if (exp < 0) {
+      Literal(exp.abs()).compileWith(this);
+      statement.buffer.write(' PRECEDING');
+    } else {
+      Literal(exp.abs()).compileWith(this);
+      statement.buffer.write(' FOLLOWING');
+    }
+  }
+
+  void addFrameBoundary(FrameBoundary f) {
+    addFrameType(f.frameType);
+    statement.buffer.write(' BETWEEN ');
+    if (f.start case final start?) {
+      addFrameBoundaryElement(start);
+    } else {
+      statement.buffer.write('UNBOUNDED PRECEDING');
+    }
+    statement.buffer.write(' AND ');
+    if (f.end case final end?) {
+      addFrameBoundaryElement(end);
+    } else {
+      statement.buffer.write('UNBOUNDED FOLLOWING');
+    }
+    if (f.exclude case final exclude?) {
+      statement.buffer.write(' EXCLUDE ');
+      addFrameExclude(exclude);
+    }
   }
 
   void addFromResultSet(FromResultSet resultSet,
@@ -659,6 +700,23 @@ abstract base class StatementCompiler {
     }
 
     addReference(column.name);
+  }
+
+  void addWindowFunctionExpression(WindowFunctionExpression expr) {
+    writeExpression(expr, () {
+      expr.function.compileWith(this);
+      statement.buffer.write(' OVER (');
+      if (expr.partitionBy case final partitionBy?
+          when partitionBy.isNotEmpty) {
+        statement.buffer.write('PARTITION BY ');
+        addCommaSeparated(partitionBy);
+        statement.space();
+      }
+      expr.orderBy.compileWith(this);
+      statement.space();
+      addFrameBoundary(expr.boundary);
+      statement.buffer.write(')');
+    });
   }
 
   void addWhereClause(WhereClause where) {

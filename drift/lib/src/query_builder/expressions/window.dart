@@ -1,4 +1,7 @@
-part of '../query_builder.dart';
+import 'package:drift/src/query_builder/compiler.dart';
+
+import '../clauses/order_by.dart';
+import 'expression.dart';
 
 /// Represents a window function expression in SQL.
 ///
@@ -7,13 +10,13 @@ part of '../query_builder.dart';
 /// function queries with partitioning, ordering, and frame specifications.
 ///
 /// More information at [Window Functions](https://www.sqlite.org/windowfunctions.html) documentation.
-class WindowFunctionExpression<T extends Object> extends Expression<T> {
+final class WindowFunctionExpression<T extends Object> extends Expression<T> {
   /// The aggregate or window function to apply (e.g., SUM, AVG).
   final Expression<T> function;
 
   /// The ordering terms that define how rows are sorted within each partition.
   /// Must not be empty as window functions require an ORDER BY clause.
-  final List<OrderingTerm> orderBy;
+  final OrderBy orderBy;
 
   /// Optional list of expressions to partition the rows by.
   ///
@@ -134,10 +137,10 @@ class WindowFunctionExpression<T extends Object> extends Expression<T> {
   ///
   WindowFunctionExpression(
     this.function, {
-    required this.orderBy,
+    required List<OrderingTerm> orderBy,
     this.partitionBy,
     this.boundary = const FrameBoundary.range(),
-  }) {
+  }) : orderBy = OrderBy(orderBy) {
     if (orderBy.isEmpty) {
       throw ArgumentError.value(
         orderBy,
@@ -148,41 +151,13 @@ class WindowFunctionExpression<T extends Object> extends Expression<T> {
   }
 
   @override
-  void writeInto(GenerationContext context) {
-    function.writeInto(context);
-    context.buffer.write(' OVER (');
-    if (partitionBy case final partitionBy? when partitionBy.isNotEmpty) {
-      _PartitionBy(partitionBy).writeInto(context);
-      context.writeWhitespace();
-    }
-    OrderBy(orderBy).writeInto(context);
-    context.writeWhitespace();
-    boundary.writeInto(context);
-    context.buffer.write(')');
-  }
-}
-
-/// A partition-by clause as part of a window function statement. The clause can consist
-/// of multiple [Expression]s, with the first terms being primary partition and
-/// the later terms will work as a nested partition for the previous partition and so on.
-class _PartitionBy extends Component {
-  /// The list of expressions to partition by.
-  final List<Expression> expressions;
-
-  /// Constructs a partition by clause by the [expressions].
-  const _PartitionBy(this.expressions);
-
-  @override
-  void writeInto(GenerationContext context) {
-    if (expressions.isEmpty) return;
-
-    context.buffer.write('PARTITION BY ');
-    _writeCommaSeparated(context, expressions);
+  void compileWith(StatementCompiler compiler) {
+    compiler.addWindowFunctionExpression(this);
   }
 }
 
 /// Specifies how to exclude rows from the window frame.
-enum FrameExclude {
+enum FrameExclude implements SqlComponent {
   /// No rows are excluded from the window frame.
   ///
   /// This is the default behavior
@@ -204,13 +179,18 @@ enum FrameExclude {
   ties._('TIES');
 
   /// The string representation of the exclude clause.
-  final String _exclude;
+  final String exclude;
 
-  const FrameExclude._(this._exclude);
+  const FrameExclude._(this.exclude);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addFrameExclude(this);
+  }
 }
 
 /// Describes the type of frame for a window function.
-enum _FrameType {
+enum FrameType implements SqlComponent {
   /// A frame that considers a range of values for the provided boundary.
   ///
   /// `RANGE` frames operate based on the values in the `ORDER BY` clause,
@@ -235,9 +215,14 @@ enum _FrameType {
   groups._('GROUPS');
 
   /// The string representation of the frame type.
-  final String _type;
+  final String type;
 
-  const _FrameType._(this._type);
+  const FrameType._(this.type);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addFrameType(this);
+  }
 }
 
 /// Base Class for Boundary in a window frame.
@@ -254,7 +239,7 @@ enum _FrameType {
 /// {@endtemplate}
 ///
 /// More information at [FrameBoundary](https://www.sqlite.org/windowfunctions.html#frame_boundaries) documentation.
-final class FrameBoundary extends Component {
+final class FrameBoundary implements SqlComponent {
   /// The start of the frame boundary, relative to the current row.
   ///
   /// A value of [null] indicates that frame includes all prior rows, groups or range bounds.
@@ -274,7 +259,7 @@ final class FrameBoundary extends Component {
   final num? end;
 
   /// The type of frame for the boundary.
-  final _FrameType _frameType;
+  final FrameType frameType;
 
   /// Specifies which rows to exclude from the frame
   ///
@@ -289,7 +274,7 @@ final class FrameBoundary extends Component {
   const FrameBoundary._(
     this.start,
     this.end,
-    this._frameType, {
+    this.frameType, {
     this.exclude,
   }) : assert(
           start == null || start <= 0 || (end == null || end > 0),
@@ -306,7 +291,7 @@ final class FrameBoundary extends Component {
     int? start,
     int? end = 0,
     FrameExclude? exclude,
-  }) : this._(start, end, _FrameType.rows, exclude: exclude);
+  }) : this._(start, end, FrameType.rows, exclude: exclude);
 
   /// Constructs a GROUPS frame with the given [start] and [end] boundaries.
   ///
@@ -322,7 +307,7 @@ final class FrameBoundary extends Component {
     int? start,
     int? end = 0,
     FrameExclude? exclude,
-  }) : this._(start, end, _FrameType.groups, exclude: exclude);
+  }) : this._(start, end, FrameType.groups, exclude: exclude);
 
   /// Constructs a RANGE boundary with the given [start] and [end].
   ///
@@ -343,38 +328,10 @@ final class FrameBoundary extends Component {
     num? start,
     num? end = 0,
     FrameExclude? exclude,
-  }) : this._(start, end, _FrameType.range, exclude: exclude);
+  }) : this._(start, end, FrameType.range, exclude: exclude);
 
   @override
-  void writeInto(GenerationContext context) {
-    context.buffer.write(_frameType._type);
-    context.buffer.write(' BETWEEN ');
-    if (start case final start?) {
-      _writeBoundary(context, start);
-    } else {
-      context.buffer.write('UNBOUNDED PRECEDING');
-    }
-    context.buffer.write(' AND ');
-    if (end case final end?) {
-      _writeBoundary(context, end);
-    } else {
-      context.buffer.write('UNBOUNDED FOLLOWING');
-    }
-    if (exclude case final exclude?) {
-      context.buffer.write(' EXCLUDE ');
-      context.buffer.write(exclude._exclude);
-    }
-  }
-
-  void _writeBoundary(GenerationContext context, num exp) {
-    if (exp == 0) {
-      context.buffer.write('CURRENT ROW');
-    } else if (exp < 0) {
-      Constant(exp.abs()).writeInto(context);
-      context.buffer.write(' PRECEDING');
-    } else {
-      Constant(exp.abs()).writeInto(context);
-      context.buffer.write(' FOLLOWING');
-    }
+  void compileWith(StatementCompiler compiler) {
+    compiler.addFrameBoundary(this);
   }
 }

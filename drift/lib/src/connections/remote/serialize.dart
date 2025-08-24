@@ -287,7 +287,7 @@ final class _ProtocolMessageDecoder
       case _tag_BeginTransactionRequest:
         final rawOptions = payload[2] as List;
         final options = TransactionOptions(
-          deferForeignKeys: rawOptions[0] as bool,
+          deferForeignKeys: rawOptions[0] as bool?,
         );
 
         return BeginTransactionRequest(payload[0] as int,

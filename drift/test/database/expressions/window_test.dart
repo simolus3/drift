@@ -4,9 +4,9 @@ import 'package:test/test.dart';
 import '../../test_utils/test_utils.dart';
 
 void main() {
-  const foo = CustomExpression<int>('foo', precedence: Precedence.primary);
-  const x = CustomExpression<String>('x');
-  const y = CustomExpression<int>('y');
+  final foo = Expression<int>.custom('foo', precedence: Precedence.primary);
+  final x = Expression<String>.custom('x');
+  final y = Expression<int>.custom('y');
 
   group('WINDOW FUNCTION', () {
     test('with single Order By', () {
@@ -27,7 +27,7 @@ void main() {
           orderBy: [OrderingTerm.asc(foo), OrderingTerm.desc(x)],
         ),
         generates(
-            "SUM(foo) OVER (ORDER BY foo ASC, x DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)"),
+            "SUM(foo) OVER (ORDER BY foo ASC,x DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)"),
       );
     });
 
@@ -39,19 +39,19 @@ void main() {
           partitionBy: [x, y],
         ),
         generates(
-            "AVG(foo) OVER (PARTITION BY x, y ORDER BY foo DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)"),
+            "AVG(foo) OVER (PARTITION BY x,y ORDER BY foo DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)"),
       );
     });
 
     test('with Filter', () {
       expect(
         WindowFunctionExpression(
-          countAll(filter: foo.isBiggerOrEqualValue(3)),
+          countAll(filter: foo.isGreaterOrEqualValue(3)),
           orderBy: [OrderingTerm.desc(foo)],
           partitionBy: [x, y],
         ),
         generates(
-            "COUNT(*) FILTER (WHERE foo >= ?) OVER (PARTITION BY x, y ORDER BY foo DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)",
+            "COUNT(*) FILTER (WHERE foo >= ?1) OVER (PARTITION BY x,y ORDER BY foo DESC RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)",
             [3]),
       );
     });

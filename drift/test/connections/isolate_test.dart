@@ -11,6 +11,7 @@ import 'package:drift/connections/sqlite/sqlite3.dart';
 import 'package:drift/dialect/postgres.dart';
 import 'package:drift/sqlite3/dialect.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/sqlite3/native.dart';
 import 'package:drift/src/connections/remote/channel.dart';
 import 'package:mockito/mockito.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -160,7 +161,8 @@ void main() {
     await db.close();
   }, tags: 'background_isolate');
 
-  test('can close isolate when using DatabaseConnection.delayed', () async {
+  test('can close isolate when using DatabaseConnection.withImplementation',
+      () async {
     final spawned = ReceivePort();
     final done = ReceivePort();
 
@@ -169,26 +171,29 @@ void main() {
     // The isolate should eventually exit!
     expect(done.first, completion(anything));
 
-    final connection = DatabaseConnection.delayed(Future(() async {
-      final drift = await spawned.first as DriftIsolate;
-      return drift.connect(singleClientMode: true);
-    }));
+    final connection = DriftConnection.withImplementation(
+        dialect: _dialect,
+        implementation: () async {
+          final drift = await spawned.first as DriftIsolate;
+          return drift.connect(singleClientMode: true);
+        });
     final db = TodoDb(connection);
+    await db.initialize();
     await db.close();
   }, tags: 'background_isolate');
 
   test('can close server when client isolate exits', () async {
     final shutdownCalled = Completer<void>();
     final isolate = DriftIsolate.inCurrent(
-      () => NativeDatabase.memory(),
+      () async => NativeDatabase.memoryImplementation(),
       shutdownAfterLastDisconnect: true,
       beforeShutdown: shutdownCalled.complete,
     );
 
     await Isolate.run(() async {
-      final connection = await isolate.connect();
       // Ensure the statement works
-      await TodoDb(connection).customStatement('SELECT 1');
+      await TodoDb(isolate.asConnection(dialect: _dialect))
+          .customStatement('SELECT 1');
 
       // Close the isolate without closing the database
     });

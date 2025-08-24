@@ -322,7 +322,7 @@ CREATE TABLE groups (
     test('synchronous file', () async {
       final mockSqlite = _MockSqlite();
 
-      final db = NativeDatabase(
+      final db = NativeDatabase.blocking(
         File('/dev/null'),
         sqlite3: () => mockSqlite,
       );

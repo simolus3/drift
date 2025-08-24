@@ -21,6 +21,7 @@ export 'query_builder/expressions/subquery.dart';
 export 'query_builder/expressions/text.dart';
 export 'query_builder/expressions/tuple.dart';
 export 'query_builder/expressions/variables.dart';
+export 'query_builder/expressions/window.dart';
 
 export 'query_builder/schema/column_constraints.dart';
 export 'query_builder/schema/column.dart';

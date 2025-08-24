@@ -223,10 +223,10 @@ void main() {
       expect(
         foo.groupConcat(
           orderBy: OrderBy([OrderingTerm.desc(foo)]),
-          filter: foo.isSmallerThan(const Variable(3)),
+          filter: foo.isLessThan(const Variable(3)),
         ),
         generates(
-          'GROUP_CONCAT(foo ORDER BY foo DESC) FILTER (WHERE foo < ?)',
+          'GROUP_CONCAT(foo ORDER BY foo DESC) FILTER (WHERE foo < ?1)',
           [3],
         ),
       );
@@ -237,7 +237,7 @@ void main() {
           separator: ' - ',
         ),
         generates(
-          'GROUP_CONCAT(s1, ? ORDER BY s1 ASC)',
+          'GROUP_CONCAT(s1,?1 ORDER BY s1 ASC)',
           [' - '],
         ),
       );
