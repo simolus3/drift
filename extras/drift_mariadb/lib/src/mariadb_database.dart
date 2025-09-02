@@ -9,8 +9,9 @@ class MariaDBDatabase extends DelegatedDatabase {
     required MySQLConnectionPool pool,
     bool isSequential = true,
     bool logStatements = false,
+    bool enableMigrations = true,
   }) : super(
-          _MariaDelegate(() => pool, true),
+          _MariaDelegate(() => pool, true, enableMigrations),
           isSequential: isSequential,
           logStatements: logStatements,
         );
@@ -20,8 +21,9 @@ class MariaDBDatabase extends DelegatedDatabase {
   MariaDBDatabase.opened(
     MySQLConnectionPool connection, {
     bool logStatements = false,
+    bool enableMigrations = true,
   }) : super(
-          _MariaDelegate(() => connection, false),
+          _MariaDelegate(() => connection, false, enableMigrations),
           isSequential: true,
           logStatements: logStatements,
         );
@@ -31,9 +33,14 @@ class MariaDBDatabase extends DelegatedDatabase {
 }
 
 class _MariaDelegate extends DatabaseDelegate {
-  _MariaDelegate(this._open, this.closeUnderlyingWhenClosed);
+  _MariaDelegate(
+    this._open,
+    this.closeUnderlyingWhenClosed,
+    this.enableMigrations,
+  );
 
   final bool closeUnderlyingWhenClosed;
+  final bool enableMigrations;
   final FutureOr<MySQLConnectionPool> Function() _open;
 
   MySQLConnectionPool? _openedSession;
@@ -57,12 +64,16 @@ class _MariaDelegate extends DatabaseDelegate {
   @override
   Future<void> open(QueryExecutorUser user) async {
     final session = await _open();
-    final mariaVersionDelegate = _MariaVersionDelegate(session);
 
-    await mariaVersionDelegate.init();
+    if (enableMigrations) {
+      final mariaVersionDelegate = _MariaVersionDelegate(session);
+      await mariaVersionDelegate.init();
+      versionDelegate = mariaVersionDelegate;
+    } else {
+      versionDelegate = NoVersionDelegate();
+    }
 
     _openedSession = session;
-    versionDelegate = mariaVersionDelegate;
   }
 
   @override
