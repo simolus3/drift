@@ -8,7 +8,7 @@ import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart'
     show DedicatedWorkerGlobalScope, EventStreamProviders;
 
-import '../../utils/synchronized.dart';
+import '../../../utils/synchronized.dart';
 import 'protocol.dart';
 import 'shared.dart';
 import 'types.dart';

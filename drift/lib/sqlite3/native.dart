@@ -159,7 +159,6 @@ final class NativeDatabase {
   static DriftConnection opened(
     Database database, {
     DriftDialect dialect = const SqliteDialect(),
-    DatabaseSetup? setup,
     bool closeUnderlyingOnClose = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
   }) {
@@ -221,7 +220,6 @@ final class NativeDatabase {
     DatabaseSetup? setup,
     SqliteResolver sqlite3 = _defaultResolver,
     IsolateSetup? isolateSetup,
-    bool enableMigrations = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
     int readPool = _defaultReadPoolSize,
   }) {
@@ -235,7 +233,6 @@ final class NativeDatabase {
           setup: setup,
           sqlite3: sqlite3,
           isolateSetup: isolateSetup,
-          enableMigrations: enableMigrations,
           cachePreparedStatements: cachePreparedStatements,
           readPool: readPool,
         );
@@ -252,7 +249,6 @@ final class NativeDatabase {
     DatabaseSetup? setup,
     SqliteResolver sqlite3 = _defaultResolver,
     IsolateSetup? isolateSetup,
-    bool enableMigrations = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
     int readPool = _defaultReadPoolSize,
   }) async {
@@ -265,7 +261,6 @@ final class NativeDatabase {
         _NativeIsolateStartup(
           file.absolute.path,
           cachePreparedStatements,
-          enableMigrations,
           setup,
           isolateSetup,
           sqlite3,
@@ -336,7 +331,6 @@ final class NativeDatabase {
 
 class _NativeIsolateStartup {
   final String path;
-  final bool enableLogs;
   final bool cachePreparedStatements;
   final DatabaseSetup? setup;
   final IsolateSetup? isolateSetup;
@@ -345,7 +339,6 @@ class _NativeIsolateStartup {
 
   _NativeIsolateStartup(
     this.path,
-    this.enableLogs,
     this.cachePreparedStatements,
     this.setup,
     this.isolateSetup,

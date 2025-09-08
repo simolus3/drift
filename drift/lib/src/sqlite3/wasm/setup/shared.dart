@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart';
-import 'package:drift/remote.dart';
-import 'package:drift/wasm.dart';
+import 'package:drift/sqlite3/wasm.dart';
 import 'package:web/web.dart'
     show
         Worker,
@@ -27,7 +27,8 @@ import 'package:sqlite3/src/wasm/js_interop/core.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:stream_channel/stream_channel.dart';
 
-import '../channel_new.dart';
+import '../../../connections/remote.dart';
+import '../channel.dart';
 import 'protocol.dart';
 
 @JS('navigator')
@@ -257,13 +258,12 @@ class DriftServerController {
             }
           : null;
 
-      final server = DriftServer(LazyDatabase(() => openConnection(
+      final server = DriftServer(() => openConnection(
             sqlite3WasmUri: message.sqlite3WasmUri,
             databaseName: message.databaseName,
             storage: message.storage,
             initializer: initializer,
-            enableMigrations: message.enableMigrations,
-          )));
+          ));
 
       final wasmServer = RunningWasmServer(message.storage, server);
       wasmServer.lastClientDisconnected.whenComplete(() {
@@ -275,24 +275,19 @@ class DriftServerController {
 
     server.serve(
       message.port.channel(
-        explicitClose: message.protocolVersion >= ProtocolVersion.v1,
-        webNativeSerialization: message.newSerialization,
         nativeSerializionVersion: message.protocolVersion.versionCode,
       ),
-      // With the new serialization mode, instruct the drift server not to apply
-      // its internal serialization logic.
-      !message.newSerialization,
+      false,
     );
   }
 
   /// Loads a new sqlite3 WASM module, registers an appropriate VFS for [storage]
   /// and finally opens a database, creating it if it doesn't exist.
-  Future<QueryExecutor> openConnection({
+  Future<DriftSession> openConnection({
     required Uri sqlite3WasmUri,
     required String databaseName,
     required WasmStorageImplementation storage,
     required FutureOr<Uint8List?> Function()? initializer,
-    required bool enableMigrations,
   }) async {
     final sqlite3 = await WasmSqlite3.loadFromUrl(sqlite3WasmUri);
 
@@ -327,11 +322,10 @@ class DriftServerController {
     }
 
     sqlite3.registerVirtualFileSystem(vfs, makeDefault: true);
-    var db = WasmDatabase(
+    var db = WasmDatabase.inCurrentContext(
       sqlite3: sqlite3,
       path: '/database',
       setup: _setup,
-      enableMigrations: enableMigrations,
     );
 
     if (close != null) {
@@ -357,14 +351,14 @@ class DriftServerController {
   }
 }
 
-class _CloseVfsOnClose extends QueryInterceptor {
+final class _CloseVfsOnClose extends QueryInterceptor {
   final FutureOr<void> Function() _close;
-  final QueryExecutor _root;
+  final DriftSession _root;
 
   _CloseVfsOnClose(this._root, this._close);
 
   @override
-  Future<void> close(QueryExecutor inner) async {
+  Future<void> close(DriftSession inner) async {
     await inner.close();
     if (identical(_root, inner)) {
       await _close();

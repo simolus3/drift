@@ -11,22 +11,16 @@
 library;
 
 import 'dart:js_interop';
+import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart' show SqliteException;
 
-import '../../web/wasm_setup/protocol.dart';
+import '../../sqlite3/wasm/setup/protocol.dart';
+import '../result_set.dart';
 import 'protocol.dart';
-
-@JS()
-@anonymous
-extension type _SerializedRequest._(JSObject inner) implements JSObject {
-  external factory _SerializedRequest({required int i, required JSAny? p});
-
-  external int get i;
-  external JSAny? get p;
-}
 
 @JS()
 @anonymous
@@ -61,24 +55,14 @@ final class WebProtocol {
   static const _tag_ExecuteBatched = 17;
   static const _tag_ErrorSqliteException = 18;
 
-  final ProtocolVersion _protocolVersion;
-  final DriftDialect _dialect;
+  static const _tag_Double = 0;
+  static const _tag_BigInt = 1;
 
-  /// Whether we can send [_tag_ErrorResponseSqliteException].
-  ///
-  /// Since we have to apply serialization, we can't send arbitrary Dart
-  /// obbjects and exceptions are sent with their [Object.toString]
-  /// representation. Since [SqliteException]s are the most common exception
-  /// encountered by workers, we serialize them with their inner fields.
-  bool get canSerializeSqliteExceptions =>
-      _protocolVersion >= ProtocolVersion.v4;
+  final ProtocolVersion _protocolVersion;
 
   /// Creates the default instance for [WebProtocol].
-  const WebProtocol(
-      {required DriftDialect dialect,
-      ProtocolVersion version = ProtocolVersion.legacy})
-      : _dialect = dialect,
-        _protocolVersion = version;
+  const WebProtocol({ProtocolVersion version = ProtocolVersion.v5})
+      : _protocolVersion = version;
 
   /// Serializes [ProtocolMessage] into a JavaScript representation that is
   /// forwards-compatible with future drift versions.
@@ -91,12 +75,32 @@ final class WebProtocol {
             message.sessionId.toJS,
             message.statement.sql.toJS,
             [
-              for (final (type, value) in message.statement.variables)
-                _encodeDbValue(type.sqlParameterOrNull(dialect, value))
+              for (final variable in message.statement.variables)
+                _encodeDbValue(variable.rawValue)
             ].toJS,
             message.statement.needsResultSet.toJS,
             message.statement.isReadOnly.toJS,
-          ]
+          ].toJS,
+        ),
+      ExecuteBatchRequest() => (
+          _tag_ExecuteBatched,
+          <JSAny>[
+            message.id.toJS,
+            message.sessionId.toJS,
+            [for (final sql in message.batch.sql) sql.toJS].toJS,
+            [
+              for (final stmt in message.batch.statements)
+                [
+                  stmt.sqlIndex.toJS,
+                  [
+                    for (final variable in stmt.info.variables)
+                      _encodeDbValue(variable.rawValue)
+                  ].toJS,
+                  stmt.info.needsResultSet.toJS,
+                  stmt.info.isReadOnly.toJS,
+                ].toJS,
+            ].toJS
+          ].toJS
         ),
       ClientInitialize(:final id) => (_tag_ClientInitialize, id.toJS),
       SessionDetails() => (
@@ -112,10 +116,10 @@ final class WebProtocol {
         ),
       StartExclusiveRequest() => (
           _tag_StartExclusiveRequest,
-          <JSAny>[message.id.toJS, message.parentId.toJS]
+          <JSAny>[message.id.toJS, message.parentId.toJS].toJS
         ),
       BeginTransactionRequest() => (
-          _tag_StartExclusiveRequest,
+          _tag_BeginTransactionRequest,
           <JSAny?>[message.id.toJS, message.parentId.toJS, null].toJS,
         ),
       CloseSessionRequest() => (
@@ -151,14 +155,35 @@ final class WebProtocol {
                 update.table.toJS,
                 update.kind?.index.toJS,
               ].toJS
-          ]
+          ].toJS,
+        ),
+      SimpleResponse(:final requestId) => (_tag_SimpleResponse, requestId.toJS),
+      ExecuteResponse() => (
+          _tag_ExecuteResponse,
+          <JSAny?>[
+            message.requestId.toJS,
+            <JSAny?>[
+              for (final result in message.result)
+                <JSAny?>[
+                  result.affectedRows?.toJS,
+                  result.lastInsertRowId?.toJS,
+                  switch (result.resultSet) {
+                    null => null,
+                    final resultSet => _serializeRawResultSet(resultSet),
+                  }
+                ].toJS,
+            ].toJS,
+          ].toJS
+        ),
+      SchemaVersionResponse() => (
+          _tag_SchemaVersionResponse,
+          <JSAny?>[message.requestId.toJS, message.schemaVersion.toJS].toJS,
         ),
       ErrorResponse(
         :final requestId,
         error: final SqliteException e,
         :final stackTrace
-      )
-          when canSerializeSqliteExceptions =>
+      ) =>
         (
           _tag_ErrorSqliteException,
           [
@@ -175,6 +200,7 @@ final class WebProtocol {
                   for (final parameter in params) _encodeDbValue(parameter),
                 ].toJS,
             },
+            e.offset?.toJS,
           ].toJS
         ),
       ErrorResponse(:final requestId, :final error, :final stackTrace) => (
@@ -195,174 +221,196 @@ final class WebProtocol {
   ProtocolMessage deserialize(JSArray message) {
     final [tag, payload] = message.toDart;
 
-    Request decodeRequest() {
-      final serialized = payload as _SerializedRequest;
-      return Request(serialized.i, _deserializeRequest(serialized.p));
-    }
-
-    SuccessResponse decodeSuccess() {
-      final serialized = payload as _SerializedRequest;
-      return SuccessResponse(serialized.i, _deserializeResponse(payload.p));
-    }
-
-    return switch (_int(tag)) {
-      _tag_Request => decodeRequest(),
-      _tag_SuccessResponse => decodeSuccess(),
-      _tag_ErrorResponse => _decodeErrorResponse(payload as JSArray),
-      _tag_ErrorResponseSqliteException =>
-        _decodeSqliteErrorResponse(payload as JSArray),
+    return switch (tag) {
+      _tag_ExecuteRequest => _decodeExecuteRequest(payload as JSArray),
+      _tag_ExecuteBatched => _decodeExecuteBatchRequest(payload as JSArray),
+      _tag_ClientInitialize => ClientInitialize(_int(payload)),
+      _tag_SessionDetails => _decodeSessionDetails(payload as JSArray),
+      _tag_StartExclusiveRequest =>
+        _decodeStartExclusiveRequest(payload as JSArray),
+      _tag_BeginTransactionRequest =>
+        _decodeBeginTransactionRequest(payload as JSArray),
+      _tag_CloseSessionRequest =>
+        _decodeCloseSessionRequest(payload as JSArray),
+      _tag_GetSchemaVersionRequest =>
+        _decodeGetSchemaVersion(payload as JSArray),
+      _tag_WriteSchemaVersion => _decodeWriteSchemaVersion(payload as JSArray),
+      _tag_ShutdownServerRequest => ShutdownServerRequest(_int(payload)),
+      _tag_NotifySessionClosed => NotifySessionClosed(sessionId: _int(payload)),
+      _tag_NotifyTablesUpdated =>
+        _decodeNotifyTablesUpdated(payload as JSArray),
+      _tag_SimpleResponse => SimpleResponse(_int(payload)),
+      _tag_ExecuteResponse => _decodeExecuteResponse(payload as JSArray),
+      _tag_SchemaVersionResponse =>
+        _decodeSchemaVersionResponse(payload as JSArray),
+      _tag_ErrorSqliteException =>
+        _decodeSqliteExceptionResponse(payload as JSArray),
+      _tag_ErrorResponse => _decodeGenericErrorResponse(payload as JSArray),
       _tag_CancelledResponse => CancelledResponse(_int(payload)),
       _ => throw ArgumentError('Unknown message tag $tag'),
     };
   }
 
-  JSAny? _serializeRequest(RequestPayload? payload) {
-    return switch (payload) {
-      null => null,
-      ExecuteQuery() => [
-          _tag_ExecuteQuery.toJS,
-          payload.method.index.toJS,
-          payload.sql.toJS,
-          [for (final arg in payload.args) _encodeDbValue(arg)].toJS,
-          payload.executorId?.toJS,
-        ].toJS,
-      RequestCancellation(:final originalRequestId) => [
-          _tag_RequestCancellation.toJS,
-          originalRequestId.toJS,
-        ].toJS,
-      ExecuteBatchedStatement() => [
-          _tag_ExecuteBatchedStatement.toJS,
-          payload.stmts.statements.map((e) => e.toJS).toList().toJS,
-          for (final arg in payload.stmts.arguments)
-            [
-              arg.statementIndex.toJS,
-              for (final value in arg.arguments) _encodeDbValue(value),
-            ].toJS,
-          payload.executorId?.toJS,
-        ].toJS,
-      RunNestedExecutorControl() => [
-          _tag_RunTransactionAction.toJS,
-          payload.control.index.toJS,
-          payload.executorId?.toJS,
-        ].toJS,
-      EnsureOpen() => [
-          _tag_EnsureOpen.toJS,
-          payload.schemaVersion.toJS,
-          payload.executorId?.toJS
-        ].toJS,
-      ServerInfo() => [
-          _tag_ServerInfo.toJS,
-          payload.dialect.name.toJS,
-        ].toJS,
-      RunBeforeOpen() => [
-          _tag_RunBeforeOpen.toJS,
-          payload.details.versionBefore?.toJS,
-          payload.details.versionNow.toJS,
-          payload.createdExecutor.toJS,
-        ].toJS,
-      NotifyTablesUpdated() => <JSAny?>[
-          _tag_NotifyTablesUpdated.toJS,
-          for (final update in payload.updates)
-            [
-              update.table.toJS,
-              update.kind?.index.toJS,
-            ].toJS
-        ].toJS,
-      NoArgsRequest.terminateAll => _tag_NoArgsRequest_terminateAll.toJS,
-    };
+  ExecuteRequest _decodeExecuteRequest(JSArray payload) {
+    return ExecuteRequest(
+      _int(payload[0]),
+      sessionId: _int(payload[1]),
+      statement: StatementInfo.fromText(
+        (payload[2] as JSString).toDart,
+        variables: [
+          for (final variable in (payload[3] as JSArray).toDart)
+            // We don't actually need the type, so this can be anything.
+            MappedValue.raw(BuiltinDriftType.text, _decodeDbValue(variable))
+        ],
+        needsResultSet: (payload[4] as JSBoolean).toDart,
+        isReadOnly: (payload[5] as JSBoolean).toDart,
+      ),
+    );
   }
 
-  RequestPayload? _deserializeRequest(JSAny? payload) {
-    if (payload.isUndefinedOrNull) {
-      return null;
-    }
-
-    if (payload.typeofEquals('number')) {
-      // Only terminateAll is encoded as a direct number
-      assert(_int(payload) == _tag_NoArgsRequest_terminateAll);
-      return NoArgsRequest.terminateAll;
-    }
-
-    final dartList = (payload as JSArray).toDart;
-    final tag = _int(dartList[0]);
-
-    ExecuteBatchedStatement readBatched() {
-      final sqlStatements = (dartList[1] as JSArray<JSString>)
-          .toDart
-          .map((e) => e.toDart)
-          .toList();
-      final arguments = dartList.length - 3;
-      final args = [
-        for (final instantiation in dartList
-            .skip(2)
-            .take(arguments)
-            .cast<JSArray>()
-            .map((e) => e.toDart))
-          ArgumentsForBatchedStatement(
-            _int(instantiation[0]),
-            instantiation.skip(1).map(_decodeDbValue).toList(),
+  ExecuteBatchRequest _decodeExecuteBatchRequest(JSArray payload) {
+    final sql =
+        (payload[2] as JSArray<JSString>).toDart.map((e) => e.toDart).toList();
+    final rawStmts = (payload[3] as JSArray<JSArray>).toDart;
+    final stmts = [
+      for (final rawStmt in rawStmts)
+        StatementInBatch(
+          _int(rawStmt[0]),
+          StatementInfo.fromText(
+            sql[_int(rawStmt[0])],
+            variables: [
+              for (final variable in (rawStmt[1] as JSArray).toDart)
+                // We don't actually need the type, so this can be anything.
+                MappedValue.raw(BuiltinDriftType.text, _decodeDbValue(variable))
+            ],
+            needsResultSet: (rawStmt[2] as JSBoolean).toDart,
+            isReadOnly: (rawStmt[3] as JSBoolean).toDart,
           ),
-      ];
-
-      return ExecuteBatchedStatement(
-        BatchedStatements(sqlStatements, args),
-        _nullableInt(dartList[dartList.length - 1]),
-      );
-    }
-
-    return switch (tag) {
-      _tag_ExecuteQuery => ExecuteQuery(
-          StatementMethod.values[_int(dartList[1])],
-          (dartList[2] as JSString).toDart,
-          [
-            for (final entry in (dartList[3] as JSArray).toDart)
-              _decodeDbValue(entry),
-          ],
-          _nullableInt(dartList[4])),
-      _tag_RequestCancellation => RequestCancellation(_int(dartList[1])),
-      _tag_ExecuteBatchedStatement => readBatched(),
-      _tag_RunTransactionAction => RunNestedExecutorControl(
-          NestedExecutorControl.values[_int(dartList[1])],
-          _nullableInt(dartList[2]),
         ),
-      _tag_EnsureOpen => EnsureOpen(
-          _int(dartList[1]),
-          _nullableInt(dartList[2]),
-        ),
-      _tag_ServerInfo =>
-        ServerInfo(SqlDialect.values.byName((dartList[1] as JSString).toDart)),
-      _tag_RunBeforeOpen => RunBeforeOpen(
-          OpeningDetails(_nullableInt(dartList[1]), _int(dartList[2])),
-          _int(dartList[3]),
-        ),
-      _tag_NotifyTablesUpdated => NotifyTablesUpdated(dartList.skip(1).map((e) {
-          final [table, kindOrNull] = (e as JSArray).toDart;
+    ];
 
-          return TableUpdate((table as JSString).toDart,
-              kind: kindOrNull.isUndefinedOrNull
-                  ? null
-                  : UpdateKind.values[_int(kindOrNull)]);
-        }).toList()),
-      _ => throw ArgumentError('Unknown request tag $tag'),
-    };
+    return ExecuteBatchRequest(
+      _int(payload[0]),
+      sessionId: _int(payload[1]),
+      batch: StatementBatch(sql: sql, statements: stmts),
+    );
   }
 
-  JSAny? _serializeResponse(ResponsePayload? response) {
-    return switch (response) {
-      null => null,
-      PrimitiveResponsePayload(:final message) =>
-        message is bool ? message.toJS : (message as int).toJS,
-      SelectResult() => _serializeSelectResult(response),
-    };
+  SessionDetails _decodeSessionDetails(JSArray payload) {
+    return SessionDetails(
+      _int(payload[0]),
+      sessionId: _int(payload[1]),
+      isRoot: (payload[2] as JSBoolean).toDart,
+      isDriftTransactionParent: (payload[3] as JSBoolean).toDart,
+      isTransaction: (payload[4] as JSBoolean).toDart,
+      isDriftSessionWithInternalLocks: (payload[5] as JSBoolean).toDart,
+    );
   }
 
-  _SerializedSelectResult _serializeSelectResult(SelectResult result) {
-    if (result.rows.isEmpty) {
-      return _SerializedSelectResult(c: JSArray(), r: JSArray());
+  StartExclusiveRequest _decodeStartExclusiveRequest(JSArray payload) {
+    return StartExclusiveRequest(_int(payload[0]), parentId: _int(payload[1]));
+  }
+
+  BeginTransactionRequest _decodeBeginTransactionRequest(JSArray payload) {
+    return BeginTransactionRequest(_int(payload[0]),
+        parentId: _int(payload[1]), options: const TransactionOptions());
+  }
+
+  CloseSessionRequest _decodeCloseSessionRequest(JSArray payload) {
+    return CloseSessionRequest(
+      _int(payload[0]),
+      sessionId: _int(payload[1]),
+      mode: CloseMode.values.byName((payload[2] as JSString).toDart),
+    );
+  }
+
+  GetSchemaVersion _decodeGetSchemaVersion(JSArray payload) {
+    return GetSchemaVersion(_int(payload[0]), sessionId: _int(payload[1]));
+  }
+
+  WriteSchemaVersion _decodeWriteSchemaVersion(JSArray payload) {
+    return WriteSchemaVersion(_int(payload[0]),
+        sessionId: _int(payload[1]), schemaVersion: _int(payload[2]));
+  }
+
+  NotifyTablesUpdated _decodeNotifyTablesUpdated(JSArray payload) {
+    return NotifyTablesUpdated([
+      for (final update in payload.toDart.cast<JSArray>())
+        TableUpdate(
+          (update[0] as JSString).toDart,
+          kind: switch (_nullableInt(update[1])) {
+            null => null,
+            final index => UpdateKind.values[index],
+          },
+        )
+    ]);
+  }
+
+  ExecuteResponse _decodeExecuteResponse(JSArray payload) {
+    final rawResults = payload[1] as JSArray;
+    final results = [
+      for (final result in rawResults.toDart.cast<JSArray>())
+        QueryResult(
+          affectedRows: _nullableInt(result[0]),
+          lastInsertRowId: _nullableInt(result[1]),
+          resultSet: switch (result[1]) {
+            null => null,
+            final other =>
+              _deserializeRawResultSet(other as _SerializedSelectResult),
+          },
+        )
+    ];
+
+    return ExecuteResponse(_int(payload[0]), result: results);
+  }
+
+  SchemaVersionResponse _decodeSchemaVersionResponse(JSArray payload) {
+    return SchemaVersionResponse(_int(payload[0]), _int(payload[1]));
+  }
+
+  ErrorResponse _decodeSqliteExceptionResponse(JSArray payload) {
+    final message = (payload[2] as JSString).toDart;
+    final explanation = _decodeNullableString(payload[3]);
+    final extendedResultCode = _int(payload[4]);
+    final operation = _decodeNullableString(payload[5]);
+    final causingStatement = _decodeNullableString(payload[6]);
+    final rawParameters = payload[7] as JSArray<JSAny?>?;
+    final offset = _nullableInt(payload[8]);
+    final parameters = rawParameters == null
+        ? null
+        : [for (final value in rawParameters.toDart) _decodeDbValue(value)];
+
+    return ErrorResponse(
+      _int(payload[0]),
+      SqliteException(
+        extendedResultCode,
+        message,
+        explanation,
+        causingStatement,
+        parameters,
+        operation,
+        offset,
+      ),
+      _decodeStackStrace(payload[1]),
+    );
+  }
+
+  ErrorResponse _decodeGenericErrorResponse(JSArray payload) {
+    return ErrorResponse(
+      _int(payload[0]),
+      (payload[1] as JSString).toDart,
+      _decodeStackStrace(payload[2]),
+    );
+  }
+
+  _SerializedSelectResult _serializeRawResultSet(RawResultSet result) {
+    final columns = result.columnNames.map((e) => e.toJS).toList().toJS;
+
+    if (result.isEmpty) {
+      return _SerializedSelectResult(c: columns, r: JSArray());
     } else {
-      final columns = result.rows.first.keys.map((e) => e.toJS).toList().toJS;
       final rows = <JSArray<JSAny?>>[];
-      for (final row in result.rows) {
+      for (final row in result) {
         final jsRow = <JSAny?>[];
 
         for (final value in row.values) {
@@ -375,28 +423,22 @@ final class WebProtocol {
     }
   }
 
-  ResponsePayload? _deserializeResponse(JSAny? response) {
-    if (response.isUndefinedOrNull) {
-      return null;
-    } else if (response.typeofEquals('boolean')) {
-      return PrimitiveResponsePayload.bool((response as JSBoolean).toDart);
-    } else if (response.typeofEquals('number')) {
-      return PrimitiveResponsePayload.int(_int(response));
-    } else {
-      final result = response as _SerializedSelectResult;
+  RawResultSet _deserializeRawResultSet(_SerializedSelectResult result) {
+    final columns = result.c.toDart.map((e) => e.toDart).toList();
+    final rawRows = result.r.toDart;
+    final columnToIndex =
+        Map.fromEntries(columns.mapIndexed((i, name) => MapEntry(name, i)));
 
-      final columns = response.c.toDart.map((e) => e.toDart).toList();
-      final rows = <Map<String, Object?>>[];
-      for (final row in result.r.toDart) {
-        final dartRow = <String, Object?>{};
-        for (final (i, entry) in row.toDart.indexed) {
-          dartRow[columns[i]] = _decodeDbValue(entry);
-        }
-        rows.add(dartRow);
-      }
+    return RawResultSet.generate(rawRows.length, (i, rs) {
+      final rawRow = rawRows[0];
+      final values = rawRow.toDart.map(_decodeDbValue).toList();
 
-      return SelectResult(rows);
-    }
+      return RawRow.by(
+        resultSet: rs,
+        byPosition: (pos) => values[pos.index],
+        byName: (name) => values[columnToIndex[name]!],
+      );
+    }, columnNames: columns);
   }
 
   JSAny? _encodeDbValue(Object? value) {
@@ -446,48 +488,6 @@ final class WebProtocol {
       var s? => StackTrace.fromString(s),
       _ => null,
     };
-  }
-
-  ErrorResponse _decodeErrorResponse(JSArray array) {
-    final [requestId, error, stackTrace] = array.toDart;
-
-    return ErrorResponse(
-      _int(requestId),
-      (error as JSString).toDart,
-      _decodeStackStrace(stackTrace),
-    );
-  }
-
-  ErrorResponse _decodeSqliteErrorResponse(JSArray array) {
-    final [
-      requestId,
-      stackTrace,
-      message,
-      explanation,
-      extendedResultCode,
-      operation,
-      causingStatement,
-      parametersToStatement,
-      ..._,
-    ] = array.toDart;
-
-    return ErrorResponse(
-      _int(requestId),
-      SqliteException(
-        _int(extendedResultCode),
-        (message as JSString).toDart,
-        _decodeNullableString(explanation),
-        _decodeNullableString(causingStatement),
-        parametersToStatement.isDefinedAndNotNull
-            ? [
-                for (final raw in (parametersToStatement as JSArray).toDart)
-                  _decodeDbValue(raw),
-              ]
-            : null,
-        _decodeNullableString(operation),
-      ),
-      _decodeStackStrace(stackTrace),
-    );
   }
 }
 

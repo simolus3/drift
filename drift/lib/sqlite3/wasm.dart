@@ -11,57 +11,51 @@ import 'dart:js_interop';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:drift/src/sqlite3/wasm/setup/shared_worker.dart';
+import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart'
     show DedicatedWorkerGlobalScope, SharedWorkerGlobalScope;
-import 'package:sqlite3/wasm.dart';
 
-import 'backends.dart';
-import 'src/sqlite3/database.dart';
-import 'src/web/wasm_setup.dart';
-import 'src/web/wasm_setup/dedicated_worker.dart';
-import 'src/web/wasm_setup/shared_worker.dart';
-import 'src/web/wasm_setup/types.dart';
+import '../connections/sqlite/sqlite3.dart';
+import '../src/connections/connection.dart';
+import '../src/sqlite3/wasm/setup/dedicated_worker.dart';
+import '../src/sqlite3/wasm/setup/types.dart';
+import '../src/sqlite3/wasm/wasm_setup.dart';
 
-export 'src/web/wasm_setup/types.dart';
+export '../src/sqlite3/wasm/setup/types.dart';
 
-/// An experimental, WebAssembly based implementation of a drift sqlite3
-/// database.
+/// Signature of a function that can perform setup work on a [database] before
+/// drift is fully ready.
+///
+/// This could be used to, for instance, set encryption keys for SQLCipher
+/// implementations.
+typedef DatabaseSetup = void Function(CommonDatabase database);
+
+/// A WebAssembly based implementation of a drift sqlite3 database.
 ///
 /// Using this database requires adding a WebAssembly file for sqlite3 to your
 /// app.
 /// The [documentation](https://drift.simonbinder.eu/web/#drift-wasm) describes
 /// how to obtain this file. A [working example](https://github.com/simolus3/drift/blob/04539882330d80519128fec1ceb120fb1623a831/examples/app/lib/database/connection/web.dart#L27-L36)
 /// is also available in the drift repository.
-class WasmDatabase extends DelegatedDatabase {
-  WasmDatabase._(super.delegate, bool logStatements)
-      : super(isSequential: true, logStatements: logStatements);
-
-  /// Creates a wasm database at [path] in the virtual file system of the
-  /// [sqlite3] module.
+final class WasmDatabase {
+  /// Creates a wasm database at [path] in the default virtual file system of
+  /// the [sqlite3] module.
   /// If [fileSystem] provided, the data is guaranteed to be
   /// stored in the IndexedDB when the request is complete. Attention!
   /// Insert/update queries may be slower when this option enabled. If you want
   /// to insert more than one rows, be sure you run in a transaction if
   /// possible.
-  factory WasmDatabase({
+  static DriftSession inCurrentContext({
     required CommonSqlite3 sqlite3,
     required String path,
     WasmDatabaseSetup? setup,
     IndexedDbFileSystem? fileSystem,
-    bool logStatements = false,
-    bool enableMigrations = true,
     bool cachePreparedStatements = true,
   }) {
-    return WasmDatabase._(
-      _WasmDelegate(
-        sqlite3,
-        path,
-        setup,
-        fileSystem,
-        cachePreparedStatements: cachePreparedStatements,
-        enableMigrations: enableMigrations,
-      ),
-      logStatements,
+    return SqliteConnection(
+      _open(sqlite3: sqlite3, path: path, setup: setup),
+      cachePreparedStatements: cachePreparedStatements,
     );
   }
 
@@ -79,16 +73,14 @@ class WasmDatabase extends DelegatedDatabase {
   ///
   /// WasmDatabase.inMemory(sqlite3);
   /// ```
-  factory WasmDatabase.inMemory(
+  static DriftSession inMemory(
     CommonSqlite3 sqlite3, {
     WasmDatabaseSetup? setup,
-    bool logStatements = false,
     bool cachePreparedStatements = true,
   }) {
-    return WasmDatabase._(
-      _WasmDelegate(sqlite3, null, setup, null,
-          cachePreparedStatements: cachePreparedStatements),
-      logStatements,
+    return SqliteConnection(
+      _open(sqlite3: sqlite3, path: null, setup: setup),
+      cachePreparedStatements: cachePreparedStatements,
     );
   }
 
@@ -96,24 +88,21 @@ class WasmDatabase extends DelegatedDatabase {
   /// package.
   ///
   /// When the [closeUnderlyingOnClose] argument is set (which is the default),
-  /// calling [QueryExecutor.close] on the returned [WasmDatabase] will also
+  /// calling [DriftSession.close] on the returned [WasmDatabase] will also
   /// [CommonDatabase.dispose] the [database] passed to this constructor.
   ///
   /// Using [WasmDatabase.opened] may be useful when you want to use the same
   /// underlying [CommonDatabase] in multiple drift connections. Drift uses this
   /// internally when running [integration tests for migrations](https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-migrations).
-  factory WasmDatabase.opened(
+  static DriftSession opened(
     CommonDatabase database, {
-    bool logStatements = false,
-    WasmDatabaseSetup? setup,
     bool closeUnderlyingOnClose = true,
-    bool enableMigrations = true,
     bool cachePreparedStatements = true,
   }) {
-    return WasmDatabase._(
-      _WasmDelegate.opened(database, setup, closeUnderlyingOnClose,
-          cachePreparedStatements, enableMigrations),
-      logStatements,
+    return SqliteConnection(
+      database,
+      cachePreparedStatements: cachePreparedStatements,
+      closeUnderlyingWhenClosed: closeUnderlyingOnClose,
     );
   }
 
@@ -135,9 +124,6 @@ class WasmDatabase extends DelegatedDatabase {
   /// called in that case. Instead, you'd have to compile a custom drift worker
   /// with a setup function - see [workerMainForOpen] for additional information.
   ///
-  /// When [enableMigrations] is set to `false`, drift will not check the
-  /// `user_version` pragma when opening the database or run migrations.
-  ///
   /// For more detailed information, see https://drift.simonbinder.eu/web.
   static Future<WasmDatabaseResult> open({
     required String databaseName,
@@ -145,7 +131,6 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
-    bool enableMigrations = true,
   }) async {
     final probed = await probe(
       sqlite3Uri: sqlite3Uri,
@@ -194,7 +179,6 @@ class WasmDatabase extends DelegatedDatabase {
       databaseName,
       localSetup: localSetup,
       initializeDatabase: initializeDatabase,
-      enableMigrations: enableMigrations,
     );
 
     return WasmDatabaseResult(
@@ -261,91 +245,14 @@ class WasmDatabase extends DelegatedDatabase {
           .start();
     }
   }
-}
 
-class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
-  final CommonSqlite3? _sqlite3;
-  final String? _path;
-  final IndexedDbFileSystem? _fileSystem;
-
-  _WasmDelegate(
-    this._sqlite3,
-    this._path,
-    super.setup,
-    this._fileSystem, {
-    super.enableMigrations = true,
-    required super.cachePreparedStatements,
-  });
-
-  _WasmDelegate.opened(
-    super.db,
-    super.setup,
-    super.closeUnderlyingWhenClosed,
-    bool cachePreparedStatements,
-    bool enableMigrations,
-  )   : _sqlite3 = null,
-        _path = null,
-        _fileSystem = null,
-        super.opened(
-          cachePreparedStatements: cachePreparedStatements,
-          enableMigrations: enableMigrations,
-        );
-
-  @override
-  CommonDatabase openDatabase() {
-    final path = _path;
-    if (path == null) {
-      return _sqlite3!.openInMemory();
-    } else {
-      return _sqlite3!.open(path);
-    }
-  }
-
-  Future<void> _flush() async {
-    await _fileSystem?.flush();
-  }
-
-  Future _runWithArgs(String statement, List<Object?> args) async {
-    runWithArgsSync(statement, args);
-
-    if (!isInTransaction) {
-      await _flush();
-    }
-  }
-
-  @override
-  Future<void> runCustom(String statement, List<Object?> args) async {
-    await _runWithArgs(statement, args);
-  }
-
-  @override
-  Future<int> runInsert(String statement, List<Object?> args) async {
-    await _runWithArgs(statement, args);
-    return database.lastInsertRowId;
-  }
-
-  @override
-  Future<int> runUpdate(String statement, List<Object?> args) async {
-    await _runWithArgs(statement, args);
-    return database.updatedRows;
-  }
-
-  @override
-  Future<void> runBatched(BatchedStatements statements) async {
-    runBatchSync(statements);
-
-    if (!isInTransaction) {
-      await _flush();
-    }
-  }
-
-  @override
-  Future<void> close() async {
-    await super.close();
-
-    if (closeUnderlyingWhenClosed) {
-      database.dispose();
-      await _flush();
-    }
+  static CommonDatabase _open({
+    required CommonSqlite3 sqlite3,
+    required String? path,
+    required WasmDatabaseSetup? setup,
+  }) {
+    final db = path == null ? sqlite3.openInMemory() : sqlite3.open(path);
+    setup?.call(db);
+    return db;
   }
 }

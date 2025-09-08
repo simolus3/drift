@@ -9,40 +9,14 @@ import 'package:web/web.dart' hide WorkerOptions;
 import 'types.dart';
 
 enum ProtocolVersion {
-  /// The protocol version used for drift versions up to 2.14 - these don't have
-  /// a version marker anywhere.
-  legacy(0),
-
-  /// This version makes workers report their supported protocol version.
-  ///
-  /// When both the client and the involved worker support this version, an
-  /// explicit close notification is sent from clients to workers when closing
-  /// databases. This allows workers to release resources more efficiently.
-  v1(1),
-
-  /// This version adds the `enableMigrations` field to [ServeDriftDatabase],
-  /// controlling whether the worker server should implement migrations.
-  v2(2),
-
-  /// This adds [ServeDriftDatabase.newSerialization]. When enabled, we
-  /// serialize high-level protocol messages to `JSObject`s directly instead of
-  /// using `jsify()` / `dartify()`.
-  v3(3),
-
-  /// This makes workers serialize [SqliteException]s in a special format that
-  /// allows re-constructing them on the client.
-  /// We can't send arbitrary Dart objects through channels, so exceptions are
-  /// represented by [Object.toString] only. Given that most exceptions
-  /// encountered on web workers will end up being [SqliteException]s, treating
-  /// them specially allows clients to make informed decisions based on the
-  /// exact [SqliteException.resultCode].
-  v4(4);
+  /// The initial protocol version supported by drift v3.
+  v5(5);
 
   final int versionCode;
 
   const ProtocolVersion(this.versionCode);
 
-  static const current = v4;
+  static const current = v5;
 
   void writeToJs(JSObject object) {
     object['v'] = versionCode.toJS;
@@ -54,12 +28,7 @@ enum ProtocolVersion {
 
   static ProtocolVersion negotiate(int? versionCode) {
     return switch (versionCode) {
-      null => legacy,
-      <= 0 => legacy,
-      1 => v1,
-      2 => v2,
-      3 => v3,
-      > 3 => current,
+      null => v5,
       _ => throw AssertionError(),
     };
   }
@@ -68,7 +37,7 @@ enum ProtocolVersion {
     if (object.has('v')) {
       return negotiate((object['v'] as JSNumber).toDartInt);
     } else {
-      return legacy;
+      return v5;
     }
   }
 }
@@ -180,7 +149,7 @@ final class SharedWorkerCompatibilityResult extends CompatibilityResult {
     bool asBoolean(int index) => (asList[index] as JSBoolean).toDart;
 
     final List<ExistingDatabase> existingDatabases;
-    var version = ProtocolVersion.legacy;
+    var version = ProtocolVersion.v5;
 
     if (asList.length > 5) {
       existingDatabases = EncodeLocations.readFromJs(asList[5] as JSArray);
@@ -263,8 +232,6 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
   final String databaseName;
   final MessagePort? initializationPort;
   final ProtocolVersion protocolVersion;
-  final bool enableMigrations;
-  final bool newSerialization;
 
   ServeDriftDatabase({
     required this.sqlite3WasmUri,
@@ -273,8 +240,6 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
     required this.databaseName,
     required this.initializationPort,
     required this.protocolVersion,
-    required this.enableMigrations,
-    required this.newSerialization,
   });
 
   factory ServeDriftDatabase.fromJsPayload(JSObject payload) {
@@ -287,12 +252,6 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
           .byName((payload['storage'] as JSString).toDart),
       databaseName: (payload['database'] as JSString).toDart,
       initializationPort: payload['initPort'] as MessagePort?,
-      enableMigrations: version >= ProtocolVersion.v2
-          ? (payload['migrations'] as JSBoolean).toDart
-          : true,
-      newSerialization: version >= ProtocolVersion.v3
-          ? (payload['new_serialization'] as JSBoolean).toDart
-          : true,
       protocolVersion: version,
     );
   }
@@ -304,9 +263,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
       ..['port'] = port
       ..['storage'] = storage.name.toJS
       ..['database'] = databaseName.toJS
-      ..['initPort'] = initializationPort
-      ..['migrations'] = enableMigrations.toJS
-      ..['new_serialization'] = newSerialization.toJS;
+      ..['initPort'] = initializationPort;
 
     protocolVersion.writeToJs(object);
 

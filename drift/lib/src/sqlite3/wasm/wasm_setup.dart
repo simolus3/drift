@@ -17,15 +17,17 @@ import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/wasm.dart';
+import 'package:drift/sqlite3/wasm.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart' as web;
 
+import '../../connections/remote.dart';
+import '../../runtime/streams/store_impl.dart';
 import 'broadcast_stream_queries.dart';
 import 'channel.dart';
-import 'wasm_setup/shared.dart';
-import 'wasm_setup/protocol.dart';
+import 'setup/protocol.dart';
+import 'setup/shared.dart';
 
 /// Whether the `crossOriginIsolated` JavaScript property is true in the current
 /// context.
@@ -166,7 +168,7 @@ class WasmDatabaseOpener {
 final class _DriftWorker {
   /// Either a [web.SharedWorker] or a [web.Worker].
   final JSObject worker;
-  ProtocolVersion version = ProtocolVersion.legacy;
+  ProtocolVersion version = ProtocolVersion.v5;
 
   /// The message port to communicate with the worker, if it's a shared worker.
   final web.MessagePort? portForShared;
@@ -220,12 +222,11 @@ final class _ProbeResult implements WasmProbeResult {
   );
 
   @override
-  Future<DatabaseConnection> open(
+  Future<DriftDatabaseImplementation> open(
     WasmStorageImplementation implementation,
     String name, {
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
-    bool enableMigrations = true,
   }) async {
     final channel = web.MessageChannel();
     final initializer = initializeDatabase;
@@ -245,9 +246,7 @@ final class _ProbeResult implements WasmProbeResult {
           storage: implementation,
           databaseName: name,
           initializationPort: initChannel?.port2,
-          enableMigrations: enableMigrations,
           protocolVersion: sharedWorker!.version,
-          newSerialization: sharedWorker.version >= ProtocolVersion.v3,
         );
 
         message.sendTo(sharedWorker.send);
@@ -260,9 +259,7 @@ final class _ProbeResult implements WasmProbeResult {
             storage: implementation,
             databaseName: name,
             initializationPort: initChannel?.port2,
-            enableMigrations: enableMigrations,
             protocolVersion: dedicatedWorker.version,
-            newSerialization: dedicatedWorker.version >= ProtocolVersion.v3,
           );
 
           message.sendTo(dedicatedWorker.send);
@@ -270,17 +267,17 @@ final class _ProbeResult implements WasmProbeResult {
           // Workers seem to be broken, but we don't need them with this storage
           // mode.
           return _hostDatabaseLocally(
-              implementation,
-              await IndexedDbFileSystem.open(dbName: name),
-              initializeDatabase,
-              localSetup,
-              enableMigrations);
+            implementation,
+            await IndexedDbFileSystem.open(dbName: name),
+            initializeDatabase,
+            localSetup,
+          );
         }
       case WasmStorageImplementation.inMemory:
         // Nothing works on this browser, so we'll fall back to an in-memory
         // database.
         return _hostDatabaseLocally(implementation, InMemoryFileSystem(),
-            initializeDatabase, localSetup, enableMigrations);
+            initializeDatabase, localSetup);
     }
 
     if (initChannel != null) {
@@ -303,13 +300,11 @@ final class _ProbeResult implements WasmProbeResult {
     }
 
     final local = channel.port1.channel(
-      explicitClose: message.protocolVersion >= ProtocolVersion.v1,
-      webNativeSerialization: message.newSerialization,
       nativeSerializionVersion: message.protocolVersion.versionCode,
     );
 
-    var connection = await connectToRemoteAndInitialize(local,
-        serialize: !message.newSerialization);
+    var (session, streams) =
+        await connectToRemote(channel: local, serialize: false);
     if (implementation == WasmStorageImplementation.opfsLocks) {
       // We want stream queries to update for writes in other tabs. For the
       // implementations backed by a shared worker, the worker takes care of
@@ -319,34 +314,28 @@ final class _ProbeResult implements WasmProbeResult {
       // With the in-memory implementation, we have a tab-local database and
       // can't share anything.
       if (BroadcastStreamQueryStore.supported) {
-        connection = DatabaseConnection(
-          connection.executor,
-          connectionData: connection.connectionData,
-          streamQueries: BroadcastStreamQueryStore(name),
-        );
+        streams = BroadcastStreamQueryStore(name);
       }
     }
 
-    return connection;
+    return (session, streams);
   }
 
   /// Returns a database connection that doesn't use web workers.
-  Future<DatabaseConnection> _hostDatabaseLocally(
+  Future<DriftDatabaseImplementation> _hostDatabaseLocally(
     WasmStorageImplementation storage,
     VirtualFileSystem vfs,
     FutureOr<Uint8List?> Function()? initializer,
     WasmDatabaseSetup? setup,
-    bool enableMigrations,
   ) async {
     final database = await DriftServerController(setup).openConnection(
       sqlite3WasmUri: opener.sqlite3WasmUri,
       databaseName: 'database',
       storage: storage,
       initializer: initializer,
-      enableMigrations: enableMigrations,
     );
 
-    return DatabaseConnection(database);
+    return (database, LocalStreamQueryStore());
   }
 
   @override

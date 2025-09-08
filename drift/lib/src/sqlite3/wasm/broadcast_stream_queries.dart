@@ -5,9 +5,11 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:drift/src/runtime/api/runtime_api.dart';
-import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:web/web.dart' as web;
+
+import '../../runtime/streams/store.dart';
+import '../../runtime/streams/store_impl.dart';
+import '../../runtime/streams/update_rules.dart';
 
 @JS('Array')
 extension type _ArrayWrapper._(JSArray _) implements JSObject {
@@ -17,7 +19,7 @@ extension type _ArrayWrapper._(JSArray _) implements JSObject {
 /// A [StreamQueryStore] using [web broadcast] APIs
 ///
 /// [web broadcast]: https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
-class BroadcastStreamQueryStore extends StreamQueryStore {
+final class BroadcastStreamQueryStore extends LocalStreamQueryStore {
   final web.BroadcastChannel _channel;
   StreamSubscription<web.MessageEvent>? _messageFromChannel;
 
