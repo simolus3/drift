@@ -31,8 +31,6 @@ void main() {
   test('custom setup is called for existing databases', () async {
     final existing = sqlite3.openInMemory();
     final executor = NativeDatabase.opened(existing, setup: _setup);
-    // Needs to be false so that we can run migrations
-    expect(executor.delegate.isOpen, completion(isFalse));
 
     final db = TodoDb(executor);
     final row = await db.customSelect('SELECT my_function() AS r;').getSingle();

@@ -263,7 +263,6 @@ void main() {
       'createInBackground',
       () => runTest(NativeDatabase.createInBackground(
         File(d.path('test.db')),
-        enableMigrations: false,
       )),
     );
 
@@ -271,7 +270,6 @@ void main() {
       'in background with read pool',
       () => runTest(NativeDatabase.createInBackground(
         File(d.path('test.db')),
-        enableMigrations: false,
         readPool: 10,
       )),
     );

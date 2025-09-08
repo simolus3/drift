@@ -158,6 +158,7 @@ final class NativeDatabase {
   /// {@macro drift_vm_database_factory}
   static DriftConnection opened(
     Database database, {
+    DatabaseSetup? setup,
     DriftDialect dialect = const SqliteDialect(),
     bool closeUnderlyingOnClose = true,
     bool cachePreparedStatements = _cacheStatementsByDefault,
@@ -165,6 +166,8 @@ final class NativeDatabase {
     return DriftConnection(
       dialect: dialect,
       openConnection: () async {
+        setup?.call(database);
+
         return SqliteConnection(
           database,
           cachePreparedStatements: cachePreparedStatements,

@@ -4,6 +4,7 @@ import 'package:meta/meta.dart';
 
 import '../../connections/connection.dart';
 import '../../query_builder/schema/entities.dart';
+import '../devtools/devtools.dart' as devtools;
 import '../migrations.dart';
 import '../streams/delayed_stream_queries.dart';
 import '../streams/store.dart';
@@ -25,7 +26,9 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   bool enableMigrations = true;
 
   /// Opens a drift database backed by a given [implementation].
-  GeneratedDatabase(this.implementation);
+  GeneratedDatabase(this.implementation) {
+    devtools.handleCreated(this);
+  }
 
   /// Specify the schema version of your database. Whenever you change or add
   /// tables, you should bump this field and provide a [migration] strategy.
@@ -143,6 +146,8 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       await resolved.close();
       await _streamQueryStore?.close();
     }
+
+    devtools.handleClosed(this);
   }
 }
 
@@ -157,6 +162,13 @@ extension InternalGeneratedDatabase on GeneratedDatabase {
 
       return _streamQueryStore =
           DelayedStreamQueryStore(completer.future, rootConnection);
+    }
+  }
+
+  Future<void> runMigrations() async {
+    final root = await rootConnection();
+    if (root.root case final rootSession?) {
+      await _runMigrations(rootSession);
     }
   }
 }

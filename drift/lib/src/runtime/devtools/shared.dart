@@ -4,65 +4,33 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../api/runtime_api.dart';
-import '../query_builder/query_builder.dart';
-import '../types/mapping.dart';
+import '../../query_builder.dart';
+import '../database/db_base.dart';
+import 'dialects.dart';
 
 typedef JsonObject = Map<String, Object?>;
 
-class TypeDescription {
-  final DriftSqlType? type;
-  final String? customTypeName;
-
-  TypeDescription({this.type, this.customTypeName});
-
-  factory TypeDescription.fromDrift(GenerationContext ctx, BaseSqlType type) {
-    return switch (type) {
-      DriftSqlType() => TypeDescription(type: type),
-      CustomSqlType() ||
-      DialectAwareSqlType() =>
-        TypeDescription(customTypeName: type.sqlTypeName(ctx)),
-    };
-  }
-
-  factory TypeDescription.fromJson(JsonObject obj) {
-    final typeName = obj['type'] as String?;
-
-    return TypeDescription(
-      type: typeName != null ? DriftSqlType.values.byName(typeName) : null,
-      customTypeName: obj['customTypeName'] as String?,
-    );
-  }
-
-  JsonObject toJson() {
-    return {
-      'type': type?.name,
-      'customTypeName': customTypeName,
-    };
-  }
-}
-
 class ColumnDescription {
   final String name;
-  final TypeDescription type;
+  final String type;
   final bool isNullable;
 
   ColumnDescription(
       {required this.name, required this.type, required this.isNullable});
 
   factory ColumnDescription.fromDrift(
-      GenerationContext ctx, GeneratedColumn column) {
+      DriftDialect dialect, SchemaColumn column) {
     return ColumnDescription(
       name: column.name,
-      type: TypeDescription.fromDrift(ctx, column.type),
-      isNullable: column.$nullable,
+      type: column.type.typeName(dialect),
+      isNullable: column.isNullable,
     );
   }
 
   factory ColumnDescription.fromJson(JsonObject obj) {
     return ColumnDescription(
       name: obj['name'] as String,
-      type: TypeDescription.fromJson(obj['type'] as JsonObject),
+      type: obj['type'] as String,
       isNullable: obj['isNullable'] as bool,
     );
   }
@@ -70,7 +38,7 @@ class ColumnDescription {
   JsonObject toJson() {
     return {
       'name': name,
-      'type': type.toJson(),
+      'type': type,
       'isNullable': isNullable,
     };
   }
@@ -90,21 +58,21 @@ class EntityDescription {
       {required this.name, required this.type, required this.columns});
 
   factory EntityDescription.fromDrift(
-      GenerationContext ctx, DatabaseSchemaEntity entity) {
+      DriftDialect dialect, DatabaseSchemaEntity entity) {
     return EntityDescription(
       name: entity.entityName,
       type: switch (entity) {
         VirtualTableInfo() => 'virtual_table',
-        TableInfo() => 'table',
-        ViewInfo() => 'view',
+        GeneratedTable() => 'table',
+        GeneratedView() => 'view',
         Index() => 'index',
         Trigger() => 'trigger',
         _ => 'unknown',
       },
       columns: switch (entity) {
-        ResultSetImplementation() => [
-            for (final column in entity.$columns)
-              ColumnDescription.fromDrift(ctx, column),
+        ResultSet() => [
+            for (final column in entity.columns)
+              ColumnDescription.fromDrift(dialect, column),
           ],
         _ => null,
       },
@@ -134,32 +102,28 @@ class EntityDescription {
 }
 
 class DatabaseDescription {
-  final bool dateTimeAsText;
+  final DriftDialect dialect;
   final List<EntityDescription> entities;
 
   late Map<String, EntityDescription> entitiesByName = {
     for (final entity in entities) entity.name: entity,
   };
 
-  DatabaseDescription({required this.dateTimeAsText, required this.entities});
+  DatabaseDescription({required this.dialect, required this.entities});
 
   factory DatabaseDescription.fromDrift(GeneratedDatabase database) {
-    final context = GenerationContext.fromDb(database);
-
     return DatabaseDescription(
-      dateTimeAsText: database.options
-          .createTypeMapping(SqlDialect.sqlite)
-          .storeDateTimesAsText,
+      dialect: database.dialect,
       entities: [
         for (final entity in database.allSchemaEntities)
-          EntityDescription.fromDrift(context, entity),
+          EntityDescription.fromDrift(database.dialect, entity),
       ],
     );
   }
 
   factory DatabaseDescription.fromJson(JsonObject obj) {
     return DatabaseDescription(
-      dateTimeAsText: obj['dateTimeAsText'] as bool,
+      dialect: deserializeDialect(obj['dialect'] as JsonObject),
       entities: (obj['entities'] as List<dynamic>)
           .map((e) => EntityDescription.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -168,7 +132,7 @@ class DatabaseDescription {
 
   JsonObject toJson() {
     return <String, dynamic>{
-      'dateTimeAsText': dateTimeAsText,
+      'dialect': serializeDialect(dialect),
       'entities': [for (final entity in entities) entity.toJson()],
     };
   }

@@ -3,11 +3,14 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:drift/drift.dart';
-import 'package:drift/src/remote/protocol.dart';
-import 'package:drift/src/runtime/executor/transactions.dart';
+
 import 'package:meta/meta.dart';
 
-import '../api/runtime_api.dart';
+import '../../connections/remote/protocol.dart';
+import '../../connections/remote/serialize.dart';
+import '../../runtime/database/db_base.dart';
+import '../../runtime/database/connection_user.dart';
+import '../streams/store_impl.dart';
 import 'devtools.dart';
 
 /// A service extension making asynchronous requests on drift databases
@@ -32,8 +35,7 @@ class DriftServiceExtension {
         _activeSubscriptions[id] = stream.listen((event) {
           postEvent('event', {
             'subscription': id,
-            'payload':
-                _protocol.encodePayload(NotifyTablesUpdated(event.toList()))
+            'payload': _protocol.encode(NotifyTablesUpdated(event.toList()))
           });
         });
 
@@ -42,32 +44,17 @@ class DriftServiceExtension {
         _activeSubscriptions.remove(int.parse(parameters['id']!))?.cancel();
         return null;
       case 'execute-query':
-        final execute = _protocol
-            .decodePayload(json.decode(parameters['query']!)) as ExecuteQuery;
-        final variables = [
-          for (final variable in execute.args) Variable(variable)
-        ];
+        final execute = _protocol.decode(json.decode(parameters['query']!))
+            as ExecuteRequest;
+        final session = await tracked.database.currentSession();
+        final response = await session.execute(execute.statement);
 
-        final result = await switch (execute.method) {
-          StatementMethod.select => tracked.database
-              .customSelect(execute.sql, variables: variables)
-              .get()
-              .then((rows) => SelectResult([for (final row in rows) row.data])),
-          StatementMethod.insert =>
-            tracked.database.customInsert(execute.sql, variables: variables),
-          StatementMethod.deleteOrUpdate =>
-            tracked.database.customUpdate(execute.sql, variables: variables),
-          StatementMethod.custom => tracked.database
-              .customStatement(execute.sql, execute.args)
-              .then((_) => 0),
-        };
-
-        return _protocol.encodePayload(result);
+        return _protocol.encode(ExecuteResponse(0, result: [response]));
       case 'collect-expected-schema':
-        final executor = CollectCreateStatements(SqlDialect.sqlite);
-        await tracked.database.runConnectionZoned(
-            BeforeOpenRunner(tracked.database, executor), () async {
-          // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        final executor = CollectCreateStatements();
+
+        await tracked.database
+            .runConnectionZoned(executor, LocalStreamQueryStore(), () async {
           final migrator = tracked.database.createMigrator();
           await migrator.createAll();
         });
@@ -84,14 +71,15 @@ class DriftServiceExtension {
           await database.customStatement('PRAGMA integrity_check');
 
           await database.customStatement('PRAGMA user_version = 0');
-          await database.beforeOpen(database.resolvedEngine.executor,
-              OpeningDetails(null, database.schemaVersion));
+          await database.runMigrations();
           await database.customStatement(
               'PRAGMA user_version = ${database.schemaVersion}');
 
           // Refresh all stream queries
           database.notifyUpdates({
-            for (final table in database.allTables) TableUpdate.onTable(table)
+            for (final table
+                in database.allSchemaEntities.whereType<GeneratedTable>())
+              TableUpdate.onTable(table)
           });
         });
         return true;
@@ -136,61 +124,64 @@ class DriftServiceExtension {
     }
   }
 
-  static const _protocol = DriftProtocol();
+  static const _protocol = ProtocolMessageSerializer();
 }
 
 @internal
-final class CollectCreateStatements extends QueryExecutor {
+final class CollectCreateStatements implements DriftSession, DriftRootSession {
   final List<String> statements = [];
-  @override
-  final SqlDialect dialect;
 
-  CollectCreateStatements(this.dialect);
+  final Completer<void> _close = Completer();
+  int _schemaVersion = 0;
+
+  CollectCreateStatements();
 
   @override
-  QueryExecutor beginExclusive() {
-    return this;
+  Future<void> close() async {
+    _close.complete();
   }
 
   @override
-  TransactionExecutor beginTransaction() {
-    throw UnimplementedError();
+  Future<void> get closed => _close.future;
+
+  @override
+  Future<QueryResult> execute(StatementInfo statement) async {
+    if (statement.needsResultSet) {
+      throw UnimplementedError();
+    }
+
+    statements.add(statement.sql);
+    return QueryResult(resultSet: null);
   }
 
   @override
-  Future<bool> ensureOpen(QueryExecutorUser user) {
-    return Future.value(true);
+  Future<List<QueryResult>> executeBatch(StatementBatch batch) {
+    return Future.wait(batch.statements.map((e) => execute(e.info)));
   }
 
   @override
-  Future<void> runBatched(BatchedStatements statements) {
-    throw UnimplementedError();
-  }
+  bool get isClosed => _close.isCompleted;
 
   @override
-  Future<void> runCustom(String statement, [List<Object?>? args]) {
-    statements.add(statement);
-    return Future.value();
-  }
+  DriftSessionWithInternalLocks? get locks => null;
 
   @override
-  Future<int> runDelete(String statement, List<Object?> args) {
-    throw UnimplementedError();
-  }
+  DriftRootSession? get root => this;
 
   @override
-  Future<int> runInsert(String statement, List<Object?> args) {
-    throw UnimplementedError();
-  }
+  Object? get tag => null;
 
   @override
-  Future<List<Map<String, Object?>>> runSelect(
-      String statement, List<Object?> args) {
-    throw UnimplementedError();
-  }
+  DriftTransactionSession? get transaction => null;
 
   @override
-  Future<int> runUpdate(String statement, List<Object?> args) {
-    throw UnimplementedError();
+  DriftTransactionParent? get transactionParent => null;
+
+  @override
+  Future<int> get schemaVersion => Future.value(_schemaVersion);
+
+  @override
+  Future<void> writeSchemaVersion(int version) async {
+    _schemaVersion = version;
   }
 }

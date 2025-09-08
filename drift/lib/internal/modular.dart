@@ -14,12 +14,12 @@ final _databaseElementCache = Expando<_DatabaseElementCache>();
 /// When modular code generation is enabled, drift will emit a file with a
 /// [ModularAccessor] for each drift file instead of generating all the code for
 /// a database into a single file.
-class ModularAccessor extends DatabaseAccessor<GeneratedDatabase> {
+base class ModularAccessor extends DatabaseAccessor<GeneratedDatabase> {
   /// Default constructor - create an accessor from the [attachedDatabase].
   ModularAccessor(super.attachedDatabase);
 
   /// Find a result set by its [name] in the database. The result is cached.
-  T resultSet<T extends ResultSetImplementation>(String name) {
+  T resultSet<T extends ResultSet<Object, T>>(String name) {
     return attachedDatabase.resultSet(name);
   }
 
@@ -39,7 +39,7 @@ extension ReadDatabaseContainer on GeneratedDatabase {
   }
 
   /// Find a result set by its [name] in the database. The result is cached.
-  T resultSet<T extends ResultSetImplementation>(String name) {
+  T resultSet<T extends ResultSet<Object, T>>(String name) {
     return _cache.knownEntities[name]! as T;
   }
 

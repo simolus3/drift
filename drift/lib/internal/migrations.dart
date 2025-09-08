@@ -17,7 +17,7 @@ import 'package:drift/drift.dart';
 abstract class SchemaInstantiationHelper {
   /// Creates a database with the state of an old schema [version] and using the
   /// given underlying [db] connection.
-  GeneratedDatabase databaseForVersion(QueryExecutor db, int version);
+  GeneratedDatabase databaseForVersion(DriftConnection db, int version);
 }
 
 /// Thrown by [SchemaInstantiationHelper.databaseForVersion] when trying to
