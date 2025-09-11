@@ -12,6 +12,7 @@ void main() {
     addTearDown(db.close);
 
     final query = StreamQueue(db.select(db.myView).watch());
+    addTearDown(query.cancel);
     await expectLater(query, emits(isEmpty));
 
     await db.into(db.config).insert(ConfigCompanion.insert(

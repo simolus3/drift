@@ -263,6 +263,7 @@ void main() {
         );
       });
 
+      stream.cancel();
       await db.close();
     }
 

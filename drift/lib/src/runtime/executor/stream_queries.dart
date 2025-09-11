@@ -178,7 +178,7 @@ class StreamQueryStore {
     _isShuttingDown = true;
 
     for (final stream in _activeKeyStreams.values) {
-      stream.close();
+      await stream.close();
     }
     // awaiting this is fine - the stream is never exposed to users and we don't
     // pause any subscriptions on it.
@@ -211,7 +211,7 @@ class QueryStream<Rows extends Object> {
       final queryListener = _QueryStreamListener(listener);
 
       if (_isClosed) {
-        listener.closeSync();
+        listener.close();
         return;
       }
 
@@ -360,12 +360,13 @@ class QueryStream<Rows extends Object> {
     }
   }
 
-  void close() {
+  Future<void> close() async {
     _isClosed = true;
-    for (final listener in _listeners) {
-      listener.controller.close();
-    }
+
+    final listenersDone = Future.wait(
+        [for (final listener in _listeners) listener.controller.close()]);
     _listeners.clear();
+    await listenersDone;
   }
 }
 
