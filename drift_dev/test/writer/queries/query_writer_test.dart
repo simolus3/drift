@@ -501,11 +501,11 @@ filterAlbums: SELECT
     final outputs = await emulateDriftBuild(
       inputs: {
         'a|lib/a.drift': '''
-import 'a.dart';
+import 'row.dart';
 
 foo WITH MyRow.foo: SELECT 'hello world' AS a, 2 AS b;
 ''',
-        'a|lib/a.dart': '''
+        'a|lib/row.dart': '''
 class MyRow {
   final String a;
   final int b;

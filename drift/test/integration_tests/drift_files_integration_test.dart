@@ -92,6 +92,7 @@ void main() {
 
     test('can be used in a query stream', () async {
       final stream = StreamQueue(db.readView().watch());
+      addTearDown(stream.cancel);
       const entry = Config(
         configKey: 'another_key',
         configValue: DriftAny('value'),

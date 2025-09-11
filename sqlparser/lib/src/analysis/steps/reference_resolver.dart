@@ -121,7 +121,11 @@ class ReferenceResolver
 
   void _reportUnknownColumnError(Reference e, {Iterable<Column>? columns}) {
     final msg = StringBuffer('Unknown column.');
-    if (columns != null) {
+
+    if (e.isSingleDoubleQuotedToken) {
+      msg.write(' Note: Double-quotes define an identifier in SQL. '
+          'If you meant to write a string literal, use single quotes instead.');
+    } else if (columns != null) {
       final columnNames =
           columns.map((c) => c.humanReadableDescription()).join(', ');
       msg.write(' These columns are available: $columnNames');

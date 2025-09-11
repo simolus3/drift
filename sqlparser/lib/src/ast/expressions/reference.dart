@@ -28,6 +28,27 @@ class Reference extends Expression with ReferenceOwner {
           'When setting a schemaName, entityName must not be null either.',
         );
 
+  /// Returns whether this [Reference] is syntactically derived from a single
+  /// identifier token wrapped in double quotes.
+  ///
+  /// Because the strict "double quotes are identifiers and never string
+  /// literals" rule enabled by drift and sqlparser can be surprising, we use
+  /// this information to improve error messages and point this out
+  /// specifically.
+  bool get isSingleDoubleQuotedToken {
+    if (schemaName != null || entityName != null) {
+      return false;
+    }
+
+    if (first == last) {
+      if (first case final IdentifierToken singleToken) {
+        return singleToken.escaped;
+      }
+    }
+
+    return false;
+  }
+
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitReference(this, arg);

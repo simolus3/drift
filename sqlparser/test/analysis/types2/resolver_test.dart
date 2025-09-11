@@ -209,7 +209,7 @@ void main() {
           equals(const ResolvedType(type: BasicType.int)));
 
       expect(resolver.session.typeOf(secondVar),
-          equals(const ResolvedType(type: BasicType.text)));
+          equals(const ResolvedType(type: BasicType.text, nullable: true)));
     });
   });
 

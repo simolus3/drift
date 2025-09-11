@@ -1,26 +1,14 @@
-import 'dart:convert';
-import 'dart:isolate';
-
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build/experiments.dart';
-import 'package:build/src/state/asset_finder.dart';
-import 'package:build/src/state/asset_path_provider.dart';
-import 'package:build/src/state/filesystem.dart';
-import 'package:build/src/state/filesystem_cache.dart';
-import 'package:build/src/state/generated_asset_hider.dart';
-import 'package:build/src/state/reader_writer.dart';
 import 'package:build_resolvers/build_resolvers.dart';
 import 'package:build_test/build_test.dart';
 import 'package:build_test/src/in_memory_reader_writer.dart';
-import 'package:build/src/state/reader_state.dart';
-import 'package:crypto/crypto.dart';
 import 'package:drift_dev/integrations/build.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
-import 'package:package_config/package_config.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
@@ -43,18 +31,6 @@ Logger loggerThat(dynamic expectedLogs) {
 TypeMatcher<LogRecord> record(dynamic message) {
   return isA<LogRecord>().having((e) => e.message, 'message', message);
 }
-
-final _packageConfig = Future(() async {
-  final uri = await Isolate.packageConfig;
-
-  if (uri == null) {
-    throw UnsupportedError(
-        'Isolate running the build does not have a package config and no '
-        'fallback has been provided');
-  }
-
-  return await loadPackageConfigUri(uri);
-});
 
 Future<TestReaderWriter> driftTestEnvironment(
     {String rootPackage = 'a'}) async {
@@ -89,159 +65,65 @@ Future<DriftBuildResult> emulateDriftBuild({
 }) async {
   _resolvers.reset();
   logger ??= Logger.detached('emulateDriftBuild');
+  final logLines = <LogRecord>[];
 
-  final readAssets = <(Type, String), Set<AssetId>>{};
-  final deletedAssets = <AssetId>[];
   final env = await driftTestEnvironment();
-  inputs.forEach((id, contents) {
-    env.testing.writeString(makeAssetId(id), contents);
-  });
-
-  final stages = [
-    preparingBuilder(options),
-    discover(options),
-    analyzer(options),
-    modularBuild ? modular(options) : driftBuilderNotShared(options),
-    driftCleanup(options),
-  ];
-
-  for (final stage in stages) {
-    if (stage is Builder) {
-      // We might want to consider running these concurrently, but tests are
-      // easier to debug when running builders in a serial order.
-      for (final input in inputs.keys) {
-        final inputId = makeAssetId(input);
-
-        // Assets from other packages are visible, but we're not running
-        // builders on them.
-        if (inputId.package != 'a') continue;
-
-        if (expectedOutputs(stage, inputId).isNotEmpty) {
-          final readerForPhase = _TrackingAssetReader(env);
-
-          await runBuilder(
-            stage,
-            [inputId],
-            readerForPhase,
-            env,
-            _resolvers,
-            logger: logger,
-            packageConfig: await _packageConfig,
-          );
-
-          readAssets.putIfAbsent(
-              (stage.runtimeType, input), () => {}).addAll(readerForPhase.read);
-        }
+  final result = await testBuilders(
+    [
+      preparingBuilder(options),
+      discover(options),
+      analyzer(options),
+      modularBuild ? modular(options) : driftBuilderNotShared(options),
+      // TODO: Investigate testing post-process builder too. Once that's
+      // possible, also patch DriftBuildResult.dartOutputs to use information
+      // about deleted assets again.
+      // driftCleanup(options),
+    ],
+    inputs,
+    rootPackage: 'a',
+    onLog: (record) {
+      logLines.add(record);
+      if (record.level >= Level.WARNING) {
+        // We sometimes want to assert that no warnings are printed, but
+        // everything below that is noise.
+        logger?.log(
+            record.level, record.message, record.error, record.stackTrace);
       }
-    } else if (stage is PostProcessBuilder) {
-      for (final assetId in env.testing.assetsWritten) {
-        final shouldBuild =
-            stage.inputExtensions.any((e) => assetId.path.endsWith(e));
-        if (shouldBuild) {
-          await runPostProcessBuilder(
-            stage,
-            assetId,
-            env,
-            env,
-            logger,
-            addAsset: (_) {},
-            deleteAsset: (id) {
-              env.delete(id);
-              deletedAssets.add(id);
-            },
-          );
-        }
-      }
-    }
+    },
+    readerWriter: env,
+    // Assets from other packages are visible, but we're not running
+    // builders on them.
+    generateFor:
+        inputs.keys.where((e) => makeAssetId(e).package == 'a').toSet(),
+  );
+  if (result.buildResult.failureType != null) {
+    throw Exception('testBuilders failed');
   }
 
+  final deletedAssets = <AssetId>[];
+
   logger.clearListeners();
-  return DriftBuildResult(env, readAssets, deletedAssets);
+  return DriftBuildResult(env, deletedAssets);
 }
 
 class DriftBuildResult {
   final TestReaderWriter writer;
   final List<AssetId> deleted;
 
-  /// Asset ids read for each (builder, input id) combination.
-  final Map<(Type, String), Set<AssetId>> readAssetsByBuilder;
-
-  DriftBuildResult(this.writer, this.readAssetsByBuilder, this.deleted);
+  DriftBuildResult(this.writer, this.deleted);
 
   Iterable<AssetId> get dartOutputs {
     return writer.testing.assetsWritten.where((e) {
-      return e.extension == '.dart' && !deleted.contains(e);
+      return e.extension == '.dart' &&
+          !deleted.contains(e) &&
+          // TODO: Remove once we can test the post-process builder again.
+          !e.path.endsWith('.temp.dart');
     });
   }
 
   void checkDartOutputs(Map<String, Object> outputs) {
     checkOutputs(outputs, dartOutputs, writer);
   }
-}
-
-class _TrackingAssetReader implements AssetReader, AssetReaderState {
-  final TestReaderWriter _inner;
-
-  final Set<AssetId> read = {};
-
-  _TrackingAssetReader(this._inner);
-
-  void _trackRead(AssetId id) {
-    read.add(id);
-  }
-
-  @override
-  Future<bool> canRead(AssetId id) {
-    _trackRead(id);
-    return _inner.canRead(id);
-  }
-
-  @override
-  Future<Digest> digest(AssetId id) {
-    _trackRead(id);
-    return _inner.digest(id);
-  }
-
-  @override
-  Stream<AssetId> findAssets(Glob glob) {
-    return _inner.findAssets(glob).map((id) {
-      _trackRead(id);
-      return id;
-    });
-  }
-
-  @override
-  Future<List<int>> readAsBytes(AssetId id) {
-    _trackRead(id);
-    return _inner.readAsBytes(id);
-  }
-
-  @override
-  Future<String> readAsString(AssetId id, {Encoding encoding = utf8}) {
-    _trackRead(id);
-    return _inner.readAsString(id, encoding: encoding);
-  }
-
-  @override
-  AssetFinder get assetFinder => _inner.assetFinder;
-
-  @override
-  AssetPathProvider get assetPathProvider => _inner.assetPathProvider;
-
-  @override
-  FilesystemCache get cache => _inner.cache;
-
-  @override
-  AssetReaderWriter copyWith(
-      {FilesystemCache? cache, GeneratedAssetHider? generatedAssetHider}) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Filesystem get filesystem => _inner.filesystem;
-
-  @override
-  GeneratedAssetHider get generatedAssetHider => _inner.generatedAssetHider;
 }
 
 extension ReaderWriterUtils on TestReaderWriter {

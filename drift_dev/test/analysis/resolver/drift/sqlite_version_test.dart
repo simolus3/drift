@@ -8,13 +8,10 @@ const _content = {
   'a|lib/main.drift': '''
 CREATE TABLE foo (
   id INTEGER NOT NULL PRIMARY KEY,
-  content TEXT NOT NULL UNIQUE,
-  content2 TEXT NOT NULL UNIQUE
+  content TEXT NOT NULL UNIQUE
 );
 
-query: INSERT INTO foo VALUES (?, ?, ?)
-  ON CONFLICT (content) DO NOTHING
-  ON CONFLICT (content2) DO UPDATE SET content2 = 'duplicate';
+query: SELECT group_concat(content ORDER BY id) FROM foo;
         ''',
 };
 
@@ -28,7 +25,7 @@ void main() {
       [
         isDriftError(
           allOf(
-            contains('require sqlite version 3.35 or later'),
+            contains('require sqlite 3.44 or later'),
             contains(
                 'You can change the assumed sqlite version with build options.'),
           ),
@@ -42,7 +39,7 @@ void main() {
       _content,
       options: const DriftOptions.defaults(
         sqliteAnalysisOptions: SqliteAnalysisOptions(
-          version: SqliteVersion.v3_35,
+          version: SqliteVersion.v3_50,
         ),
       ),
     );

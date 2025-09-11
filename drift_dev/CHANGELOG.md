@@ -1,7 +1,9 @@
-## 2.28.2-dev
+## 2.28.2
 
 - Fix generating code for `typedef`s with different parameters than the type they point to.
 - Support `analyzer` version 8.x
+- When no other option is set, assume SQLite version 3.38.0 when analyzing drift files
+  (used to be 3.31.0).
 
 ## 2.28.1
 

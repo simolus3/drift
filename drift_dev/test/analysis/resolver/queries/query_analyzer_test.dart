@@ -316,6 +316,23 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
         [DriftSqlType.int, DriftSqlType.string]);
   });
 
+  test('does not warn about type of raise expressions', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3643
+    final test = await TestBackend.inTest({
+      'a|lib/a.drift': '''
+CREATE TABLE foo (
+  bar TEXT
+);
+
+CREATE TRIGGER test_trigger BEFORE UPDATE OF bar ON foo BEGIN
+    SELECT RAISE(ABORT, 'nope');
+END;
+'''
+    });
+    await test.analyze('package:a/a.drift');
+    test.expectNoErrors();
+  });
+
   test('can cast to DATETIME and BOOLEAN', () async {
     final backend = await TestBackend.inTest({
       'a|lib/a.drift': '''

@@ -33,67 +33,9 @@ class FileAnalyzer {
       for (final elementAnalysis in state.analysis.values) {
         final element = elementAnalysis.result;
 
-        final queries = <String, SqlQuery>{};
-
-        final imports = <FileState>[];
-
         if (element is BaseDriftAccessor) {
-          for (final include in element.declaredIncludes) {
-            final imported = await driver.resolveElements(driver.backend
-                .resolveUri(element.declaration.sourceUri, include.toString()));
-
-            imports.add(imported);
-          }
-
-          final imported = driver.cache.crawlMulti(imports).toSet();
-          for (final import in imported) {
-            await driver.resolveElements(import.ownUri);
-          }
-
-          final availableByDefault = <DriftSchemaElement>{
-            ...element.declaredTables,
-            ...element.declaredViews,
-          };
-
-          // For indices added to tables via an annotation, the index should
-          // also be available.
-          for (final table in element.declaredTables) {
-            final fileState = driver.cache.knownFiles[table.id.libraryUri]!;
-
-            for (final attachedIndex in table.attachedIndices) {
-              final index = await driver.resolveElement(
-                  fileState, fileState.id(attachedIndex));
-
-              if (index is DriftIndex) {
-                availableByDefault.add(index);
-              }
-            }
-          }
-
-          final availableElements = imported
-              .expand((reachable) {
-                final elementAnalysis = reachable.analysis.values;
-
-                return elementAnalysis.map((e) => e.result).where(
-                    (e) => e is DefinedSqlQuery || e is DriftSchemaElement);
-              })
-              .whereType<DriftElement>()
-              .where((e) {
-                // Exclude any private tables that do not reside in the same library
-                // as the DriftDatabase.
-                // Failure to exclude these, can generate dart code which references
-                // classes that cannot be legally accessed - and will not compile.
-                // Private classes residing in the same library are allowed, as
-                // per dart language accessibility rules.
-                if (e is DriftElementWithResultSet &&
-                    e.entityInfoName.startsWith(r'$_')) {
-                  return e.id.libraryUri == element.id.libraryUri;
-                }
-                return true;
-              })
-              .followedBy(availableByDefault)
-              .transitiveClosureUnderReferences()
-              .sortTopologicallyOrElse(driver.backend.log.severe);
+          final (:availableElements, :availableByDefault, :imports) =
+              await _resolveElementsAndImports(element);
 
           // We will generate code for all available elements - even those only
           // reachable through imports. If that means we're pulling in a table
@@ -117,8 +59,28 @@ class FileAnalyzer {
                 'be included in this database: $names',
               );
             }
+
+            for (final dao in element.accessors) {
+              final schema = (await _resolveElementsAndImports(dao))
+                  .availableElements
+                  .whereType<DriftSchemaElement>();
+
+              final onlyReferencedFromDao = schema
+                  .where((e) => !availableByDefault.contains(e))
+                  .map((e) => e.id.name)
+                  .toList();
+
+              if (onlyReferencedFromDao.isNotEmpty) {
+                driver.backend.log.warning(
+                  "Dao ${dao.ownType} references tables that aren't available "
+                  'on the main database: $onlyReferencedFromDao. These '
+                  'must also be included in the main database.',
+                );
+              }
+            }
           }
 
+          final queries = <String, SqlQuery>{};
           for (final query in element.declaredQueries) {
             final engine = typeMapping.newEngineWithTables(availableElements);
             final context = engine.analyze(query.sql);
@@ -209,6 +171,79 @@ class FileAnalyzer {
     }
 
     return result;
+  }
+
+  Future<
+      ({
+        List<DriftElement> availableElements,
+        Set<DriftElement> availableByDefault,
+        List<FileState> imports
+      })> _resolveElementsAndImports(BaseDriftAccessor element) async {
+    final imports = <FileState>[];
+
+    for (final include in element.declaredIncludes) {
+      final imported = await driver.resolveElements(driver.backend
+          .resolveUri(element.declaration.sourceUri, include.toString()));
+
+      imports.add(imported);
+    }
+
+    final imported = driver.cache.crawlMulti(imports).toSet();
+    for (final import in imported) {
+      await driver.resolveElements(import.ownUri);
+    }
+
+    final availableByDefault = <DriftSchemaElement>{
+      ...element.declaredTables,
+      ...element.declaredViews,
+    };
+
+    // For indices added to tables via an annotation, the index should
+    // also be available.
+    for (final table in element.declaredTables) {
+      final fileState = driver.cache.knownFiles[table.id.libraryUri]!;
+
+      for (final attachedIndex in table.attachedIndices) {
+        final index =
+            await driver.resolveElement(fileState, fileState.id(attachedIndex));
+
+        if (index is DriftIndex) {
+          availableByDefault.add(index);
+        }
+      }
+    }
+
+    final availableElements = imported
+        .expand((reachable) {
+          final elementAnalysis = reachable.analysis.values;
+
+          return elementAnalysis
+              .map((e) => e.result)
+              .where((e) => e is DefinedSqlQuery || e is DriftSchemaElement);
+        })
+        .whereType<DriftElement>()
+        .where((e) {
+          // Exclude any private tables that do not reside in the same library
+          // as the DriftDatabase.
+          // Failure to exclude these, can generate dart code which references
+          // classes that cannot be legally accessed - and will not compile.
+          // Private classes residing in the same library are allowed, as
+          // per dart language accessibility rules.
+          if (e is DriftElementWithResultSet &&
+              e.entityInfoName.startsWith(r'$_')) {
+            return e.id.libraryUri == element.id.libraryUri;
+          }
+          return true;
+        })
+        .followedBy(availableByDefault)
+        .transitiveClosureUnderReferences()
+        .sortTopologicallyOrElse(driver.backend.log.severe);
+
+    return (
+      availableElements: availableElements,
+      availableByDefault: availableByDefault,
+      imports: imports
+    );
   }
 
   _OptionsAndRequiredVariables _createOptionsAndVars(

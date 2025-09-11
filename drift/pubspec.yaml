@@ -29,7 +29,7 @@ dependencies:
 
 dev_dependencies:
   archive: ^4.0.2
-  analyzer: ^7.0.0
+  analyzer: '>=7.0.0 <9.0.0'
   build_test: ^3.2.0-0
   build_runner_core: ^9.2.0-0
   build_verify: ^3.1.0

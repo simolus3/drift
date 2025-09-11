@@ -6,6 +6,9 @@ export 'unsupported.dart'
     if (dart.library.ffi) 'native.dart';
 
 export 'package:drift/src/web/wasm_setup/types.dart';
+import 'dart:async';
+import 'dart:typed_data';
+
 // ignore: implementation_imports
 import 'package:drift/src/web/wasm_setup/types.dart';
 import 'package:sqlite3/common.dart';
@@ -33,12 +36,15 @@ final class DriftWebOptions {
   /// impacted the database implementation (e.g. OPFS, IndexedDB) chosen.
   final void Function(WasmDatabaseResult)? onResult;
 
+  final FutureOr<Uint8List?> Function()? initializeDatabase;
+
   /// Create web-specific drift options.
-  DriftWebOptions({
-    required this.sqlite3Wasm,
-    required this.driftWorker,
-    this.onResult,
-  });
+  DriftWebOptions(
+      {required this.sqlite3Wasm,
+      required this.driftWorker,
+      this.onResult,
+      this.initializeDatabase,
+      });
 }
 
 /// Options used to open drift databases on native platforms (outside of the

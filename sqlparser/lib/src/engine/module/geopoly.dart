@@ -120,8 +120,8 @@ final class _GeopolyFunctionHandler extends FunctionHandler {
 
     if (argumentIndex < func.args.length) {
       return ResolveResult(func.args[argumentIndex]);
-    } else if (func.otherArgs != null) {
-      return ResolveResult(func.otherArgs);
+    } else if (func.otherArgs case final otherArgsType?) {
+      return ResolveResult(otherArgsType);
     } else {
       return ResolveResult.unknown();
     }

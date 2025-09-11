@@ -440,4 +440,14 @@ CREATE TABLE routes (
     expect(fromReferenced!.source.containingSet,
         result.rootScope.knownTables['points']);
   });
+
+  test('warns about identifiers that should have been strings', () {
+    final result = SqlEngine().analyze('''SELECT 'hello ' || "world";''');
+
+    result.expectError(
+      '"world"',
+      type: AnalysisErrorType.referencedUnknownColumn,
+      message: contains('Note: Double-quotes define an identifier in SQL.'),
+    );
+  });
 }

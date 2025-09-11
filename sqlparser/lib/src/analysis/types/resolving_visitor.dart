@@ -750,10 +750,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return const ResolveResult.needsContext();
       case 'first_value':
       case 'last_value':
+        session._addRelation(CopyTypeFrom(e, params.first));
+        return const ResolveResult.needsContext();
       case 'lag':
       case 'lead':
       case 'nth_value':
-        session._addRelation(CopyTypeFrom(e, params.first));
+        session._addRelation(CopyTypeFrom(e, params.first, makeNullable: true));
         return const ResolveResult.needsContext();
       case 'max':
       case 'min':
@@ -854,6 +856,13 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
   void visitDoUpdate(DoUpdate e, TypeExpectation arg) {
     _handleWhereClause(e);
     visitExcept(e, e.where, arg);
+  }
+
+  @override
+  void visitRaiseExpression(RaiseExpression e, TypeExpectation arg) {
+    // Don't set an inner basic type because there isn't one. This just
+    // ensures the expression is marked as resolved.
+    session._checkAndResolve(e, const ResolvedType(), arg);
   }
 
   void _handleColumn(Column? column, [AstNode? context]) {

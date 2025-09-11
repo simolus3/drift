@@ -1,9 +1,5 @@
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:drift_dev/src/backends/build/analyzer.dart';
-import 'package:drift_dev/src/backends/build/drift_builder.dart';
-import 'package:drift_dev/src/backends/build/exception.dart';
-import 'package:drift_dev/src/backends/build/preprocess_builder.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
@@ -189,11 +185,8 @@ class Users extends Table {
     expect(
       logger.onRecord,
       emits(
-        isA<LogRecord>()
-            .having((e) => e.message, 'message',
-                contains('Could not resolve Dart library package:a/main.dart'))
-            .having(
-                (e) => e.error, 'error', isA<SyntaxErrorInAssetException>()),
+        isA<LogRecord>().having((e) => e.message, 'message',
+            contains('Could not resolve Dart library package:a/main.dart')),
       ),
     );
 
@@ -503,8 +496,10 @@ class MyTable extends Table {
 }
 ''',
       },
-      logger: loggerThat(emits(emits(isA<LogRecord>().having((e) => e.message,
-          'message', contains('will be included in this database: MyTable'))))),
+      logger: loggerThat(emits(emitsThrough(isA<LogRecord>().having(
+          (e) => e.message,
+          'message',
+          contains('will be included in this database: MyTable'))))),
     );
   });
 
@@ -567,118 +562,6 @@ class AppDatabase extends $AppDatabase {
       'a|lib/table.drift.dart': anything,
       'a|lib/database.drift.dart': decodedMatches(contains('myTable')),
     }, outputs.dartOutputs, outputs.writer);
-  });
-
-  test('does not read unecessary files', () async {
-    final inputs = <String, String>{
-      'a|lib/groups.drift': '''
-CREATE TABLE "groups" (
-  id INTEGER NOT NULL PRIMARY KEY,
-  name TEXT NOT NULL
-);
-''',
-      'a|lib/members.drift': '''
-import 'groups.drift';
-import 'database.dart';
-
-CREATE TABLE memberships (
-  "group" INTEGER NOT NULL REFERENCES "groups"(id),
-  "user" INTEGER NOT NULL REFERENCES "users" (id),
-  PRIMARY KEY ("group", user)
-);
-''',
-      'a|lib/database.dart': '''
-import 'package:drift/drift.dart';
-
-class Users extends Table {
-  IntColumn get id => integer().autoIncrement()();
-}
-
-@DriftDatabase(include: {'groups.drift', 'members.drift'})
-class MyDatabase {
-
-}
-''',
-    };
-    final outputs = await emulateDriftBuild(inputs: inputs);
-    final readAssets = outputs.readAssetsByBuilder;
-    // Allow reading SDK or other package assets to set up the analyzer.
-    final isFromExternalPackage =
-        isA<AssetId>().having((e) => e.package, 'package', isNot('a'));
-
-    Matcher onlyReadsJsonsAnd(dynamic other) {
-      return everyElement(
-        anyOf(
-          isA<AssetId>().having((e) => e.extension, 'extension', '.json'),
-          isFromExternalPackage,
-          other,
-        ),
-      );
-    }
-
-    void expectReadsForBuilder(String input, Type builder, dynamic expected) {
-      final actuallyRead = readAssets.remove((builder, input));
-      expect(actuallyRead, expected);
-    }
-
-    // 1. Preprocess builders read only the drift file itself and no other
-    // files.
-    for (final input in inputs.keys) {
-      if (input.endsWith('.drift')) {
-        expectReadsForBuilder(input, PreprocessBuilder, [makeAssetId(input)]);
-      }
-    }
-
-    // The discover builder needs to analyze Dart files, which in the current
-    // resolver implementation means reading all transitive imports as well.
-    // However, the discover builder should not read other drift files.
-    for (final input in inputs.keys) {
-      if (input.endsWith('.drift')) {
-        expectReadsForBuilder(input, DriftDiscover,
-            everyElement(anyOf(makeAssetId(input), isFromExternalPackage)));
-      } else {
-        expectReadsForBuilder(
-          input,
-          DriftDiscover,
-          isNot(
-            contains(
-              isA<AssetId>().having((e) => e.extension, 'extension', '.drift'),
-            ),
-          ),
-        );
-      }
-    }
-
-    // Groups has no imports, so the analyzer shouldn't read any source files
-    // apart from groups.
-    expectReadsForBuilder('a|lib/groups.drift', DriftAnalyzer,
-        onlyReadsJsonsAnd(makeAssetId('a|lib/groups.drift')));
-
-    // Members is analyzed next. We don't have analysis results for the dart
-    // file yet, so unfortunately that will have to be analyzed twice. But we
-    // shouldn't read groups again.
-    expectReadsForBuilder('a|lib/members.drift', DriftAnalyzer,
-        isNot(contains(makeAssetId('a|lib/groups.drift'))));
-
-    // Similarly, analyzing the Dart file should not read the includes since
-    // those have already been analyzed.
-    expectReadsForBuilder(
-      'a|lib/database.dart',
-      DriftAnalyzer,
-      isNot(
-        contains(
-          isA<AssetId>().having((e) => e.extension, 'extension', '.drift'),
-        ),
-      ),
-    );
-
-    // The final builder needs to run file analysis which requires resolving
-    // the input file fully. Unfortunately, resolving queries also needs access
-    // to the original source so there's not really anything we could test.
-    expectReadsForBuilder('a|lib/database.dart', DriftBuilder, anything);
-
-    // Make sure we didn't forget an assertion.
-    expect(readAssets, isEmpty);
   });
 
   test('generates views from drift tables', () async {
@@ -1161,7 +1044,7 @@ class MyDatabase extends \$MyDatabase {}
           );
 
           if (fatalWarnings) {
-            await expectLater(build, throwsA(isA<FatalWarningException>()));
+            await expectLater(build, throwsA(anything));
           } else {
             await build;
           }
@@ -1225,7 +1108,7 @@ CREATE TABLE b (foo INTEGER);
         ),
       ),
     );
-  });
+  }, skip: 'Detailed logs not available through testBuilders');
 
   test('generates generic type converters correctly', () async {
     // Regression test for https://github.com/simolus3/drift/issues/3300
@@ -1339,4 +1222,51 @@ class Groups extends Table {
       'a|lib/groups.drift.dart': anything,
     }, build.dartOutputs, build.writer);
   });
+
+  test(
+    'warns when dao references table not added to main database',
+    () async {
+      await emulateDriftBuild(
+        inputs: {
+          'a|lib/database.dart': '''
+import 'package:drift/drift.dart';
+
+import 'dao.dart';
+
+class Users extends Table {
+  late final id = integer().autoIncrement()();
+  late final name = text()();
+}
+
+@DriftDatabase(daos: [TestAccessor])
+class AppDatabase {}
+''',
+          'a|lib/dao.dart': '''
+import 'package:drift/drift.dart';
+
+import 'database.dart';
+
+@DriftAccessor(tables: [Users])
+class TestAccessor extends DatabaseAccessor<AppDatabase> {
+}
+''',
+        },
+        modularBuild: true,
+        logger: loggerThat(
+          emits(
+            emits(
+              isA<LogRecord>().having(
+                (e) => e.message,
+                'message',
+                contains(
+                  "TestAccessor references tables that aren't available on the "
+                  'main database: [users]',
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }

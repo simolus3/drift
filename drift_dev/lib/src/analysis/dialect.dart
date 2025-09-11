@@ -23,7 +23,7 @@ sealed class RegisteredDriftDialect {
 
 @JsonSerializable()
 final class DriftSqliteDialect implements RegisteredDriftDialect {
-  static const _defaultSqliteVersion = SqliteVersion.v3(34);
+  static const _defaultSqliteVersion = SqliteVersion.v3(38);
 
   @override
   String get name => 'sqlite';

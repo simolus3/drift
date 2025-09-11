@@ -193,4 +193,26 @@ WITH RECURSIVE
     expect(ctx.typeOf(column),
         ResolveResult(ResolvedType(nullable: true, type: BasicType.int)));
   });
+
+  test('lag is nullable', () {
+    // https://github.com/simolus3/drift/issues/3635
+    final engine = SqlEngine()
+      ..registerTableFromSql(
+          'CREATE table tab (id INTEGER PRIMARY KEY, timestamp INTEGER);');
+
+    final ctx = engine.analyze('''
+  WITH ranked_tabs AS (
+    SELECT id, timestamp,
+          LAG(id) OVER (ORDER BY timestamp) as prev_tab_id
+    FROM tab
+  )
+  SELECT prev_tab_id
+  FROM ranked_tabs 
+  WHERE id = :tab_id;
+    ''');
+
+    final root = ctx.root as SelectStatement;
+    expect(root.resolvedColumns!.map(ctx.typeOf),
+        [ResolveResult(ResolvedType(nullable: true, type: BasicType.int))]);
+  });
 }

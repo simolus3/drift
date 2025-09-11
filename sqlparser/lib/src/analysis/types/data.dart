@@ -157,7 +157,7 @@ class ResolveResult {
   /// Whether type resolution failed.
   final bool unknown;
 
-  const ResolveResult(this.type)
+  const ResolveResult(ResolvedType this.type)
       : needsContext = false,
         unknown = false;
 
