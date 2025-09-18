@@ -40,6 +40,7 @@ dev_dependencies:
   melos: ^7.0.0
 
 dependency_overrides:
+  # This is required for resolving to analyzer 8, flutter_test is the only blocker.
   test_api: ^0.7.7
 
 melos:

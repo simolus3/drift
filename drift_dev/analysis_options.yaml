@@ -6,4 +6,6 @@ analyzer:
   exclude:
     - "**/*.g.dart"
   errors:
-    deprecated_member_use: info
+    # We temporarily want to ignore analyzer deprecation warnings because we need to support both
+    # analyzer 7.3+ (element2) and 8.x (back to element).
+    deprecated_member_use: ignore
