@@ -114,7 +114,7 @@ class SqlJsDatabase {
 
   /// Returns the `user_version` pragma from sqlite.
   int get userVersion {
-    return (_selectSingleRowAndColumn('PRAGMA user_version;') as double)
+    return (_selectSingleRowAndColumn('PRAGMA user_version;') as num)
         .toInt();
   }
 
@@ -153,7 +153,7 @@ class SqlJsDatabase {
   /// [export].
   int lastInsertId() {
     // load insert id. Will return [{columns: [...], values: [[id]]}]
-    return (_selectSingleRowAndColumn('SELECT last_insert_rowid();') as double)
+    return (_selectSingleRowAndColumn('SELECT last_insert_rowid();') as num)
         .toInt();
   }
 
