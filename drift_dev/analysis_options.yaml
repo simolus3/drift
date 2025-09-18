@@ -5,3 +5,5 @@ analyzer:
     strict-casts: true
   exclude:
     - "**/*.g.dart"
+  errors:
+    deprecated_member_use: info

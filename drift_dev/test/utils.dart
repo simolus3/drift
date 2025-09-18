@@ -3,7 +3,6 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
-import 'package:build_test/src/in_memory_reader_writer.dart';
 import 'package:drift_dev/integrations/build.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
@@ -125,7 +124,7 @@ extension ReaderWriterUtils on TestReaderWriter {
     var id = AssetId.parse(assetId);
     if (!testing.exists(id)) {
       id = AssetId(
-        (this as InMemoryAssetReaderWriter).rootPackage,
+        id.package,
         '.dart_tool/build/generated/${id.package}/${id.path}',
       );
 

@@ -1,7 +1,7 @@
 name: drift_docs
 description: Documentation website for the drift project.
 publish_to: none
-resolution: workspace
+resolution:
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -48,6 +48,18 @@ dev_dependencies:
     hosted: https://pub-simonbinder-eu.fsn1.your-objectstorage.com
     version: ^0.0.19
   sass_builder: ^2.2.1
+
+dependency_overrides:
+  drift:
+    path: ../drift
+  drift_dev:
+    path: ../drift_dev
+  sqlparser:
+    path: ../sqlparser
+  drift_flutter:
+    path: ../drift_flutter
+  drift_postgres:
+    path: ../extras/drift_postgres
 
 flutter:
   uses-material-design: true

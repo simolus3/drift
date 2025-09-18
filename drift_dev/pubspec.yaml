@@ -58,7 +58,7 @@ dev_dependencies:
   test: ^1.25.0
   test_descriptor: ^2.0.1
   build_runner: ^2.4.0
-  build_test: ^3.0.0
+  build_test: ^3.4.0
   json_serializable: ^6.8.0
   crypto: ^3.0.3
   glob: ^2.1.2
