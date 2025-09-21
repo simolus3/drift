@@ -25,6 +25,7 @@ import 'todos.dart' as _i3;
 // ignore_for_file: unnecessary_parenthesis
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
+// ignore_for_file: invalid_use_of_internal_member
 
 class _FakeMigrationStrategy_0 extends _i1.SmartFake
     implements _i2.MigrationStrategy {
@@ -48,169 +49,169 @@ class _FakeDriftDatabaseOptions_1 extends _i1.SmartFake
         );
 }
 
-class _Fake$CategoriesTable_2 extends _i1.SmartFake
-    implements _i3.$CategoriesTable {
-  _Fake$CategoriesTable_2(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$TodosTableTable_3 extends _i1.SmartFake
-    implements _i3.$TodosTableTable {
-  _Fake$TodosTableTable_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$UsersTable_4 extends _i1.SmartFake implements _i3.$UsersTable {
-  _Fake$UsersTable_4(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$SharedTodosTable_5 extends _i1.SmartFake
-    implements _i3.$SharedTodosTable {
-  _Fake$SharedTodosTable_5(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$TableWithoutPKTable_6 extends _i1.SmartFake
-    implements _i3.$TableWithoutPKTable {
-  _Fake$TableWithoutPKTable_6(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$PureDefaultsTable_7 extends _i1.SmartFake
-    implements _i3.$PureDefaultsTable {
-  _Fake$PureDefaultsTable_7(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$WithCustomTypeTable_8 extends _i1.SmartFake
-    implements _i3.$WithCustomTypeTable {
-  _Fake$WithCustomTypeTable_8(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$TableWithEveryColumnTypeTable_9 extends _i1.SmartFake
-    implements _i3.$TableWithEveryColumnTypeTable {
-  _Fake$TableWithEveryColumnTypeTable_9(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$DepartmentTable_10 extends _i1.SmartFake
-    implements _i3.$DepartmentTable {
-  _Fake$DepartmentTable_10(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$ProductTable_11 extends _i1.SmartFake implements _i3.$ProductTable {
-  _Fake$ProductTable_11(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$StoreTable_12 extends _i1.SmartFake implements _i3.$StoreTable {
-  _Fake$StoreTable_12(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$ListingTable_13 extends _i1.SmartFake implements _i3.$ListingTable {
-  _Fake$ListingTable_13(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$CategoryTodoCountViewView_14 extends _i1.SmartFake
-    implements _i3.$CategoryTodoCountViewView {
-  _Fake$CategoryTodoCountViewView_14(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$TodoWithCategoryViewView_15 extends _i1.SmartFake
-    implements _i3.$TodoWithCategoryViewView {
-  _Fake$TodoWithCategoryViewView_15(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeSomeDao_16 extends _i1.SmartFake implements _i3.SomeDao {
-  _FakeSomeDao_16(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _Fake$TodoDbManager_17 extends _i1.SmartFake
+class _Fake$TodoDbManager_2 extends _i1.SmartFake
     implements _i3.$TodoDbManager {
-  _Fake$TodoDbManager_17(
+  _Fake$TodoDbManager_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$CategoriesTable_3 extends _i1.SmartFake
+    implements _i3.$CategoriesTable {
+  _Fake$CategoriesTable_3(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$TodosTableTable_4 extends _i1.SmartFake
+    implements _i3.$TodosTableTable {
+  _Fake$TodosTableTable_4(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$UsersTable_5 extends _i1.SmartFake implements _i3.$UsersTable {
+  _Fake$UsersTable_5(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$SharedTodosTable_6 extends _i1.SmartFake
+    implements _i3.$SharedTodosTable {
+  _Fake$SharedTodosTable_6(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$TableWithoutPKTable_7 extends _i1.SmartFake
+    implements _i3.$TableWithoutPKTable {
+  _Fake$TableWithoutPKTable_7(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$PureDefaultsTable_8 extends _i1.SmartFake
+    implements _i3.$PureDefaultsTable {
+  _Fake$PureDefaultsTable_8(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$WithCustomTypeTable_9 extends _i1.SmartFake
+    implements _i3.$WithCustomTypeTable {
+  _Fake$WithCustomTypeTable_9(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$TableWithEveryColumnTypeTable_10 extends _i1.SmartFake
+    implements _i3.$TableWithEveryColumnTypeTable {
+  _Fake$TableWithEveryColumnTypeTable_10(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$DepartmentTable_11 extends _i1.SmartFake
+    implements _i3.$DepartmentTable {
+  _Fake$DepartmentTable_11(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$ProductTable_12 extends _i1.SmartFake implements _i3.$ProductTable {
+  _Fake$ProductTable_12(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$StoreTable_13 extends _i1.SmartFake implements _i3.$StoreTable {
+  _Fake$StoreTable_13(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$ListingTable_14 extends _i1.SmartFake implements _i3.$ListingTable {
+  _Fake$ListingTable_14(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$CategoryTodoCountViewView_15 extends _i1.SmartFake
+    implements _i3.$CategoryTodoCountViewView {
+  _Fake$CategoryTodoCountViewView_15(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _Fake$TodoWithCategoryViewView_16 extends _i1.SmartFake
+    implements _i3.$TodoWithCategoryViewView {
+  _Fake$TodoWithCategoryViewView_16(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeSomeDao_17 extends _i1.SmartFake implements _i3.SomeDao {
+  _FakeSomeDao_17(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -429,40 +430,53 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
       ) as int);
 
   @override
-  set migration(_i2.MigrationStrategy? _migration) => super.noSuchMethod(
+  set migration(_i2.MigrationStrategy? value) => super.noSuchMethod(
         Invocation.setter(
           #migration,
-          _migration,
+          value,
         ),
         returnValueForMissingStub: null,
       );
 
   @override
-  set options(_i2.DriftDatabaseOptions? _options) => super.noSuchMethod(
+  set options(_i2.DriftDatabaseOptions? value) => super.noSuchMethod(
         Invocation.setter(
           #options,
-          _options,
+          value,
         ),
         returnValueForMissingStub: null,
       );
 
   @override
-  set schemaVersion(int? _schemaVersion) => super.noSuchMethod(
+  set schemaVersion(int? value) => super.noSuchMethod(
         Invocation.setter(
           #schemaVersion,
-          _schemaVersion,
+          value,
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i3.$TodoDbManager get managers => (super.noSuchMethod(
+        Invocation.getter(#managers),
+        returnValue: _Fake$TodoDbManager_2(
+          this,
+          Invocation.getter(#managers),
+        ),
+        returnValueForMissingStub: _Fake$TodoDbManager_2(
+          this,
+          Invocation.getter(#managers),
+        ),
+      ) as _i3.$TodoDbManager);
 
   @override
   _i3.$CategoriesTable get categories => (super.noSuchMethod(
         Invocation.getter(#categories),
-        returnValue: _Fake$CategoriesTable_2(
+        returnValue: _Fake$CategoriesTable_3(
           this,
           Invocation.getter(#categories),
         ),
-        returnValueForMissingStub: _Fake$CategoriesTable_2(
+        returnValueForMissingStub: _Fake$CategoriesTable_3(
           this,
           Invocation.getter(#categories),
         ),
@@ -471,11 +485,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$TodosTableTable get todosTable => (super.noSuchMethod(
         Invocation.getter(#todosTable),
-        returnValue: _Fake$TodosTableTable_3(
+        returnValue: _Fake$TodosTableTable_4(
           this,
           Invocation.getter(#todosTable),
         ),
-        returnValueForMissingStub: _Fake$TodosTableTable_3(
+        returnValueForMissingStub: _Fake$TodosTableTable_4(
           this,
           Invocation.getter(#todosTable),
         ),
@@ -484,11 +498,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$UsersTable get users => (super.noSuchMethod(
         Invocation.getter(#users),
-        returnValue: _Fake$UsersTable_4(
+        returnValue: _Fake$UsersTable_5(
           this,
           Invocation.getter(#users),
         ),
-        returnValueForMissingStub: _Fake$UsersTable_4(
+        returnValueForMissingStub: _Fake$UsersTable_5(
           this,
           Invocation.getter(#users),
         ),
@@ -497,11 +511,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$SharedTodosTable get sharedTodos => (super.noSuchMethod(
         Invocation.getter(#sharedTodos),
-        returnValue: _Fake$SharedTodosTable_5(
+        returnValue: _Fake$SharedTodosTable_6(
           this,
           Invocation.getter(#sharedTodos),
         ),
-        returnValueForMissingStub: _Fake$SharedTodosTable_5(
+        returnValueForMissingStub: _Fake$SharedTodosTable_6(
           this,
           Invocation.getter(#sharedTodos),
         ),
@@ -510,11 +524,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$TableWithoutPKTable get tableWithoutPK => (super.noSuchMethod(
         Invocation.getter(#tableWithoutPK),
-        returnValue: _Fake$TableWithoutPKTable_6(
+        returnValue: _Fake$TableWithoutPKTable_7(
           this,
           Invocation.getter(#tableWithoutPK),
         ),
-        returnValueForMissingStub: _Fake$TableWithoutPKTable_6(
+        returnValueForMissingStub: _Fake$TableWithoutPKTable_7(
           this,
           Invocation.getter(#tableWithoutPK),
         ),
@@ -523,11 +537,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$PureDefaultsTable get pureDefaults => (super.noSuchMethod(
         Invocation.getter(#pureDefaults),
-        returnValue: _Fake$PureDefaultsTable_7(
+        returnValue: _Fake$PureDefaultsTable_8(
           this,
           Invocation.getter(#pureDefaults),
         ),
-        returnValueForMissingStub: _Fake$PureDefaultsTable_7(
+        returnValueForMissingStub: _Fake$PureDefaultsTable_8(
           this,
           Invocation.getter(#pureDefaults),
         ),
@@ -536,11 +550,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$WithCustomTypeTable get withCustomType => (super.noSuchMethod(
         Invocation.getter(#withCustomType),
-        returnValue: _Fake$WithCustomTypeTable_8(
+        returnValue: _Fake$WithCustomTypeTable_9(
           this,
           Invocation.getter(#withCustomType),
         ),
-        returnValueForMissingStub: _Fake$WithCustomTypeTable_8(
+        returnValueForMissingStub: _Fake$WithCustomTypeTable_9(
           this,
           Invocation.getter(#withCustomType),
         ),
@@ -550,11 +564,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   _i3.$TableWithEveryColumnTypeTable get tableWithEveryColumnType =>
       (super.noSuchMethod(
         Invocation.getter(#tableWithEveryColumnType),
-        returnValue: _Fake$TableWithEveryColumnTypeTable_9(
+        returnValue: _Fake$TableWithEveryColumnTypeTable_10(
           this,
           Invocation.getter(#tableWithEveryColumnType),
         ),
-        returnValueForMissingStub: _Fake$TableWithEveryColumnTypeTable_9(
+        returnValueForMissingStub: _Fake$TableWithEveryColumnTypeTable_10(
           this,
           Invocation.getter(#tableWithEveryColumnType),
         ),
@@ -563,11 +577,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$DepartmentTable get department => (super.noSuchMethod(
         Invocation.getter(#department),
-        returnValue: _Fake$DepartmentTable_10(
+        returnValue: _Fake$DepartmentTable_11(
           this,
           Invocation.getter(#department),
         ),
-        returnValueForMissingStub: _Fake$DepartmentTable_10(
+        returnValueForMissingStub: _Fake$DepartmentTable_11(
           this,
           Invocation.getter(#department),
         ),
@@ -576,11 +590,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$ProductTable get product => (super.noSuchMethod(
         Invocation.getter(#product),
-        returnValue: _Fake$ProductTable_11(
+        returnValue: _Fake$ProductTable_12(
           this,
           Invocation.getter(#product),
         ),
-        returnValueForMissingStub: _Fake$ProductTable_11(
+        returnValueForMissingStub: _Fake$ProductTable_12(
           this,
           Invocation.getter(#product),
         ),
@@ -589,11 +603,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$StoreTable get store => (super.noSuchMethod(
         Invocation.getter(#store),
-        returnValue: _Fake$StoreTable_12(
+        returnValue: _Fake$StoreTable_13(
           this,
           Invocation.getter(#store),
         ),
-        returnValueForMissingStub: _Fake$StoreTable_12(
+        returnValueForMissingStub: _Fake$StoreTable_13(
           this,
           Invocation.getter(#store),
         ),
@@ -602,11 +616,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$ListingTable get listing => (super.noSuchMethod(
         Invocation.getter(#listing),
-        returnValue: _Fake$ListingTable_13(
+        returnValue: _Fake$ListingTable_14(
           this,
           Invocation.getter(#listing),
         ),
-        returnValueForMissingStub: _Fake$ListingTable_13(
+        returnValueForMissingStub: _Fake$ListingTable_14(
           this,
           Invocation.getter(#listing),
         ),
@@ -616,11 +630,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   _i3.$CategoryTodoCountViewView get categoryTodoCountView =>
       (super.noSuchMethod(
         Invocation.getter(#categoryTodoCountView),
-        returnValue: _Fake$CategoryTodoCountViewView_14(
+        returnValue: _Fake$CategoryTodoCountViewView_15(
           this,
           Invocation.getter(#categoryTodoCountView),
         ),
-        returnValueForMissingStub: _Fake$CategoryTodoCountViewView_14(
+        returnValueForMissingStub: _Fake$CategoryTodoCountViewView_15(
           this,
           Invocation.getter(#categoryTodoCountView),
         ),
@@ -629,11 +643,11 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.$TodoWithCategoryViewView get todoWithCategoryView => (super.noSuchMethod(
         Invocation.getter(#todoWithCategoryView),
-        returnValue: _Fake$TodoWithCategoryViewView_15(
+        returnValue: _Fake$TodoWithCategoryViewView_16(
           this,
           Invocation.getter(#todoWithCategoryView),
         ),
-        returnValueForMissingStub: _Fake$TodoWithCategoryViewView_15(
+        returnValueForMissingStub: _Fake$TodoWithCategoryViewView_16(
           this,
           Invocation.getter(#todoWithCategoryView),
         ),
@@ -642,28 +656,15 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
   @override
   _i3.SomeDao get someDao => (super.noSuchMethod(
         Invocation.getter(#someDao),
-        returnValue: _FakeSomeDao_16(
+        returnValue: _FakeSomeDao_17(
           this,
           Invocation.getter(#someDao),
         ),
-        returnValueForMissingStub: _FakeSomeDao_16(
+        returnValueForMissingStub: _FakeSomeDao_17(
           this,
           Invocation.getter(#someDao),
         ),
       ) as _i3.SomeDao);
-
-  @override
-  _i3.$TodoDbManager get managers => (super.noSuchMethod(
-        Invocation.getter(#managers),
-        returnValue: _Fake$TodoDbManager_17(
-          this,
-          Invocation.getter(#managers),
-        ),
-        returnValueForMissingStub: _Fake$TodoDbManager_17(
-          this,
-          Invocation.getter(#managers),
-        ),
-      ) as _i3.$TodoDbManager);
 
   @override
   Iterable<_i2.TableInfo<_i2.Table, Object?>> get allTables =>
