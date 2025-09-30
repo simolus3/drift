@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/src/remote/protocol.dart';
 import 'package:drift/src/runtime/executor/transactions.dart';
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../api/runtime_api.dart';
 import 'devtools.dart';
@@ -25,6 +28,25 @@ class DriftServiceExtension {
     final tracked = TrackedDatabase.all.firstWhere((e) => e.id == databaseId);
 
     switch (action) {
+      case 'download':
+        final destinationPath = await getTemporaryDirectory();
+        final destination = p.join(destinationPath.path,
+            "${DateTime.now().toUtc().millisecondsSinceEpoch}.tmp");
+        final database = tracked.database;
+
+        await database.exclusively(() async {
+          await database.customStatement('VACUUM INTO ?;', [destination]);
+        });
+
+        final file = File(destination);
+        final encoded = base64Encode(await file.readAsBytes());
+
+        await file.delete();
+
+        return {
+          'database': database.runtimeType.toString(),
+          'data': encoded,
+        };
       case 'subscribe-to-tables':
         final stream = tracked.database.tableUpdates();
         final id = _subscriptionId++;

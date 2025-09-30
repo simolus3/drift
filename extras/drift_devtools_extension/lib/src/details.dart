@@ -1,4 +1,5 @@
 import 'package:devtools_app_shared/utils.dart';
+import 'package:drift_devtools_extension/src/download_button.dart';
 import 'package:drift_devtools_extension/src/schema_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,6 +66,14 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
                 const Padding(
                   padding: EdgeInsets.all(8),
                   child: DatabaseSchemaCheck(),
+                ),
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Row(
+                    children: [
+                      DownloadDatabaseButton(),
+                    ],
+                  ),
                 ),
                 const Padding(
                   padding: EdgeInsets.all(8),
