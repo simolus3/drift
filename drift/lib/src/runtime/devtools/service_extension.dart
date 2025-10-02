@@ -8,7 +8,6 @@ import 'package:drift/src/remote/protocol.dart';
 import 'package:drift/src/runtime/executor/transactions.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../api/runtime_api.dart';
 import 'devtools.dart';
@@ -29,8 +28,7 @@ class DriftServiceExtension {
 
     switch (action) {
       case 'download':
-        final destinationPath = await getTemporaryDirectory();
-        final destination = p.join(destinationPath.path,
+        final destination = p.join(Directory.systemTemp.path,
             "${DateTime.now().toUtc().millisecondsSinceEpoch}.tmp");
         final database = tracked.database;
 

@@ -89,6 +89,7 @@ class RemoteDatabase {
 
     return (res as Map).cast();
   }
+
   Future<int> _newTableSubscription() async {
     final result = await _driftRequest('subscribe-to-tables');
     return result as int;
