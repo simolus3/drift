@@ -27,6 +27,10 @@ class DriftServiceExtension {
     final tracked = TrackedDatabase.all.firstWhere((e) => e.id == databaseId);
 
     switch (action) {
+      case 'get-supported-features':
+        return {
+          'isExportSupported': isExportSupported,
+        };
       case 'download':
         final exported = await exportDatabase(tracked.database);
 

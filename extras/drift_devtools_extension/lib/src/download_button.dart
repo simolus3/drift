@@ -5,7 +5,12 @@ import 'package:web/web.dart';
 import 'details.dart';
 
 class DownloadDatabaseButton extends ConsumerStatefulWidget {
-  const DownloadDatabaseButton({super.key});
+  final bool isEnabled;
+
+  const DownloadDatabaseButton({
+    super.key,
+    this.isEnabled = false,
+  });
 
   @override
   ConsumerState<DownloadDatabaseButton> createState() =>
@@ -34,7 +39,10 @@ class _DownloadDatabaseButtonState
   @override
   Widget build(BuildContext context) {
     return DevToolsButton(
-      onPressed: _pendingDownload != null
+      tooltip: widget.isEnabled
+          ? null
+          : "Downloading is not enabled on this platform",
+      onPressed: _pendingDownload != null || !widget.isEnabled
           ? null
           : () {
               setState(() {

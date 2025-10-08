@@ -60,40 +60,51 @@ class _DatabaseDetailsState extends ConsumerState<DatabaseDetails> {
                 thumbVisibility: WidgetStatePropertyAll(true),
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: DatabaseSchemaCheck(),
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Row(
+            child: FutureBuilder<Map<String, dynamic>>(
+                future: database.getSupportedFeatures(),
+                builder: (context, asyncSnapshot) {
+                  final supportedFeatures = asyncSnapshot.data;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      DownloadDatabaseButton(),
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: DatabaseSchemaCheck(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Row(
+                          children: [
+                            DownloadDatabaseButton(
+                              isEnabled: supportedFeatures?["isExportSupported"]
+                                      as bool? ??
+                                  false,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Row(
+                          children: [
+                            ClearDatabaseButton(),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            Text('Database viewer',
+                                style: textTheme.headlineMedium),
+                          ],
+                        ),
+                      ),
+                      Expanded(child: DatabaseViewer(database: database)),
                     ],
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Row(
-                    children: [
-                      ClearDatabaseButton(),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Text('Database viewer', style: textTheme.headlineMedium),
-                    ],
-                  ),
-                ),
-                Expanded(child: DatabaseViewer(database: database)),
-              ],
-            ),
+                  );
+                }),
           );
         } else {
           return const SizedBox.shrink();

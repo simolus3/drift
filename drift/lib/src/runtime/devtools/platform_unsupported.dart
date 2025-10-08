@@ -1,5 +1,8 @@
 import 'package:drift/drift.dart';
 
+/// True if exporting is supported on this platform, false otherwise.
+final bool isExportSupported = false;
+
 /// Exports contents of the [database] as a [Uint8List] representing its main
 /// file.
 Future<Uint8List> exportDatabase(GeneratedDatabase database) async {
