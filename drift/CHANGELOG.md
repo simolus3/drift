@@ -3,6 +3,7 @@
 - Allow specifying ordering for columns in `@TableIndex` annotation.
 - Add `DelegatedDatabase.externalExecutor`, allowing transactions started
   externally to be used with drift.
+- Add `Batch.insertFromSelect` to insert rows from a select statement in a batch.
 
 ## 2.28.2
 
