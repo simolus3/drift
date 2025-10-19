@@ -9,6 +9,9 @@ import 'package:meta/meta.dart';
 import '../devtools/devtools.dart' as devtools;
 import '../query_builder/query_builder.dart';
 
+import 'compute_with_database_implementation/compute_with_database_native.dart'
+    if (dart.library.js) 'compute_with_database_implementation/compute_with_database_web.dart';
+
 part 'batch.dart';
 part 'connection.dart';
 part 'connection_user.dart';
