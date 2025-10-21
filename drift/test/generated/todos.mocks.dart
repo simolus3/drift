@@ -315,8 +315,8 @@ class _FakeMigrator_26 extends _i1.SmartFake implements _i2.Migrator {
         );
 }
 
-class _FakeFuture_26<T> extends _i1.SmartFake implements _i5.Future<T> {
-  _FakeFuture_26(
+class _FakeFuture_27<T> extends _i1.SmartFake implements _i5.Future<T> {
+  _FakeFuture_27(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -993,7 +993,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
               ),
               (Ret v) => _i5.Future<Ret>.value(v),
             ) ??
-            _FakeFuture_26<Ret>(
+            _FakeFuture_27<Ret>(
               this,
               Invocation.method(
                 #computeWithDatabase,
@@ -1018,7 +1018,7 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
               ),
               (Ret v) => _i5.Future<Ret>.value(v),
             ) ??
-            _FakeFuture_26<Ret>(
+            _FakeFuture_27<Ret>(
               this,
               Invocation.method(
                 #computeWithDatabase,
