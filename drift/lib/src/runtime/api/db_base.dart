@@ -154,7 +154,7 @@ abstract class GeneratedDatabase extends DatabaseConnectionUser
 
   /// On native platforms this spawns a short-lived isolate to run the [computation] with a drift
   /// database.
-  /// On web platforms this will run the [computation] on the current eventloop.
+  /// On web platforms, this will run the [computation] on the current JavaScript context.
   ///
   /// Essentially, this is a variant of [Isolate.run] for computations that also
   /// need to share a drift database between them. As drift databases are
