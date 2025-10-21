@@ -448,6 +448,16 @@ class DelegatedDatabase extends _BaseExecutor {
       {bool? logStatements, this.isSequential = false})
       : logStatements = logStatements ?? false;
 
+  /// Returns a [QueryExecutor] delegating calls to another [QueryDelegate].
+  ///
+  /// This is intended for scenarios where an opened external database
+  /// connection is shared with drift. In those cases, this allows starting
+  /// transactions outside of drift but then running drift statements against
+  /// those external transactions.
+  QueryExecutor externalExecutor(QueryDelegate delegate) {
+    return _IndependentExecutor(impl: delegate, db: this);
+  }
+
   @override
   Future<bool> ensureOpen(QueryExecutorUser user) {
     return _openingLock.synchronized(() async {
@@ -547,6 +557,32 @@ class DelegatedDatabase extends _BaseExecutor {
         return Future.value();
       }
     });
+  }
+}
+
+final class _IndependentExecutor extends _BaseExecutor {
+  @override
+  final QueryDelegate impl;
+
+  final DelegatedDatabase db;
+
+  _IndependentExecutor({
+    required this.impl,
+    required this.db,
+  });
+
+  @override
+  SqlDialect get dialect => db.dialect;
+
+  @override
+  TransactionExecutor beginTransactionInContext(_BaseExecutor context) {
+    return db.beginTransactionInContext(context);
+  }
+
+  @override
+  Future<bool> ensureOpen(QueryExecutorUser user) async {
+    _ensureOpenCalled = true;
+    return true;
   }
 }
 

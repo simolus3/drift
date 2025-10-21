@@ -34,8 +34,11 @@ class DatabaseConnection implements QueryExecutor {
     this.connectionData,
     bool closeStreamsSynchronously = false,
   }) : streamQueries = streamQueries ??
-            StreamQueryStore(
-                closeStreamsSynchronously: closeStreamsSynchronously);
+            switch (executor) {
+              DatabaseConnection() => executor.streamQueries,
+              _ => StreamQueryStore(
+                  closeStreamsSynchronously: closeStreamsSynchronously)
+            };
 
   /// Constructs a [DatabaseConnection] from the [QueryExecutor] by using the
   /// default type system and a new [StreamQueryStore].

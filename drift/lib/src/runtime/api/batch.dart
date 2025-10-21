@@ -53,6 +53,32 @@ class Batch {
     _addContext(context);
   }
 
+  /// Inserts rows from the [select] statement.
+  ///
+  /// This method creates an `INSERT INTO SELECT` statement in SQL which will
+  /// insert a row into this table for each row returned by the [select]
+  /// statement.
+  ///
+  /// The [columns] map describes which column from the select statement should
+  /// be written into which column of the table. The keys of the map are the
+  /// target column, and values are expressions added to the select statement.
+  ///
+  /// See also:
+  ///  - [InsertStatement.insertFromSelect], which would be used outside a
+  ///  [Batch].
+  void insertFromSelect<T extends Table, D>(
+      TableInfo<T, D> table, BaseSelectStatement select,
+      {required Map<Column, Expression> columns,
+      InsertMode? mode,
+      UpsertClause<T, D>? onConflict}) {
+    _addUpdate(table, UpdateKind.insert);
+    final actualMode = mode ?? InsertMode.insert;
+    final context = InsertStatement<T, D>(_user, table).createContextFromSelect(
+        select, columns, actualMode,
+        onConflict: onConflict);
+    _addContext(context);
+  }
+
   /// Inserts all [rows] into the [table].
   ///
   /// All fields in a row that don't have a default value or auto-increment

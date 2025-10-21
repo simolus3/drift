@@ -2,9 +2,11 @@
 @TestOn('vm')
 library;
 
+import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift/src/runtime/cancellation_zone.dart';
+import 'package:drift/src/runtime/executor/stream_queries.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
@@ -45,6 +47,26 @@ void main() {
     // Make sure this doesn't block the database
     await expectLater(
         driftDb.select(driftDb.categories).get(), completion(hasLength(1)));
+  });
+
+  test('DatabaseConnection constructor can wrap inner', () async {
+    final raw = NativeDatabase.memory();
+    final streams = StreamQueryStore();
+
+    final db = TodoDb(
+        DatabaseConnection(DatabaseConnection(raw, streamQueries: streams)));
+
+    await db
+        .into(db.categories)
+        .insert(CategoriesCompanion.insert(description: 'description'));
+    final query = StreamQueue(db.categories.all().watch());
+    await expectLater(query, emits(hasLength(1)));
+
+    await raw.runCustom('DELETE FROM categories');
+    streams.handleTableUpdates({TableUpdate('categories')});
+    await expectLater(query, emits(isEmpty));
+    await query.cancel();
+    await db.close();
   });
 
   group('nested transactions', () {

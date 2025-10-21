@@ -1,0 +1,47 @@
+@use "sass:math";
+
+
+$nav-height: 3rem;
+$tabs-height: 2rem;
+$header-height: calc($nav-height + $tabs-height);
+$color-separator: #0000000d;
+
+$break-medium: 768px;
+$break-large: 1024px;
+
+@mixin from-medium {
+  @media (min-width: $break-medium) {
+    @content;
+  }
+}
+
+@mixin from-large {
+  @media (min-width: $break-large) {
+    @content;
+  }
+}
+
+@mixin until-large {
+  @media (max-width: $break-large) {
+    @content;
+  }
+}
+
+@function px2rem($value) {
+  $remValue: math.div($value, 16px) + rem;
+  @return $remValue;
+}
+
+// Used by components copied from Material for MkDocs
+$clr-blue-a200: #448AFF;
+$clr-light-blue-a400: #29B6F6;
+$clr-cyan-a700: #0097A7;
+$clr-teal-a700: #00796B;
+$clr-green-a700: #388E3C;
+$clr-light-green-a700: #689F38;
+$clr-orange-a400: #FFA726;
+$clr-red-a200: #EF9A9A;
+$clr-red-a400: #EF5350;
+$clr-pink-a400: #EC407A;
+$clr-deep-purple-a200: #B39DDB;
+$clr-grey: #BDBDBD;

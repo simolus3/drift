@@ -34,7 +34,7 @@ extension WriteDefinition on GenerationContext {
   String pickForDialect(Map<SqlDialect, String> sql) {
     assert(
       sql.containsKey(dialect),
-      'Tried running SQL optimized for the following dialects: ${sql.keys.join}. '
+      'Tried running SQL optimized for the following dialects: ${sql.keys.join(', ')}. '
       'However, the database is running $dialect. Has that dialect been added '
       'to the `dialects` drift builder option?',
     );

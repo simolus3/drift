@@ -136,6 +136,7 @@ void main() {
 
       // Should be reflected here!
       await expectLater(stream, emits(hasLength(1)));
+      stream.cancel();
       await database.close();
     });
 

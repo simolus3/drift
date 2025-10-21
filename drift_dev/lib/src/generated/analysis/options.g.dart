@@ -211,6 +211,7 @@ const _$SqlModuleEnumMap = {
   SqlModule.spellfix1: 'spellfix1',
   SqlModule.geopoly: 'geopoly',
   SqlModule.dbstat: 'dbstat',
+  SqlModule.powersync: 'powersync',
 };
 
 const _$CaseFromDartToSqlEnumMap = {
@@ -270,7 +271,12 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
       ($checkedConvert) {
         $checkKeys(
           json,
-          allowedKeys: const ['modules', 'version', 'known_functions'],
+          allowedKeys: const [
+            'modules',
+            'version',
+            'known_functions',
+            'known_tables'
+          ],
         );
         final val = SqliteAnalysisOptions(
           modules: $checkedConvert(
@@ -292,10 +298,20 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
                         k as String, KnownSqliteFunction.fromJson(e as String)),
                   ) ??
                   const {}),
+          knownTables: $checkedConvert(
+              'known_tables',
+              (v) =>
+                  (v as List<dynamic>?)
+                      ?.map((e) => const _TableFromSql().fromJson(e as String))
+                      .toList() ??
+                  const []),
         );
         return val;
       },
-      fieldKeyMap: const {'knownFunctions': 'known_functions'},
+      fieldKeyMap: const {
+        'knownFunctions': 'known_functions',
+        'knownTables': 'known_tables'
+      },
     );
 
 Map<String, dynamic> _$SqliteAnalysisOptionsToJson(
@@ -306,6 +322,8 @@ Map<String, dynamic> _$SqliteAnalysisOptionsToJson(
           instance.version, const _SqliteVersionConverter().toJson),
       'known_functions':
           instance.knownFunctions.map((k, e) => MapEntry(k, e.toJson())),
+      'known_tables':
+          instance.knownTables.map(const _TableFromSql().toJson).toList(),
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(

@@ -27,15 +27,14 @@ jobs:
         with:
           flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - name: Bootstrap Dart packages
-        run: melos bootstrap --scope drift_docs,drift,app
+        run: melos bootstrap --scope drift_website,drift,app
         working-directory: .
       - name: Run build
         env:
           IS_RELEASE: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/latest-release' }}
         run: |
-          dart pub global activate webdev
-          chmod +x ./docs.sh
-          ./docs.sh build
+          chmod +x ./tool/build.sh
+          ./tool/build.sh
       - name: Analyze Dart and Drift sources
         run: |
           dart format -o none --set-exit-if-changed .
@@ -48,7 +47,7 @@ jobs:
         uses: nwtgck/actions-netlify@v3
         with:
           production-branch: latest-release
-          publish-dir: docs/deploy
+          publish-dir: docs/build/jaspr
           enable-pull-request-comment: true
           enable-commit-comment: false
           netlify-config-path: "./netlify.toml"
@@ -61,7 +60,7 @@ jobs:
         uses: nwtgck/actions-netlify@v3
         with:
           production-branch: latest-release
-          publish-dir: docs/deploy
+          publish-dir: docs/build/jaspr
           enable-pull-request-comment: true
           enable-commit-comment: false
           netlify-config-path: "./netlify.toml"

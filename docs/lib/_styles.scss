@@ -1,0 +1,21 @@
+@use "package:jaspr_content_snippets/common";
+@use "package:jaspr_content_snippets/dracula" as dracula;
+
+@use "src/styles/admonition";
+@use "src/styles/details";
+@use "src/styles/jaspr";
+@use "src/styles/ui";
+
+$color-mode-type: media-query;
+@import "package:jaspr_docsy/style";
+@import "src/styles/flutter_favorite";
+
+:root {
+  @include dracula.light;
+}
+
+@include color-mode(dark) {
+  :root {
+    @include dracula.dark;
+  }
+}

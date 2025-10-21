@@ -1,3 +1,10 @@
+## 2.29.0
+
+- Fix invalid schema code for views.
+- Add the `known_tables` option. It allows defining external tables assumed to be available
+  without including them in the drift-managed schema.
+- Make-migrations: Add `--no-test` option to disable generating tests.
+
 ## 2.28.3
 
 - Remove dependencies on discontinued build packages.

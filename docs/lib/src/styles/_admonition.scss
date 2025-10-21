@@ -1,0 +1,175 @@
+// https://github.com/squidfunk/mkdocs-material/blob/c68fac7fb3071fa4f45cc823e2ca2ea82fd67b43/src/templates/assets/stylesheets/main/extensions/markdown/_admonition.scss
+@use "sass:color";
+@use "sass:list";
+
+@use "constants" as *;
+
+// ----------------------------------------------------------------------------
+// Variables
+// ----------------------------------------------------------------------------
+
+/// Admonition flavours
+$admonitions: (
+  "note":     pencil-circle         $clr-blue-a200,
+  //"abstract": clipboard-text        $clr-light-blue-a400,
+  "info":     information           $clr-cyan-a700,
+  "tip":      fire                  $clr-teal-a700,
+  "success":  check                 $clr-green-a700,
+  //"question": help-circle           $clr-light-green-a700,
+  "warning":  alert                 $clr-orange-a400,
+  //"failure":  close                 $clr-red-a200,
+  "danger":   lightning-bolt-circle $clr-red-a400
+  //"bug":      shield-bug            $clr-pink-a400,
+  //"example":  test-tube             $clr-deep-purple-a200,
+  //"quote":    format-quote-close    $clr-grey
+) !default;
+
+// ----------------------------------------------------------------------------
+// Rules: layout
+// ----------------------------------------------------------------------------
+
+// Admonition variables
+:root {
+  @each $name, $props in $admonitions {
+    --md-admonition-icon--#{$name}: url("/images/#{list.nth($props, 1)}.svg");
+  }
+}
+
+// ----------------------------------------------------------------------------
+
+
+
+  // Admonition - note that all styles also apply to details tags, which are
+  // rendered as collapsible admonitions with summary elements as titles.
+  .admonition {
+    display: flow-root;
+    line-height: 1.35rem;
+    padding: 0 px2rem(12px);
+    margin: px2rem(20px) px2rem(12.8px);
+    font-size: px2rem(12.8px);
+    background-color: var(--background-card);
+    border: px2rem(1.5px) solid $clr-blue-a200;
+    border-radius: px2rem(4px);
+    box-shadow: 0 #{px2rem(4px)} #{px2rem(10px)} hsla(0, 0%, 0%, 0.05),
+      0 0              #{px2rem(1px)}  hsla(0, 0%, 0%, 0.1);
+    transition: box-shadow 125ms;
+    page-break-inside: avoid;
+
+    // [print]: Omit shadow as it may lead to rendering errors
+    @media print {
+      box-shadow: none;
+    }
+
+    // Admonition on focus
+    &:focus-within {
+      box-shadow: 0 0 0 px2rem(4px) color.adjust($clr-blue-a200, $alpha: -0.9);
+    }
+
+    // Hack: Chrome exhibits a weird issue where it will set nested elements to
+    // content-box. Doesn't happen in other browsers, so looks like a bug.
+    > * {
+      box-sizing: border-box;
+    }
+
+    // Adjust vertical spacing for nested admonitions
+    .admonition {
+      margin-top: 1em;
+      margin-bottom: 1em;
+    }
+
+    // Adjust spacing for contained table wrappers
+    .md-typeset__scrollwrap {
+      margin: 1em px2rem(-12px);
+    }
+
+    // Adjust spacing for contained tables
+    .md-typeset__table {
+      padding: 0 px2rem(12px);
+    }
+
+    // Adjust spacing for single-child tabbed block container
+    > .tabbed-set:only-child {
+      margin-top: 0;
+    }
+
+    // Adjust spacing on last child
+    html & > :last-child {
+      margin-top: px2rem(12px);
+      margin-bottom: px2rem(12px);
+    }
+  }
+
+  // Admonition title
+  .admonition-title {
+    position: relative;
+    padding-block: px2rem(8px);
+    padding-inline: px2rem(40px) px2rem(12px);
+    margin-block: 0;
+    margin-inline: px2rem(-12px);
+    font-weight: 700;
+    background-color: color.adjust($clr-blue-a200, $alpha: -0.9);
+    border: none;
+    border-inline-start-width: px2rem(4px);
+    border-start-start-radius: px2rem(2px);
+    border-start-end-radius: px2rem(2px);
+
+    // Adjust spacing for title-only admonitions
+    html &:last-child {
+      margin-bottom: 0;
+    }
+
+    // Admonition icon
+    &::before {
+      position: absolute;
+      inset-inline-start: px2rem(12px);
+      top: px2em(10px);
+      width: px2rem(20px);
+      height: px2rem(20px);
+      content: "";
+      background-color: $clr-blue-a200;
+      mask-image: var(--md-admonition-icon--note);
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
+    }
+
+    // Inline code block
+    code {
+      box-shadow: 0 0 0 px2rem(1px) var(--md-default-fg-color--lightest);
+    }
+  }
+
+// ----------------------------------------------------------------------------
+// Rules: flavours
+// ----------------------------------------------------------------------------
+
+// Define admonition flavors
+@each $name, $props in $admonitions {
+  $tint: list.nth($props, 2);
+
+  // Admonition flavour
+  .admonition.#{$name} {
+    border-color: $tint;
+
+    // Admonition on focus
+    &:focus-within {
+      box-shadow: 0 0 0 px2rem(4px) color.adjust($tint, $alpha: -0.9);
+    }
+  }
+
+  // Admonition flavour title
+  .#{$name} > .admonition-title {
+    background-color: color.adjust($tint, $alpha: -0.9);
+
+    // Admonition icon
+    &::before {
+      background-color: $tint;
+      mask-image: var(--md-admonition-icon--#{$name});
+    }
+
+    // Details marker
+    &::after {
+      color: $tint;
+    }
+  }
+}

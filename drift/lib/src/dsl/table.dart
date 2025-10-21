@@ -289,11 +289,16 @@ final class TableIndex {
 
   /// The columns of the table that should be part of the index.
   ///
+  /// This can either be a [Symbol] for the default options or an
+  /// [IndexedColumn] instance.
+  ///
   /// Columns are referenced with a [Symbol] of their getter name used in the
   /// column definition. For instance, a table declaring a column as
   /// `IntColumn get nextUpdateSnapshot => ...()` could reference this column
   /// using `#nextUpdateSnapshot`.
-  final Set<Symbol> columns;
+  ///
+  /// To further control options of the index, use an [IndexedColumn] instance.
+  final Set<Object /*IndexedColumn | Symbol*/ > columns;
 
   /// As an alternative to [name], [unique] and [columns], a `CREATE INDEX` SQL
   /// statement defining the index.
@@ -322,6 +327,24 @@ final class TableIndex {
       : name = '',
         unique = false,
         columns = const {};
+}
+
+/// A column that can appear in a [TableIndex].
+final class IndexedColumn {
+  /// The columns of the table that should be part of the index.
+  ///
+  /// Columns are referenced with a [Symbol] of their getter name used in the
+  /// column definition. For instance, a table declaring a column as
+  /// `IntColumn get nextUpdateSnapshot => ...()` could reference this column
+  /// using `#nextUpdateSnapshot`.
+  final Symbol columnName;
+
+  /// The [OrderingMode] to use for the index, controlling the order of values
+  /// in the b-tree.
+  final OrderingMode? orderBy;
+
+  /// Creates an indexed column from a [Symbol] and index options.
+  const IndexedColumn(this.columnName, {required this.orderBy});
 }
 
 /// A class to be used as an annotation on [Table] classes to customize the

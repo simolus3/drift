@@ -95,45 +95,8 @@ class InsertStatement<T extends Table, D> {
     InsertMode mode = InsertMode.insert,
     UpsertClause<T, D>? onConflict,
   }) async {
-    // To be able to reference columns by names instead of by their index like
-    // normally done with `INSERT INTO SELECT`, we use a CTE. The final SQL
-    // statement will look like this:
-    // WITH source AS $select INSERT INTO $table (...) SELECT ... FROM source
-    final ctx = GenerationContext.fromDb(database);
-    const sourceCte = '_source';
-
-    ctx.buffer.write('WITH $sourceCte AS (');
-    select.writeInto(ctx);
-    ctx.buffer.write(') ');
-
-    final columnNameToSelectColumnName = <String, String>{};
-    columns.forEach((key, value) {
-      final name = select._nameForColumn(value);
-      if (name == null) {
-        throw ArgumentError.value(
-            value,
-            'column',
-            'This column passd to insertFromSelect() was not added to the '
-                'source select statement.');
-      }
-
-      columnNameToSelectColumnName[key.name] = name;
-    });
-
-    mode.writeInto(ctx);
-    ctx.buffer
-      ..write(' INTO ${ctx.identifier(table.aliasedName)} (')
-      ..write(columnNameToSelectColumnName.keys.map(ctx.identifier).join(', '))
-      ..write(') SELECT ')
-      ..write(
-          columnNameToSelectColumnName.values.map(ctx.identifier).join(', '))
-      ..write(' FROM $sourceCte');
-    if (onConflict != null) {
-      // Resolve parsing ambiguity (a `ON` from the conflict clause could also
-      // be parsed as a join).
-      ctx.buffer.write(' WHERE TRUE');
-      _writeOnConflict(ctx, mode, null, onConflict);
-    }
+    final ctx =
+        createContextFromSelect(select, columns, mode, onConflict: onConflict);
 
     return await database.withCurrentExecutor((e) async {
       await e.runInsert(ctx.sql, ctx.boundVariables);
@@ -271,6 +234,57 @@ class InsertStatement<T extends Table, D> {
           ctx.buffer.write(' RETURNING ${id.name}');
         }
       }
+    }
+
+    return ctx;
+  }
+
+  /// Creates a [GenerationContext] which contains the sql necessary to run an
+  /// insert from the [select] statement with the [mode].
+  ///
+  /// This method is used internally by drift. Consider using [insertFromSelect]
+  /// instead.
+  GenerationContext createContextFromSelect(BaseSelectStatement select,
+      Map<Column, Expression> columns, InsertMode mode,
+      {UpsertClause<T, D>? onConflict}) {
+    // To be able to reference columns by names instead of by their index like
+    // normally done with `INSERT INTO SELECT`, we use a CTE. The final SQL
+    // statement will look like this:
+    // WITH source AS $select INSERT INTO $table (...) SELECT ... FROM source
+    final ctx = GenerationContext.fromDb(database);
+    const sourceCte = '_source';
+
+    ctx.buffer.write('WITH $sourceCte AS (');
+    select.writeInto(ctx);
+    ctx.buffer.write(') ');
+
+    final columnNameToSelectColumnName = <String, String>{};
+    columns.forEach((key, value) {
+      final name = select._nameForColumn(value);
+      if (name == null) {
+        throw ArgumentError.value(
+            value,
+            'column',
+            'This column passd to insertFromSelect() was not added to the '
+                'source select statement.');
+      }
+
+      columnNameToSelectColumnName[key.name] = name;
+    });
+
+    mode.writeInto(ctx);
+    ctx.buffer
+      ..write(' INTO ${ctx.identifier(table.aliasedName)} (')
+      ..write(columnNameToSelectColumnName.keys.map(ctx.identifier).join(', '))
+      ..write(') SELECT ')
+      ..write(
+          columnNameToSelectColumnName.values.map(ctx.identifier).join(', '))
+      ..write(' FROM $sourceCte');
+    if (onConflict != null) {
+      // Resolve parsing ambiguity (a `ON` from the conflict clause could also
+      // be parsed as a join).
+      ctx.buffer.write(' WHERE TRUE');
+      _writeOnConflict(ctx, mode, null, onConflict);
     }
 
     return ctx;

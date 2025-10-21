@@ -30,16 +30,39 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
 
     final unique = computed?.getField('unique')?.toBoolValue() ?? false;
 
-    final columns = <DriftColumn>[];
+    final columns = <DriftIndexedColumn>[];
 
     final referencedColumns = computed?.getField('columns')?.toSetValue();
     for (final column in referencedColumns ?? const <DartObject>{}) {
-      final columnName = column.toSymbolValue();
+      // Column can either be a Symbol or an IndexedColumn instance.
+      String? columnName;
+      OrderingMode? orderBy;
+      if (column.toSymbolValue() case final symbol?) {
+        columnName = symbol;
+      } else {
+        columnName = column.getField('columnName')?.toSymbolValue();
+        if (column.getField('orderBy')?.getField('_name')?.toStringValue()
+            case final orderByName?) {
+          orderBy = switch (orderByName) {
+            'asc' => OrderingMode.ascending,
+            'desc' => OrderingMode.descending,
+            _ => null,
+          };
+        }
+      }
+
+      if (columnName == null) {
+        reportError(DriftAnalysisError.forDartElement(
+          discovered.dartElement,
+          'Unknown entry in columns array, should be a symbols or an IndexedColumn instance.',
+        ));
+      }
+
       final tableColumn =
           table?.columns.firstWhereOrNull((c) => c.nameInDart == columnName);
 
       if (tableColumn != null) {
-        columns.add(tableColumn);
+        columns.add(DriftIndexedColumn(column: tableColumn, orderBy: orderBy));
       } else {
         reportError(DriftAnalysisError.forDartElement(
           discovered.dartElement,

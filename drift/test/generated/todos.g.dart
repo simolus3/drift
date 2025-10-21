@@ -659,13 +659,15 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   static const VerificationMeta _isAwesomeMeta =
       const VerificationMeta('isAwesome');
   @override
-  late final GeneratedColumn<bool> isAwesome = GeneratedColumn<bool>(
-      'is_awesome', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_awesome" IN (0, 1))'),
-      defaultValue: const Constant(true));
+  late final GeneratedColumn<bool> isAwesome =
+      GeneratedColumn<bool>('is_awesome', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("is_awesome" IN (0, 1))',
+            SqlDialect.postgres: '',
+          }),
+          defaultValue: const Constant(true));
   static const VerificationMeta _profilePictureMeta =
       const VerificationMeta('profilePicture');
   @override
@@ -1687,12 +1689,14 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
       .withConverter<RowId>($TableWithEveryColumnTypeTable.$converterid);
   static const VerificationMeta _aBoolMeta = const VerificationMeta('aBool');
   @override
-  late final GeneratedColumn<bool> aBool = GeneratedColumn<bool>(
-      'a_bool', aliasedName, true,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("a_bool" IN (0, 1))'));
+  late final GeneratedColumn<bool> aBool =
+      GeneratedColumn<bool>('a_bool', aliasedName, true,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintsDependsOnDialect({
+            SqlDialect.sqlite: 'CHECK ("a_bool" IN (0, 1))',
+            SqlDialect.postgres: '',
+          }));
   static const VerificationMeta _aDateTimeMeta =
       const VerificationMeta('aDateTime');
   @override
@@ -3327,6 +3331,12 @@ abstract class _$TodoDb extends GeneratedDatabase {
       $CategoryTodoCountViewView(this);
   late final $TodoWithCategoryViewView todoWithCategoryView =
       $TodoWithCategoryViewView(this);
+  late final Index categoriesDesc = Index.byDialect('categories_desc', {
+    SqlDialect.sqlite:
+        'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
+    SqlDialect.postgres:
+        'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
+  });
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<AllTodosWithCategoryResult> allTodosWithCategory() {
     return customSelect(
@@ -3354,7 +3364,10 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Future<int> deleteTodoById(RowId var1) {
     return customUpdate(
-      'DELETE FROM todos WHERE id = ?1',
+      switch (executor.dialect) {
+        SqlDialect.sqlite => 'DELETE FROM todos WHERE id = ?1',
+        SqlDialect.postgres || _ => 'DELETE FROM todos WHERE id = \$1',
+      },
       variables: [Variable<int>($TodosTableTable.$converterid.toSql(var1))],
       updates: {todosTable},
       updateKind: UpdateKind.delete,
@@ -3366,7 +3379,13 @@ abstract class _$TodoDb extends GeneratedDatabase {
     final expandedvar3 = $expandVar($arrayStartIndex, var3.length);
     $arrayStartIndex += var3.length;
     return customSelect(
-        'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
+        switch (executor.dialect) {
+          SqlDialect.sqlite =>
+            'SELECT * FROM todos WHERE title = ?2 OR id IN ($expandedvar3) OR title = ?1',
+          SqlDialect.postgres ||
+          _ =>
+            'SELECT * FROM todos WHERE title = \$2 OR id IN ($expandedvar3) OR title = \$1',
+        },
         variables: [
           Variable<String>(var1),
           Variable<String>(var2),
@@ -3380,7 +3399,13 @@ abstract class _$TodoDb extends GeneratedDatabase {
 
   Selectable<TodoEntry> search({required RowId id}) {
     return customSelect(
-        'SELECT * FROM todos WHERE CASE WHEN -1 = ?1 THEN 1 ELSE id = ?1 END',
+        switch (executor.dialect) {
+          SqlDialect.sqlite =>
+            'SELECT * FROM todos WHERE CASE WHEN -1 = ?1 THEN 1 ELSE id = ?1 END',
+          SqlDialect.postgres ||
+          _ =>
+            'SELECT * FROM todos WHERE CASE WHEN -1 = \$1 THEN 1 ELSE id = \$1 END',
+        },
         variables: [
           Variable<int>($TodosTableTable.$converterid.toSql(id))
         ],
@@ -3417,7 +3442,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
         store,
         listing,
         categoryTodoCountView,
-        todoWithCategoryView
+        todoWithCategoryView,
+        categoriesDesc
       ];
 }
 
@@ -5977,7 +6003,13 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
       attachedDatabase.todoWithCategoryView;
   Selectable<TodoEntry> todosForUser({required RowId user}) {
     return customSelect(
-        'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
+        switch (executor.dialect) {
+          SqlDialect.sqlite =>
+            'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st.user WHERE u.id = ?1',
+          SqlDialect.postgres ||
+          _ =>
+            'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st."user" WHERE u.id = \$1',
+        },
         variables: [
           Variable<int>($UsersTable.$converterid.toSql(user))
         ],

@@ -450,4 +450,16 @@ CREATE TABLE routes (
       message: contains('Note: Double-quotes define an identifier in SQL.'),
     );
   });
+
+  test("common table expressions don't see columns from main query", () {
+    final result = SqlEngine().analyze('''
+WITH users AS (SELECT 1, bar)
+SELECT *, 'foo' as bar FROM users;
+''');
+
+    result.expectError(
+      'bar',
+      type: AnalysisErrorType.referencedUnknownColumn,
+    );
+  });
 }

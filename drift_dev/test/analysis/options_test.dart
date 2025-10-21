@@ -116,4 +116,40 @@ sqlite:
       expect(() => KnownSqliteFunction.fromJson('int (boolean, )'), throws);
     });
   });
+
+  group('external tables', () {
+    final options = parse('''
+sqlite:
+  known_tables:
+    - "CREATE TABLE external (foo TEXT, bar INTEGER) STRICT;"
+''');
+
+    test('available in drift file', () async {
+      final test = await TestBackend.inTest({
+        'a|lib/a.drift': '''
+CREATE TABLE internal (
+  foo TEXT REFERENCES external(foo)
+);
+''',
+      }, options: options);
+
+      await test.analyze('package:a/a.drift');
+      test.expectNoErrors();
+    });
+
+    test('available in dart file', () async {
+      final test = await TestBackend.inTest({
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class Internal extends Table {
+  TextColumn get foo => text().nullable().customConstraint('REFERENCES external(foo)')();
+}
+''',
+      }, options: options);
+
+      await test.analyze('package:a/a.dart');
+      test.expectNoErrors();
+    });
+  });
 }

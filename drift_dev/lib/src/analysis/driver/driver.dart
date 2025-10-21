@@ -86,6 +86,8 @@ class DriftAnalysisDriver {
           if (options.hasModule(SqlModule.spellfix1))
             const Spellfix1Extension(),
           if (options.hasModule(SqlModule.geopoly)) const GeopolyExtension(),
+          if (options.hasModule(SqlModule.powersync))
+            const PowerSyncSqliteExtension(),
         ],
         version: options.sqliteVersion,
       ),

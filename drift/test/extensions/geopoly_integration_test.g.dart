@@ -218,7 +218,13 @@ abstract class _$_GeopolyTestDatabase extends GeneratedDatabase {
   late final GeopolyTest geopolyTest = GeopolyTest(this);
   Selectable<double?> area(int var1) {
     return customSelect(
-        'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = ?1',
+        switch (executor.dialect) {
+          SqlDialect.sqlite =>
+            'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = ?1',
+          SqlDialect.postgres ||
+          _ =>
+            'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = \$1',
+        },
         variables: [
           Variable<int>(var1)
         ],

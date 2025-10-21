@@ -76,6 +76,53 @@ targets:
             .file('app/lib/db.steps.dart', IsValidDartFile(anything))
             .validate();
       });
+
+      test('without tests', () async {
+        project = await TestDriftProject.create([
+          d.dir('lib', [d.file('db.dart', _dbContent)]),
+          d.file('build.yaml', """
+targets:
+  \$default:
+    builders:
+      drift_dev:
+        options:
+          databases:
+            my_database: lib/db.dart""")
+        ]);
+        await project.runDriftCli(['make-migrations']);
+        expect(
+            d
+                .file('app/drift_schemas/my_database/drift_schema_v1.json')
+                .io
+                .existsSync(),
+            true);
+        // No other files should be created for 1st version
+        expect(d.file('app/test').io.existsSync(), false);
+
+        // Change the db schema and bump the version
+        File(p.join(project.root.path, 'lib/db.dart'))
+            .writeAsStringSync(_dbWithNewColumnBump);
+        await project.runDriftCli(['make-migrations', '--no-test']);
+        expect(
+            d
+                .file('app/drift_schemas/my_database/drift_schema_v2.json')
+                .io
+                .existsSync(),
+            true);
+        // Test files should be created
+        await d.dir('app/test/drift/my_database', [
+          // No test file, option was disabled
+          d.nothing('migration_test.dart'),
+          d.file('generated/schema.dart', IsValidDartFile(anything)),
+          d.file('generated/schema_v1.dart', IsValidDartFile(anything)),
+          d.file('generated/schema_v2.dart', IsValidDartFile(anything)),
+        ]).validate();
+        // Steps file should be created
+        await d
+            .file('app/lib/db.steps.dart', IsValidDartFile(anything))
+            .validate();
+      });
+
       test('schema_dir is respected', () async {
         project = await TestDriftProject.create([
           d.dir('lib', [d.file('db.dart', _dbContent)]),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/backends.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/src/runtime/api/runtime_api.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -15,6 +16,15 @@ class _FakeExecutorUser extends QueryExecutorUser {
 
   @override
   int get schemaVersion => 1;
+}
+
+class _EmptyDb extends GeneratedDatabase {
+  _EmptyDb(super.c);
+
+  @override
+  final List<TableInfo> allTables = const [];
+  @override
+  final int schemaVersion = 1;
 }
 
 MockDatabaseDelegate _mockDelegate() {
@@ -390,4 +400,28 @@ void main() {
       verify(delegate.close()).called(1);
     });
   });
+
+  test('scoped external blocks', () async {
+    final rawDb = DelegatedDatabase(delegate, isSequential: true);
+    final db = _EmptyDb(rawDb);
+
+    await db.customSelect('SELECT 1').get();
+    final secondDelegate = _mockDelegate();
+    await db.runConnectionZoned(
+      _CustomExecutor(db, rawDb.externalExecutor(secondDelegate)),
+      () async {
+        await db.customStatement("SELECT 'inner'");
+      },
+    );
+
+    verify(secondDelegate.runCustom("SELECT 'inner'", []));
+    verifyNever(delegate.runCustom("SELECT 'inner'", []));
+  });
+}
+
+final class _CustomExecutor extends DatabaseConnectionUser {
+  @override
+  final GeneratedDatabase attachedDatabase;
+
+  _CustomExecutor(this.attachedDatabase, super.executor);
 }

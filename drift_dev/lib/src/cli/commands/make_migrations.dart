@@ -17,6 +17,11 @@ import 'package:recase/recase.dart';
 class MakeMigrationCommand extends DriftCommand {
   MakeMigrationCommand(super.cli) {
     argParser.registerExportSchemaStartupCodeOption();
+    argParser.addFlag(
+      'test',
+      help: 'Whether to generate a test file template for migrations',
+      defaultsTo: true,
+    );
   }
 
   @override
@@ -96,6 +101,7 @@ targets:
       cli.exit('`test_dir` must be a relative path. Remove the leading slash');
     }
 
+    final generateTests = argResults?.flag('test') ?? true;
     final dumpGeneratedSchemaCode = argResults?.exportSchemaStartupCode;
 
     /// The root directory where test files for all databases are stored
@@ -142,8 +148,11 @@ targets:
       await writer.writeStepsFile();
       // Write the generated test databases
       await writer.writeTestDatabases();
-      // Write the generated test
-      await writer.writeTest();
+      // Write the generated test (unless that option has been disabled).
+      if (generateTests) {
+        await writer.writeTest();
+      }
+
       await writer.flush();
       writer.suggestDataMigrationTest();
     }

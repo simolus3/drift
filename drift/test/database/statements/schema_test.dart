@@ -92,6 +92,11 @@ void main() {
           'INNER JOIN "categories" "t1" '
           'ON "t1"."id" = "t0"."category"',
           []));
+
+      verify(mockExecutor.runCustom(
+        'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
+        [],
+      ));
     });
 
     test('creates individual tables', () async {

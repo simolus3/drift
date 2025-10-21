@@ -1,36 +1,12 @@
-builders:
-  versions:
-    import: "tool/write_versions.dart"
-    build_to: source
-    builder_factories: ["writeVersions"]
-    build_extensions: { "$package$": ["lib/versions.json"] }
-  code_snippets:
-    import: "tool/snippets.dart"
-    build_to: source
-    builder_factories: ["SnippetsBuilder.new"]
-    build_extensions: { "": [".excerpt.json"] }
-    auto_apply: none
-  api_index:
-    import: 'package:code_snippets/indexer.dart'
-    build_to: cache
-    builder_factories: ['DartIndexBuilder.new']
-    auto_apply: all_packages
-    runs_before: [code_snippets]
-    build_extensions: {"lib/lib": ['api.json']}
-
 targets:
   prepare:
     auto_apply_builders: false
     builders:
-      ":versions":
-        enabled: true
       drift_dev:preparing_builder:
         enabled: true
     sources:
       - "$package$"
-      - "lib/versions.json"
-      - "lib/snippets/**"
-      - "builders/**"
+      - "lib/src/snippets/**"
       - "test/generated/**"
 
   codegen:
@@ -49,12 +25,12 @@ targets:
             options:
               version: "3.39"
           databases:
-            main_db: "lib/snippets/dart_api/manager.dart"
+            main_db: "lib/src/snippets/dart_api/manager.dart"
         generate_for:
           include: &modular
-            - "lib/snippets/_shared/**"
-            - "lib/snippets/modular/**"
-            - "lib/snippets/drift_files/custom_queries.*"
+            - "lib/src/snippets/_shared/**"
+            - "lib/src/snippets/modular/**"
+            - "lib/src/snippets/drift_files/custom_queries.*"
       drift_dev:modular:
         enabled: true
         options: *options
@@ -76,20 +52,23 @@ targets:
   syntax_highlighting:
     dependencies: [":codegen"]
     builders:
-      ":code_snippets":
+      jaspr_content_snippets:
         enabled: true
+        options:
+          process_without_directives: true
+          drop_indentation: true
         generate_for:
           include:
-            - "lib/snippets/**/*.dart"
-            - "lib/snippets/**/*.drift"
-            - "lib/snippets/*.dart"
+            - "lib/src/snippets/**/*.dart"
+            - "lib/src/snippets/**/*.drift"
+            - "lib/src/snippets/*.dart"
           exclude:
             - "**/*.g.dart"
+            - "**/*.drift.dart"
     auto_apply_builders: false
     sources:
       - "$package$"
-      - "lib/snippets/**"
-      - "builders/snippets.dart"
+      - "lib/src/snippets/**"
 
   worker:
     dependencies: ["$default"]
@@ -98,6 +77,7 @@ targets:
       - "web/drift_worker.dart"
     builders:
       build_web_compilers:entrypoint:
+        enabled: true
         options:
           compiler: dart2js
       build_web_compilers:dart2js_archive_extractor:
@@ -113,22 +93,24 @@ targets:
   $default:
     dependencies: [":codegen", ":syntax_highlighting"]
     builders:
+      jaspr_content_snippets:combiner:
+        options:
+          path: lib/src/generated_snippets.dart
       build_web_compilers:entrypoint:
         generate_for:
           include:
-            - "web/**"
+            - web/**
           exclude:
-            - "web/drift_worker.dart"
-        release_options:
-          # Turn of null assertions for release builds, it looks like this
-          # makes generated code slightly smaller.
-          native_null_assertions: false
-          dart2js_args:
-            - "-O4"
-            - "--csp"
+            - "web/drift_worker.*"
       sass_builder:
         generate_for:
-          - docs/drift.scss
+          - web/*.scss
+        options:
+          silenceDeprecations:
+            # Unfixable with bootstrap 5: https://github.com/twbs/bootstrap/issues/40962
+            - import
+            - color-functions
+            - global-builtin
       # These builders should run in the source_gen target
       drift_dev:preparing_builder:
         enabled: false
@@ -140,20 +122,8 @@ targets:
         enabled: false
       build_web_compilers:dart2js_archive_extractor:
         enabled: false
-    sources:
-      include:
-        - "lib/**"
-        - "web/**"
-        - "$package$"
-        - "pubspec.yaml"
-        - "docs/*"
 
-# Snippets referencing public API members from this package will get dartdoc links
-# embedded in them.
 global_options:
-  ":api_index":
+  "jaspr_content_snippets:api_index":
     options:
-      packages: ['drift', 'drift_dev', 'drift_flutter', 'sqlite3', 'sqlite3_flutter_libs', 'sqlcipher_flutter_libs']
-
-additional_public_assets:
-  - "docs/**"
+      packages: ['drift', 'drift_flutter', 'sqlite3', 'drift_postgres']

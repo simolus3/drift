@@ -4,7 +4,15 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart'
-    show BasicType, ResolvedType, SchemaFromCreateTable, SqliteVersion;
+    show
+        BasicType,
+        EngineOptions,
+        ResolvedType,
+        SchemaFromCreateTable,
+        SqlEngine,
+        SqliteVersion,
+        Table,
+        TableInducingStatement;
 import 'package:string_scanner/string_scanner.dart';
 
 part '../generated/analysis/options.g.dart';
@@ -281,10 +289,14 @@ class SqliteAnalysisOptions {
 
   final Map<String, KnownSqliteFunction> knownFunctions;
 
+  @_TableFromSql()
+  final List<Table> knownTables;
+
   const SqliteAnalysisOptions({
     this.modules = const [],
     this.version,
     this.knownFunctions = const {},
+    this.knownTables = const [],
   });
 
   factory SqliteAnalysisOptions.fromJson(Map json) {
@@ -292,6 +304,32 @@ class SqliteAnalysisOptions {
   }
 
   Map<String, Object?> toJson() => _$SqliteAnalysisOptionsToJson(this);
+}
+
+final class _TableFromSql extends JsonConverter<Table, String> {
+  const _TableFromSql();
+
+  @override
+  Table fromJson(String json) {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
+    final result = engine.parse(json);
+    if (result.errors.isNotEmpty) {
+      throw ArgumentError.value(json,
+          'Not a valid CREATE TABLE statement: ${result.errors.join('\n')}');
+    }
+
+    final root = result.rootNode;
+    if (root is! TableInducingStatement) {
+      throw ArgumentError.value(json, 'Not a valid CREATE TABLE statement');
+    }
+
+    return SchemaFromCreateTable().read(root);
+  }
+
+  @override
+  String toJson(Table object) {
+    throw UnsupportedError('Unused');
+  }
 }
 
 class KnownSqliteFunction {
@@ -451,6 +489,10 @@ enum SqlModule {
   /// Enables the dbstat table providing insights into the disk state occupied
   /// by certain tables.
   dbstat,
+
+  /// Enables static analysis support for PowerSync, providing the
+  /// `powersync_crud` virtual table.
+  powersync,
 }
 
 /// The possible values for the case of the table and column names.

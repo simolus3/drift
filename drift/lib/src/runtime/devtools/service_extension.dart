@@ -7,6 +7,8 @@ import 'package:drift/src/remote/protocol.dart';
 import 'package:drift/src/runtime/executor/transactions.dart';
 import 'package:meta/meta.dart';
 
+import 'platform_unsupported.dart' if (dart.library.io) 'platform_native.dart';
+
 import '../api/runtime_api.dart';
 import 'devtools.dart';
 
@@ -25,6 +27,17 @@ class DriftServiceExtension {
     final tracked = TrackedDatabase.all.firstWhere((e) => e.id == databaseId);
 
     switch (action) {
+      case 'get-supported-features':
+        return {
+          'isExportSupported': isExportSupported,
+        };
+      case 'download':
+        final exported = await exportDatabase(tracked.database);
+
+        return {
+          'database': tracked.database.runtimeType.toString(),
+          'data': base64.encode(exported),
+        };
       case 'subscribe-to-tables':
         final stream = tracked.database.tableUpdates();
         final id = _subscriptionId++;

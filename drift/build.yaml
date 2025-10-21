@@ -31,7 +31,7 @@ targets:
           named_parameters: true
           fatal_warnings: true
           sql:
-            dialect: sqlite
+            dialects: [sqlite, postgres]
             options:
               version: "3.37"
               modules:

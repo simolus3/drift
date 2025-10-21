@@ -234,6 +234,21 @@ void main() {
 
     subscription.resume();
     await subscription.cancel();
+  }, skip: 'testing out awaited streams');
+
+  test('closing database waits for streams', () async {
+    final stream = db.select(db.users).watch();
+    final subscription = stream.listen((_) {})..pause();
+
+    var closed = false;
+    db.close().then((_) => closed = true);
+    await pumpEventQueue();
+    expect(closed, isFalse);
+
+    subscription.resume();
+    await subscription.cancel();
+    await pumpEventQueue();
+    expect(closed, isTrue);
   });
 
   group('stream keys', () {

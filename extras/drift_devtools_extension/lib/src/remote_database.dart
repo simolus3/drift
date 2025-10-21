@@ -84,6 +84,17 @@ class RemoteDatabase {
     await _driftRequest('clear');
   }
 
+  Future<Map<String, dynamic>> getSupportedFeatures() async {
+    final res = await _driftRequest('get-supported-features');
+    return (res as Map).cast();
+  }
+
+  Future<Map<String, String>> download() async {
+    final res = await _driftRequest('download');
+
+    return (res as Map).cast();
+  }
+
   Future<int> _newTableSubscription() async {
     final result = await _driftRequest('subscribe-to-tables');
     return result as int;

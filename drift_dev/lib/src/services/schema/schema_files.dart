@@ -162,7 +162,11 @@ class SchemaWriter {
         'sql': entity.createStmt,
         'unique': entity.unique,
         'columns': [
-          for (final column in entity.indexedColumns) column.nameInSql,
+          for (final column in entity.indexedColumns)
+            {
+              'column': column.column.nameInSql,
+              'order_by': column.orderBy?.name,
+            },
         ],
       };
     } else if (entity is DriftView) {
@@ -446,13 +450,33 @@ class SchemaReader {
     final sql = content['sql'] as String?;
 
     if (_version.supportsDartIndex) {
+      DriftIndexedColumn readColumn(Object serialized) {
+        if (serialized case final String name) {
+          // Older versions used to write index columns by name.
+          return DriftIndexedColumn(
+            column: on.columnBySqlName[name]!,
+            orderBy: null,
+          );
+        } else {
+          // Newer schemas encode {name, order_by}.
+          serialized as Map<String, Object?>;
+          return DriftIndexedColumn(
+            column: on.columnBySqlName[serialized['column'] as String]!,
+            orderBy: switch (serialized['order_by']) {
+              null => null,
+              final ordering => OrderingMode.values.byName(ordering as String),
+            },
+          );
+        }
+      }
+
       final index = DriftIndex(
         _id(name),
         _declaration,
         table: on,
         indexedColumns: [
           for (final col in content['columns'] as List)
-            on.columnBySqlName[col]!,
+            readColumn(col as Object),
         ],
         unique: content['unique'] as bool,
         createStmt: sql,
@@ -478,7 +502,11 @@ class SchemaReader {
         unique: stmt.unique,
         indexedColumns: [
           for (final column in stmt.columns)
-            on.columnBySqlName[(column.expression as Reference).columnName]!,
+            DriftIndexedColumn(
+              column: on.columnBySqlName[
+                  (column.expression as Reference).columnName]!,
+              orderBy: column.ordering,
+            )
         ],
       )..parsedStatement = stmt;
     }
@@ -586,7 +614,13 @@ class SchemaReader {
       _declaration,
       columns: [
         for (final column in content['columns'] as Iterable)
-          _readColumn(column as Map<String, dynamic>)
+          _readColumn(
+            column as Map<String, dynamic>,
+            // Don't parse column constraints. The serialized format includes a
+            // generated_as DSL feature for each view column, but that should be
+            // ignored because we're parsing views as SQL instead.
+            parseColumnConstraints: false,
+          )
       ],
       source: SqlViewSource(content['sql'] as String),
       customParentClass: null,
@@ -617,7 +651,8 @@ class SchemaReader {
 
   static final _dialectByName = SqlDialect.values.asNameMap();
 
-  DriftColumn _readColumn(Map<String, dynamic> data) {
+  DriftColumn _readColumn(Map<String, dynamic> data,
+      {bool parseColumnConstraints = true}) {
     final name = data['name'] as String;
     final columnType =
         _SerializeSqlType.deserialize(data['moor_type'] as String);
@@ -629,7 +664,7 @@ class SchemaReader {
 
     final dslFeatures = <DriftColumnConstraint?>[
       for (final feature in data['dsl_features'] as List<dynamic>)
-        _columnFeature(feature),
+        if (parseColumnConstraints) _columnFeature(feature),
       if (dialectAwareConstraints != null)
         DefaultConstraintsFromSchemaFile(null, dialectSpecific: {
           for (final MapEntry(:key, :value)

@@ -699,8 +699,10 @@ abstract class _$Database extends GeneratedDatabase {
       $TodoCategoryItemCountView(this);
   late final $TodoItemWithCategoryNameViewView customViewName =
       $TodoItemWithCategoryNameViewView(this);
-  late final Index itemTitle =
-      Index('item_title', 'CREATE INDEX item_title ON todo_items (title)');
+  late final Index itemTitle = Index.byDialect('item_title', {
+    SqlDialect.sqlite: 'CREATE INDEX item_title ON todo_items (title)',
+    SqlDialect.postgres: 'CREATE INDEX item_title ON todo_items (title)',
+  });
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();

@@ -1,0 +1,26 @@
+.favorite {
+  position: sticky;
+
+  a {
+    display: flex;
+    margin-top: -1.5rem;
+  }
+
+  img {
+    width: 4em;
+  }
+
+  .dark {
+    display: none;
+  }
+
+  @include color-mode(dark) {
+    .light {
+        display: none;
+    }
+
+    .dark {
+        display: block;
+    }
+  }
+}
