@@ -305,7 +305,7 @@ class _FakeMigrator_25 extends _i1.SmartFake implements _i2.Migrator {
         );
 }
 
-class _FakeFuture_26<T1> extends _i1.SmartFake implements _i5.Future<T1> {
+class _FakeFuture_26<T> extends _i1.SmartFake implements _i5.Future<T> {
   _FakeFuture_26(
     Object parent,
     Invocation parentInvocation,
@@ -941,6 +941,72 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<Ret> computeWithDatabase<Ret, DB extends _i2.GeneratedDatabase>({
+    required _i5.FutureOr<Ret> Function(DB)? computation,
+    required DB Function(_i2.DatabaseConnection)? connect,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #computeWithDatabase,
+          [],
+          {
+            #computation: computation,
+            #connect: connect,
+          },
+        ),
+        returnValue: _i6.ifNotNull(
+              _i6.dummyValueOrNull<Ret>(
+                this,
+                Invocation.method(
+                  #computeWithDatabase,
+                  [],
+                  {
+                    #computation: computation,
+                    #connect: connect,
+                  },
+                ),
+              ),
+              (Ret v) => _i5.Future<Ret>.value(v),
+            ) ??
+            _FakeFuture_26<Ret>(
+              this,
+              Invocation.method(
+                #computeWithDatabase,
+                [],
+                {
+                  #computation: computation,
+                  #connect: connect,
+                },
+              ),
+            ),
+        returnValueForMissingStub: _i6.ifNotNull(
+              _i6.dummyValueOrNull<Ret>(
+                this,
+                Invocation.method(
+                  #computeWithDatabase,
+                  [],
+                  {
+                    #computation: computation,
+                    #connect: connect,
+                  },
+                ),
+              ),
+              (Ret v) => _i5.Future<Ret>.value(v),
+            ) ??
+            _FakeFuture_26<Ret>(
+              this,
+              Invocation.method(
+                #computeWithDatabase,
+                [],
+                {
+                  #computation: computation,
+                  #connect: connect,
+                },
+              ),
+            ),
+      ) as _i5.Future<Ret>);
 
   @override
   _i5.Stream<T> createStream<T extends Object>(
