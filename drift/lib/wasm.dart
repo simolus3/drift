@@ -145,7 +145,7 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
-    bool migrateToBestImplementation = false,
+    WasmStorageImplementation? preferedImplemetation,
     bool enableMigrations = true,
   }) async {
     final probed = await probe(
@@ -164,7 +164,8 @@ class WasmDatabase extends DelegatedDatabase {
     // left.
     availableImplementations.sortBy<num>((element) => element.index);
 
-    final bestAvailableImplementation = availableImplementations.first;
+    final preferedAvailable =
+        availableImplementations.contains(preferedImplemetation);
     ExistingDatabase? currentDatabase;
 
     checkExisting:
@@ -192,17 +193,15 @@ class WasmDatabase extends DelegatedDatabase {
       }
     }
 
-    final bestCurrentImplementation = availableImplementations.firstOrNull ??
+    final bestImplementation = availableImplementations.firstOrNull ??
         WasmStorageImplementation.inMemory;
 
-    final needsMigration = migrateToBestImplementation &&
+    final needsMigration = preferedAvailable &&
         currentDatabase != null &&
-        bestCurrentImplementation != bestAvailableImplementation;
+        bestImplementation != preferedImplemetation;
 
     final connection = await probed.open(
-      migrateToBestImplementation
-          ? bestAvailableImplementation
-          : bestCurrentImplementation,
+      needsMigration ? preferedImplemetation! : bestImplementation,
       databaseName,
       localSetup: localSetup,
       initializeDatabase: needsMigration
@@ -212,7 +211,7 @@ class WasmDatabase extends DelegatedDatabase {
     );
 
     return WasmDatabaseResult(
-        connection, bestCurrentImplementation, probed.missingFeatures);
+        connection, bestImplementation, probed.missingFeatures);
   }
 
   /// Probes for:
