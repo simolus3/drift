@@ -8,12 +8,12 @@ library;
 
 import 'dart:async';
 import 'dart:js_interop';
-import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:drift/drift.dart';
+import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart'
     show DedicatedWorkerGlobalScope, SharedWorkerGlobalScope;
-import 'package:sqlite3/wasm.dart';
 
 import 'backends.dart';
 import 'src/sqlite3/database.dart';
@@ -145,6 +145,7 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
+    bool migrateToBestImplementation = false,
     bool enableMigrations = true,
   }) async {
     final probed = await probe(
@@ -158,6 +159,13 @@ class WasmDatabase extends DelegatedDatabase {
     // otherwise preferred storage implementation). In the future, we might want
     // to consider migrating between storage implementations as well.
     final availableImplementations = probed.availableStorages.toList();
+
+    // Enum values are ordered by preferrability, so just pick the best option
+    // left.
+    availableImplementations.sortBy<num>((element) => element.index);
+
+    final bestAvailableImplementation = availableImplementations.first;
+    ExistingDatabase? currentDatabase;
 
     checkExisting:
     for (final (location, name) in probed.existingDatabases) {
@@ -178,27 +186,33 @@ class WasmDatabase extends DelegatedDatabase {
         if (implementationsForStorage.any(availableImplementations.contains)) {
           availableImplementations
               .removeWhere((i) => !implementationsForStorage.contains(i));
+          currentDatabase = (location, name);
           break checkExisting;
         }
       }
     }
 
-    // Enum values are ordered by preferrability, so just pick the best option
-    // left.
-    availableImplementations.sortBy<num>((element) => element.index);
-
-    final bestImplementation = availableImplementations.firstOrNull ??
+    final bestCurrentImplementation = availableImplementations.firstOrNull ??
         WasmStorageImplementation.inMemory;
+
+    final needsMigration = migrateToBestImplementation &&
+        currentDatabase != null &&
+        bestCurrentImplementation != bestAvailableImplementation;
+
     final connection = await probed.open(
-      bestImplementation,
+      migrateToBestImplementation
+          ? bestAvailableImplementation
+          : bestCurrentImplementation,
       databaseName,
       localSetup: localSetup,
-      initializeDatabase: initializeDatabase,
+      initializeDatabase: needsMigration
+          ? () => probed.exportDatabase(currentDatabase!)
+          : initializeDatabase,
       enableMigrations: enableMigrations,
     );
 
     return WasmDatabaseResult(
-        connection, bestImplementation, probed.missingFeatures);
+        connection, bestCurrentImplementation, probed.missingFeatures);
   }
 
   /// Probes for:
