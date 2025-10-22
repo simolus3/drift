@@ -138,6 +138,9 @@ class WasmDatabase extends DelegatedDatabase {
   /// When [enableMigrations] is set to `false`, drift will not check the
   /// `user_version` pragma when opening the database or run migrations.
   ///
+  /// If a [preferedImplemetation] is defined and available in the browser the
+  /// data will automatically be migrated to it.
+  ///
   /// For more detailed information, see https://drift.simonbinder.eu/web.
   static Future<WasmDatabaseResult> open({
     required String databaseName,
