@@ -351,6 +351,29 @@ final class _TestConfiguration {
         },
       );
 
+      test(
+        'switch from IndexedDB database to OPFS if it is the prefered implementation',
+        () async {
+          // Open an IndexedDB database first
+          await driver.openDatabase(WasmStorageImplementation.unsafeIndexedDb);
+          await driver.insertIntoDatabase();
+          await Future.delayed(const Duration(seconds: 2));
+          await driver.driver.refresh(); // Reset JS state
+          await driver.waitReady();
+
+          // Open the database again, this time specifying opfs as the
+          // preferred implementation.
+          await driver.openDatabase(null, WasmStorageImplementation.opfsLocks);
+          expect(await driver.amountOfRows, 1);
+          await Future.delayed(const Duration(seconds: 2));
+          await driver.driver.refresh(); // Reset JS state
+          await driver.waitReady();
+
+          await driver.openDatabase(WasmStorageImplementation.opfsLocks);
+          expect(await driver.amountOfRows, 1);
+        },
+      );
+
       if (!browser.supports(WasmStorageImplementation.opfsShared)) {
         test('uses indexeddb after OPFS becomes unavailable', () async {
           // This browser only supports OPFS with the right headers. If they

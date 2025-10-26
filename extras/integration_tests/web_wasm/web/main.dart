@@ -6,11 +6,11 @@ import 'package:async/async.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
 import 'package:http/http.dart' as http;
+import 'package:sqlite3/wasm.dart';
 import 'package:web/web.dart'
     show document, EventStreamProviders, HTMLDivElement;
 import 'package:web_wasm/initialization_mode.dart';
 import 'package:web_wasm/src/database.dart';
-import 'package:sqlite3/wasm.dart';
 
 const dbName = 'drift_test';
 final sqlite3WasmUri = Uri.parse('sqlite3.wasm');
@@ -32,7 +32,10 @@ void main() {
     driftWorkerUri = Uri.parse('wrong.js');
     return _detectImplementations(arg);
   });
-  _addCallbackForWebDriver('open', _open);
+  _addCallbackForWebDriver('open', (arg) {
+    final decoded = json.decode(arg!);
+    return _open(decoded[0] as String?, decoded[1] as String?);
+  });
   _addCallbackForWebDriver('close', (arg) async {
     await tableUpdates?.cancel();
     await openedDatabase?.close();
@@ -178,7 +181,8 @@ Future<JSString> _detectImplementations(String? _) async {
   }).toJS;
 }
 
-Future<JSAny?> _open(String? implementationName) async {
+Future<JSAny?> _open(
+    String? implementationName, String? preferedImplemetationName) async {
   DatabaseConnection connection;
 
   if (implementationName != null) {
@@ -201,6 +205,8 @@ Future<JSAny?> _open(String? implementationName) async {
       initializeDatabase: _initializeDatabase,
       enableMigrations:
           initializationMode != InitializationMode.noneAndDisableMigrations,
+      preferedImplemetation: WasmStorageImplementation.values
+          .asNameMap()[preferedImplemetationName],
       localSetup: (db) {
         // The worker has a similar setup call that will make database_host
         // return `worker` instead.
