@@ -146,9 +146,12 @@ class DriftWebDriver {
     );
   }
 
-  Future<void> openDatabase([WasmStorageImplementation? implementation]) async {
-    await driver.executeAsync(
-        'open(arguments[0], arguments[1])', [implementation?.name]);
+  Future<void> openDatabase(
+      [WasmStorageImplementation? implementation,
+      WasmStorageImplementation? preferedImplemetation]) async {
+    await driver.executeAsync('open(arguments[0], arguments[1])', [
+      json.encode([implementation?.name, preferedImplemetation?.name])
+    ]);
   }
 
   Future<void> closeDatabase() async {
