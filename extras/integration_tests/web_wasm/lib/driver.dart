@@ -7,14 +7,14 @@ import 'package:build_daemon/constants.dart';
 import 'package:build_daemon/data/build_status.dart';
 import 'package:build_daemon/data/build_target.dart';
 import 'package:collection/collection.dart';
+// ignore: implementation_imports
+import 'package:drift/src/web/wasm_setup/types.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_proxy/shelf_proxy.dart';
 import 'package:web_wasm/initialization_mode.dart';
 import 'package:webdriver/async_io.dart';
-// ignore: implementation_imports
-import 'package:drift/src/web/wasm_setup/types.dart';
 import 'package:webdriver/support/async.dart';
 
 class TestAssetServer {
@@ -36,7 +36,7 @@ class TestAssetServer {
         await loadPackageConfigUri((await Isolate.packageConfig)!);
     final ownPackage = packageConfig['web_wasm']!.root;
     var packageDir = ownPackage.toFilePath(windows: Platform.isWindows);
-    if (packageDir.endsWith('/')) {
+    if (packageDir.endsWith('/') || packageDir.endsWith('\\')) {
       packageDir = packageDir.substring(0, packageDir.length - 1);
     }
 
