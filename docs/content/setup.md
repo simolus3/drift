@@ -89,12 +89,12 @@ targets:
   $default:
     builders:
       drift_dev:
-      options:
-        sql:
-          dialects:
-            - postgres
-            # Uncomment if you need to support both
-  #         - sqlite
+        options:
+          sql:
+            dialects:
+              - postgres
+              # Uncomment if you need to support both
+    #         - sqlite
 ```
 
 </TabItem>
