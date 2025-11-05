@@ -87,14 +87,14 @@ to [configure](generation_options/index.md) `drift_dev`:
 ```yaml
 targets:
   $default:
-  builders:
-    drift_dev:
-    options:
-      sql:
-        dialects:
-          - postgres
-          # Uncomment if you need to support both
-#         - sqlite
+    builders:
+      drift_dev:
+      options:
+        sql:
+          dialects:
+            - postgres
+            # Uncomment if you need to support both
+  #         - sqlite
 ```
 
 </TabItem>
