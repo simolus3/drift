@@ -7,7 +7,9 @@ import 'inherited_page.dart';
 
 /// Renders markdown links to source files (with a `.md` extension) by rewriting
 /// them to the final url that page would have in the end.
-final class PageRef implements CustomComponent {
+final class PageRef extends CustomComponent {
+  PageRef() : super.base();
+
   @override
   Component? create(Node node, NodesBuilder builder) {
     if (node case ElementNode(tag: 'a', :final attributes, :final children)) {
