@@ -29,7 +29,7 @@ dependencies:
   markdown: ^7.3.0
   jaspr_docsy:
     hosted: https://pub-simonbinder-eu.fsn1.your-objectstorage.com
-    version: 0.0.3
+    version: 0.0.4
   universal_web: ^1.1.1
   http: ^1.5.0
   web: ^1.1.1
