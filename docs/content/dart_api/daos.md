@@ -17,7 +17,7 @@ part 'todos_dao.g.dart';
 class TodosDao extends DatabaseAccessor<MyDatabase> with _$TodosDaoMixin {
   // this constructor is required so that the main database can create an instance
   // of this object.
-  TodosDao(super.db);
+  TodosDao(super.attachedDatabase);
 
   Stream<List<TodoEntry>> todosInCategory(Category? category) {
     if (category == null) {
