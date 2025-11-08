@@ -289,7 +289,7 @@ final class _BlockCache {
 
     // Trim the range from page, endPageInclusive to remove pages at both ends
     // that have already been cached.
-    while (cachedPages[page] != null && page < endPageExclusive) {
+    while (page < endPageExclusive && cachedPages[page] != null) {
       page++;
     }
     while (cachedPages[endPageExclusive - 1] != null &&
