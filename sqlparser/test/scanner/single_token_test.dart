@@ -74,14 +74,32 @@ void main() {
     expect(scanner.tokens[1].type, TokenType.eof);
   });
 
-  test('issues error for unterminated string literals', () {
-    final scanner = Scanner("'unterminated")..scanTokens();
+  group("parse unterminated string literals", () {
+    test('issues error', () {
+      final scanner = Scanner("'unterminated")..scanTokens();
 
-    expect(
-      scanner.errors,
-      contains(const TypeMatcher<TokenizerError>()
-          .having((e) => e.message, 'message', 'Unterminated string')),
-    );
+      expect(
+        scanner.errors,
+        contains(const TypeMatcher<TokenizerError>()
+            .having((e) => e.message, 'message', 'Unterminated string')),
+      );
+
+      expect(scanner.tokens, [
+        isA<StringLiteralToken>()
+            .having((e) => e.value, 'value', 'unterminated'),
+        isA<Token>().having((e) => e.type, 'type', TokenType.eof),
+      ]);
+    });
+
+    test('does not crash if the input ends with apostrophe', () {
+      final scanner = Scanner("'")..scanTokens();
+
+      expect(
+        scanner.errors,
+        contains(const TypeMatcher<TokenizerError>()
+            .having((e) => e.message, 'message', 'Unterminated string')),
+      );
+    });
   });
 
   test('binary string literal', () {
