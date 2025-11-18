@@ -352,6 +352,25 @@ final class _TestConfiguration {
       );
 
       test(
+        'use preferred implementation if available when initializing',
+        () async {
+          // Open with preferred IndexedDB database first
+          await driver.openDatabase(
+              null, WasmStorageImplementation.unsafeIndexedDb);
+          await driver.insertIntoDatabase();
+          await Future.delayed(const Duration(seconds: 2));
+          await driver.driver.refresh(); // Reset JS state
+          await driver.waitReady();
+
+          // Open the database again, this time without specifying a fixed
+          // implementation. Despite OPFS being available (and preferred),
+          // the existing database should be used.
+          await driver.openDatabase();
+          expect(await driver.amountOfRows, 1);
+        },
+      );
+
+      test(
         'switch from IndexedDB database to OPFS if it is the preferred implementation',
         () async {
           // Open an IndexedDB database first
