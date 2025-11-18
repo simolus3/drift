@@ -352,7 +352,7 @@ final class _TestConfiguration {
       );
 
       test(
-        'switch from IndexedDB database to OPFS if it is the prefered implementation',
+        'switch from IndexedDB database to OPFS if it is the preferred implementation',
         () async {
           // Open an IndexedDB database first
           await driver.openDatabase(WasmStorageImplementation.unsafeIndexedDb);

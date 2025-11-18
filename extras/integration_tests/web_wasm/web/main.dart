@@ -182,7 +182,7 @@ Future<JSString> _detectImplementations(String? _) async {
 }
 
 Future<JSAny?> _open(
-    String? implementationName, String? preferedImplemetationName) async {
+    String? implementationName, String? preferredImplementationName) async {
   DatabaseConnection connection;
 
   if (implementationName != null) {
@@ -205,8 +205,8 @@ Future<JSAny?> _open(
       initializeDatabase: _initializeDatabase,
       enableMigrations:
           initializationMode != InitializationMode.noneAndDisableMigrations,
-      preferedImplemetation: WasmStorageImplementation.values
-          .asNameMap()[preferedImplemetationName],
+      preferredImplementation: WasmStorageImplementation.values
+          .asNameMap()[preferredImplementationName],
       localSetup: (db) {
         // The worker has a similar setup call that will make database_host
         // return `worker` instead.

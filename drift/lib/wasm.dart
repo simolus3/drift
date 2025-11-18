@@ -138,7 +138,7 @@ class WasmDatabase extends DelegatedDatabase {
   /// When [enableMigrations] is set to `false`, drift will not check the
   /// `user_version` pragma when opening the database or run migrations.
   ///
-  /// If a [preferedImplemetation] is defined and available in the browser the
+  /// If a [preferredImplementation] is defined and available in the browser the
   /// data will automatically be migrated to it.
   ///
   /// For more detailed information, see https://drift.simonbinder.eu/web.
@@ -148,7 +148,7 @@ class WasmDatabase extends DelegatedDatabase {
     required Uri driftWorkerUri,
     FutureOr<Uint8List?> Function()? initializeDatabase,
     WasmDatabaseSetup? localSetup,
-    WasmStorageImplementation? preferedImplemetation,
+    WasmStorageImplementation? preferredImplementation,
     bool enableMigrations = true,
   }) async {
     final probed = await probe(
@@ -168,7 +168,7 @@ class WasmDatabase extends DelegatedDatabase {
     availableImplementations.sortBy<num>((element) => element.index);
 
     final preferedAvailable =
-        availableImplementations.contains(preferedImplemetation);
+        availableImplementations.contains(preferredImplementation);
     ExistingDatabase? currentDatabase;
 
     checkExisting:
@@ -201,10 +201,14 @@ class WasmDatabase extends DelegatedDatabase {
 
     final needsMigration = preferedAvailable &&
         currentDatabase != null &&
-        bestImplementation != preferedImplemetation;
+        bestImplementation != preferredImplementation;
 
     final connection = await probed.open(
-      needsMigration ? preferedImplemetation! : bestImplementation,
+      needsMigration
+          ? preferredImplementation!
+          : preferedAvailable
+              ? preferredImplementation!
+              : bestImplementation,
       databaseName,
       localSetup: localSetup,
       initializeDatabase: needsMigration
