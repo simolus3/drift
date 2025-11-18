@@ -159,66 +159,77 @@ class WasmDatabase extends DelegatedDatabase {
 
     // If we have an existing database in storage, we want to keep using that
     // format to avoid data loss (e.g. after a browser update that enables a
-    // otherwise preferred storage implementation). In the future, we might want
-    // to consider migrating between storage implementations as well.
+    // otherwise preferred storage implementation).
     final availableImplementations = probed.availableStorages.toList();
-
     // Enum values are ordered by preferrability, so just pick the best option
     // left.
-    availableImplementations.sortBy<num>((element) => element.index);
+    availableImplementations.sortBy<num>((e) => e.index);
 
-    final preferedAvailable =
+    final preferredIsAvailable =
         availableImplementations.contains(preferredImplementation);
-    ExistingDatabase? currentDatabase;
 
-    checkExisting:
-    for (final (location, name) in probed.existingDatabases) {
-      if (name == databaseName) {
-        final implementationsForStorage = switch (location) {
-          WebStorageApi.indexedDb => const [
-              WasmStorageImplementation.sharedIndexedDb,
-              WasmStorageImplementation.unsafeIndexedDb
-            ],
-          WebStorageApi.opfs => const [
-              WasmStorageImplementation.opfsShared,
-              WasmStorageImplementation.opfsLocks,
-            ],
-        };
-
-        // If any of the implementations for this location is still availalable,
-        // we want to use it instead of another location.
-        if (implementationsForStorage.any(availableImplementations.contains)) {
-          availableImplementations
-              .removeWhere((i) => !implementationsForStorage.contains(i));
-          currentDatabase = (location, name);
-          break checkExisting;
-        }
-      }
-    }
+    // Check if there is an existing DB and restrict implementations to its storage.
+    final currentDb = _selectExistingDatabase(
+      databaseName,
+      availableImplementations,
+      probed.existingDatabases,
+    );
 
     final bestImplementation = availableImplementations.firstOrNull ??
         WasmStorageImplementation.inMemory;
 
-    final needsMigration = preferedAvailable &&
-        currentDatabase != null &&
+    final needsMigration = preferredIsAvailable &&
+        currentDb != null &&
         bestImplementation != preferredImplementation;
 
+    // Determine which implementation to open with
+    final implementationToOpen = needsMigration
+        ? preferredImplementation!
+        : preferredIsAvailable
+            ? preferredImplementation!
+            : bestImplementation;
+
     final connection = await probed.open(
-      needsMigration
-          ? preferredImplementation!
-          : preferedAvailable
-              ? preferredImplementation!
-              : bestImplementation,
+      implementationToOpen,
       databaseName,
       localSetup: localSetup,
       initializeDatabase: needsMigration
-          ? () => probed.exportDatabase(currentDatabase!)
+          ? () => probed.exportDatabase(currentDb)
           : initializeDatabase,
       enableMigrations: enableMigrations,
     );
 
     return WasmDatabaseResult(
         connection, bestImplementation, probed.missingFeatures);
+  }
+
+  static ExistingDatabase? _selectExistingDatabase(
+    String databaseName,
+    List<WasmStorageImplementation> available,
+    List<ExistingDatabase> existingDatabases,
+  ) {
+    for (final (location, name) in existingDatabases) {
+      if (name != databaseName) continue;
+
+      final implementationsForStorage = switch (location) {
+        WebStorageApi.indexedDb => const [
+            WasmStorageImplementation.sharedIndexedDb,
+            WasmStorageImplementation.unsafeIndexedDb,
+          ],
+        WebStorageApi.opfs => const [
+            WasmStorageImplementation.opfsShared,
+            WasmStorageImplementation.opfsLocks,
+          ],
+      };
+
+      // If storage still supported → restrict available implementations
+      if (implementationsForStorage.any(available.contains)) {
+        available.removeWhere((i) => !implementationsForStorage.contains(i));
+        return (location, name);
+      }
+    }
+
+    return null;
   }
 
   /// Probes for:
