@@ -1269,4 +1269,48 @@ class TestAccessor extends DatabaseAccessor<AppDatabase> {
       );
     },
   );
+
+  test('not added false positive', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3656
+    await emulateDriftBuild(
+      inputs: {
+        'a|lib/database.dart': '''
+import 'package:drift/drift.dart';
+
+import 'dao.dart';
+
+@DriftDatabase(include: {'tables.drift'}, daos: [Accessor])
+class Repro {
+  Repro(super.e);
+
+  @override
+  int get schemaVersion => 1;
+}
+''',
+        'a|lib/dao.dart': '''
+import 'package:drift/drift.dart';
+
+import 'database.dart';
+
+@DriftAccessor(include: {'query.drift'})
+class Accessor extends DatabaseAccessor<Repro> {
+  Accessor(super.attachedDatabase);
+}
+''',
+        'a|lib/tables.drift': '''
+CREATE TABLE my_table (
+    id INTEGER NOT NULL PRIMARY KEY,
+    another TEXT NOT NULL
+);
+''',
+        'a|lib/query.drift': '''
+import 'tables.drift';
+
+foo: SELECT * FROM my_table;
+''',
+      },
+      modularBuild: false,
+      logger: loggerThat(neverEmits(anything)),
+    );
+  });
 }

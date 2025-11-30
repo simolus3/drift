@@ -1,1 +1,373 @@
-{"_meta":{"description":"This file contains a serialized version of schema entities for drift.","version":"1.2.0"},"options":{"store_date_time_values_as_text":true},"entities":[{"id":0,"references":[],"type":"table","data":{"name":"users","was_declared_in_moor":false,"columns":[{"name":"id","getter_name":"id","moor_type":"int","nullable":false,"customConstraints":null,"defaultConstraints":"PRIMARY KEY AUTOINCREMENT","dialectAwareDefaultConstraints":{"sqlite":"PRIMARY KEY AUTOINCREMENT"},"default_dart":null,"default_client_dart":null,"dsl_features":["auto-increment"]},{"name":"name","getter_name":"name","moor_type":"string","nullable":false,"customConstraints":null,"default_dart":"const CustomExpression('\\'name\\'')","default_client_dart":null,"dsl_features":[]},{"name":"birthday","getter_name":"birthday","moor_type":"dateTime","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[{"check":{"dart_expression":{"elements":[{"lexeme":"ComparableExpr","import_uri":"package:drift/src/runtime/query_builder/query_builder.dart"},"(",{"lexeme":"birthday","tag":"birthday"},").isBiggerThan(",{"lexeme":"Constant","import_uri":"package:drift/src/runtime/query_builder/query_builder.dart"},"(",{"lexeme":"DateTime","import_uri":"dart:core"},"(1900)))"]}}}]},{"name":"next_user","getter_name":"nextUser","moor_type":"int","nullable":true,"customConstraints":null,"defaultConstraints":"REFERENCES users (id)","dialectAwareDefaultConstraints":{"sqlite":"REFERENCES users (id)"},"default_dart":null,"default_client_dart":null,"dsl_features":["unknown"]}],"is_virtual":false,"without_rowid":false,"constraints":["CHECK (LENGTH(name) < 10)"],"unique_keys":[["name","birthday"]]}},{"id":1,"references":[0],"type":"table","data":{"name":"groups","was_declared_in_moor":true,"columns":[{"name":"id","getter_name":"id","moor_type":"int","nullable":false,"customConstraints":"NOT NULL","default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"title","getter_name":"title","moor_type":"string","nullable":false,"customConstraints":"NOT NULL","default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"deleted","getter_name":"deleted","moor_type":"bool","nullable":true,"customConstraints":"NULL DEFAULT FALSE","default_dart":"const CustomExpression('FALSE')","default_client_dart":null,"dsl_features":[]},{"name":"owner","getter_name":"owner","moor_type":"int","nullable":false,"customConstraints":"NOT NULL REFERENCES users(id)","default_dart":null,"default_client_dart":null,"dsl_features":["unknown"]}],"is_virtual":false,"without_rowid":false,"constraints":["PRIMARY KEY(id)"],"explicit_pk":["id"]}},{"id":2,"references":[],"type":"table","data":{"name":"notes","was_declared_in_moor":true,"columns":[{"name":"title","getter_name":"title","moor_type":"string","nullable":false,"customConstraints":"","default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"content","getter_name":"content","moor_type":"string","nullable":false,"customConstraints":"","default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"search_terms","getter_name":"searchTerms","moor_type":"string","nullable":false,"customConstraints":"","default_dart":null,"default_client_dart":null,"dsl_features":[]}],"is_virtual":true,"create_virtual_stmt":"CREATE VIRTUAL TABLE \"notes\" USING fts5(title, content, search_terms, tokenize = \"unicode61 tokenchars '.'\")","without_rowid":false,"constraints":[]}},{"id":3,"references":[0,1],"type":"view","data":{"name":"group_count","sql":"CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM \"groups\" WHERE owner = users.id) AS group_count FROM users;","dart_info_name":"GroupCount","columns":[{"name":"id","getter_name":"id","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"name","getter_name":"name","moor_type":"string","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"birthday","getter_name":"birthday","moor_type":"dateTime","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"next_user","getter_name":"nextUser","moor_type":"int","nullable":true,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]},{"name":"group_count","getter_name":"groupCount","moor_type":"int","nullable":false,"customConstraints":null,"default_dart":null,"default_client_dart":null,"dsl_features":[]}]}},{"id":4,"references":[0],"type":"index","data":{"on":0,"name":"user_name","sql":null,"unique":false,"columns":["name"]}}]}
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for drift.",
+    "version": "1.3.0"
+  },
+  "options": {
+    "store_date_time_values_as_text": true
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "users",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'name\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "birthday",
+            "getter_name": "birthday",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "birthday",
+                        "tag": "birthday"
+                      },
+                      ").isBiggerThan(",
+                      {
+                        "lexeme": "Constant",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "DateTime",
+                        "import_uri": "dart:core"
+                      },
+                      ".utc(1900)))"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "next_user",
+            "getter_name": "nextUser",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES users (id)",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES users (id)"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "users",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (LENGTH(name) < 10)"
+        ],
+        "unique_keys": [
+          [
+            "name",
+            "birthday"
+          ]
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "references": [
+        0
+      ],
+      "type": "table",
+      "data": {
+        "name": "groups",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "title",
+            "getter_name": "title",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "NOT NULL",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted",
+            "getter_name": "deleted",
+            "moor_type": "bool",
+            "nullable": true,
+            "customConstraints": "NULL DEFAULT FALSE",
+            "default_dart": "const CustomExpression('FALSE')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "owner",
+            "getter_name": "owner",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": "NOT NULL REFERENCES users(id)",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "users",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": null
+                }
+              }
+            ]
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "PRIMARY KEY(id)"
+        ],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "notes",
+        "was_declared_in_moor": true,
+        "columns": [
+          {
+            "name": "title",
+            "getter_name": "title",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "content",
+            "getter_name": "content",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "search_terms",
+            "getter_name": "searchTerms",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": "",
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": true,
+        "create_virtual_stmt": "CREATE VIRTUAL TABLE \"notes\" USING fts5(title, content, search_terms, tokenize = \"unicode61 tokenchars '.'\")",
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 3,
+      "references": [
+        0,
+        1
+      ],
+      "type": "view",
+      "data": {
+        "name": "group_count",
+        "sql": "CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM \"groups\" WHERE owner = users.id) AS group_count FROM users",
+        "dart_info_name": "GroupCount",
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "birthday",
+            "getter_name": "birthday",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "next_user",
+            "getter_name": "nextUser",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "group_count",
+            "getter_name": "groupCount",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "references": [
+        0
+      ],
+      "type": "index",
+      "data": {
+        "on": 0,
+        "name": "user_name",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "name",
+            "order_by": null
+          }
+        ]
+      }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "users",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"users\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" TEXT NOT NULL DEFAULT 'name', \"birthday\" TEXT NULL CHECK(JULIANDAY(\"birthday\") > JULIANDAY('1900-01-01T00:00:00.000Z')), \"next_user\" INTEGER NULL REFERENCES users (id), UNIQUE (\"name\", \"birthday\"), CHECK (LENGTH(name) < 10));"
+        }
+      ]
+    },
+    {
+      "name": "groups",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"groups\" (\"id\" INTEGER NOT NULL, \"title\" TEXT NOT NULL, \"deleted\" INTEGER NULL DEFAULT FALSE, \"owner\" INTEGER NOT NULL REFERENCES users(id), PRIMARY KEY(id));"
+        }
+      ]
+    },
+    {
+      "name": "notes",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE VIRTUAL TABLE IF NOT EXISTS \"notes\" USING fts5(title, content, search_terms, tokenize = \"unicode61 tokenchars '.'\");"
+        }
+      ]
+    },
+    {
+      "name": "group_count",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM \"groups\" WHERE owner = users.id) AS group_count FROM users"
+        }
+      ]
+    },
+    {
+      "name": "user_name",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX user_name ON users (name)"
+        }
+      ]
+    }
+  ]
+}

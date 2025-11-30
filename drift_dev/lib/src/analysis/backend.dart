@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:logging/logging.dart';
 
 /// The backend used by drift's analysis implementation to read files and access
@@ -15,8 +15,8 @@ abstract class DriftBackend {
   /// Reads a file as string.
   Future<String> readAsString(Uri uri);
 
-  Future<Uri> uriOfDart(Element2 element) async {
-    return element.library2!.uri;
+  Future<Uri> uriOfDart(Element element) async {
+    return element.library!.uri;
   }
 
   bool get canReadDart;
@@ -26,7 +26,7 @@ abstract class DriftBackend {
   /// This should also be able to resolve SDK libraries.
   /// If no Dart library can be found under that uri, throws a
   /// [NotALibraryException].
-  Future<LibraryElement2> readDart(Uri uri);
+  Future<LibraryElement> readDart(Uri uri);
 
   /// Loads the resolved AST node defining the given [element].
   ///
@@ -34,7 +34,7 @@ abstract class DriftBackend {
   /// the resolved AST is not available.
   /// When the [element] does not have a syntactic representation in the AST,
   /// null is returned.
-  Future<AstNode?> loadElementDeclaration(Element2 element);
+  Future<AstNode?> loadElementDeclaration(Element element);
 
   /// Resolves a Dart expression from a string.
   ///
@@ -48,7 +48,7 @@ abstract class DriftBackend {
       Uri context, String dartExpression, Iterable<String> imports);
 
   /// Resolves the Dart element named [reference] in the [imports] of [context].
-  Future<Element2?> resolveTopLevelElement(
+  Future<Element?> resolveTopLevelElement(
       Uri context, String reference, Iterable<Uri> imports);
 }
 

@@ -2,7 +2,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_visitor.dart';
@@ -46,7 +46,7 @@ class AnnotatedDartCode {
     return builder.build();
   }
 
-  factory AnnotatedDartCode.topLevelElement(Element2 element) {
+  factory AnnotatedDartCode.topLevelElement(Element element) {
     return AnnotatedDartCode([DartTopLevelSymbol.topLevelElement(element)]);
   }
 
@@ -112,7 +112,7 @@ class AnnotatedDartCodeBuilder {
     _elements.add(symbol);
   }
 
-  void addTopLevelElement(Element2 element) {
+  void addTopLevelElement(Element element) {
     _addPendingText();
     _elements.add(DartTopLevelSymbol.topLevelElement(element));
   }
@@ -129,7 +129,7 @@ class AnnotatedDartCodeBuilder {
   void addAstNode(
     AstNode node, {
     Set<AstNode> exclude = const {},
-    Map<Element2, String> taggedElements = const {},
+    Map<Element, String> taggedElements = const {},
   }) {
     final visitor = _AddFromAst(this, exclude, taggedElements);
     node.accept(visitor);
@@ -299,21 +299,21 @@ final class DartTopLevelSymbol implements DartCodeElement {
     return DartTopLevelSymbol(name, _driftUri);
   }
 
-  factory DartTopLevelSymbol.topLevelElement(Element2 element,
+  factory DartTopLevelSymbol.topLevelElement(Element element,
       [String? elementName]) {
-    assert(element.library2?.children2.contains(element) == true,
-        '${element.name3} is not a top-level element');
+    assert(element.library?.children.contains(element) == true,
+        '${element.name} is not a top-level element');
 
     // We're using this to recover the right import URI when using
     // `package:build`:
     // https://github.com/dart-lang/build/blob/62cef9fae18dbde3ada7993986cca102270752d0/build_resolvers/lib/src/resolver.dart#L309-L319
-    var sourceUri = element.library2!.uri;
+    var sourceUri = element.library!.uri;
     if (sourceUri.isScheme('package') || sourceUri.isScheme('asset')) {
       sourceUri = AssetId.resolve(sourceUri).uri;
     }
 
     return DartTopLevelSymbol(
-        elementName ?? element.name3 ?? '(???)', sourceUri);
+        elementName ?? element.name ?? '(???)', sourceUri);
   }
 
   factory DartTopLevelSymbol.fromJson(Map json) =>
@@ -407,7 +407,7 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
           _builder.addText(', ');
         }
 
-        _builder.addText(arg.name3!);
+        _builder.addText(arg.name!);
         final bound = arg.bound;
         if (bound != null) {
           _builder.addText(' extends ');
@@ -445,7 +445,7 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
 
       parameter.type.accept(this);
       if (parameter.isNamed) {
-        _builder.addText(' ${parameter.name3!}');
+        _builder.addText(' ${parameter.name!}');
       }
       i++;
     }
@@ -461,10 +461,10 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
   @override
   void visitInterfaceType(InterfaceType type) {
     if (type.alias case final alias?) {
-      _builder.addTopLevelElement(alias.element2);
+      _builder.addTopLevelElement(alias.element);
       _addTypeArguments(alias.typeArguments);
     } else {
-      _builder.addTopLevelElement(type.element3);
+      _builder.addTopLevelElement(type.element);
       _addTypeArguments(type.typeArguments);
     }
 
@@ -502,7 +502,7 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
 
   @override
   void visitTypeParameterType(TypeParameterType type) {
-    _builder.addText(type.element3.name3!);
+    _builder.addText(type.element.name!);
     _writeSuffix(type.nullabilitySuffix);
   }
 
@@ -516,12 +516,12 @@ class _AddFromDartType extends UnifyingTypeVisitor<void> {
 class _AddFromAst extends GeneralizingAstVisitor<void> {
   final AnnotatedDartCodeBuilder _builder;
   final Set<AstNode> _excluding;
-  final Map<Element2, String> _taggedElements;
+  final Map<Element, String> _taggedElements;
 
   _AddFromAst(this._builder, this._excluding, this._taggedElements);
 
-  void _addTopLevelReference(Element2? element, Token name2) {
-    if (element == null || (element.isSynthetic && element.library2 == null)) {
+  void _addTopLevelReference(Element? element, Token name2) {
+    if (element == null || (element.isSynthetic && element.library == null)) {
       _builder.addText(name2.lexeme);
     } else {
       _builder.addTopLevel(
@@ -572,7 +572,7 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
 
   @override
   void visitExtensionOverride(ExtensionOverride node) {
-    _addTopLevelReference(node.element2, node.name); // Transform identifier
+    _addTopLevelReference(node.element, node.name); // Transform identifier
     node.typeArguments?.accept(this);
     node.argumentList.accept(this);
   }
@@ -614,14 +614,14 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
     }
 
     final element = node.methodName.element;
-    final enclosing = element?.enclosingElement2;
-    if (enclosing is! ExtensionElement2 || enclosing.name3 == null) {
+    final enclosing = element?.enclosingElement;
+    if (enclosing is! ExtensionElement || enclosing.name == null) {
       return super.visitMethodInvocation(node);
     }
 
     _builder
       ..addTopLevel(
-          DartTopLevelSymbol.topLevelElement(enclosing, enclosing.name3!))
+          DartTopLevelSymbol.topLevelElement(enclosing, enclosing.name!))
       ..addText('(');
     node.target?.accept(this);
     _builder
@@ -634,7 +634,7 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
 
   @override
   void visitNamedType(NamedType node) {
-    _addTopLevelReference(node.element2, node.name2);
+    _addTopLevelReference(node.element, node.name);
     if (node.typeArguments case final typeArgs?) {
       visitTypeArgumentList(typeArgs);
     }
@@ -647,7 +647,7 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   @override
   void visitPrefixedIdentifier(PrefixedIdentifier node) {
     final targetOfPrefix = node.prefix.element;
-    if (targetOfPrefix is PrefixElement2) {
+    if (targetOfPrefix is PrefixElement) {
       // Ignore the prefix: We will add it back either way when generating
       // imports in the generated code later.
       visitSimpleIdentifier(node.identifier);
@@ -659,11 +659,11 @@ class _AddFromAst extends GeneralizingAstVisitor<void> {
   @override
   void visitSimpleIdentifier(SimpleIdentifier node) {
     final target = node.element;
-    final targetLibrary = target?.library2;
+    final targetLibrary = target?.library;
 
     // Referencing an element from an import, add necessary import prefix.
     final isTopLevel =
-        targetLibrary != null && targetLibrary.children2.contains(target);
+        targetLibrary != null && targetLibrary.children.contains(target);
 
     if (isTopLevel) {
       _builder.addTopLevelElement(target!);

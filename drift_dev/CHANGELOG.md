@@ -1,3 +1,21 @@
+## 2.29.1-dev
+
+- Schema export: Always export generated SQL statements as a reference.
+- Schema export: Always use temporary file instead of data URI.
+- Support analyzer versions 9.x.
+
+## 2.29.0
+
+- Fix invalid schema code for views.
+- Add the `known_tables` option. It allows defining external tables assumed to be available
+  without including them in the drift-managed schema.
+- Make-migrations: Add `--no-test` option to disable generating tests.
+
+## 2.28.3
+
+- Remove dependencies on discontinued build packages.
+- Fix false-positive warnings about imported files not being referenced.
+
 ## 2.28.2
 
 - Fix generating code for `typedef`s with different parameters than the type they point to.

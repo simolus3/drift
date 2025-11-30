@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../backend.dart';
@@ -89,6 +89,8 @@ class DriftAnalysisDriver {
           if (dialect.hasModule(SqlModule.spellfix1))
             const Spellfix1Extension(),
           if (dialect.hasModule(SqlModule.geopoly)) const GeopolyExtension(),
+          if (dialect.hasModule(SqlModule.powersync))
+            const PowerSyncSqliteExtension(),
         ],
         version: dialect.version,
       ),
@@ -380,7 +382,7 @@ abstract class AnalysisResultCacheReader {
 
   Future<CachedDiscoveryResults?> readDiscovery(Uri uri);
 
-  Future<LibraryElement2?> readTypeHelperFor(Uri uri);
+  Future<LibraryElement?> readTypeHelperFor(Uri uri);
 
   Future<String?> readElementCacheFor(Uri uri);
 }

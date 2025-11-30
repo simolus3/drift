@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/analysis/session.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
@@ -21,21 +21,21 @@ import '../shared/data_class.dart';
 /// These types are used to determine whether a given Dart class has drift-
 /// specific annotations or whether it defines a table.
 class KnownDriftTypes {
-  final LibraryElement2 helperLibrary;
-  final ClassElement2 tableElement;
+  final LibraryElement helperLibrary;
+  final ClassElement tableElement;
   final InterfaceType tableType;
   final InterfaceType tableIndexType;
   final InterfaceType viewType;
   final InterfaceType resultSetType;
   final InterfaceType driftDatabase;
   final InterfaceType driftAccessor;
-  final InterfaceElement2 sqlType;
-  final InterfaceElement2 typeConverter;
-  final InterfaceElement2 jsonTypeConverter;
+  final InterfaceElement sqlType;
+  final InterfaceElement typeConverter;
+  final InterfaceElement jsonTypeConverter;
   final InterfaceType uint8List;
   final InterfaceType geopolyPolygon;
-  final InterfaceElement2 driftColumnDeclarationBuilder;
-  final InterfaceElement2 driftAny;
+  final InterfaceElement driftColumnDeclarationBuilder;
+  final InterfaceElement driftAny;
 
   late final TypeChecker checkDriftColumnDeclarationBuilder =
       TypeChecker.fromStatic(
@@ -61,31 +61,30 @@ class KnownDriftTypes {
 
   /// Constructs the set of known drift types from a helper library, which is
   /// resolved from `package:drift/src/drift_dev_helper.dart`.
-  factory KnownDriftTypes._fromLibrary(LibraryElement2 helper) {
+  factory KnownDriftTypes._fromLibrary(LibraryElement helper) {
     final exportNamespace = helper.exportNamespace;
-    final tableElement = exportNamespace.get2('Table') as ClassElement2;
-    final dbElement = exportNamespace.get2('DriftDatabase') as ClassElement2;
-    final daoElement = exportNamespace.get2('DriftAccessor') as ClassElement2;
+    final tableElement = exportNamespace.get2('Table') as ClassElement;
+    final dbElement = exportNamespace.get2('DriftDatabase') as ClassElement;
+    final daoElement = exportNamespace.get2('DriftAccessor') as ClassElement;
 
     return KnownDriftTypes._(
       helper,
       tableElement,
       tableElement.defaultInstantiation,
-      (exportNamespace.get2('TableIndex') as InterfaceElement2).thisType,
-      (exportNamespace.get2('View') as InterfaceElement2).thisType,
-      (exportNamespace.get2('ResultSet') as InterfaceElement2).thisType,
-      exportNamespace.get2('SqlType') as InterfaceElement2,
-      exportNamespace.get2('TypeConverter') as InterfaceElement2,
-      exportNamespace.get2('JsonTypeConverter2') as InterfaceElement2,
+      (exportNamespace.get2('TableIndex') as InterfaceElement).thisType,
+      (exportNamespace.get2('View') as InterfaceElement).thisType,
+      (exportNamespace.get2('ResultSet') as InterfaceElement).thisType,
+      exportNamespace.get2('SqlType') as InterfaceElement,
+      exportNamespace.get2('TypeConverter') as InterfaceElement,
+      exportNamespace.get2('JsonTypeConverter2') as InterfaceElement,
       dbElement.defaultInstantiation,
       daoElement.defaultInstantiation,
-      (exportNamespace.get2('Uint8List') as InterfaceElement2)
+      (exportNamespace.get2('Uint8List') as InterfaceElement)
           .defaultInstantiation,
-      (exportNamespace.get2('GeopolyPolygon') as InterfaceElement2)
+      (exportNamespace.get2('GeopolyPolygon') as InterfaceElement)
           .defaultInstantiation,
-      exportNamespace.get2('DriftColumnDeclarationBuilder')
-          as InterfaceElement2,
-      exportNamespace.get2('DriftAny') as InterfaceElement2,
+      exportNamespace.get2('DriftColumnDeclarationBuilder') as InterfaceElement,
+      exportNamespace.get2('DriftAny') as InterfaceElement,
     );
   }
 
@@ -94,11 +93,11 @@ class KnownDriftTypes {
   ///
   /// Returns `null` if [type] is not a subtype of `TypeConverter`.
   InterfaceType? asTypeConverter(DartType type) {
-    return type.asInstanceOf2(typeConverter);
+    return type.asInstanceOf(typeConverter);
   }
 
   InterfaceType? asSqlType(DartType type) {
-    return type.asInstanceOf2(sqlType);
+    return type.asInstanceOf(sqlType);
   }
 
   /// Converts the given Dart [type] into an instantiation of the
@@ -107,13 +106,13 @@ class KnownDriftTypes {
   /// Returns `null` if [type] is not a subtype of `TypeConverter`.
   InterfaceType? asJsonTypeConverter(DartType? type) {
     final converter = helperLibrary.exportNamespace.get2('JsonTypeConverter2')
-        as InterfaceElement2;
-    return type?.asInstanceOf2(converter);
+        as InterfaceElement;
+    return type?.asInstanceOf(converter);
   }
 
   bool get isStillConsistent {
     try {
-      helperLibrary.session.getParsedLibraryByElement2(helperLibrary);
+      helperLibrary.session.getParsedLibraryByElement(helperLibrary);
       return true;
     } on InconsistentAnalysisException {
       return false;
@@ -191,28 +190,21 @@ bool isColumnBuilder(DartType type) {
 bool isFromDrift(DartType type) {
   if (type is! InterfaceType) return false;
 
-  final uri = type.element3.library2.uri;
+  final uri = type.element.library.uri;
   return uri.scheme == 'package' && uri.pathSegments[0] == 'drift';
 }
 
-extension IsFromDrift on Element2 {
-  List<ElementAnnotation> get metadataIfAnnotatable {
-    return switch (this) {
-      final Annotatable a => a.metadata2.annotations,
-      _ => const [],
-    };
-  }
-
+extension IsFromDrift on Element {
   bool get isFromDefaultTable {
-    final parent = enclosingElement2;
+    final parent = enclosingElement;
 
-    return parent is ClassElement2 &&
-        parent.name3 == 'Table' &&
+    return parent is ClassElement &&
+        parent.name == 'Table' &&
         isFromDrift(parent.thisType);
   }
 }
 
-extension on InterfaceElement2 {
+extension on InterfaceElement {
   InterfaceType get defaultInstantiation => instantiate(
       typeArguments: const [], nullabilitySuffix: NullabilitySuffix.none);
 }
@@ -220,7 +212,7 @@ extension on InterfaceElement2 {
 extension TypeUtils on DartType {
   String? get nameIfInterfaceType {
     final $this = this;
-    return $this is InterfaceType ? $this.element3.name3 : null;
+    return $this is InterfaceType ? $this.element.name : null;
   }
 
   String get userVisibleName => getDisplayString();
@@ -253,12 +245,12 @@ class DataClassInformation {
   static Future<DataClassInformation> resolve(
     LocalElementResolver resolver,
     List<DriftColumn> columns,
-    ClassElement2 element,
+    ClassElement element,
   ) async {
     DartObject? dataClassName;
     DartObject? useRowClass;
 
-    for (final annotation in element.metadata2.annotations) {
+    for (final annotation in element.metadata.annotations) {
       final computed = annotation.computeConstantValue();
       final annotationClass = computed?.type?.nameIfInterfaceType;
 
@@ -297,8 +289,8 @@ class DataClassInformation {
     }
 
     if (useRowClass != null) {
-      final typeProvider = element.library2.typeProvider;
-      final typeSystem = element.library2.typeSystem;
+      final typeProvider = element.library.typeProvider;
+      final typeSystem = element.library.typeSystem;
 
       final type =
           useRowClass.getField('type')!.extractType(typeProvider, typeSystem);
@@ -309,13 +301,13 @@ class DataClassInformation {
       final helper = await resolver.resolver.driver.knownTypes;
 
       if (type is InterfaceType) {
-        final found = FoundDartClass(type.element3, type.typeArguments);
+        final found = FoundDartClass(type.element, type.typeArguments);
 
         existingClass = validateExistingClass(columns, found,
             constructorInExistingClass, generateInsertable, resolver, helper);
 
         if (existingClass?.isRecord != true) {
-          name = type.element3.name3!;
+          name = type.element.name!;
         }
       } else if (type is RecordType) {
         existingClass = validateRowClassFromRecordType(

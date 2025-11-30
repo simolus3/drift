@@ -39,12 +39,12 @@ final class DriftWebOptions {
   final FutureOr<Uint8List?> Function()? initializeDatabase;
 
   /// Create web-specific drift options.
-  DriftWebOptions(
-      {required this.sqlite3Wasm,
-      required this.driftWorker,
-      this.onResult,
-      this.initializeDatabase,
-      });
+  DriftWebOptions({
+    required this.sqlite3Wasm,
+    required this.driftWorker,
+    this.onResult,
+    this.initializeDatabase,
+  });
 }
 
 /// Options used to open drift databases on native platforms (outside of the
@@ -66,6 +66,11 @@ final class DriftNativeOptions {
   /// This option is not enabled by default, but recommended if a drift database
   /// may be used on multiple isolates.
   final bool shareAcrossIsolates;
+
+  /// Setting the [isolateDebugLog] is only helpful when debugging drift itself.
+  /// It will print messages exchanged between the drift isolate server and the
+  /// client.
+  final bool isolateDebugLog;
 
   /// An optional callback returning a custom database path to be used by drift.
   ///
@@ -125,13 +130,22 @@ final class DriftNativeOptions {
   /// can't be sent over isolates.
   final void Function(CommonDatabase db)? setup;
 
+  /// An optional callback to be invoked when `drift_flutter` spawns a
+  /// background isolate to host database connections.
+  ///
+  /// This could be used to configure how `libsqlite3` is loaded, or setup state
+  /// that needs to be accessible in the background isolate.
+  final void Function()? isolateSetup;
+
   /// Create drift options effective when opening drift databases on native
   /// platforms.
   const DriftNativeOptions({
     this.shareAcrossIsolates = false,
+    this.isolateDebugLog = false,
     this.databasePath,
     this.databaseDirectory,
     this.tempDirectoryPath,
+    this.isolateSetup,
     this.setup,
   }) : assert(
           databasePath == null || databaseDirectory == null,

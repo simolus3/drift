@@ -178,7 +178,7 @@ bool? _regexpImpl(List<Object?> args) {
   return regex.hasMatch(secondParam);
 }
 
-bool _containsImpl(List<dynamic> args) {
+bool? _containsImpl(List<dynamic> args) {
   final argCount = args.length;
   if (argCount < 2 || argCount > 3) {
     throw 'Expected 2 or 3 arguments to moor_contains';
@@ -186,6 +186,10 @@ bool _containsImpl(List<dynamic> args) {
 
   final first = args[0];
   final second = args[1];
+
+  if (first == null || second == null) {
+    return null;
+  }
 
   if (first is! String || second is! String) {
     throw 'First two args to contains must be strings';

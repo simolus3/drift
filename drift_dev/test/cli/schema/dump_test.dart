@@ -34,7 +34,7 @@ void main() {
 {
   "_meta": {
     "description": "This file contains a serialized version of schema entities for drift.",
-    "version": "1.2.0"
+    "version": "1.3.0"
   },
   "options": {
     "store_date_time_values_as_text": false
@@ -85,7 +85,7 @@ void main() {
       "type": "view",
       "data": {
         "name": "names",
-        "sql": "CREATE VIEW names AS SELECT name FROM users;",
+        "sql": "CREATE VIEW names AS SELECT name FROM users",
         "dart_info_name": "Names",
         "columns": [
           {
@@ -129,6 +129,34 @@ void main() {
         "unique": false,
         "columns": []
       }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "users",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \\"users\\" (\\"id\\" INTEGER PRIMARY KEY, \\"name\\" TEXT) STRICT;"
+        }
+      ]
+    },
+    {
+      "name": "names",
+      "sql": [{"dialect": "sqlite", "sql": "CREATE VIEW names AS SELECT name FROM users"}]
+    },
+    {
+      "name": "to_upper",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER to_upper AFTER UPDATE ON users BEGIN UPDATE users SET name = upper(new.name) WHERE id = new.id;END"
+        }
+      ]
+    },
+    {
+      "name": "idx",
+      "sql": [{"dialect": "sqlite", "sql": "CREATE INDEX idx ON users (name)"}]
     }
   ]
 }

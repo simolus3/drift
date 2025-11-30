@@ -47,7 +47,7 @@ CREATE TABLE users (
   });
 
   test('can read old index format', () async {
-    final reader = SchemaReader.readJson(
+    final reader = await SchemaReader.readJson(
       json.decode('''
 {
     "_meta": {
@@ -123,6 +123,6 @@ Future<List<DriftElement>> _analyzeAndSerialize(String source) async {
   final schemaJson = json.decode(json.encode(await writer.createSchemaJson()));
 
   final deserialized =
-      SchemaReader.readJson(schemaJson as Map<String, Object?>);
+      await SchemaReader.readJson(schemaJson as Map<String, Object?>);
   return deserialized.entities.toList();
 }

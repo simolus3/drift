@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:logging/logging.dart';
 import 'package:sqlite3/common.dart';
@@ -7,6 +7,7 @@ import 'package:sqlparser/sqlparser.dart';
 import '../../analysis/backend.dart';
 import '../../analysis/driver/driver.dart';
 import '../../analysis/results/results.dart';
+import 'schema_files.dart';
 import 'verifier_common.dart';
 
 /// Extracts drift elements from the schema of an existing database.
@@ -18,8 +19,30 @@ import 'verifier_common.dart';
 Future<List<DriftElement>> extractDriftElementsFromDatabase(
     CommonDatabase database) async {
   // Put everything from sqlite_schema into a fake drift file, analyze it.
-  final logger = Logger('extractDriftElementsFromDatabase');
-  final uri = Uri.parse('db.drift');
+  final createStatements = <String>[];
+  for (final row in database.select('select * from sqlite_master')) {
+    final name = row['name'] as String?;
+    var sql = row['sql'] as String?;
+
+    if (name == null || sql == null) {
+      continue;
+    }
+
+    if (!sql.endsWith(';')) {
+      sql += ';';
+    }
+
+    createStatements.add(sql);
+  }
+
+  return await extractDriftElementsFromSql(createStatements);
+}
+
+Future<List<DriftElement>> extractDriftElementsFromSql(
+    List<String> nameToCreateStatements) async {
+  // Put all create statements into a fake file, then analyze it.
+  final logger = Logger('extractDriftElementsFromSql');
+  final uri = SchemaReader.elementUri;
   final backend = _SingleFileNoAnalyzerBackend(logger, uri);
   final driver = DriftAnalysisDriver(
       backend,
@@ -34,16 +57,7 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
   final engineForParsing = driver.newSqlEngine();
   final entities = <String, String>{};
   final virtualTableNames = <String>[];
-  for (final row in database.select('select * from sqlite_master')) {
-    final name = row['name'] as String?;
-    var sql = row['sql'] as String?;
-
-    if (name == null ||
-        sql == null ||
-        isInternalElement(name, virtualTableNames)) {
-      continue;
-    }
-
+  for (var sql in nameToCreateStatements) {
     if (!sql.endsWith(';')) {
       sql += ';';
     }
@@ -57,7 +71,13 @@ Future<List<DriftElement>> extractDriftElementsFromDatabase(
       virtualTableNames.add(parsed.tableName);
     }
 
-    entities[name] = sql;
+    if (parsed is CreatingStatement) {
+      if (!isInternalElement(parsed.createdName, virtualTableNames)) {
+        entities[parsed.createdName] = sql;
+      }
+    } else {
+      entities['atCreate_${entities.length}'] = '@create: $sql';
+    }
   }
   entities.removeWhere((name, _) => isInternalElement(name, virtualTableNames));
   backend.contents = entities.values.join('\n');
@@ -103,7 +123,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
       throw UnsupportedError('Dart analyzer not available here');
 
   @override
-  Future<Never> loadElementDeclaration(Element2 element) async {
+  Future<Never> loadElementDeclaration(Element element) async {
     _noAnalyzer();
   }
 
@@ -116,7 +136,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   bool get canReadDart => false;
 
   @override
-  Future<LibraryElement2> readDart(Uri uri) async {
+  Future<LibraryElement> readDart(Uri uri) async {
     _noAnalyzer();
   }
 
@@ -127,7 +147,7 @@ class _SingleFileNoAnalyzerBackend extends DriftBackend {
   }
 
   @override
-  Future<Element2?> resolveTopLevelElement(
+  Future<Element?> resolveTopLevelElement(
       Uri context, String reference, Iterable<Uri> imports) {
     _noAnalyzer();
   }

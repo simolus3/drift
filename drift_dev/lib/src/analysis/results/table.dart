@@ -28,13 +28,13 @@ class DriftTable extends DriftElementWithResultSet {
   final List<AnnotatedDartCode> interfacesForRowClass;
 
   /// The fixed [entityInfoName] to use, overriding the default.
-  final String? fixedEntityInfoName;
+  String? fixedEntityInfoName;
 
   /// The default name to use for the [entityInfoName].
-  final String baseDartName;
+  String baseDartName;
 
   @override
-  final String nameOfRowClass;
+  String nameOfRowClass;
 
   @override
   final String? nameOfCompanionClass;

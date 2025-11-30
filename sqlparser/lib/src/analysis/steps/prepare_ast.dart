@@ -75,14 +75,18 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
     //   (SELECT * FROM demo i WHERE i.id = d1.id) d2;"
     // it won't work.
 
-    final isInFROM = e.parent is Queryable;
     StatementScope scope;
 
-    if (isInFROM) {
+    if (e.parent is Queryable) {
       final surroundingSelect = e.parents
           .firstWhere((node) => node is HasFrom)
           .scope as StatementScope;
-      scope = StatementScope(SourceScope(surroundingSelect));
+      scope = StatementScope(SourceScope(surroundingSelect), e);
+    } else if (e.parent case final CommonTableExpression cte) {
+      final withClause = cte.parent!;
+      assert(withClause is WithClause);
+      scope = StatementScope(
+          SourceScope(withClause.parent!.scope as StatementScope), e);
     } else {
       scope = StatementScope.forStatement(context.rootScope, e);
     }
@@ -140,7 +144,7 @@ class AstPreparingVisitor extends RecursiveVisitor<void, void> {
   void visitInExpression(InExpression e, void arg) {
     // The RHS can use everything from the parent scope, but it can't add new
     // table references that would be visible to others.
-    e.scope = StatementScope(e.scope);
+    e.scope = StatementScope(e.scope, e);
     visitChildren(e, arg);
   }
 

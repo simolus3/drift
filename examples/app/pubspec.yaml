@@ -37,7 +37,7 @@ dev_dependencies:
   # Either way, using this package with Flutter requires a delicate setup described in
   # `build.yaml`.
   build_web_compilers: ^4.0.0
-  build: ^3.0.0-0
+  build: '>=3.0.0 <5.0.0'
 
 flutter:
   uses-material-design: true

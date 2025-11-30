@@ -44,12 +44,16 @@ final class DriftSqliteDialect implements RegisteredDriftDialect {
 
   final Map<String, KnownSqliteFunction> knownFunctions;
 
+  @_TableFromSql()
+  final List<Table> knownTables;
+
   const DriftSqliteDialect({
     this.modules = const [],
     this.dateTimesAsText = false,
     this.binaryJson = true,
     this.version = DriftSqliteDialect._defaultSqliteVersion,
     this.knownFunctions = const {},
+    this.knownTables = const [],
   });
 
   factory DriftSqliteDialect.fromJson(Map<Object?, Object?> json) =>
@@ -70,6 +74,32 @@ final class DriftSqliteDialect implements RegisteredDriftDialect {
         useBinaryJsonRepresentation: binaryJson,
       ),
     );
+  }
+}
+
+final class _TableFromSql extends JsonConverter<Table, String> {
+  const _TableFromSql();
+
+  @override
+  Table fromJson(String json) {
+    final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
+    final result = engine.parse(json);
+    if (result.errors.isNotEmpty) {
+      throw ArgumentError.value(json,
+          'Not a valid CREATE TABLE statement: ${result.errors.join('\n')}');
+    }
+
+    final root = result.rootNode;
+    if (root is! TableInducingStatement) {
+      throw ArgumentError.value(json, 'Not a valid CREATE TABLE statement');
+    }
+
+    return SchemaFromCreateTable().read(root);
+  }
+
+  @override
+  String toJson(Table object) {
+    throw UnsupportedError('Unused');
   }
 }
 
@@ -302,4 +332,8 @@ enum SqlModule {
   /// Enables the dbstat table providing insights into the disk state occupied
   /// by certain tables.
   dbstat,
+
+  /// Enables static analysis support for PowerSync, providing the
+  /// `powersync_crud` virtual table.
+  powersync,
 }

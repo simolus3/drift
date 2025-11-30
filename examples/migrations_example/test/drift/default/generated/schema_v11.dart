@@ -1,7 +1,6 @@
 // dart format width=80
 // coverage:ignore-file
 
-import 'package:drift/src/runtime/query_builder/query_builder.dart' as i2;
 // GENERATED CODE, DO NOT EDIT BY HAND.
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart';
@@ -16,25 +15,24 @@ class Users extends Table with TableInfo<Users, UsersData> {
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+      $customConstraints: 'NOT NULL PRIMARY KEY AUTOINCREMENT');
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
+      $customConstraints: 'NOT NULL DEFAULT \'name\'',
       defaultValue: const CustomExpression('\'name\''));
-  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<String> birthday = GeneratedColumn<String>(
       'birthday', aliasedName, true,
-      check: () =>
-          i2.ComparableExpr(birthday).isBiggerThan(i2.Constant(DateTime(1900))),
-      type: DriftSqlType.dateTime,
-      requiredDuringInsert: false);
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      $customConstraints:
+          'NULL CHECK (JULIANDAY(birthday) > JULIANDAY(\'1900-01-01T00:00:00.000Z\'))');
   late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES users (id)'));
+      $customConstraints: 'NULL REFERENCES users(id)');
   @override
   List<GeneratedColumn> get $columns => [id, name, birthday, nextUser];
   @override
@@ -57,7 +55,7 @@ class Users extends Table with TableInfo<Users, UsersData> {
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       birthday: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
+          .read(DriftSqlType.string, data['${effectivePrefix}birthday']),
       nextUser: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
     );
@@ -69,13 +67,16 @@ class Users extends Table with TableInfo<Users, UsersData> {
   }
 
   @override
-  List<String> get customConstraints => const ['CHECK (LENGTH(name) < 10)'];
+  List<String> get customConstraints =>
+      const ['UNIQUE(name, birthday)', 'CHECK(LENGTH(name) < 10)'];
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class UsersData extends DataClass implements Insertable<UsersData> {
   final int id;
   final String name;
-  final DateTime? birthday;
+  final String? birthday;
   final int? nextUser;
   const UsersData(
       {required this.id, required this.name, this.birthday, this.nextUser});
@@ -85,7 +86,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || birthday != null) {
-      map['birthday'] = Variable<DateTime>(birthday);
+      map['birthday'] = Variable<String>(birthday);
     }
     if (!nullToAbsent || nextUser != null) {
       map['next_user'] = Variable<int>(nextUser);
@@ -112,7 +113,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return UsersData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      birthday: serializer.fromJson<DateTime?>(json['birthday']),
+      birthday: serializer.fromJson<String?>(json['birthday']),
       nextUser: serializer.fromJson<int?>(json['nextUser']),
     );
   }
@@ -122,7 +123,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
-      'birthday': serializer.toJson<DateTime?>(birthday),
+      'birthday': serializer.toJson<String?>(birthday),
       'nextUser': serializer.toJson<int?>(nextUser),
     };
   }
@@ -130,7 +131,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
   UsersData copyWith(
           {int? id,
           String? name,
-          Value<DateTime?> birthday = const Value.absent(),
+          Value<String?> birthday = const Value.absent(),
           Value<int?> nextUser = const Value.absent()}) =>
       UsersData(
         id: id ?? this.id,
@@ -173,7 +174,7 @@ class UsersData extends DataClass implements Insertable<UsersData> {
 class UsersCompanion extends UpdateCompanion<UsersData> {
   final Value<int> id;
   final Value<String> name;
-  final Value<DateTime?> birthday;
+  final Value<String?> birthday;
   final Value<int?> nextUser;
   const UsersCompanion({
     this.id = const Value.absent(),
@@ -190,7 +191,7 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
   static Insertable<UsersData> custom({
     Expression<int>? id,
     Expression<String>? name,
-    Expression<DateTime>? birthday,
+    Expression<String>? birthday,
     Expression<int>? nextUser,
   }) {
     return RawValuesInsertable({
@@ -204,7 +205,7 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
   UsersCompanion copyWith(
       {Value<int>? id,
       Value<String>? name,
-      Value<DateTime?>? birthday,
+      Value<String?>? birthday,
       Value<int?>? nextUser}) {
     return UsersCompanion(
       id: id ?? this.id,
@@ -224,7 +225,7 @@ class UsersCompanion extends UpdateCompanion<UsersData> {
       map['name'] = Variable<String>(name.value);
     }
     if (birthday.present) {
-      map['birthday'] = Variable<DateTime>(birthday.value);
+      map['birthday'] = Variable<String>(birthday.value);
     }
     if (nextUser.present) {
       map['next_user'] = Variable<int>(nextUser.value);
@@ -259,9 +260,9 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
-  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+  late final GeneratedColumn<int> deleted = GeneratedColumn<int>(
       'deleted', aliasedName, true,
-      type: DriftSqlType.bool,
+      type: DriftSqlType.int,
       requiredDuringInsert: false,
       $customConstraints: 'NULL DEFAULT FALSE',
       defaultValue: const CustomExpression('FALSE'));
@@ -288,7 +289,7 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       deleted: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}deleted']),
+          .read(DriftSqlType.int, data['${effectivePrefix}deleted']),
       owner: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}owner'])!,
     );
@@ -308,7 +309,7 @@ class Groups extends Table with TableInfo<Groups, GroupsData> {
 class GroupsData extends DataClass implements Insertable<GroupsData> {
   final int id;
   final String title;
-  final bool? deleted;
+  final int? deleted;
   final int owner;
   const GroupsData(
       {required this.id,
@@ -321,7 +322,7 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || deleted != null) {
-      map['deleted'] = Variable<bool>(deleted);
+      map['deleted'] = Variable<int>(deleted);
     }
     map['owner'] = Variable<int>(owner);
     return map;
@@ -344,7 +345,7 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
     return GroupsData(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
-      deleted: serializer.fromJson<bool?>(json['deleted']),
+      deleted: serializer.fromJson<int?>(json['deleted']),
       owner: serializer.fromJson<int>(json['owner']),
     );
   }
@@ -354,7 +355,7 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
-      'deleted': serializer.toJson<bool?>(deleted),
+      'deleted': serializer.toJson<int?>(deleted),
       'owner': serializer.toJson<int>(owner),
     };
   }
@@ -362,7 +363,7 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
   GroupsData copyWith(
           {int? id,
           String? title,
-          Value<bool?> deleted = const Value.absent(),
+          Value<int?> deleted = const Value.absent(),
           int? owner}) =>
       GroupsData(
         id: id ?? this.id,
@@ -405,7 +406,7 @@ class GroupsData extends DataClass implements Insertable<GroupsData> {
 class GroupsCompanion extends UpdateCompanion<GroupsData> {
   final Value<int> id;
   final Value<String> title;
-  final Value<bool?> deleted;
+  final Value<int?> deleted;
   final Value<int> owner;
   const GroupsCompanion({
     this.id = const Value.absent(),
@@ -423,7 +424,7 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
   static Insertable<GroupsData> custom({
     Expression<int>? id,
     Expression<String>? title,
-    Expression<bool>? deleted,
+    Expression<int>? deleted,
     Expression<int>? owner,
   }) {
     return RawValuesInsertable({
@@ -437,7 +438,7 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
   GroupsCompanion copyWith(
       {Value<int>? id,
       Value<String>? title,
-      Value<bool?>? deleted,
+      Value<int?>? deleted,
       Value<int>? owner}) {
     return GroupsCompanion(
       id: id ?? this.id,
@@ -457,7 +458,7 @@ class GroupsCompanion extends UpdateCompanion<GroupsData> {
       map['title'] = Variable<String>(title.value);
     }
     if (deleted.present) {
-      map['deleted'] = Variable<bool>(deleted.value);
+      map['deleted'] = Variable<int>(deleted.value);
     }
     if (owner.present) {
       map['owner'] = Variable<int>(owner.value);
@@ -484,19 +485,19 @@ class Notes extends Table
   final String? _alias;
   Notes(this.attachedDatabase, [this._alias]);
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
+      'title', aliasedName, true,
       type: DriftSqlType.string,
-      requiredDuringInsert: true,
+      requiredDuringInsert: false,
       $customConstraints: '');
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, false,
+      'content', aliasedName, true,
       type: DriftSqlType.string,
-      requiredDuringInsert: true,
+      requiredDuringInsert: false,
       $customConstraints: '');
   late final GeneratedColumn<String> searchTerms = GeneratedColumn<String>(
-      'search_terms', aliasedName, false,
+      'search_terms', aliasedName, true,
       type: DriftSqlType.string,
-      requiredDuringInsert: true,
+      requiredDuringInsert: false,
       $customConstraints: '');
   @override
   List<GeneratedColumn> get $columns => [title, content, searchTerms];
@@ -512,11 +513,11 @@ class Notes extends Table
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return NotesData(
       title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}title']),
       content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}content']),
       searchTerms: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}search_terms'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}search_terms']),
     );
   }
 
@@ -526,30 +527,42 @@ class Notes extends Table
   }
 
   @override
+  bool get dontWriteConstraints => true;
+  @override
   String get moduleAndArgs =>
       'fts5(title, content, search_terms, tokenize = "unicode61 tokenchars \'.\'")';
 }
 
 class NotesData extends DataClass implements Insertable<NotesData> {
-  final String title;
-  final String content;
-  final String searchTerms;
-  const NotesData(
-      {required this.title, required this.content, required this.searchTerms});
+  final String? title;
+  final String? content;
+  final String? searchTerms;
+  const NotesData({this.title, this.content, this.searchTerms});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['title'] = Variable<String>(title);
-    map['content'] = Variable<String>(content);
-    map['search_terms'] = Variable<String>(searchTerms);
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || content != null) {
+      map['content'] = Variable<String>(content);
+    }
+    if (!nullToAbsent || searchTerms != null) {
+      map['search_terms'] = Variable<String>(searchTerms);
+    }
     return map;
   }
 
   NotesCompanion toCompanion(bool nullToAbsent) {
     return NotesCompanion(
-      title: Value(title),
-      content: Value(content),
-      searchTerms: Value(searchTerms),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      content: content == null && nullToAbsent
+          ? const Value.absent()
+          : Value(content),
+      searchTerms: searchTerms == null && nullToAbsent
+          ? const Value.absent()
+          : Value(searchTerms),
     );
   }
 
@@ -557,26 +570,29 @@ class NotesData extends DataClass implements Insertable<NotesData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return NotesData(
-      title: serializer.fromJson<String>(json['title']),
-      content: serializer.fromJson<String>(json['content']),
-      searchTerms: serializer.fromJson<String>(json['searchTerms']),
+      title: serializer.fromJson<String?>(json['title']),
+      content: serializer.fromJson<String?>(json['content']),
+      searchTerms: serializer.fromJson<String?>(json['searchTerms']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'title': serializer.toJson<String>(title),
-      'content': serializer.toJson<String>(content),
-      'searchTerms': serializer.toJson<String>(searchTerms),
+      'title': serializer.toJson<String?>(title),
+      'content': serializer.toJson<String?>(content),
+      'searchTerms': serializer.toJson<String?>(searchTerms),
     };
   }
 
-  NotesData copyWith({String? title, String? content, String? searchTerms}) =>
+  NotesData copyWith(
+          {Value<String?> title = const Value.absent(),
+          Value<String?> content = const Value.absent(),
+          Value<String?> searchTerms = const Value.absent()}) =>
       NotesData(
-        title: title ?? this.title,
-        content: content ?? this.content,
-        searchTerms: searchTerms ?? this.searchTerms,
+        title: title.present ? title.value : this.title,
+        content: content.present ? content.value : this.content,
+        searchTerms: searchTerms.present ? searchTerms.value : this.searchTerms,
       );
   NotesData copyWithCompanion(NotesCompanion data) {
     return NotesData(
@@ -609,9 +625,9 @@ class NotesData extends DataClass implements Insertable<NotesData> {
 }
 
 class NotesCompanion extends UpdateCompanion<NotesData> {
-  final Value<String> title;
-  final Value<String> content;
-  final Value<String> searchTerms;
+  final Value<String?> title;
+  final Value<String?> content;
+  final Value<String?> searchTerms;
   final Value<int> rowid;
   const NotesCompanion({
     this.title = const Value.absent(),
@@ -620,13 +636,11 @@ class NotesCompanion extends UpdateCompanion<NotesData> {
     this.rowid = const Value.absent(),
   });
   NotesCompanion.insert({
-    required String title,
-    required String content,
-    required String searchTerms,
+    this.title = const Value.absent(),
+    this.content = const Value.absent(),
+    this.searchTerms = const Value.absent(),
     this.rowid = const Value.absent(),
-  })  : title = Value(title),
-        content = Value(content),
-        searchTerms = Value(searchTerms);
+  });
   static Insertable<NotesData> custom({
     Expression<String>? title,
     Expression<String>? content,
@@ -642,9 +656,9 @@ class NotesCompanion extends UpdateCompanion<NotesData> {
   }
 
   NotesCompanion copyWith(
-      {Value<String>? title,
-      Value<String>? content,
-      Value<String>? searchTerms,
+      {Value<String?>? title,
+      Value<String?>? content,
+      Value<String?>? searchTerms,
       Value<int>? rowid}) {
     return NotesCompanion(
       title: title ?? this.title,
@@ -687,7 +701,7 @@ class NotesCompanion extends UpdateCompanion<NotesData> {
 class GroupCountData extends DataClass {
   final int id;
   final String name;
-  final DateTime? birthday;
+  final String? birthday;
   final int? nextUser;
   final int groupCount;
   const GroupCountData(
@@ -702,7 +716,7 @@ class GroupCountData extends DataClass {
     return GroupCountData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      birthday: serializer.fromJson<DateTime?>(json['birthday']),
+      birthday: serializer.fromJson<String?>(json['birthday']),
       nextUser: serializer.fromJson<int?>(json['nextUser']),
       groupCount: serializer.fromJson<int>(json['groupCount']),
     );
@@ -713,7 +727,7 @@ class GroupCountData extends DataClass {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
-      'birthday': serializer.toJson<DateTime?>(birthday),
+      'birthday': serializer.toJson<String?>(birthday),
       'nextUser': serializer.toJson<int?>(nextUser),
       'groupCount': serializer.toJson<int>(groupCount),
     };
@@ -722,7 +736,7 @@ class GroupCountData extends DataClass {
   GroupCountData copyWith(
           {int? id,
           String? name,
-          Value<DateTime?> birthday = const Value.absent(),
+          Value<String?> birthday = const Value.absent(),
           Value<int?> nextUser = const Value.absent(),
           int? groupCount}) =>
       GroupCountData(
@@ -773,7 +787,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   @override
   Map<SqlDialect, String> get createViewStatements => {
         SqlDialect.sqlite:
-            'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users;'
+            'CREATE VIEW group_count AS SELECT users.*, (SELECT COUNT(*) FROM "groups" WHERE owner = users.id) AS group_count FROM users',
       };
   @override
   GroupCount get asDslTable => this;
@@ -786,7 +800,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       birthday: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}birthday']),
+          .read(DriftSqlType.string, data['${effectivePrefix}birthday']),
       nextUser: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}next_user']),
       groupCount: attachedDatabase.typeMapping
@@ -799,9 +813,9 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string);
-  late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
+  late final GeneratedColumn<String> birthday = GeneratedColumn<String>(
       'birthday', aliasedName, true,
-      type: DriftSqlType.dateTime);
+      type: DriftSqlType.string);
   late final GeneratedColumn<int> nextUser = GeneratedColumn<int>(
       'next_user', aliasedName, true,
       type: DriftSqlType.int);
@@ -816,7 +830,7 @@ class GroupCount extends ViewInfo<GroupCount, GroupCountData>
   @override
   Query? get query => null;
   @override
-  Set<String> get readTables => const {};
+  Set<String> get readTables => const {'users', 'groups'};
 }
 
 class DatabaseAtV11 extends GeneratedDatabase {

@@ -21,6 +21,10 @@ DriftSqliteDialect _$DriftSqliteDialectFromJson(Map json) => DriftSqliteDialect(
                 k as String, KnownSqliteFunction.fromJson(e as String)),
           ) ??
           const {},
+      knownTables: (json['known_tables'] as List<dynamic>?)
+              ?.map((e) => const _TableFromSql().fromJson(e as String))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$DriftSqliteDialectToJson(DriftSqliteDialect instance) =>
@@ -31,6 +35,8 @@ Map<String, dynamic> _$DriftSqliteDialectToJson(DriftSqliteDialect instance) =>
       'version': const _SqliteVersionConverter().toJson(instance.version),
       'known_functions':
           instance.knownFunctions.map((k, e) => MapEntry(k, e.toJson())),
+      'known_tables':
+          instance.knownTables.map(const _TableFromSql().toJson).toList(),
     };
 
 const _$SqlModuleEnumMap = {
@@ -42,4 +48,5 @@ const _$SqlModuleEnumMap = {
   SqlModule.spellfix1: 'spellfix1',
   SqlModule.geopoly: 'geopoly',
   SqlModule.dbstat: 'dbstat',
+  SqlModule.powersync: 'powersync',
 };

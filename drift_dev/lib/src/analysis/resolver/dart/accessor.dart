@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 
@@ -59,7 +59,7 @@ class DartAccessorResolver
       }
 
       final table = await resolveDartReferenceOrReportError<DriftTable>(
-          dartType.element3,
+          dartType.element,
           (msg) => DriftAnalysisError.forDartElement(element, msg));
       if (table != null) {
         tables.add(table);
@@ -82,7 +82,7 @@ class DartAccessorResolver
       }
 
       final view = await resolveDartReferenceOrReportError<DriftView>(
-          dartType.element3,
+          dartType.element,
           (msg) => DriftAnalysisError.forDartElement(element, msg));
       if (view != null) {
         views.add(view);
@@ -140,7 +140,7 @@ class DartAccessorResolver
         }
 
         final dao = await resolveDartReferenceOrReportError<DatabaseAccessor>(
-            type.element3,
+            type.element,
             (msg) => DriftAnalysisError.forDartElement(element, msg));
         if (dao != null) accessors.add(dao);
       }
@@ -159,12 +159,12 @@ class DartAccessorResolver
       );
     } else {
       final dbType = element.allSupertypes
-          .firstWhereOrNull((i) => i.element3.name3 == 'DatabaseAccessor');
+          .firstWhereOrNull((i) => i.element.name == 'DatabaseAccessor');
 
       // inherits from DatabaseAccessor<T>, we want to know which T
 
       final dbImpl = dbType?.typeArguments.single ??
-          element.library2.typeProvider.dynamicType;
+          element.library.typeProvider.dynamicType;
       if (dbImpl is DynamicType) {
         reportError(DriftAnalysisError.forDartElement(
           element,
@@ -188,14 +188,14 @@ class DartAccessorResolver
 
   Future<int?> _readSchemaVersion() async {
     final element =
-        discovered.dartElement.thisType.getGetter2('schemaVersion')?.variable3;
+        discovered.dartElement.thisType.getGetter('schemaVersion')?.variable;
     if (element == null) return null;
 
     try {
       if (element.isSynthetic) {
         // Getter, read from `=>` body if possible.
         final expr = returnExpressionOfMethod(await resolver.driver.backend
-            .loadElementDeclaration(element.getter2!) as MethodDeclaration);
+            .loadElementDeclaration(element.getter!) as MethodDeclaration);
         return _parseSchemaVersion(expr);
       } else {
         final astField = await resolver.driver.backend
@@ -218,8 +218,8 @@ class DartAccessorResolver
     };
   }
 
-  int? _parseSchemaVersionFromConstant(Element2? element) {
-    if (element?.nonSynthetic2 case final FieldElement2 field) {
+  int? _parseSchemaVersionFromConstant(Element? element) {
+    if (element?.nonSynthetic case final FieldElement field) {
       final value = field.computeConstantValue();
       if (value?.toIntValue() case final value?) {
         return value;
@@ -229,7 +229,7 @@ class DartAccessorResolver
   }
 
   bool _hasConstructorWithDatabaseConnection() {
-    final constructor = discovered.dartElement.unnamedConstructor2;
+    final constructor = discovered.dartElement.unnamedConstructor;
     if (constructor == null) {
       return false;
     }

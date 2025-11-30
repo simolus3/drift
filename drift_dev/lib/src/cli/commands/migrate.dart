@@ -6,10 +6,9 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift_dev/src/analysis/resolver/dart/helper.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:io/ansi.dart';
 import 'package:path/path.dart' as p;
@@ -391,7 +390,7 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
   }
 
   void _transformIdentifier(
-      SyntacticEntity identifier, String name, Element2? element) {
+      SyntacticEntity identifier, String name, Element? element) {
     String? newIdentifier;
 
     if (name == 'FlutterQueryExecutor') {
@@ -401,21 +400,20 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
         // It looks like left-hand identifiers of assignments don't have a
         // static element, infer from parent.
         if (identifier.parent is AssignmentExpression) {
-          element = (identifier.parent as AssignmentExpression).writeElement2;
+          element = (identifier.parent as AssignmentExpression).writeElement;
         }
       }
 
       if (element == null) return;
 
-      for (final annotation in element.metadataIfAnnotatable) {
+      for (final annotation in element.metadata.annotations) {
         final value = annotation.computeConstantValue();
         if (value == null) return;
         final type = value.type;
 
         if (type is! InterfaceType) continue;
 
-        if (type.element3.library2.isDartCore &&
-            type.element3.name3 == 'pragma') {
+        if (type.element.library.isDartCore && type.element.name == 'pragma') {
           final name = value.getField('name')!.toStringValue()!;
 
           if (name == 'moor2drift') {
@@ -438,7 +436,7 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
 
   @override
   void visitNamedType(NamedType node) {
-    _transformIdentifier(node.name2, node.name2.lexeme, node.element2);
+    _transformIdentifier(node.name, node.name.lexeme, node.element);
     super.visitNamedType(node);
   }
 
@@ -465,8 +463,8 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
     if (type is! InterfaceType ||
         // note that even old moor code uses these names since UseMoor/UseDao
         // are type aliases to the new interfaces.
-        (type.element3.name3 != 'DriftDatabase' &&
-            type.element3.name3 != 'DriftAccessor')) {
+        (type.element.name != 'DriftDatabase' &&
+            type.element.name != 'DriftAccessor')) {
       return;
     }
 

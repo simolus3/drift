@@ -197,10 +197,10 @@ class MatchExistingTypeForQuery {
       if (desiredType is InterfaceType) {
         // For interface types (we assume classes), see if we can fit the query
         // into the classes' default constructor.
-        final element = desiredType.element3;
+        final element = desiredType.element;
 
         final constructor =
-            desiredType.lookUpConstructor2(constructorName, element.library2);
+            desiredType.lookUpConstructor(constructorName, element.library);
         if (constructor == null) {
           if (constructorName == null) {
             reportError(
@@ -216,21 +216,21 @@ class MatchExistingTypeForQuery {
 
         // Match parameters to columns by name
         for (final parameter in constructor.formalParameters) {
-          final column = unmatchedColumnsByName.remove(parameter.name3);
+          final column = unmatchedColumnsByName.remove(parameter.name);
 
           if (column != null) {
             final verified = _verifyArgument(column, parameter.type,
-                'Parameter ${parameter.name3}', reportError);
+                'Parameter ${parameter.name}', reportError);
             if (verified == null) continue;
 
             if (parameter.isPositional) {
               positionalColumns.add(verified);
             } else {
-              namedColumns[parameter.name3!] = verified;
+              namedColumns[parameter.name!] = verified;
             }
           } else if (!parameter.isOptional) {
             reportError(
-                'Unexpected parameter ${parameter.name3} has no matching column.');
+                'Unexpected parameter ${parameter.name} has no matching column.');
           }
         }
       }
@@ -360,7 +360,7 @@ class MatchExistingTypeForQuery {
       // A nested query has its own type, which we can recursively try to
       // structure in the existing type.
       final asList =
-          existingTypeForColumn.asInstanceOf2(typeProvider.listElement2);
+          existingTypeForColumn.asInstanceOf(typeProvider.listElement);
       if (asList == null) {
         reportError('$name must be a List');
         return null;

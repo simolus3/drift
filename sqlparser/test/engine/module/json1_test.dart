@@ -88,6 +88,13 @@ SELECT DISTINCT user.name
 
       expect(result.errors, isEmpty);
     });
+
+    test('can use jsonb table-valued functions', () {
+      final engine = SqlEngine(EngineOptions(version: SqliteVersion.v3_51));
+
+      final result = engine.analyze('SELECT * FROM jsonb_each(?)');
+      expect(result.errors, isEmpty);
+    });
   });
 
   test('does not allow jsonb functions before 3.45', () {

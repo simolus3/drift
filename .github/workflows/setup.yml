@@ -24,8 +24,14 @@ jobs:
           path: drift/.dart_tool/sqlite3/
           key: ${{ runner.os }}-${{ hashFiles('drift/tool/') }}
       - name: Download Dart
+        uses: subosito/flutter-action@v2
         if: steps.cache_build.outputs.cache-hit != 'true'
-        uses: dart-lang/setup-dart@v1
+        with:
+          channel: stable
+          flutter-version: ${{ inputs.flutter_version }}
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
       - name: Compile sqlite3
         if: steps.cache_build.outputs.cache-hit != 'true'
         run: |

@@ -34,6 +34,7 @@ void main() {
   });
   _addCallbackForWebDriver('open', _open);
   _addCallbackForWebDriver('close', (arg) async {
+    await tableUpdates?.cancel();
     await openedDatabase?.close();
     return null;
   });

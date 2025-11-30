@@ -145,6 +145,11 @@ void main() {
         'INNER JOIN "categories" AS "t1" '
         'ON "t1"."id" = "t0"."category"',
       );
+
+      expect(
+        sql[14],
+        'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
+      );
     });
 
     test('creates individual tables', () async {

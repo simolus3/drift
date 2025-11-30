@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/resolver/shared/data_class.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -56,12 +56,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       columns: columns,
       references: references.toList(),
       nameOfRowClass: dataClassInfo.enforcedName ??
-          dataClassNameForClassName(element.name3!),
+          dataClassNameForClassName(element.name!),
       interfacesForRowClass: dataClassInfo.interfaces,
       nameOfCompanionClass: dataClassInfo.companionName,
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
-      baseDartName: element.name3!,
+      baseDartName: element.name!,
       tableConstraints: [
         if (primaryKey != null) PrimaryKeyColumns(primaryKey),
         for (final uniqueKey in uniqueKeys ?? const <Set<DriftColumn>>[])
@@ -140,12 +140,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   }
 
   Future<Set<DriftColumn>?> _readPrimaryKey(
-    ClassElement2 element,
+    ClassElement element,
     List<DriftColumn> columns,
   ) async {
-    final primaryKeyGetter = element.lookUpGetter2(
+    final primaryKeyGetter = element.lookUpGetter(
       name: 'primaryKey',
-      library: element.library2,
+      library: element.library,
     );
 
     if (primaryKeyGetter == null || primaryKeyGetter.isFromDefaultTable) {
@@ -193,12 +193,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   }
 
   Future<List<Set<DriftColumn>>?> _readUniqueKeys(
-    ClassElement2 element,
+    ClassElement element,
     List<DriftColumn> columns,
   ) async {
-    final uniqueKeyGetter = element.lookUpGetter2(
+    final uniqueKeyGetter = element.lookUpGetter(
       name: 'uniqueKeys',
-      library: element.library2,
+      library: element.library,
     );
 
     if (uniqueKeyGetter == null || uniqueKeyGetter.isFromDefaultTable) {
@@ -259,10 +259,10 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return parsedUniqueKeys;
   }
 
-  Future<bool?> _booleanGetter(ClassElement2 element, String name) async {
-    final getter = element.lookUpGetter2(
+  Future<bool?> _booleanGetter(ClassElement element, String name) async {
+    final getter = element.lookUpGetter(
       name: name,
-      library: element.library2,
+      library: element.library,
     );
 
     // Was the getter overridden at all?
@@ -286,24 +286,24 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return null;
   }
 
-  Future<bool?> _overrideWithoutRowId(ClassElement2 element) async {
+  Future<bool?> _overrideWithoutRowId(ClassElement element) async {
     return await _booleanGetter(element, 'withoutRowId');
   }
 
-  Future<bool?> _isStrict(ClassElement2 element) async {
+  Future<bool?> _isStrict(ClassElement element) async {
     return await _booleanGetter(element, 'isStrict');
   }
 
   Future<Iterable<PendingColumnInformation>> _parseColumns(
-      ClassElement2 element) async {
+      ClassElement element) async {
     // Returns true if the given field is a column defined as a getter
-    bool isGetterColumn(FieldElement2 e) {
-      return isColumn(e.type) && e.getter2 != null && !e.getter2!.isSynthetic;
+    bool isGetterColumn(FieldElement e) {
+      return isColumn(e.type) && e.getter != null && !e.getter!.isSynthetic;
     }
 
     // Returns true if the given field is a column defined as a late final variable declaration
-    Future<bool> isLateFinalColumn(FieldElement2 e) async {
-      final isLateFinalField = e.isLate && e.isFinal && e.getter2 != null;
+    Future<bool> isLateFinalColumn(FieldElement e) async {
+      final isLateFinalField = e.isLate && e.isFinal && e.getter != null;
       if (!isLateFinalField) return false;
 
       return isColumn(e.type) || isColumnBuilder(e.type);
@@ -311,30 +311,30 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
     final Set<String> columnNames = {};
     for (final element in element.allSupertypes
-        .map((t) => t.element3)
-        .followedBy([element]).expand((e) => e.fields2)) {
+        .map((t) => t.element)
+        .followedBy([element]).expand((e) => e.fields)) {
       if (isGetterColumn(element) || await isLateFinalColumn(element)) {
-        columnNames.add(element.name3!);
+        columnNames.add(element.name!);
       }
     }
 
     final fields = columnNames
         .map((name) {
           final getter =
-              element.lookUpGetter2(name: name, library: element.library2);
-          return getter!.variable3;
+              element.lookUpGetter(name: name, library: element.library);
+          return getter!.variable;
         })
         .nonNulls
         .toList();
-    final all = <Element2, String>{
-      for (final entry in fields) entry.getter2 ?? entry: entry.name3!
+    final all = <Element, String>{
+      for (final entry in fields) entry.getter ?? entry: entry.name!
     };
 
     final results = <PendingColumnInformation>[];
     for (final field in fields) {
       final ColumnDeclaration node;
       final PendingColumnInformation? column;
-      if (field.getter2!.isSynthetic) {
+      if (field.getter!.isSynthetic) {
         node = ColumnDeclaration(
             await resolver.driver.backend
                     .loadElementDeclaration(field.baseElement)
@@ -344,10 +344,10 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       } else {
         node = ColumnDeclaration(
             null,
-            await resolver.driver.backend.loadElementDeclaration(field.getter2!)
+            await resolver.driver.backend.loadElementDeclaration(field.getter!)
                 as MethodDeclaration);
 
-        column = await _parseColumn(node, field.getter2!, all);
+        column = await _parseColumn(node, field.getter!, all);
       }
 
       if (column != null) {
@@ -360,8 +360,8 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
   Future<PendingColumnInformation?> _parseColumn(
     ColumnDeclaration declaration,
-    Element2 element,
-    Map<Element2, String> allColumns,
+    Element element,
+    Map<Element, String> allColumns,
   ) async {
     return ColumnParser(this, allColumns).parse(declaration, element);
   }
@@ -369,11 +369,11 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
   Future<List<String>> _readCustomConstraints(
     Set<DriftElement> references,
     List<DriftColumn> localColumns,
-    ClassElement2 element,
+    ClassElement element,
   ) async {
-    final customConstraints = element.lookUpGetter2(
+    final customConstraints = element.lookUpGetter(
       name: 'customConstraints',
-      library: element.library2,
+      library: element.library,
     );
 
     if (customConstraints == null || customConstraints.isFromDefaultTable) {
@@ -398,15 +398,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
     if (expression is ListLiteral) {
       for (final entry in expression.elements) {
-        if (entry is StringLiteral) {
-          final value = entry.stringValue;
-          if (value != null) {
-            foundConstraints.add(value);
-            foundConstraintSources.add(entry);
-          }
+        if (entry case StringLiteral(:final stringValue?)) {
+          foundConstraints.add(stringValue);
+          foundConstraintSources.add(entry);
         } else {
-          reportError(DriftAnalysisError.inDartAst(
-              element, entry, 'This must be a string literal.'));
+          reportError(DriftAnalysisError.inDartAst(element, entry,
+              'Drift can only verify custom constraints set as constant string literals.'));
         }
       }
     } else {

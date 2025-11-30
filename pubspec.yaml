@@ -11,7 +11,7 @@ workspace:
   - drift_flutter
   - sqlparser
 
-  - docs
+#  - docs
 
   - extras/assets/old_moor_flutter_package
   - extras/assets/old_moor_package

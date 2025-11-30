@@ -92,7 +92,7 @@ Future<Map<int, ExportedSchema>> parseSchema(Directory directory) async {
     final version = int.parse(match.group(1)!);
     final rawData = json.decode(await entity.readAsString());
 
-    final schema = SchemaReader.readJson(rawData as Map<String, dynamic>);
+    final schema = await SchemaReader.readJson(rawData as Map<String, dynamic>);
     results[version] = ExportedSchema(schema.entities.toList(), schema.options);
   }
 

@@ -173,6 +173,9 @@ mixin _HasParentScope on ReferenceScope {
 class StatementScope extends ReferenceScope with _HasParentScope {
   final ReferenceScope parent;
 
+  /// Only used for debugging purposes.
+  final AstNode statement;
+
   @override
   get _parentScopeForLookups => parent;
 
@@ -206,7 +209,7 @@ class StatementScope extends ReferenceScope with _HasParentScope {
   @override
   List<Column>? expansionOfStarColumn;
 
-  StatementScope(this.parent);
+  StatementScope(this.parent, this.statement);
 
   @override
   Iterable<ResultSetAvailableInStatement> get resultSetAvailableToChildScopes {
@@ -286,7 +289,7 @@ class StatementScope extends ReferenceScope with _HasParentScope {
   }
 
   factory StatementScope.forStatement(RootScope root, Statement statement) {
-    return StatementScope(statement.optionalScope ?? root);
+    return StatementScope(statement.optionalScope ?? root, statement);
   }
 
   static StatementScope cast(ReferenceScope other) {

@@ -220,6 +220,7 @@ final class NativeDatabase {
   static DriftConnection createInBackground(
     File file, {
     DriftDialect dialect = const SqliteDialect(),
+    bool isolateDebugLog = false,
     DatabaseSetup? setup,
     SqliteResolver sqlite3 = _defaultResolver,
     IsolateSetup? isolateSetup,
@@ -234,6 +235,7 @@ final class NativeDatabase {
         return await createBackgroundImplementation(
           file,
           setup: setup,
+          isolateDebugLog: isolateDebugLog,
           sqlite3: sqlite3,
           isolateSetup: isolateSetup,
           cachePreparedStatements: cachePreparedStatements,
@@ -250,6 +252,7 @@ final class NativeDatabase {
   static Future<DriftDatabaseImplementation> createBackgroundImplementation(
     File file, {
     DatabaseSetup? setup,
+    bool isolateDebugLog = false,
     SqliteResolver sqlite3 = _defaultResolver,
     IsolateSetup? isolateSetup,
     bool cachePreparedStatements = _cacheStatementsByDefault,
@@ -276,7 +279,8 @@ final class NativeDatabase {
     await spawnIsolate('worker');
     final driftIsolate = await receive.next;
 
-    var (session, streams) = await driftIsolate.connect(singleClientMode: true);
+    var (session, streams) = await driftIsolate.connect(
+        singleClientMode: true, isolateDebugLog: isolateDebugLog);
 
     if (readPool != 0) {
       final readers = <DriftSession>[];
@@ -288,7 +292,9 @@ final class NativeDatabase {
       for (var i = 0; i < readPool; i++) {
         final spawned = await receive.next;
 
-        readers.add((await spawned.connect(singleClientMode: true)).$1);
+        readers.add((await spawned.connect(
+                singleClientMode: true, isolateDebugLog: isolateDebugLog))
+            .$1);
       }
 
       session = DriftSessionPool(

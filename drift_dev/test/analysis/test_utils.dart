@@ -5,7 +5,7 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart' as dart;
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/overlay_file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:build/build.dart';
@@ -210,7 +210,7 @@ class TestBackend extends DriftBackend {
   }
 
   @override
-  Future<Element2?> resolveTopLevelElement(
+  Future<Element?> resolveTopLevelElement(
       Uri context, String reference, Iterable<Uri> imports) async {
     final fileContents = StringBuffer();
     for (final import in imports) {
@@ -232,8 +232,8 @@ class TestBackend extends DriftBackend {
           await analysisContext.currentSession.getResolvedLibrary(path);
 
       if (result is ResolvedLibraryResult) {
-        final lookup = result.element2.firstFragment.scope.lookup(reference);
-        return lookup.getter2;
+        final lookup = result.element.firstFragment.scope.lookup(reference);
+        return lookup.getter;
       }
     } finally {
       resourceProvider.removeOverlay(path);
@@ -246,20 +246,20 @@ class TestBackend extends DriftBackend {
   bool get canReadDart => true;
 
   @override
-  Future<LibraryElement2> readDart(Uri uri) async {
+  Future<LibraryElement> readDart(Uri uri) async {
     await ensureHasDartAnalyzer();
     final result =
         await _dartContext!.currentSession.getLibraryByUri(uri.toString());
 
-    return (result as LibraryElementResult).element2;
+    return (result as LibraryElementResult).element;
   }
 
   @override
-  Future<dart.AstNode?> loadElementDeclaration(Element2 element) async {
-    final library = element.library2;
+  Future<dart.AstNode?> loadElementDeclaration(Element element) async {
+    final library = element.library;
     if (library == null) return null;
 
-    final info = await library.session.getResolvedLibraryByElement2(library);
+    final info = await library.session.getResolvedLibraryByElement(library);
     if (info is ResolvedLibraryResult) {
       return info.getFragmentDeclaration(element.firstFragment)?.node;
     } else {

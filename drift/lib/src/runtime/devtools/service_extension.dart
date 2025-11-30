@@ -8,9 +8,11 @@ import 'package:meta/meta.dart';
 
 import '../../connections/remote/protocol.dart';
 import '../../connections/remote/serialize.dart';
-import '../../runtime/database/db_base.dart';
-import '../../runtime/database/connection_user.dart';
+import '../database/connection_user.dart';
+import '../database/db_base.dart';
 import '../streams/store_impl.dart';
+import 'platform_unsupported.dart' if (dart.library.io) 'platform_native.dart';
+
 import 'devtools.dart';
 
 /// A service extension making asynchronous requests on drift databases
@@ -28,6 +30,17 @@ class DriftServiceExtension {
     final tracked = TrackedDatabase.all.firstWhere((e) => e.id == databaseId);
 
     switch (action) {
+      case 'get-supported-features':
+        return {
+          'isExportSupported': isExportSupported,
+        };
+      case 'download':
+        final exported = await exportDatabase(tracked.database);
+
+        return {
+          'database': tracked.database.runtimeType.toString(),
+          'data': base64.encode(exported),
+        };
       case 'subscribe-to-tables':
         final stream = tracked.database.tableUpdates();
         final id = _subscriptionId++;

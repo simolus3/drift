@@ -58,6 +58,13 @@ class Users extends Table with AutoIncrement {
 }
 
 @DataClassName('Category')
+@TableIndex(
+  name: 'categories_desc',
+  columns: {
+    IndexedColumn(#description, orderBy: OrderingMode.desc),
+    #priority,
+  },
+)
 class Categories extends Table with AutoIncrement {
   TextColumn get description =>
       text().named('desc').customConstraint('NOT NULL UNIQUE');

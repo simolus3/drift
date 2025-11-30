@@ -30,7 +30,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumn<DateTime> birthday = GeneratedColumn<DateTime>(
       'birthday', aliasedName, true,
       check: () =>
-          ComparableExpr(birthday).isBiggerThan(Constant(DateTime(1900))),
+          ComparableExpr(birthday).isBiggerThan(Constant(DateTime.utc(1900))),
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false);
   static const VerificationMeta _nextUserMeta =

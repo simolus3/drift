@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:collection/collection.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -84,7 +84,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     linter.sqlParserErrors.forEach(reportLint);
   }
 
-  Future<Element2?> _findInDart(String identifier) async {
+  Future<Element?> _findInDart(String identifier) async {
     final dartImports = file.discovery!.importDependencies
         .map((e) => e.uri)
         .where((importUri) => importUri.path.endsWith('.dart'))
@@ -110,13 +110,13 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
             'Could not find `$identifier`, are you missing an import?'),
       );
       return null;
-    } else if (element is InterfaceElement2) {
-      final library = element.library2;
-      return library.typeSystem.instantiateInterfaceToBounds2(
+    } else if (element is InterfaceElement) {
+      final library = element.library;
+      return library.typeSystem.instantiateInterfaceToBounds(
           element: element, nullabilitySuffix: NullabilitySuffix.none);
-    } else if (element is TypeAliasElement2) {
-      final library = element.library2;
-      return library.typeSystem.instantiateTypeAliasToBounds2(
+    } else if (element is TypeAliasElement) {
+      final library = element.library;
+      return library.typeSystem.instantiateTypeAliasToBounds(
           element: element, nullabilitySuffix: NullabilitySuffix.none);
     } else {
       reportError(DriftAnalysisError.inDriftFile(
@@ -140,14 +140,14 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
 
     FoundDartClass? foundDartClass;
 
-    if (element is InterfaceElement2) {
+    if (element is InterfaceElement) {
       foundDartClass = FoundDartClass(element, null);
-    } else if (element is TypeAliasElement2) {
+    } else if (element is TypeAliasElement) {
       // Resolve type alias to a class, or use record if we have one.
       final innerType = element.aliasedType;
       if (innerType is InterfaceType) {
         foundDartClass =
-            FoundDartClass(innerType.element3, innerType.typeArguments);
+            FoundDartClass(innerType.element, innerType.typeArguments);
       } else if (innerType is RecordType) {
         return validateRowClassFromRecordType(
           element,

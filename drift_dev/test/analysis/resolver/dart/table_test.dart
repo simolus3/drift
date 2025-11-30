@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
+import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
@@ -370,7 +371,9 @@ class WithConstraints extends Table {
           .withSpan('customConstraints')
     ]);
     expect(withConstraints.errorsDuringAnalysis, [
-      isDriftError('This must be a string literal.').withSpan('1'),
+      isDriftError(contains(
+              'can only verify custom constraints set as constant string literals'))
+          .withSpan('1'),
       isDriftError('Could not parse this table constraint').withSpan("'two'"),
       isDriftError('Could not parse this table constraint').withSpan("'three'"),
     ]);
@@ -490,5 +493,61 @@ class Preferences extends Table {
 
     expect(file.allErrors,
         [isDriftError(contains('is only meaningful for `STRICT` tables'))]);
+  });
+
+  test('warns about non-constant custom constraints', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+@DataClassName('MyTable')
+class MyTables extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().nullable()();
+}
+
+@DataClassName('MyOtherThing')
+class MyOtherThings extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get otherId => integer()();
+  IntColumn get blahId => integer()();
+  TextColumn get name => text().nullable()();
+
+  @override
+  List<String> get customConstraints => ["UNIQUE(${otherId.name}, ${blahId.name})"];
+}
+
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    expect(file.allErrors, [
+      isDriftError(contains(
+          'can only verify custom constraints set as constant string literals.'))
+    ]);
+  });
+
+  test('supports dot shorthand syntax', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get otherId => integer().references(Users, #id, onDelete: .cascade)();
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    final otherId = table.columns[1];
+    expect(otherId.nameInSql, 'other_id');
+    expect(
+        otherId.constraints,
+        contains(isA<ForeignKeyReference>()
+            .having((e) => e.onDelete, 'onDelete', ReferenceAction.cascade)));
   });
 }

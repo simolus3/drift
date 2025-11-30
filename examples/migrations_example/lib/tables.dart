@@ -12,7 +12,7 @@ class Users extends Table {
   DateTimeColumn get birthday => dateTime()
       .nullable()
       // ignore: recursive_getters
-      .check(birthday.isBiggerThan(Constant(DateTime(1900))))();
+      .check(birthday.isBiggerThan(Constant(DateTime.utc(1900))))();
 
   IntColumn get nextUser => integer().nullable().references(Users, #id)();
 

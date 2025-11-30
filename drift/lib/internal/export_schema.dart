@@ -83,10 +83,8 @@ final class SchemaExporter {
       final parsedOptions = json.decode(options);
       final dialects = (parsedOptions['dialects'] as List)
           .map((e) => deserializeDialect(e as JsonObject));
-      final elements = (parsedOptions['elements'] as List).cast<String>();
 
-      final result =
-          await export._collect(dialects: dialects, elementNames: elements);
+      final result = await export._collect(dialects: dialects);
       final serialized = [
         for (final row in result.collectedStatements)
           [row.element, row.dialect.name, row.stmt]

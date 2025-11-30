@@ -103,37 +103,49 @@ class SchemaIsolate {
   static Future<Object?> _startAndRun(
       SchemaIsolateOptions options, List<String> args) async {
     final code = await generateStartupCode(options);
+    File entrypointFile;
+    Directory? deleteAfterGeneration;
 
     if (options.dumpStartupCode case final file?) {
       await file.parent.create(recursive: true);
-      await file.writeAsString(code);
+      entrypointFile = file;
+    } else {
+      deleteAfterGeneration =
+          Directory.systemTemp.createTempSync('drift_export');
+      entrypointFile = File(p.join(deleteAfterGeneration.path, 'main.dart'));
     }
+
+    await entrypointFile.writeAsString(code);
 
     final receive = ReceivePort();
     final receiveErrors = ReceivePort();
     final Isolate isolate;
     try {
       isolate = await Isolate.spawnUri(
-        Uri.dataFromString(code),
+        entrypointFile.uri,
         args,
         receive.sendPort,
         errorsAreFatal: true,
         onError: receiveErrors.sendPort,
+        packageConfig: await Isolate.packageConfig,
       );
     } catch (e) {
-      throw SchemaIsolateException(e, options.dumpStartupCode);
+      throw SchemaIsolateException(e, entrypointFile);
     }
 
     final result = await Future.any([
       receive.firstOrNever,
       receiveErrors.firstOrNever.then((e) {
-        throw SchemaIsolateException(e! as Object, options.dumpStartupCode);
+        throw SchemaIsolateException(e! as Object, entrypointFile);
       })
     ]);
 
     isolate.kill();
     receiveErrors.close();
     receive.close();
+    if (deleteAfterGeneration != null) {
+      await deleteAfterGeneration.delete(recursive: true);
+    }
 
     return result;
   }
@@ -147,7 +159,6 @@ class SchemaIsolate {
   static Future<List<CreateStatement>> collectStatements({
     required DriftOptions options,
     required List<DriftElement> allElements,
-    required List<DriftSchemaElement> elementFilter,
     File? dumpStartupCode,
   }) async {
     final result = await _startAndRun((
@@ -159,9 +170,8 @@ class SchemaIsolate {
       'v2',
       json.encode({
         'dialects': [
-          for (final dialect in SqlDialect.values) dialect.name,
+          for (final dialect in options.supportedDialects) dialect.name,
         ],
-        'elements': [for (final element in elementFilter) element.schemaName]
       })
     ]);
 
@@ -208,7 +218,7 @@ extension<T> on Stream<T> {
 
 final class SchemaIsolateException implements Exception {
   final Object cause;
-  final File? startupCodeWrittenTo;
+  final File startupCodeWrittenTo;
 
   SchemaIsolateException(this.cause, this.startupCodeWrittenTo);
 
@@ -220,15 +230,10 @@ final class SchemaIsolateException implements Exception {
 
     var desc = 'Drift tried to run parts of your database code to obtain a '
         'complete schema for aspects where static analysis is not enough.\n'
-        'This failed: $causeDesc';
-    if (startupCodeWrittenTo case final file?) {
-      desc += '\nA copy of the code that failed to run has been written to: '
-          '${p.relative(file.path)}.';
-    } else {
-      desc += '\nUse the --export-schema-startup-code=path option to write '
-          'the code drift tried to run to a file, which might help to debug '
-          'this problem.';
-    }
+        'This failed: $causeDesc.\n'
+        'A copy of the code that failed to run has been written to: '
+        '${p.relative(startupCodeWrittenTo.path)}.';
+
     if (!isFatal) {
       desc += '\nDrift will fall-back to only using results obtained through '
           'static analysis, but restructing your code to avoid this compiler '
@@ -237,7 +242,6 @@ final class SchemaIsolateException implements Exception {
 
     desc +=
         '\nMore information is available here: https://drift.simonbinder.eu/migrations/exports/#debugging-issues-exporting-your-schema';
-
     return desc;
   }
 

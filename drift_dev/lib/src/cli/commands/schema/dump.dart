@@ -78,7 +78,7 @@ class DumpSchemaCommand extends Command {
       await parent.create(recursive: true);
     }
 
-    await file.writeAsString(json.encode(
+    await file.writeAsString(SchemaWriter.json.convert(
         await writer.createSchemaJson(dumpStartupCode: dumpSchemaCode)));
     print('Wrote to $target');
   }

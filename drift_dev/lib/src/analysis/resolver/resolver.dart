@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
@@ -171,19 +171,19 @@ class DriftResolver {
   /// Resolves a Dart element reference, if the referenced Dart [element]
   /// defines an element understood by drift.
   Future<ResolveReferencedElementResult> resolveDartReference(
-      DriftElementId owner, Element2 element) async {
-    final uri = await driver.backend.uriOfDart(element.library2!);
+      DriftElementId owner, Element element) async {
+    final uri = await driver.backend.uriOfDart(element.library!);
     final state = driver.cache.stateForUri(uri);
 
     final existing = state.definedElements.firstWhereOrNull(
-        (existing) => existing.dartElementName == element.name3);
+        (existing) => existing.dartElementName == element.name);
 
     if (existing != null) {
       return resolveReferencedElement(owner, existing.ownId);
     } else {
       return InvalidReferenceResult(
-        InvalidReferenceError.noElementWichSuchName,
-        'The referenced element, ${element.name3}, is not understood by drift.',
+        InvalidReferenceError.noElementWithSuchName,
+        'The referenced element, ${element.name}, is not understood by drift.',
       );
     }
   }
@@ -214,7 +214,7 @@ class DriftResolver {
 
     if (candidates.isEmpty) {
       return InvalidReferenceResult(
-        InvalidReferenceError.noElementWichSuchName,
+        InvalidReferenceError.noElementWithSuchName,
         '`$reference` could not be found in any import.',
       );
     } else if (candidates.length > 1) {
@@ -248,11 +248,22 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
     DriftAnalysisError Function(String msg) createError,
   ) async {
     final result = await resolver.resolveReference(discovered.ownId, reference);
+    if (result
+        case InvalidReferenceResult(
+          error: InvalidReferenceError.noElementWithSuchName
+        )) {
+      final knownTables = resolver.driver.options.sqliteDialect.knownTables;
+      if (knownTables.any((e) => e.name == reference)) {
+        // This table is external, no need to emit a warning.
+        return null;
+      }
+    }
+
     return handleReferenceResult(result, createError);
   }
 
   Future<E?> resolveDartReferenceOrReportError<E extends DriftElement>(
-    Element2 reference,
+    Element reference,
     DriftAnalysisError Function(String msg) createError,
   ) async {
     final result =
@@ -355,11 +366,11 @@ abstract class LocalElementResolver<T extends DiscoveredElement> {
   Future<DriftElement> resolve();
 }
 
-abstract class ResolveReferencedElementResult {
+sealed class ResolveReferencedElementResult {
   const ResolveReferencedElementResult();
 }
 
-class ResolvedReferenceFound extends ResolveReferencedElementResult {
+final class ResolvedReferenceFound extends ResolveReferencedElementResult {
   final DriftElement element;
 
   ResolvedReferenceFound(this.element);
@@ -370,24 +381,24 @@ enum InvalidReferenceError {
 
   /// Reported by [DriftResolver.resolveReference] when no element with the
   /// given name exists in transitive imports.
-  noElementWichSuchName,
+  noElementWithSuchName,
 
   /// Reported by [DriftResolver.resolveReference] when more than one element
   /// with the queried name was found.
   ambigiousElements,
 }
 
-class InvalidReferenceResult extends ResolveReferencedElementResult {
+final class InvalidReferenceResult extends ResolveReferencedElementResult {
   final InvalidReferenceError error;
   final String message;
 
   InvalidReferenceResult(this.error, this.message);
 }
 
-class ReferencedElementCouldNotBeResolved
+final class ReferencedElementCouldNotBeResolved
     extends ResolveReferencedElementResult {}
 
-class ReferencesItself extends ResolveReferencedElementResult {
+final class ReferencesItself extends ResolveReferencedElementResult {
   const ReferencesItself();
 }
 

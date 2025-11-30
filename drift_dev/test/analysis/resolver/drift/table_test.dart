@@ -137,8 +137,8 @@ CREATE TABLE b (
             'expression',
             contains('EnumIndexConverter<FruitsWithGeneric>'),
           )
-          .having((e) => e.dartType.element3!.name3, 'dartType',
-              'FruitsWithGeneric'),
+          .having(
+              (e) => e.dartType.element!.name, 'dartType', 'FruitsWithGeneric'),
     );
 
     final nameColumn =

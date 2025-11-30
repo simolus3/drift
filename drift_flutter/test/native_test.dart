@@ -111,6 +111,20 @@ void main() {
     await database.close();
   });
 
+  test('isolateSetup', () async {
+    final file = d.path('test_isolate_setup');
+
+    final database = SimpleDatabase(driftDatabase(
+      name: 'database',
+      native: DriftNativeOptions(isolateSetup: () {
+        File(file).createSync();
+      }),
+    ));
+    await database.customSelect('SELECT 1').get();
+
+    expect(File(file).existsSync(), isTrue);
+  });
+
   group('shared between isolates', () {
     const options = DriftNativeOptions(shareAcrossIsolates: true);
 
@@ -138,6 +152,7 @@ void main() {
 
       // Should be reflected here!
       await expectLater(stream, emits(hasLength(1)));
+      stream.cancel();
       await database.close();
     });
 
@@ -186,6 +201,23 @@ void main() {
       final [row] =
           await database.customSelect('SELECT hello_dart() as r;').get();
       expect(row.data['r'], 'Hello from Dart!');
+    });
+
+    test('isolateSetup', () async {
+      final file = d.path('test_isolate_setup');
+
+      final database = SimpleDatabase(driftDatabase(
+        name: 'database',
+        native: DriftNativeOptions(
+          shareAcrossIsolates: true,
+          isolateSetup: () {
+            File(file).createSync();
+          },
+        ),
+      ));
+      await database.customSelect('SELECT 1').get();
+
+      expect(File(file).existsSync(), isTrue);
     });
   });
 

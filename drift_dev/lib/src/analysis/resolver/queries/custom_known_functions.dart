@@ -11,9 +11,14 @@ class DriftOptionsExtension implements Extension {
   @override
   void register(SqlEngine engine) {
     final knownFunctions = options.sqliteDialect.knownFunctions;
+    final knownTables = options.sqliteDialect.knownTables;
 
     if (knownFunctions.isNotEmpty) {
       engine.registerFunctionHandler(_CustomFunctions(knownFunctions));
+    }
+
+    for (final knownTable in knownTables) {
+      engine.registerTable(knownTable);
     }
   }
 }

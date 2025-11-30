@@ -1,0 +1,33 @@
+# Files and directories created by pub.
+**/doc/api/
+.dart_tool/
+.packages
+
+# Conventional directory for build output.
+/build/
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+web/*.db
+web/search.db.json

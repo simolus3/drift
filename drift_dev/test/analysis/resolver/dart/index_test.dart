@@ -1,5 +1,6 @@
 import 'package:build_test/build_test.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
+import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
 
 import '../../../utils.dart';
@@ -32,13 +33,13 @@ class MyTable extends Table {
 
     expect(indexA.table, table);
     expect(indexA.unique, false);
-    expect(indexA.indexedColumns, [table.columnBySqlName['a']]);
+    expect(indexA.indexedColumns, [indexedColumn('a')]);
 
     expect(indexBC.table, table);
     expect(indexBC.unique, true);
     expect(indexBC.indexedColumns, [
-      table.columnBySqlName['b'],
-      table.columnBySqlName['c'],
+      indexedColumn('b'),
+      indexedColumn('c'),
     ]);
   });
 
@@ -59,6 +60,28 @@ class MyTable extends Table {
       isDriftError(
           'Column `foo`, referenced in index `tbl_a`, was not found in the table.')
     ]);
+  });
+
+  test('reads ordering mode', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+@TableIndex(columns: {IndexedColumn(#a, orderBy: OrderingMode.desc)}, name: 'tbl_a')
+class MyTable extends Table {
+  IntColumn get a => integer()();
+  TextColumn get b => text()();
+  TextColumn get c => text()();
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/a.dart');
+    backend.expectNoErrors();
+
+    final indexA = file.analysis[file.id('tbl_a')]!.result as DriftIndex;
+    expect(indexA.indexedColumns,
+        [indexedColumn('a', ordering: OrderingMode.descending)]);
   });
 
   group('SQL', () {
@@ -123,4 +146,11 @@ class MyTable extends Table {
       expect(file.allErrors, [isDriftError('b: Unknown column.')]);
     });
   });
+}
+
+TypeMatcher<DriftIndexedColumn> indexedColumn(String name,
+    {OrderingMode? ordering}) {
+  return isA<DriftIndexedColumn>()
+      .having((e) => e.column.nameInSql, 'nameInSql', name)
+      .having((e) => e.orderBy, 'orderBy', ordering);
 }

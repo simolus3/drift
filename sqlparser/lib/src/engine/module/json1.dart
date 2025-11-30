@@ -9,8 +9,19 @@ class Json1Extension implements Extension {
 
     engine
       ..registerFunctionHandler(_Json1Functions(supportsJsonb))
-      ..registerTableValuedFunctionHandler(const _JsonEachFunction())
-      ..registerTableValuedFunctionHandler(const _JsonTreeFunction());
+      ..registerTableValuedFunctionHandler(
+          const _JsonTableValuedFunction('json_each'))
+      ..registerTableValuedFunctionHandler(
+          const _JsonTableValuedFunction('json_tree'));
+
+    if (engine.options.version >= SqliteVersion.v3_51) {
+      // These have been added in 3.51.
+      engine
+        ..registerTableValuedFunctionHandler(
+            const _JsonTableValuedFunction('jsonb_each'))
+        ..registerTableValuedFunctionHandler(
+            const _JsonTableValuedFunction('jsonb_tree'));
+    }
   }
 }
 
@@ -108,8 +119,7 @@ final _jsonFunctionResultSet = CustomResultSet([
   // https://www.sqlite.org/json1.html#the_json_each_and_json_tree_table_valued_functions
   // we use string for any
   TableColumn('key', const ResolvedType(type: BasicType.text)),
-  TableColumn(
-      'value', const ResolvedType(type: BasicType.text, nullable: true)),
+  TableColumn('value', const ResolvedType(nullable: true)),
   TableColumn('type', const ResolvedType(type: BasicType.text)),
   TableColumn('atom', const ResolvedType(type: BasicType.text)),
   TableColumn('type', const ResolvedType(type: BasicType.text)),
@@ -119,26 +129,15 @@ final _jsonFunctionResultSet = CustomResultSet([
   TableColumn('fullkey', const ResolvedType(type: BasicType.text)),
 ]);
 
-abstract class _JsonTableValuedFunction implements TableValuedFunctionHandler {
-  const _JsonTableValuedFunction();
+final class _JsonTableValuedFunction implements TableValuedFunctionHandler {
+  @override
+  final String functionName;
+
+  const _JsonTableValuedFunction(this.functionName);
 
   @override
   ResultSet resolveTableValued(
       AnalysisContext context, TableValuedFunction call) {
     return _jsonFunctionResultSet;
   }
-}
-
-class _JsonEachFunction extends _JsonTableValuedFunction {
-  const _JsonEachFunction();
-
-  @override
-  String get functionName => 'json_each';
-}
-
-class _JsonTreeFunction extends _JsonTableValuedFunction {
-  const _JsonTreeFunction();
-
-  @override
-  String get functionName => 'json_tree';
 }

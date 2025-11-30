@@ -38,6 +38,7 @@ targets:
                 - json1
                 - fts5
                 - geopoly
+            postgres:
   drift_custom:
     auto_apply_builders: false
     sources:

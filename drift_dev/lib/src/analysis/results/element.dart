@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' show url;
@@ -56,9 +56,9 @@ class DriftDeclaration {
 
   DriftDeclaration(this.sourceUri, this.offset, this.name);
 
-  factory DriftDeclaration.dartElement(Element2 element) {
-    return DriftDeclaration(element.library2!.uri,
-        element.firstFragment.nameOffset2!, element.name3!);
+  factory DriftDeclaration.dartElement(Element element) {
+    return DriftDeclaration(
+        element.library!.uri, element.firstFragment.nameOffset!, element.name!);
   }
 
   factory DriftDeclaration.driftFile(SyntacticEntity node, Uri uri) {

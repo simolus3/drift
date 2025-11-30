@@ -4,11 +4,11 @@ import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:drift/connections/isolate.dart';
-import 'package:drift/connections/sqlite/native.dart';
+import 'package:drift/sqlite3/native.dart';
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
@@ -30,6 +30,8 @@ Future<DriftDatabaseImplementation> driftDatabase({
   DriftWebOptions? web,
   DriftNativeOptions? native,
 }) async {
+  final nativeOptions = native ?? const DriftNativeOptions();
+
   Future<File> databaseFile() async {
     if (native?.databasePath case final lookupPath?) {
       return File(await lookupPath());
@@ -73,18 +75,19 @@ Future<DriftDatabaseImplementation> driftDatabase({
     hasConfiguredSqlite = true;
   }
 
-  if (native?.shareAcrossIsolates == true) {
+  if (nativeOptions.shareAcrossIsolates) {
     return await _openShared(
-        name: name, native: native, databaseFile: databaseFile);
+        name: name, native: nativeOptions, databaseFile: databaseFile);
   } else {
     return await NativeDatabase.createBackgroundImplementation(
-        await databaseFile());
+        await databaseFile(),
+        isolateDebugLog: nativeOptions.isolateDebugLog);
   }
 }
 
 Future<DriftDatabaseImplementation> _openShared({
   required String name,
-  required DriftNativeOptions? native,
+  required DriftNativeOptions native,
   required Future<File> Function() databaseFile,
 }) async {
   const connectTimeout = Duration(seconds: 1);
@@ -153,6 +156,8 @@ void _isolateEntrypoint(_EntrypointMessage message) {
   if (IsolateNameServer.registerPortWithName(
       connections.sendPort, portName(message.name))) {
     final controlPortName = isolateControlPortName(message.name);
+    message.options.isolateSetup?.call();
+
     final server = DriftIsolate.inCurrent(
       () async {
         final (session, _) =

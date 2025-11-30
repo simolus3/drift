@@ -2,19 +2,13 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
 import 'package:build/build.dart';
-import 'package:build/experiments.dart';
-import 'package:build_resolvers/build_resolvers.dart';
 import 'package:build_test/build_test.dart';
-import 'package:build_test/src/in_memory_reader_writer.dart';
 import 'package:drift_dev/integrations/build.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
-
-final _resolvers =
-    withEnabledExperiments(() => AnalyzerResolvers.sharedInstance, ['records']);
 
 BuilderOptions builderOptionsFromYaml(String yaml) {
   final map = loadYaml(yaml);
@@ -63,22 +57,24 @@ Future<DriftBuildResult> emulateDriftBuild({
   Logger? logger,
   bool modularBuild = false,
 }) async {
-  _resolvers.reset();
   logger ??= Logger.detached('emulateDriftBuild');
   final logLines = <LogRecord>[];
 
   final env = await driftTestEnvironment();
+  final prepare = preparingBuilder(options);
   final result = await testBuilders(
     [
-      preparingBuilder(options),
+      prepare,
       discover(options),
       analyzer(options),
       modularBuild ? modular(options) : driftBuilderNotShared(options),
-      // TODO: Investigate testing post-process builder too. Once that's
-      // possible, also patch DriftBuildResult.dartOutputs to use information
-      // about deleted assets again.
-      // driftCleanup(options),
     ],
+    postProcessBuilders: [
+      driftCleanup(options),
+    ],
+    appliesBuilders: {
+      prepare: ['FileDeletingBuilder']
+    },
     inputs,
     rootPackage: 'a',
     onLog: (record) {
@@ -96,27 +92,24 @@ Future<DriftBuildResult> emulateDriftBuild({
     generateFor:
         inputs.keys.where((e) => makeAssetId(e).package == 'a').toSet(),
   );
-  if (result.buildResult.failureType != null) {
-    throw Exception('testBuilders failed');
+  if (!result.succeeded) {
+    throw Exception('testBuilders failed: ${result.errors}');
   }
 
-  final deletedAssets = <AssetId>[];
-
   logger.clearListeners();
-  return DriftBuildResult(env, deletedAssets);
+  return DriftBuildResult(env);
 }
 
 class DriftBuildResult {
   final TestReaderWriter writer;
-  final List<AssetId> deleted;
 
-  DriftBuildResult(this.writer, this.deleted);
+  DriftBuildResult(this.writer);
 
   Iterable<AssetId> get dartOutputs {
     return writer.testing.assetsWritten.where((e) {
       return e.extension == '.dart' &&
-          !deleted.contains(e) &&
-          // TODO: Remove once we can test the post-process builder again.
+          // TODO: Replace with a better check for deleted assets,
+          // https://github.com/dart-lang/build/discussions/4186#discussioncomment-14848165
           !e.path.endsWith('.temp.dart');
     });
   }
@@ -131,7 +124,7 @@ extension ReaderWriterUtils on TestReaderWriter {
     var id = AssetId.parse(assetId);
     if (!testing.exists(id)) {
       id = AssetId(
-        (this as InMemoryAssetReaderWriter).rootPackage,
+        id.package,
         '.dart_tool/build/generated/${id.package}/${id.path}',
       );
 

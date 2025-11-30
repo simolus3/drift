@@ -66,7 +66,7 @@ class FileAnalyzer {
                   .whereType<DriftSchemaElement>();
 
               final onlyReferencedFromDao = schema
-                  .where((e) => !availableByDefault.contains(e))
+                  .where((e) => !availableElements.contains(e))
                   .map((e) => e.id.name)
                   .toList();
 

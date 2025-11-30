@@ -12,7 +12,7 @@ class DriftPreprocessorResult {
   /// A map from inline Dart lexemes used in a `.drift` file to the name of
   /// fields in a file generated to help analyze them.
   ///
-  /// Public APIs in the `analyzer` (or `build_resolvers`) packages only support
+  /// Public APIs in the `analyzer` (or `build`) packages only support
   /// resolving full Dart files. In a `.drift` file however, it is possible to
   /// write in-line Dart expressions in SQL, for instance to declare a type
   /// converter with `MAPPED BY const MyTypeConverter()`.

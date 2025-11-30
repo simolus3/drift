@@ -83,8 +83,8 @@ class MyDatabase {}
         () => project.collectSchema('lib/test.dart'),
         throwsA(isA<SchemaIsolateException>()
             .having((e) => e.cause, 'cause', isA<IsolateSpawnException>())
-            .having(
-                (e) => e.startupCodeWrittenTo, 'startupCodeWrittenTo', null)),
+            .having((e) => e.startupCodeWrittenTo, 'startupCodeWrittenTo',
+                isNot(null))),
       );
     });
   });

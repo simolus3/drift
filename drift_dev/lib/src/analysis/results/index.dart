@@ -17,7 +17,7 @@ class DriftIndex extends DriftSchemaElement {
   /// This list is empty for indices created in SQL because it can't represent
   /// all expressions being indexed. It is useful for Dart-defined indices to
   /// implement [createStatementForDartDefinition].
-  List<DriftColumn> indexedColumns;
+  List<DriftIndexedColumn> indexedColumns;
 
   /// Whethet the index has been declared to be unique.
   final bool unique;
@@ -69,10 +69,20 @@ class DriftIndex extends DriftSchemaElement {
       unique: unique,
       columns: [
         for (final column in indexedColumns)
-          IndexedColumn(Reference(columnName: column.nameInSql))
+          IndexedColumn(
+            Reference(columnName: column.column.nameInSql),
+            column.orderBy,
+          )
       ],
     );
   }
 }
 
-sealed class DriftIndexDefintion {}
+final class DriftIndexedColumn {
+  final DriftColumn column;
+  final OrderingMode? orderBy;
+
+  DriftIndexedColumn({required this.column, required this.orderBy});
+}
+
+sealed class DriftIndexDefinition {}

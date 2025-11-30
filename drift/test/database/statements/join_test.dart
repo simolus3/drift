@@ -473,6 +473,24 @@ void main() {
     );
   });
 
+  test('right outer join', () {
+    final stmt = db.select(db.todosTable).join([
+      rightOuterJoin(
+          db.categories, db.todosTable.category.equalsExp(db.categories.id))
+    ]);
+
+    expect(stmt, generates(contains('RIGHT OUTER JOIN')));
+  });
+
+  test('full outer join', () {
+    final stmt = db.select(db.todosTable).join([
+      fullOuterJoin(
+          db.categories, db.todosTable.category.equalsExp(db.categories.id))
+    ]);
+
+    expect(stmt, generates(contains('FULL OUTER JOIN')));
+  });
+
   group('subquery', () {
     test('can be joined', () async {
       final subquery = Subquery(

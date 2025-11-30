@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:path/path.dart' show url;
 
 import '../utils/string_escaper.dart';
@@ -9,18 +9,18 @@ abstract interface class ImportManager {
 }
 
 class ImportManagerForPartFiles implements ImportManager {
-  final LibraryElement2 mainLibrary;
-  final Map<String, Map<String, Element2>> _namedImports = {};
+  final LibraryElement mainLibrary;
+  final Map<String, Map<String, Element>> _namedImports = {};
 
   ImportManagerForPartFiles(this.mainLibrary) {
     for (final import
-        in mainLibrary.fragments.expand((f) => f.libraryImports2)) {
-      if (import.prefix2 case final prefix?) {
+        in mainLibrary.fragments.expand((f) => f.libraryImports)) {
+      if (import.prefix case final prefix?) {
         // Not using import.namespace here because that contains the prefix
         // everywhere. We want to look up the prefix from the raw name.
-        final library = import.importedLibrary2;
+        final library = import.importedLibrary;
         if (library != null) {
-          _namedImports[prefix.element.name3!] =
+          _namedImports[prefix.element.name!] =
               library.exportNamespace.definedNames2;
         }
       }
@@ -48,8 +48,8 @@ class ImportManagerForPartFiles implements ImportManager {
   /// as many parts use URLs relying on re-exports. For instance, this should
   /// return true for a wanted URI of `package:drift/drift.dart` when the
   /// element is actually defined in `package:drift/src/runtime/table.dart`.
-  static bool _matchingUrl(Uri wanted, Element2 target) {
-    final targetUri = target.library2?.uri;
+  static bool _matchingUrl(Uri wanted, Element target) {
+    final targetUri = target.library?.uri;
     if (targetUri == null || targetUri.scheme != wanted.scheme) {
       return false;
     }

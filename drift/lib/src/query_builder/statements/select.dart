@@ -448,6 +448,8 @@ enum JoinOperator implements SqlComponent {
   /// Perform an inner join,
   inner('INNER JOIN'),
   leftOuter('LEFT OUTER JOIN'),
+  rightOuter('RIGHT OUTER JOIN'),
+  fullOuter('FULL OUTER JOIN'),
   cross('CROSS JOIN');
 
   /// The default lexeme to generate for this join operator. Some SQL dialects

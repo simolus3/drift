@@ -26,7 +26,7 @@ class DriftView extends DriftElementWithResultSet {
   ExistingRowClass? existingRowClass;
 
   @override
-  final String nameOfRowClass;
+  String nameOfRowClass;
 
   @override
   final String? nameOfCompanionClass;

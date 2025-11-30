@@ -110,7 +110,7 @@ class GenerateUtils {
     final imports = LibraryImportManager()
       ..enforceAlias(AnnotatedDartCode.drift, null)
       // Internal URL of the generated file, just skip the import prefix.
-      ..enforceAlias(Uri.parse('${SchemaReader.elementUri}.drift.dart'), null);
+      ..enforceAlias(Uri.parse('${SchemaReader.elementUri}.dart'), null);
 
     final writer = Writer(
       options,

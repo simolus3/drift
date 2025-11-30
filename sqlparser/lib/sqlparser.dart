@@ -10,6 +10,7 @@ export 'src/engine/module/fts5.dart' show Fts5Extension, Fts5Table;
 export 'src/engine/module/geopoly.dart' show GeopolyExtension;
 export 'src/engine/module/json1.dart' show Json1Extension;
 export 'src/engine/module/math.dart' show BuiltInMathExtension;
+export 'src/engine/module/powersync.dart' show PowerSyncSqliteExtension;
 export 'src/engine/module/rtree.dart' show RTreeExtension;
 export 'src/engine/module/spellfix1.dart' show Spellfix1Extension;
 export 'src/engine/module/module.dart';

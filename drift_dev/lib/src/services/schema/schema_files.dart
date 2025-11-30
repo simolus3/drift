@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
@@ -14,10 +15,11 @@ import '../../analysis/resolver/shared/data_class.dart';
 import '../../analysis/results/results.dart';
 import '../../writer/utils/column_constraints.dart';
 import 'schema_isolate.dart';
+import 'sqlite_to_drift.dart';
 
 class _ExportedSchemaVersion {
-  static final Version current = _supportDialectSpecificConstraints;
-  static final Version _supportDialectSpecificConstraints = Version(1, 2, 0);
+  static final Version current = _exportSql;
+  static final Version _exportSql = Version(1, 3, 0);
   static final Version _supportDartIndex = Version(1, 1, 0);
 
   final Version version;
@@ -44,56 +46,30 @@ class SchemaWriter {
   /// Exports analyzed drift elements into a serialized format that can be used
   /// to re-construct the current database schema later.
   ///
-  /// Some drift elements, in particular Dart-defined views, are partially
-  /// defined at runtime and require running code. To infer the schema of these
-  /// elements, this method runs drift's code generator and spawns up a short-
-  /// lived isolate to collect the actual `CREATE` statements generated at
-  /// runtime.
+  /// Older versions of drift only exported schema information based on drift's
+  /// element model. This is sometimes inaccurate or incomplete, since generated
+  /// `CREATE` statements can depend on runtime code (e.g. for views where the
+  /// select statement is composed through drift's query builder).
+  ///
+  /// For this reason, we prefer to only export the `CREATE TABLE` statements
+  /// that drift actually generated as a reference. We still support the older
+  /// model, but the newer is much simpler while also being more reliable.
   Future<Map<String, Object?>> createSchemaJson({File? dumpStartupCode}) async {
-    final requiresRuntimeInformation = <DriftSchemaElement>[];
-    for (final element in elements) {
-      switch (element) {
-        case DriftTable():
-          for (final column in element.columns) {
-            if (column.sqlType is ColumnCustomType) {
-              requiresRuntimeInformation.add(element);
-              continue;
-            }
-
-            if (column.defaultArgument != null) {
-              // This is an arbitrary Dart expression allowed to contain user
-              // code. To make sure the schema file stays valid, evaluate it
-              // once now and replace the expression with the result as a
-              // constant when serializing.
-              requiresRuntimeInformation.add(element);
-              continue;
-            }
-          }
-        case DriftView():
-          if (element.source is! SqlViewSource) {
-            requiresRuntimeInformation.add(element);
-          }
-      }
-    }
-
     final knownStatements = <String, List<(DriftDialect, String)>>{};
-    if (requiresRuntimeInformation.isNotEmpty) {
-      try {
-        final statements = await SchemaIsolate.collectStatements(
-          options: options,
-          allElements: elements,
-          elementFilter: requiresRuntimeInformation,
-          dumpStartupCode: dumpStartupCode,
-        );
+    try {
+      final statements = await SchemaIsolate.collectStatements(
+        options: options,
+        allElements: elements,
+        dumpStartupCode: dumpStartupCode,
+      );
 
-        for (final statement in statements) {
-          knownStatements
-              .putIfAbsent(statement.elementName, () => [])
-              .add((statement.dialect, statement.createStatement));
-        }
-      } on SchemaIsolateException catch (e) {
-        _logger.warning(e.description(isFatal: false));
+      for (final statement in statements) {
+        knownStatements
+            .putIfAbsent(statement.elementName, () => [])
+            .add((statement.dialect, statement.createStatement));
       }
+    } on SchemaIsolateException catch (e) {
+      _logger.warning(e.description(isFatal: false));
     }
 
     return {
@@ -104,9 +80,24 @@ class SchemaWriter {
       },
       'options': _serializeOptions(),
       'entities': elements
-          .map((e) => _entityToJson(e, knownStatements))
+          .map((e) => _entityToJson(e,
+              e is DriftSchemaElement ? knownStatements[e.schemaName] : null))
           .whereType<Map>()
           .toList(),
+      if (knownStatements.isNotEmpty)
+        'fixed_sql': [
+          for (final MapEntry(:key, :value) in knownStatements.entries)
+            {
+              'name': key,
+              'sql': [
+                for (final (dialect, sql) in value)
+                  {
+                    'dialect': dialect.name,
+                    'sql': sql,
+                  }
+              ]
+            }
+        ],
     };
   }
 
@@ -118,8 +109,8 @@ class SchemaWriter {
     return asJson;
   }
 
-  Map<String, Object?>? _entityToJson(DriftElement entity,
-      Map<String, List<(SqlDialect, String)>> knownStatements) {
+  Map<String, Object?>? _entityToJson(
+      DriftElement entity, List<(DriftDialect, String)>? knownSql) {
     String? type;
     Map<String, Object?>? data;
 
@@ -133,8 +124,8 @@ class SchemaWriter {
       // a different thing when dependencies are changed, while we want an
       // immutable schema snapshot.
       CreateTableStatement? actualTable;
-      if (knownStatements[entity.schemaName] case final known?) {
-        final sql = known.firstWhere((e) => e.$1 == SqlDialect.sqlite).$2;
+      if (knownSql != null) {
+        final sql = knownSql.firstWhere((e) => e.$1 == SqlDialect.sqlite).$2;
         final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
 
         final result = engine.parse(sql);
@@ -163,13 +154,17 @@ class SchemaWriter {
         'sql': entity.createStmt,
         'unique': entity.unique,
         'columns': [
-          for (final column in entity.indexedColumns) column.nameInSql,
+          for (final column in entity.indexedColumns)
+            {
+              'column': column.column.nameInSql,
+              'order_by': column.orderBy?.name,
+            },
         ],
       };
     } else if (entity is DriftView) {
       String? sql;
-      if (knownStatements[entity.schemaName] case final known?) {
-        sql = known.firstWhere((e) => e.$1 == SqlDialect.sqlite).$2;
+      if (knownSql != null) {
+        sql = knownSql.firstWhere((e) => e.$1 == SqlDialect.sqlite).$2;
       } else {
         final source = entity.source;
         if (source is! SqlViewSource) {
@@ -337,11 +332,14 @@ class SchemaWriter {
   }
 
   static final _logger = Logger('drift_dev.SchemaWriter');
+
+  /// A suitable JSON encoder for emitting schema export JSONs.
+  static const json = JsonEncoder.withIndent('  ');
 }
 
 /// Reads files generated by [SchemaWriter].
 class SchemaReader {
-  static final Uri elementUri = Uri.parse('drift:hidden');
+  static final Uri elementUri = Uri.parse('drift:hidden.drift');
 
   // The format version of the exported schema we're reading.
   late final _ExportedSchemaVersion _version;
@@ -356,24 +354,38 @@ class SchemaReader {
 
   SchemaReader._();
 
-  factory SchemaReader.readJson(Map<String, dynamic> json) {
-    return SchemaReader._().._read(json);
+  static Future<SchemaReader> readJson(Map<String, dynamic> json) async {
+    final reader = SchemaReader._();
+    await reader._read(json);
+    return reader;
   }
 
   Iterable<DriftElement> get entities => _entitiesById.values;
 
-  void _read(Map<String, dynamic> json) {
+  Future<void> _read(Map<String, dynamic> json) async {
     final meta = json['_meta'] as Map<String, Object?>;
     _version = _ExportedSchemaVersion(Version.parse(meta['version'] as String));
 
     // Read drift options if they are part of the schema file.
     final optionsInJson = json['options'] as Map<String, Object?>?;
-    options = optionsInJson ??
-        {
+    options = switch (optionsInJson) {
+      null => {
           'store_date_time_values_as_text': false,
-        };
+        },
+      final options => Map.from(options),
+    };
 
+    // elementUri is a .drift file, but we want the behavior for Dart files for
+    // backwards compatibility.
+    options['use_column_name_as_json_key_when_defined_in_moor_file'] = false;
     final entities = json['entities'] as List<dynamic>;
+
+    if (json['fixed_sql'] case List<Object?> fixedSql) {
+      // If we have access to actual CREATE statements drift used to generate at
+      // the version the schema was created, that is much better than
+      // reconstructing from element exports. Do that.
+      return _processFromSql(fixedSql, entities);
+    }
 
     for (final raw in entities) {
       final rawData = raw as Map<String, dynamic>;
@@ -393,6 +405,48 @@ class SchemaReader {
 
   DriftDeclaration get _declaration =>
       DriftDeclaration(elementUri, -1, '<unknown>');
+
+  Future<void> _processFromSql(
+      List<Object?> fixedSql, List<Object?> entities) async {
+    final sql = <String>[];
+
+    for (final entry in fixedSql) {
+      for (final dialect in (entry as Map)['sql'] as List<Object?>) {
+        if ((dialect as Map)['dialect'] == SqlDialect.sqlite.name) {
+          sql.add(dialect['sql'] as String);
+        }
+      }
+    }
+
+    final elements = await extractDriftElementsFromSql(sql);
+    for (final (i, element) in elements.indexed) {
+      if (element is DriftTable) {
+        final pascalCase = ReCase(element.id.name).pascalCase;
+        // Mirror the naming scheme from _readTable when reading from SQL.
+        element
+          ..baseDartName = pascalCase
+          ..fixedEntityInfoName = pascalCase
+          ..nameOfRowClass = '${pascalCase}Data';
+      } else if (element is DriftView) {
+        for (final entity in entities.cast<Map<String, Object?>>()) {
+          if (entity['type'] == 'view') {
+            final data = entity['data'] as Map<String, Object?>;
+            if (data['name'] == element.schemaName) {
+              final entityInfoName = data['dart_info_name'] as String;
+
+              element
+                ..entityInfoName = data['dart_info_name'] as String
+                ..nameOfRowClass = dataClassNameForClassName(entityInfoName);
+
+              break;
+            }
+          }
+        }
+      }
+
+      _entitiesById[i] = element;
+    }
+  }
 
   void _processById(int id) {
     if (_entitiesById.containsKey(id)) return;
@@ -447,13 +501,33 @@ class SchemaReader {
     final sql = content['sql'] as String?;
 
     if (_version.supportsDartIndex) {
+      DriftIndexedColumn readColumn(Object serialized) {
+        if (serialized case final String name) {
+          // Older versions used to write index columns by name.
+          return DriftIndexedColumn(
+            column: on.columnBySqlName[name]!,
+            orderBy: null,
+          );
+        } else {
+          // Newer schemas encode {name, order_by}.
+          serialized as Map<String, Object?>;
+          return DriftIndexedColumn(
+            column: on.columnBySqlName[serialized['column'] as String]!,
+            orderBy: switch (serialized['order_by']) {
+              null => null,
+              final ordering => OrderingMode.values.byName(ordering as String),
+            },
+          );
+        }
+      }
+
       final index = DriftIndex(
         _id(name),
         _declaration,
         table: on,
         indexedColumns: [
           for (final col in content['columns'] as List)
-            on.columnBySqlName[col]!,
+            readColumn(col as Object),
         ],
         unique: content['unique'] as bool,
         createStmt: sql,
@@ -479,7 +553,11 @@ class SchemaReader {
         unique: stmt.unique,
         indexedColumns: [
           for (final column in stmt.columns)
-            on.columnBySqlName[(column.expression as Reference).columnName]!,
+            DriftIndexedColumn(
+              column: on.columnBySqlName[
+                  (column.expression as Reference).columnName]!,
+              orderBy: column.ordering,
+            )
         ],
       )..parsedStatement = stmt;
     }
@@ -587,7 +665,13 @@ class SchemaReader {
       _declaration,
       columns: [
         for (final column in content['columns'] as Iterable)
-          _readColumn(column as Map<String, dynamic>)
+          _readColumn(
+            column as Map<String, dynamic>,
+            // Don't parse column constraints. The serialized format includes a
+            // generated_as DSL feature for each view column, but that should be
+            // ignored because we're parsing views as SQL instead.
+            parseColumnConstraints: false,
+          )
       ],
       source: SqlViewSource(content['sql'] as String),
       customParentClass: null,
@@ -618,7 +702,8 @@ class SchemaReader {
 
   static final _dialectByName = SqlDialect.values.asNameMap();
 
-  DriftColumn _readColumn(Map<String, dynamic> data) {
+  DriftColumn _readColumn(Map<String, dynamic> data,
+      {bool parseColumnConstraints = true}) {
     final name = data['name'] as String;
     final columnType =
         _SerializeSqlType.deserialize(data['moor_type'] as String);
@@ -630,7 +715,7 @@ class SchemaReader {
 
     final dslFeatures = <DriftColumnConstraint?>[
       for (final feature in data['dsl_features'] as List<dynamic>)
-        _columnFeature(feature),
+        if (parseColumnConstraints) _columnFeature(feature),
       if (dialectAwareConstraints != null)
         DefaultConstraintsFromSchemaFile(null, dialectSpecific: {
           for (final MapEntry(:key, :value)

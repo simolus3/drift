@@ -21,8 +21,15 @@ abstract class _BaseColumnFilters<T extends Object> {
   /// On columns with type converters, the filter operations invoked with
   /// `call` or `equals` apply the type converter. This method will always
   /// bypass any type converter that might be set on the column.
-  Expression<bool> sqlEquals(T value) {
-    return $composableFilter(column.equals(value));
+  ///
+  /// If [value] is null, the comparison evaluates to `false`.
+  Expression<bool> sqlEquals(T? value) {
+    if (value == null) {
+      // A comparison to null should always be false here.
+      return $composableFilter(const Constant(false));
+    } else {
+      return $composableFilter(column.equals(value));
+    }
   }
 
   /// Create a filter that checks if the column is null.

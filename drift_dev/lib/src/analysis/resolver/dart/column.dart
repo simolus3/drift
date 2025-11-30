@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show BuiltinDriftType;
@@ -99,7 +99,7 @@ class ColumnParser {
   /// migrations), there might not be a `creationTime` in scope for the check
   /// constraint. So, we annotate these references in [AnnotatedDartCode] and
   /// use that information when generating code to transform the code.
-  final Map<Element2, String> _columnsInSameTable;
+  final Map<Element, String> _columnsInSameTable;
 
   ColumnParser(this._resolver, this._columnsInSameTable);
 
@@ -113,7 +113,7 @@ class ColumnParser {
   }
 
   Future<PendingColumnInformation?> parse(
-      ColumnDeclaration columnDeclaration, Element2 element) async {
+      ColumnDeclaration columnDeclaration, Element element) async {
     final expr = columnDeclaration.expression;
 
     // In drift < v3, columns were declared like this: text()(). In drift v3,
@@ -175,7 +175,7 @@ class ColumnParser {
       // See if the method called is annotated with DriftColumnDeclarationBuilder
       final resolvedMethod = calledMethod.element;
       if (resolvedMethod != null) {
-        for (final annotation in resolvedMethod.metadataIfAnnotatable) {
+        for (final annotation in resolvedMethod.metadata.annotations) {
           final value = annotation.computeConstantValue();
           if (value == null || value.type == null) {
             continue;
@@ -197,11 +197,11 @@ class ColumnParser {
               columnType = ColumnType.custom(CustomColumnType(
                 AnnotatedDartCode.build((b) {
                   // element is either a static or a top-level function.
-                  if (element.enclosingElement2 is LibraryElement2) {
+                  if (element.enclosingElement2 is LibraryElement) {
                     b.addTopLevelElement(element);
                   } else {
                     b.addTopLevelElement(
-                        element.enclosingElement2 as ClassElement2);
+                        element.enclosingElement2 as ClassElement);
                     b.addText(
                         '.${element.name3!.isEmpty ? 'new' : element.name3}');
                   }
@@ -271,7 +271,7 @@ class ColumnParser {
           }
 
           final staticElement = first.element;
-          if (staticElement is! ClassElement2) {
+          if (staticElement is! ClassElement) {
             _resolver.reportError(DriftAnalysisError.inDartAst(
               element,
               first,
@@ -297,26 +297,24 @@ class ColumnParser {
           bool initiallyDeferred = false;
 
           ReferenceAction? parseAction(Expression expr) {
-            if (expr is! PrefixedIdentifier) {
+            String name;
+            if (expr is PrefixedIdentifier) {
+              name = expr.identifier.name;
+            } else if (expr is DotShorthandPropertyAccess) {
+              name = expr.propertyName.name;
+            } else {
               _resolver.reportError(DriftAnalysisError.inDartAst(element, expr,
                   'Should be a direct enum reference (`KeyAction.cascade`)'));
               return null;
             }
 
-            final name = expr.identifier.name;
-            switch (name) {
-              case 'setNull':
-                return ReferenceAction.setNull;
-              case 'setDefault':
-                return ReferenceAction.setDefault;
-              case 'cascade':
-                return ReferenceAction.cascade;
-              case 'restrict':
-                return ReferenceAction.restrict;
-              case 'noAction':
-              default:
-                return ReferenceAction.noAction;
-            }
+            return switch (name) {
+              'setNull' => ReferenceAction.setNull,
+              'setDefault' => ReferenceAction.setDefault,
+              'cascade' => ReferenceAction.cascade,
+              'restrict' => ReferenceAction.restrict,
+              'noAction' || _ => ReferenceAction.noAction,
+            };
           }
 
           for (final expr in args) {
@@ -476,7 +474,7 @@ class ColumnParser {
     AppliedTypeConverter? converter;
     if (mappedAs != null) {
       converter = readTypeConverter(
-        element.library2!,
+        element.library!,
         mappedAs,
         columnType!,
         nullable,
@@ -570,7 +568,7 @@ class ColumnParser {
         sqlType: columnType!,
         nullable: nullable,
         nameInSql: sqlName,
-        nameInDart: element.name3!,
+        nameInDart: element.name!,
         declaration: DriftDeclaration.dartElement(element),
         typeConverter: converter,
         clientDefaultCode: clientDefaultExpression,
@@ -600,15 +598,15 @@ class ColumnParser {
     }[name]!;
   }
 
-  String? _readJsonKey(Element2 getter) {
-    final annotations = getter.metadataIfAnnotatable;
+  String? _readJsonKey(Element getter) {
+    final annotations = getter.metadata.annotations;
     final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
       final valueType = value?.type;
 
       return valueType is InterfaceType &&
           isFromDrift(valueType) &&
-          valueType.element3.name3 == 'JsonKey';
+          valueType.element.name == 'JsonKey';
     });
 
     if (object == null) return null;
@@ -616,15 +614,15 @@ class ColumnParser {
     return object.computeConstantValue()!.getField('key')!.toStringValue();
   }
 
-  String? _readReferenceName(Element2 getter) {
-    final annotations = getter.metadataIfAnnotatable;
+  String? _readReferenceName(Element getter) {
+    final annotations = getter.metadata.annotations;
     final object = annotations.firstWhereOrNull((e) {
       final value = e.computeConstantValue();
       final valueType = value?.type;
 
       return valueType is InterfaceType &&
           isFromDrift(valueType) &&
-          valueType.element3.name3 == 'ReferenceName';
+          valueType.element.name == 'ReferenceName';
     });
 
     if (object == null) return null;

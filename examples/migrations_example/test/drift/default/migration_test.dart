@@ -1,6 +1,7 @@
 // ignore_for_file: unused_local_variable, unused_import
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:drift_dev/api/migrations_common.dart' show ValidationOptions;
 import 'package:drift_dev/api/migrations_native.dart';
 import 'package:migrations_example/database.dart';
 import 'package:test/test.dart';
@@ -118,5 +119,13 @@ void main() {
             .having((e) => e.id, 'id', 2)
             .having((e) => e.groupCount, 'groupCount', 0)));
     await migratedDb.close();
+  });
+
+  test('latest exported schema matches current database', () async {
+    final schema = await verifier.schemaAt(11);
+    final db = Database(schema.newConnection());
+
+    await db.validateDatabaseSchema(
+        options: ValidationOptions(validateDropped: true));
   });
 }

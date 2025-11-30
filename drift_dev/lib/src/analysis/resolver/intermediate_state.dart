@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:drift/drift.dart' show DriftView;
 import 'package:sqlparser/sqlparser.dart';
 
@@ -24,17 +24,17 @@ typedef DiscoveredDriftIndex = DiscoveredDriftElement<CreateIndexStatement>;
 typedef DiscoveredDriftTrigger = DiscoveredDriftElement<CreateTriggerStatement>;
 typedef DiscoveredDriftStatement = DiscoveredDriftElement<DeclaredStatement>;
 
-abstract class DiscoveredDartElement<DE extends Element2>
+abstract class DiscoveredDartElement<DE extends Element>
     extends DiscoveredElement {
   final DE dartElement;
 
   @override
-  String? get dartElementName => dartElement.name3;
+  String? get dartElementName => dartElement.name;
 
   DiscoveredDartElement(super.ownId, this.dartElement);
 }
 
-class DiscoveredDartTable extends DiscoveredDartElement<ClassElement2> {
+class DiscoveredDartTable extends DiscoveredDartElement<ClassElement> {
   @override
   DriftElementKind get kind => DriftElementKind.table;
 
@@ -49,7 +49,7 @@ class DiscoveredDartTable extends DiscoveredDartElement<ClassElement2> {
   );
 }
 
-class DiscoveredDartView extends DiscoveredDartElement<ClassElement2> {
+class DiscoveredDartView extends DiscoveredDartElement<ClassElement> {
   /// The [DriftView] annotation on this class, if there is any.
   DartObject? viewAnnotation;
 
@@ -59,7 +59,7 @@ class DiscoveredDartView extends DiscoveredDartElement<ClassElement2> {
   DiscoveredDartView(super.ownId, super.dartElement, this.viewAnnotation);
 }
 
-class DiscoveredDartIndex extends DiscoveredDartElement<ClassElement2> {
+class DiscoveredDartIndex extends DiscoveredDartElement<ClassElement> {
   final DriftElementId onTable;
 
   ElementAnnotation annotation;
@@ -74,7 +74,7 @@ class DiscoveredDartIndex extends DiscoveredDartElement<ClassElement2> {
       super.ownId, super.dartElement, this.onTable, this.annotation);
 }
 
-class DiscoveredBaseAccessor extends DiscoveredDartElement<ClassElement2> {
+class DiscoveredBaseAccessor extends DiscoveredDartElement<ClassElement> {
   final bool isDatabase;
   final DartObject annotation;
 

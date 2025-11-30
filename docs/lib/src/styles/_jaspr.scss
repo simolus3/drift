@@ -1,0 +1,15 @@
+.jaspr-badge-link {
+    svg:last-child {
+        display: none;
+    }
+
+    &:hover {
+        svg:first-child {
+            display: none;
+        }
+
+        svg:last-child {
+            display: initial;
+        }
+    }
+}

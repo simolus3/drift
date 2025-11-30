@@ -1,8 +1,8 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show BuiltinDriftType, UpdateKind;
-import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
+import 'package:sqlparser/sqlparser.dart' show ReferenceAction, OrderingMode;
 
 import 'driver/driver.dart';
 import 'driver/state.dart';
@@ -75,7 +75,11 @@ class ElementSerializer {
         'type': 'index',
         'sql': element.createStmt,
         'columns': [
-          for (final column in element.indexedColumns) column.nameInSql,
+          for (final column in element.indexedColumns)
+            {
+              'column': column.column.nameInSql,
+              'order_by': column.orderBy?.name,
+            },
         ],
         'unique': element.unique,
       };
@@ -412,7 +416,7 @@ class ElementDeserializer {
   ElementDeserializer(this.driver, this._currentlyReading);
 
   Future<DartType> _readDartType(Uri import, int typeId) async {
-    LibraryElement2? element;
+    LibraryElement? element;
     final helpers = driver.cache.typeHelperLibraries;
 
     if (helpers.containsKey(import)) {
@@ -427,7 +431,7 @@ class ElementDeserializer {
     }
 
     final typedef =
-        element.exportNamespace.get2('T$typeId') as TypeAliasElement2;
+        element.exportNamespace.get2('T$typeId') as TypeAliasElement;
 
     return typedef.aliasedType;
   }
@@ -594,8 +598,16 @@ class ElementDeserializer {
           table: onTable,
           createStmt: json['sql'] as String?,
           indexedColumns: [
-            for (final entry in json['columns'] as List)
-              onTable!.columnBySqlName[entry as String]!,
+            for (final entry
+                in (json['columns'] as List).cast<Map<String, Object?>>())
+              DriftIndexedColumn(
+                column: onTable!.columnBySqlName[entry['column'] as String]!,
+                orderBy: switch (entry['order_by']) {
+                  null => null,
+                  final orderBy =>
+                    OrderingMode.values.byName(orderBy as String),
+                },
+              ),
           ],
           unique: json['unique'] as bool,
         );

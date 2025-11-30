@@ -25,6 +25,7 @@ dependencies:
   url_launcher: ^6.1.14
   drift_dev: ^2.13.1
   sqlite3: ^2.1.0
+  web: ^1.0.0
 
 dev_dependencies:
   flutter_test:

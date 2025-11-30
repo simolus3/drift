@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
@@ -138,5 +138,38 @@ void main() {
 
     expect(withoutCategory.read(db.categories.description), null);
     expect(withoutCategory.read(count), 3);
+  });
+
+  test('right outer join', () async {
+    await db.categories
+        .insertOne(CategoriesCompanion.insert(description: 'test'));
+
+    final query = db.select(db.todosTable).join([
+      rightOuterJoin(
+          db.categories, db.categories.id.equalsExp(db.todosTable.category))
+    ]);
+
+    final row = await query.getSingle();
+    expect(row.readTableOrNull(db.todosTable), isNull);
+    expect(row.readTable(db.categories).description, 'test');
+  });
+
+  test('full outer join', () async {
+    await db.todosTable.insertOne(TodosTableCompanion.insert(content: 'todo'));
+    await db.categories
+        .insertOne(CategoriesCompanion.insert(description: 'category'));
+
+    final query = db.select(db.todosTable).join([
+      fullOuterJoin(
+          db.categories, db.categories.id.equalsExp(db.todosTable.category))
+    ])
+      ..orderBy([OrderingTerm.asc(db.todosTable.id, nulls: NullsOrder.first)]);
+
+    final [a, b] = await query.get();
+    expect(a.readTableOrNull(db.todosTable), isNull);
+    expect(a.readTable(db.categories).description, 'category');
+
+    expect(b.readTable(db.todosTable).content, 'todo');
+    expect(b.readTableOrNull(db.categories), isNull);
   });
 }
