@@ -19,7 +19,6 @@ import 'backends.dart';
 import 'src/sqlite3/database.dart';
 import 'src/web/wasm_setup.dart';
 import 'src/web/wasm_setup/dedicated_worker.dart';
-import 'src/web/wasm_setup/indexeddb_to_opfs.dart';
 import 'src/web/wasm_setup/shared_worker.dart';
 import 'src/web/wasm_setup/types.dart';
 
@@ -184,7 +183,7 @@ class WasmDatabase extends DelegatedDatabase {
       if (currentDb == WebStorageApi.indexedDb &&
           selectedImplementation.storageApi == WebStorageApi.opfs) {
         try {
-          await moveIndexedDbDatabaseToOpfs(databaseName);
+          await probed.moveFromIndexedDBToOpfs(databaseName);
           didMove = true;
         } catch (e) {
           // Ok, we'll keep using the old database then.

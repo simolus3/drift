@@ -216,6 +216,20 @@ abstract interface class WasmProbeResult {
 
   /// Attempts to read an [ExistingDatabase] from storage.
   Future<Uint8List?> exportDatabase(ExistingDatabase database);
+
+  /// Moves an existing database stored in IndexedDB to OPFS.
+  ///
+  /// This may be convenient if this result indicates that an OPFS-based
+  /// implementation is available ([availableStorages]) while an existing copy
+  /// of the database is stored in IndexedDB.
+  ///
+  /// Note that this function does not check whether an IndexedDB database with
+  /// the given name exists, or that an OPFS directory with the name does not
+  /// exist already.
+  ///
+  /// It unconditionally copies files stored in IndexedDB to OPFS, and then
+  /// deletes the old IndexedDB database.
+  Future<void> moveFromIndexedDBToOpfs(String databaseName);
 }
 
 /// The result of opening a WASM database with default options.

@@ -24,6 +24,7 @@ import 'package:web/web.dart' as web;
 
 import 'broadcast_stream_queries.dart';
 import 'channel_new.dart';
+import 'wasm_setup/indexeddb_to_opfs.dart';
 import 'wasm_setup/shared.dart';
 import 'wasm_setup/protocol.dart';
 
@@ -397,6 +398,11 @@ final class _ProbeResult implements WasmProbeResult {
 
         return contents.toDart.asUint8List();
     }
+  }
+
+  @override
+  Future<void> moveFromIndexedDBToOpfs(String databaseName) {
+    return moveIndexedDBDatabaseToOpfs(databaseName);
   }
 }
 

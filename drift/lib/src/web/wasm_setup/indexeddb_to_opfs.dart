@@ -10,7 +10,7 @@ import 'shared.dart';
 ///
 /// Because this only uses asynchronous web file system APIs, it can run in the
 /// main tab and doesn't have to run in a worker.
-Future<void> moveIndexedDbDatabaseToOpfs(String databaseName) async {
+Future<void> moveIndexedDBDatabaseToOpfs(String databaseName) async {
   final existingVfs = await IndexedDbFileSystem.open(dbName: databaseName);
   final createDirectory = FileSystemGetDirectoryOptions(create: true);
   final createFile = FileSystemGetFileOptions(create: true);

@@ -1,6 +1,9 @@
 ## 2.30.0-wip
 
 - Add `rightOuterJoin` and `fullOuterJoin`.
+- Wasm: Add the `WasmProbeResult.moveFromIndexedDBToOpfs()` method and the
+  `moveExistingIndexedDbToOpfs` parameter on `WasmDatabase.open`. They can be
+  used to move an existing database stored in IndexedDB to OPFS.
 
 ## 2.29.0
 

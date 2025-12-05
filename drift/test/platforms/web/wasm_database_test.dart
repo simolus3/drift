@@ -47,7 +47,7 @@ void main() {
     db.dispose();
     await indexedDb.close();
 
-    await moveIndexedDbDatabaseToOpfs('test_move');
+    await moveIndexedDBDatabaseToOpfs('test_move');
 
     expect(await opfsDatabases(), ['test_move']);
     expect(await checkIndexedDbExists('test_move'), isFalse);
