@@ -33,8 +33,16 @@ void main() {
     return _detectImplementations(arg);
   });
   _addCallbackForWebDriver('open', (arg) {
-    final decoded = json.decode(arg!);
-    return _open(decoded[0] as String?, decoded[1] as String?);
+    if (arg == null || !arg.startsWith('{')) {
+      return _open(arg, false);
+    } else {
+      final {
+        'implementation': implementation as String?,
+        'moveToOpfs': moveToOpfs as bool
+      } = json.decode(arg);
+
+      return _open(implementation, moveToOpfs);
+    }
   });
   _addCallbackForWebDriver('close', (arg) async {
     await tableUpdates?.cancel();
@@ -182,7 +190,7 @@ Future<JSString> _detectImplementations(String? _) async {
 }
 
 Future<JSAny?> _open(
-    String? implementationName, String? preferredImplementationName) async {
+    String? implementationName, bool moveIndexedDbToOps) async {
   DatabaseConnection connection;
 
   if (implementationName != null) {
@@ -205,8 +213,7 @@ Future<JSAny?> _open(
       initializeDatabase: _initializeDatabase,
       enableMigrations:
           initializationMode != InitializationMode.noneAndDisableMigrations,
-      preferredImplementation: WasmStorageImplementation.values
-          .asNameMap()[preferredImplementationName],
+      moveExistingIndexedDbToOpfs: moveIndexedDbToOps,
       localSetup: (db) {
         // The worker has a similar setup call that will make database_host
         // return `worker` instead.

@@ -2,6 +2,8 @@
 library;
 
 import 'package:drift/drift.dart';
+import 'package:drift/src/web/wasm_setup/indexeddb_to_opfs.dart';
+import 'package:drift/src/web/wasm_setup/shared.dart';
 import 'package:drift/wasm.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:test/test.dart';
@@ -35,6 +37,20 @@ void main() {
       expect(() => underlying.execute('SELECT 1'), isNot(throwsA(anything)));
       underlying.dispose();
     });
+  });
+
+  test('moveIndexedDbDatabaseToOpfs', () async {
+    final indexedDb = await IndexedDbFileSystem.open(dbName: 'test_move');
+    sqlite3.registerVirtualFileSystem(indexedDb);
+    final db = sqlite3.open('/database', vfs: indexedDb.name);
+    db.execute('CREATE TABLE foo (bar TEXT);');
+    db.dispose();
+    await indexedDb.close();
+
+    await moveIndexedDbDatabaseToOpfs('test_move');
+
+    expect(await opfsDatabases(), ['test_move']);
+    expect(await checkIndexedDbExists('test_move'), isFalse);
   });
 }
 

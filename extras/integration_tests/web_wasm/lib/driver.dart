@@ -146,11 +146,15 @@ class DriftWebDriver {
     );
   }
 
-  Future<void> openDatabase(
-      [WasmStorageImplementation? implementation,
-      WasmStorageImplementation? preferredImplementation]) async {
+  Future<void> openDatabase({
+    WasmStorageImplementation? implementation,
+    bool moveIndexedDbToOpfs = false,
+  }) async {
     await driver.executeAsync('open(arguments[0], arguments[1])', [
-      json.encode([implementation?.name, preferredImplementation?.name])
+      json.encode({
+        'implementation': implementation?.name,
+        'moveToOpfs': moveIndexedDbToOpfs,
+      }),
     ]);
   }
 

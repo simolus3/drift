@@ -44,7 +44,7 @@ enum WasmStorageImplementation {
   /// Chrome (https://crbug.com/1088481) and Safari don't support this yet.
   ///
   /// [OPFS]: https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API#origin_private_file_system
-  opfsShared,
+  opfsShared(WebStorageApi.opfs),
 
   /// Uses the [Origin private file system APIs][OPFS] provided my modern
   /// browsers to persist data.
@@ -70,24 +70,30 @@ enum WasmStorageImplementation {
   ///
   /// [OPFS]: https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API#origin_private_file_system´
   /// [cross-origin isolation]: https://developer.mozilla.org/en-US/docs/Web/API/crossOriginIsolated
-  opfsLocks,
+  opfsLocks(WebStorageApi.opfs),
 
   /// Emulates a file system over `IndexedDB` in a shared worker.
-  sharedIndexedDb,
+  sharedIndexedDb(WebStorageApi.indexedDb),
 
   /// Uses the asynchronous IndexedDB API outside of any worker to persist data.
   ///
   /// Unlike [opfsShared], [opfsLocks] or [sharedIndexedDb], this storage
   /// implementation can't prevent data races if your app is opened in multiple
   /// tabs at the same time, which is why it's declared as as unsafe.
-  unsafeIndexedDb,
+  unsafeIndexedDb(WebStorageApi.indexedDb),
 
   /// A fallback storage implementation that doesn't store anything.
   ///
   /// This implementation is chosen when none of the features needed for other
   /// storage implementations are supported by the current browser. In this case,
   /// [WasmDatabaseResult.missingFeatures] enumerates missing browser features.
-  inMemory,
+  inMemory(null);
+
+  /// The [WebStorageApi] used to persist data with this storage implementation,
+  /// or `null` for [inMemory].
+  final WebStorageApi? storageApi;
+
+  const WasmStorageImplementation(this.storageApi);
 }
 
 /// The storage API used by drift to store a database.

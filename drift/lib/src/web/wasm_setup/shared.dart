@@ -21,7 +21,8 @@ import 'package:web/web.dart'
         FileSystemHandle,
         FileSystemSyncAccessHandle,
         FileSystemGetFileOptions,
-        FileSystemRemoveOptions;
+        FileSystemRemoveOptions,
+        FileSystemGetDirectoryOptions;
 // ignore: implementation_imports
 import 'package:sqlite3/src/wasm/js_interop/core.dart';
 import 'package:sqlite3/wasm.dart';
@@ -33,7 +34,8 @@ import 'protocol.dart';
 @JS('navigator')
 external Navigator get _navigator;
 
-StorageManager? get _storageManager {
+/// The web [StorageManager], if available.
+StorageManager? get storageManager {
   final navigator = _navigator;
 
   if (navigator.has('storage')) {
@@ -49,7 +51,7 @@ StorageManager? get _storageManager {
 /// Since OPFS uses the synchronous file system access API, this method can only
 /// return true when called in a dedicated worker.
 Future<bool> checkOpfsSupport() async {
-  final storage = _storageManager;
+  final storage = storageManager;
   if (storage == null) return false;
 
   const testFileName = '_drift_feature_detection';
@@ -166,6 +168,9 @@ Future<void> deleteDatabaseInIndexedDb(String databaseName) async {
   }
 }
 
+/// The directory under the OPFS root used to store drift databases.
+const driftOpfsRoot = 'drift_db';
+
 /// Constructs the path used by drift to store a database in the origin-private
 /// section of the agent's file system.
 String pathForOpfs(String databaseName) {
@@ -174,13 +179,17 @@ String pathForOpfs(String databaseName) {
 
 /// returns the [FileSystemDirectoryHandle] containing all drift databases, or
 /// null if it doesn't exist.
-Future<FileSystemDirectoryHandle?> opfsDriftDirectoryHandle() async {
-  final storage = _storageManager;
+Future<FileSystemDirectoryHandle?> opfsDriftDirectoryHandle(
+    [FileSystemGetDirectoryOptions? options]) async {
+  final storage = storageManager;
   if (storage == null) return null;
 
   var directory = await storage.getDirectory().toDart;
   try {
-    return await directory.getDirectoryHandle('drift_db').toDart;
+    return await directory
+        .getDirectoryHandle(
+            'drift_db', options ?? FileSystemGetDirectoryOptions())
+        .toDart;
   } on Object {
     // fine, an error probably means that the database didn't exist in the first
     // place.
@@ -198,16 +207,28 @@ Future<List<String>> opfsDatabases() async {
   final entries = AsyncJavaScriptIteratable<JSArray>(directory)
       .map((data) => data.toDart[1] as FileSystemHandle);
 
-  return [
-    await for (final entry in entries)
-      if (entry.kind == 'directory') entry.name,
-  ];
+  final found = <String>[];
+  await for (final entry in entries) {
+    if (entry.kind == 'directory') {
+      // Check if there's a database file in the directory as well.
+      try {
+        await (entry as FileSystemDirectoryHandle)
+            .getFileHandle('database')
+            .toDart;
+        found.add(entry.name);
+      } catch (e) {
+        // Can't access database file, ignore this directory.
+      }
+    }
+  }
+
+  return found;
 }
 
 /// Deletes the OPFS folder storing a database with the given [databaseName] if
 /// such folder exists.
 Future<void> deleteDatabaseInOpfs(String databaseName) async {
-  final storage = _storageManager;
+  final storage = storageManager;
   if (storage == null) return;
 
   var directory = await storage.getDirectory().toDart;

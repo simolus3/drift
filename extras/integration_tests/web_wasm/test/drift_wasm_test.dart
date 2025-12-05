@@ -213,7 +213,7 @@ final class _TestConfiguration {
     for (final entry in browser.availableImplementations) {
       group(entry.name, () {
         test('basic', () async {
-          await driver.openDatabase(entry);
+          await driver.openDatabase(implementation: entry);
           expect(await driver.amountOfRows, 0);
 
           await driver.insertIntoDatabase();
@@ -233,7 +233,7 @@ final class _TestConfiguration {
             await Future.delayed(const Duration(seconds: 1));
             await windows.last.setAsActive();
 
-            await driver.openDatabase(entry);
+            await driver.openDatabase(implementation: entry);
             expect(await driver.amountOfRows, 1);
             await driver.insertIntoDatabase();
             await windows.last.close();
@@ -248,7 +248,7 @@ final class _TestConfiguration {
             final impl = await driver.probeImplementations();
             expect(impl.existing, isEmpty);
 
-            await driver.openDatabase(entry);
+            await driver.openDatabase(implementation: entry);
             await driver.insertIntoDatabase();
             await driver.waitForTableUpdate();
 
@@ -270,7 +270,7 @@ final class _TestConfiguration {
           });
 
           test('migrations', () async {
-            await driver.openDatabase(entry);
+            await driver.openDatabase(implementation: entry);
             await driver.insertIntoDatabase();
             await driver.waitForTableUpdate();
 
@@ -279,7 +279,7 @@ final class _TestConfiguration {
             await driver.waitReady();
 
             await driver.setSchemaVersion(2);
-            await driver.openDatabase(entry);
+            await driver.openDatabase(implementation: entry);
             // The migration adds a row
             expect(await driver.amountOfRows, 2);
           });
@@ -297,7 +297,7 @@ final class _TestConfiguration {
           () {
             test('static blob', () async {
               await driver.enableInitialization(InitializationMode.loadAsset);
-              await driver.openDatabase(entry);
+              await driver.openDatabase(implementation: entry);
 
               expect(await driver.amountOfRows, 1);
               await driver.insertIntoDatabase();
@@ -317,7 +317,7 @@ final class _TestConfiguration {
             test('custom wasmdatabase', () async {
               await driver.enableInitialization(
                   InitializationMode.migrateCustomWasmDatabase);
-              await driver.openDatabase(entry);
+              await driver.openDatabase(implementation: entry);
 
               expect(await driver.amountOfRows, 1);
             });
@@ -337,26 +337,8 @@ final class _TestConfiguration {
         'keep existing IndexedDB database after OPFS becomes available',
         () async {
           // Open an IndexedDB database first
-          await driver.openDatabase(WasmStorageImplementation.unsafeIndexedDb);
-          await driver.insertIntoDatabase();
-          await Future.delayed(const Duration(seconds: 2));
-          await driver.driver.refresh(); // Reset JS state
-          await driver.waitReady();
-
-          // Open the database again, this time without specifying a fixed
-          // implementation. Despite OPFS being available (and preferred),
-          // the existing database should be used.
-          await driver.openDatabase();
-          expect(await driver.amountOfRows, 1);
-        },
-      );
-
-      test(
-        'use preferred implementation if available when initializing',
-        () async {
-          // Open with preferred IndexedDB database first
           await driver.openDatabase(
-              null, WasmStorageImplementation.unsafeIndexedDb);
+              implementation: WasmStorageImplementation.unsafeIndexedDb);
           await driver.insertIntoDatabase();
           await Future.delayed(const Duration(seconds: 2));
           await driver.driver.refresh(); // Reset JS state
@@ -371,24 +353,25 @@ final class _TestConfiguration {
       );
 
       test(
-        'switch from IndexedDB database to OPFS if it is the preferred implementation',
+        'can migrate from IndexedDB to OPFS',
         () async {
           // Open an IndexedDB database first
-          await driver.openDatabase(WasmStorageImplementation.unsafeIndexedDb);
+          await driver.openDatabase(
+              implementation: WasmStorageImplementation.unsafeIndexedDb);
           await driver.insertIntoDatabase();
           await Future.delayed(const Duration(seconds: 2));
           await driver.driver.refresh(); // Reset JS state
           await driver.waitReady();
 
-          // Open the database again, this time specifying opfs as the
-          // preferred implementation.
-          await driver.openDatabase(null, WasmStorageImplementation.opfsLocks);
+          // Open the database again, preferring a migration.
+          await driver.openDatabase(moveIndexedDbToOpfs: true);
           expect(await driver.amountOfRows, 1);
           await Future.delayed(const Duration(seconds: 2));
           await driver.driver.refresh(); // Reset JS state
           await driver.waitReady();
 
-          await driver.openDatabase(WasmStorageImplementation.opfsLocks);
+          await driver.openDatabase(
+              implementation: WasmStorageImplementation.opfsLocks);
           expect(await driver.amountOfRows, 1);
         },
       );
@@ -398,7 +381,8 @@ final class _TestConfiguration {
           // This browser only supports OPFS with the right headers. If they
           // are ever removed, data is lost (nothing we could do about that),
           // but drift should continue to work.
-          await driver.openDatabase(WasmStorageImplementation.opfsLocks);
+          await driver.openDatabase(
+              implementation: WasmStorageImplementation.opfsLocks);
           await driver.insertIntoDatabase();
           expect(await driver.amountOfRows, 1);
           await Future.delayed(const Duration(seconds: 2));
