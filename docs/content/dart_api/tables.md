@@ -30,7 +30,7 @@ Drift will warn you if you forget them.
 
 Note that columns are non-nullable by default. Using `nullable()` allows storing `null` values.
 
-This defines two tables: `todo_items` with columns `id`, `title`, `category`, and `created_at`; and `todo_category` with columns `id` and `description`.
+This defines the `todo_items` table with columns `id`, `title`, `category`, and `created_at`.
 
 The SQL equivalent of this table would be:
 
