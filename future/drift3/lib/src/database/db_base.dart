@@ -1,0 +1,176 @@
+import 'dart:async';
+
+import 'package:meta/meta.dart';
+
+import '../connection/connection.dart';
+import '../connection/connection_compat.dart';
+import '../connection/streams/delayed_stream_queries.dart';
+import '../connection/streams/store.dart';
+import '../connection/streams/update_rules.dart';
+import '../query_builder/schema/entities.dart';
+import 'connection_user.dart';
+import 'migrations.dart';
+
+abstract base class GeneratedDatabase extends DatabaseConnectionUser {
+  /// The used drift database implementation responsible for building queries
+  /// and executing them.
+  final DriftConnection implementation;
+  Future<DriftSession>? _openingSession;
+  DriftSession? _openedSession;
+  Future<void>? _closing;
+
+  Completer<StreamQueryStore>? _underlyingStreamQueries;
+  StreamQueryStore? _streamQueryStore;
+
+  bool enableMigrations = true;
+
+  /// Opens a drift database backed by a given [implementation].
+  GeneratedDatabase(this.implementation) {
+    //  devtools.handleCreated(this);
+  }
+
+  /// Specify the schema version of your database. Whenever you change or add
+  /// tables, you should bump this field and provide a [migration] strategy.
+  ///
+  /// The [schemaVersion] must be positive. Typically, one starts with a value
+  /// of `1` and increments the value for each modification to the schema.
+  int get schemaVersion;
+
+  /// Defines the migration strategy that will determine how to deal with an
+  /// increasing [schemaVersion]. The default value only supports creating the
+  /// database by creating all tables known in this database. When you have
+  /// changes in your schema, you'll need a custom migration strategy to create
+  /// the new tables or change the columns.
+  MigrationStrategy get migration => MigrationStrategy();
+  MigrationStrategy? _cachedMigration;
+  MigrationStrategy get _resolvedMigration => _cachedMigration ??= migration;
+
+  /// The collection of update rules contains information on how updates on
+  /// tables result in other updates, for instance due to a trigger.
+  ///
+  /// There should be no need to overwrite this field, drift will generate an
+  /// appropriate implementation automatically.
+  StreamQueryUpdateRules get streamUpdateRules =>
+      const StreamQueryUpdateRules.none();
+
+  /// A list of all [DatabaseSchemaEntity] that are specified in this database.
+  ///
+  /// This contains all tables, views, triggers, indexes and other drift-
+  /// specific entities that are also encoded as schema entities.
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities;
+
+  @override
+  GeneratedDatabase get attachedDatabase => this;
+
+  /// The root [DriftSession] used as a connection for this database.
+  ///
+  /// This should never be used directly, use [currentSession] instead. Drift
+  /// manages transactions with zones, and manually using the [rootConnection]
+  /// in the transaction of a transaction can cause deadlocks.
+  @internal
+  Future<DriftSession> rootConnection() {
+    if (_openingSession case final opening?) {
+      return opening;
+    } else {
+      return _openingSession = Future.sync(() async {
+        final opened = await implementation.open();
+        _streamQueryStore ??= opened.streamQueries;
+        _underlyingStreamQueries?.complete(opened.streamQueries);
+        _openedSession = opened.session;
+
+        // Run migrations in a scoped connection zone so that they can use the
+        // database while calls outside of migrations are waiting on this future
+        // to complete.
+        final compat = DriftCompatibilitySession(
+          inner: opened.session,
+          dialect: implementation.dialect,
+        );
+
+        if (opened.session.persistentSchemaVersion case final root?) {
+          await runConnectionZoned(
+            compat,
+            opened.streamQueries,
+            () => _runMigrations(root),
+          );
+        }
+
+        return compat;
+      });
+    }
+  }
+
+  Future<void> _runMigrations(PersistentSchemaVersion session) async {
+    final schemaVersion = this.schemaVersion;
+    if (schemaVersion <= 0) {
+      throw StateError(
+        'The schemaVersion getter returned $schemaVersion, but it must return '
+        'at least one.',
+      );
+    }
+
+    final oldVersion = await session.schemaVersion;
+    final strategy = _resolvedMigration;
+
+    if (enableMigrations) {
+      final migrator = Migrator(this);
+
+      if (oldVersion == 0) {
+        await strategy.onCreate(migrator);
+        await session.writeSchemaVersion(schemaVersion);
+      } else if (oldVersion != schemaVersion) {
+        await strategy.onUpgrade(migrator, oldVersion, schemaVersion);
+        await session.writeSchemaVersion(schemaVersion);
+      }
+    }
+
+    await strategy.beforeOpen?.call(
+      OpeningDetails(oldVersion == 0 ? null : oldVersion, schemaVersion),
+    );
+  }
+
+  /// Creates a [Migrator] instance useful for running schema-altering
+  /// statements against this database.
+  Migrator createMigrator() => Migrator(this);
+
+  /// Closes this drift database and releases associated resources.
+  Future<void> close() {
+    return _closing ??= _closeInternal();
+  }
+
+  Future<void> _closeInternal() async {
+    if (_openedSession case final opened?) {
+      await opened.close();
+    } else if (_openingSession case final opening?) {
+      final resolved = await opening;
+
+      await resolved.close();
+      await _streamQueryStore?.close();
+    }
+
+    //devtools.handleClosed(this);
+  }
+}
+
+@internal
+extension InternalGeneratedDatabase on GeneratedDatabase {
+  StreamQueryStore resolveRootStreamQueries() {
+    if (_streamQueryStore case final existing?) {
+      return existing;
+    } else {
+      assert(_underlyingStreamQueries == null);
+      final completer = _underlyingStreamQueries = Completer.sync();
+
+      return _streamQueryStore = DelayedStreamQueryStore(
+        completer.future,
+        rootConnection,
+      );
+    }
+  }
+
+  Future<void> runMigrations() async {
+    final root = await rootConnection();
+    if (root.persistentSchemaVersion case final version?) {
+      await _runMigrations(version);
+    }
+  }
+}

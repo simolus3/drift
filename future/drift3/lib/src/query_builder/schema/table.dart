@@ -1,0 +1,252 @@
+import '../../dsl/table.dart';
+import '../compiler.dart';
+import '../statements/statement.dart';
+import '../type_converter.dart';
+import 'column.dart';
+import 'column_constraints.dart';
+import 'entities.dart';
+import 'result_set.dart';
+
+abstract interface class GeneratedTable<
+  Row extends Object,
+  Self extends GeneratedTable<Row, Self>
+>
+    extends Table
+    implements ResultSet<Row, Self> {
+  @override
+  List<TableColumn> get columns;
+}
+
+/// Default methods for all generated tables.
+extension GeneratedTableExtension on GeneratedTable {
+  /// All table constraints that have been added to this table.
+  ///
+  /// This typically includes the primary key (if it hasn't been set as a
+  /// [ColumnConstraint] on a single column) or unique keys.
+  ///
+  /// This does not include [customConstraints] added to the table.
+  List<TableConstraint> get constraints {
+    final pk = primaryKey;
+    final hasPkOnColumn = columns.any(
+      (e) => e.constraints.any((c) => c is ColumnPrimaryKeyConstraint),
+    );
+
+    return [
+      if (pk != null && pk.isNotEmpty && !hasPkOnColumn)
+        TablePrimaryKeyConstraint(pk.toList().cast()),
+      // ignore: invalid_use_of_visible_for_overriding_member
+      if (uniqueKeys case final uniqueKeys?)
+        for (final unique in uniqueKeys)
+          TableUniqueKeyConstraint(unique.toList().cast()),
+    ];
+  }
+}
+
+/// Additional interface for tables in a drift file that have been created with
+/// an `CREATE VIRTUAL TABLE STATEMENT`.
+mixin VirtualTableInfo<
+  Row extends Object,
+  Self extends GeneratedTable<Row, Self>
+>
+    on GeneratedTable<Row, Self> {
+  /// Returns the module name and the arguments that were used in the statement
+  /// that created this table. In that sense, `CREATE VIRTUAL TABLE <name> USING <moduleAndArgs>;`
+  /// can be used to create this table in sql.
+  String get moduleAndArgs;
+}
+
+final class TableColumn<T extends Object> extends SchemaColumn<T> {
+  /// Whether this column is required when inserting new rows into the table.
+  ///
+  /// All non-nullable columns that don't have a default value or are part of
+  /// an auto-incrementing primary key are required.
+  final bool requiredDuringInsert;
+
+  /// Constraints that have been applied to this column.
+  ///
+  /// This reflects the actual syntactic column constraints to apply to the
+  /// definition for this column in SQL. For instance, a single-column primary
+  /// key defined by overriding the [Table.primaryKey] getter will _not_ add a
+  /// [ColumnPrimaryKeyConstraint] to this column.
+  late final List<ColumnConstraint> constraints = _generateConstraints();
+
+  /// Lazily generate constraints because some constraints (e.g. `CHECK`) are
+  /// self-referential.
+  final List<ColumnConstraint> Function() _generateConstraints;
+
+  /// A function that yields a default column for inserts if no value has been
+  /// set. This is different to [defaultValue] since the function is written in
+  /// Dart, not SQL. It's a compile-time error to declare columns where both
+  /// [defaultValue] and [clientDefault] are non-null.
+  ///
+  /// See also: [BuildColumn.clientDefault].
+  final T? Function()? clientDefault;
+
+  TableColumn({
+    required super.name,
+    required super.type,
+    super.isNullable,
+    this.requiredDuringInsert = true,
+    List<ColumnConstraint> Function() constraints = _noConstraints,
+    this.clientDefault,
+  }) : _generateConstraints = constraints;
+
+  static List<ColumnConstraint> _noConstraints() => const [];
+
+  /// Applies a type converter to this column.
+  ///
+  /// This is mainly used by the generator.
+  TableColumnWithTypeConverter<D, T> withConverter<D>(
+    TypeConverter<D, T?> converter,
+  ) {
+    return TableColumnWithTypeConverter._(base: this, converter: converter);
+  }
+}
+
+/// A [TableColumn] that has a [TypeConverter] attached to it.
+///
+/// This provides methods like [SchemaColumnWithTypeConverter.equalsValue],
+/// which can be used to apply the type converter when building comparisons.
+final class TableColumnWithTypeConverter<D, S extends Object>
+    extends TableColumn<S>
+    with SchemaColumnWithTypeConverter<D, S> {
+  @override
+  final TypeConverter<D, S?> converter;
+
+  TableColumnWithTypeConverter._({
+    required this.converter,
+    required TableColumn<S> base,
+  }) : super(
+         name: base.name,
+         type: base.type,
+         isNullable: base.isNullable,
+         requiredDuringInsert: base.requiredDuringInsert,
+         constraints: () => base.constraints,
+         clientDefault: base.clientDefault,
+       );
+}
+
+/// Represents a `CREATE TABLE` statement in SQL.
+///
+/// Drift provides no information about the structure of that statement outside
+/// of the [entity] to create. This is because generating `CREATE TABLE`
+/// statements is highly dialect-specific, and this layout allows dialects to
+/// customize how they generate these statements most easily.
+final class CreateTableStatement extends CreateStatement<GeneratedTable> {
+  /// Create a statement that will `CREATE` the [entity] when issued.
+  CreateTableStatement(super.entity, {super.ifNotExists});
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    return compiler.addCreateTableStatement(this);
+  }
+}
+
+/// A statement renaming [oldName] to [table].
+final class RenameTableStatement extends SqlStatement {
+  /// The table to be renamed, with the new name.
+  final GeneratedTable table;
+
+  /// The old name of the table.
+  final String oldName;
+
+  /// @nodoc
+  RenameTableStatement(this.oldName, this.table);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addRenameTableStatement(this);
+  }
+}
+
+/// A statement adding a column to a table.
+final class AddColumnStatement extends SqlStatement {
+  /// The table to which the [column] should be added.
+  final GeneratedTable table;
+
+  /// The column to add.
+  final TableColumn column;
+
+  /// @nodoc
+  AddColumnStatement(this.table, this.column);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addAddColumnStatement(this);
+  }
+}
+
+/// A statement removing a column to a table.
+final class DropColumnStatement extends SqlStatement {
+  /// The table from which the [columnName] should be removed.
+  final GeneratedTable table;
+
+  /// The (unescaped) name of the column to remove.
+  final String columnName;
+
+  /// @nodoc
+  DropColumnStatement(this.table, this.columnName);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addDropColumnStatement(this);
+  }
+}
+
+/// A statement renaming [oldName] in [table] to [column].
+final class RenameColumnStatement extends SqlStatement {
+  /// The table to be altered.
+  final GeneratedTable table;
+
+  /// The current state of the column (with the new name).
+  final TableColumn column;
+
+  /// The old name of the column.
+  final String oldName;
+
+  /// @nodoc
+  RenameColumnStatement(this.table, this.oldName, this.column);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addRenameColumnStatement(this);
+  }
+}
+
+/// A table constraint supported by drift.
+sealed class TableConstraint implements SqlComponent {}
+
+/// A `PRIMARY KEY` constraint set on a table.
+///
+/// Drift only uses this when [Table.primaryKey] was overridden when defining
+/// the table. If a column was marked as a primary key or auto-incrementing, a
+/// [ColumnPrimaryKeyConstraint] will be generated instead.
+final class TablePrimaryKeyConstraint extends TableConstraint {
+  /// The columns forming the primary key.
+  final List<TableColumn> columns;
+
+  /// @nodoc
+  TablePrimaryKeyConstraint(this.columns);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addTablePrimaryKeyConstraint(this);
+  }
+}
+
+/// A `UNIQUE` constraint attached to a table.
+///
+/// Drift generates instances of this class in [GeneratedTable.constraints] when
+/// [Table.uniqueKeys] are set.
+final class TableUniqueKeyConstraint extends TableConstraint {
+  /// The columns forming the unique constraint.
+  final List<TableColumn> columns;
+
+  /// @nodoc
+  TableUniqueKeyConstraint(this.columns);
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addTableUniqueKeyConstraint(this);
+  }
+}

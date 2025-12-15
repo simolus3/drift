@@ -36,6 +36,8 @@ workspace:
   - examples/web_worker_example
   - examples/with_built_value
 
+  - future/drift3
+
 dev_dependencies:
   melos: ^7.0.0
 
