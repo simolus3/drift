@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:drift_dev/src/utils/header.dart';
 import 'package:path/path.dart' as p;
 import 'package:collection/collection.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -88,8 +89,6 @@ class GenerateUtilsCommand extends Command {
 
 class GenerateUtils {
   static String _filenameForVersion(int version) => 'schema_v$version.dart';
-  static const _prefix = '// GENERATED CODE, DO NOT EDIT BY HAND.\n'
-      '// ignore_for_file: type=lint';
 
   /// Generates Dart code for a specific schema version.
   static Future<String> generateSchemaCode(
@@ -126,7 +125,7 @@ class GenerateUtils {
     // We need to use the core drift package without an import alias because it
     // can be referenced in snippets that are part of the schema files.
     writer.leaf()
-      ..writeln(_prefix)
+      ..writeln(generatedHeader)
       ..writeln("import 'package:drift/drift.dart';");
 
     final database = DriftDatabase(
@@ -161,7 +160,7 @@ class GenerateUtils {
   static Future<String> generateLibraryCode(
       DriftDevCli cli, Iterable<int> versions) async {
     final buffer = StringBuffer()
-      ..writeln(_prefix)
+      ..writeln(generatedHeader)
       ..writeln("import 'package:drift/drift.dart';")
       ..writeln("import 'package:drift/internal/migrations.dart';");
 
