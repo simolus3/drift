@@ -10,18 +10,32 @@ import '../query_builder/types.dart';
 import 'columns.dart';
 import 'internal.dart';
 
+/// An annotation on a method on [Table] (or an extension) used to begin a chain
+/// of methods describing a table column.
+///
+/// This is used by e.g. [Table.integer] and related columns to tell `drift_dev`
+/// about the used type. Users typically don't have to create custom instances
+/// of [DriftColumnDeclarationBuilder].
+@Target({TargetKind.method})
 final class DriftColumnDeclarationBuilder {
+  /// For builtin types, the SQL type of the column.
   final BuiltinDriftType? builtin;
+
+  /// For methods declaring custom (non-builtin) SQL types, a factory of the
+  /// type being constructed.
   final SqlType Function()? custom;
 
-  const DriftColumnDeclarationBuilder(BuiltinDriftType this.builtin)
-      : custom = null;
+  const DriftColumnDeclarationBuilder._(BuiltinDriftType this.builtin)
+    : custom = null;
 
+  /// Annotation constructor for custom types.
   const DriftColumnDeclarationBuilder.forCustom(SqlType Function() this.custom)
-      : builtin = null;
+    : builtin = null;
 }
 
+/// Common superclass for [Table] and [View]s.
 abstract class ResultSetDsl {
+  /// @nodoc
   const ResultSetDsl();
 }
 
@@ -132,7 +146,7 @@ abstract class Table extends ResultSetDsl {
   /// report the values as a [BigInt] in Dart.
 
   @protected
-  @DriftColumnDeclarationBuilder(BuiltinDriftType.int)
+  @DriftColumnDeclarationBuilder._(BuiltinDriftType.int)
   ColumnBuilder<int> integer() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds a 64-big
@@ -150,7 +164,7 @@ abstract class Table extends ResultSetDsl {
   /// 2⁵². In all other cases, using [integer] directly is much more efficient
   /// and recommended.
   @protected
-  @DriftColumnDeclarationBuilder(BuiltinDriftType.int64)
+  @DriftColumnDeclarationBuilder._(BuiltinDriftType.int64)
   ColumnBuilder<BigInt> int64() => isGenerated();
 
   /// Creates a column to store an `enum` class [T].
@@ -167,7 +181,7 @@ abstract class Table extends ResultSetDsl {
   /// TextColumn get name => text()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder(BuiltinDriftType.text)
+  @DriftColumnDeclarationBuilder._(BuiltinDriftType.text)
   ColumnBuilder<String> text() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds strings.
@@ -176,7 +190,7 @@ abstract class Table extends ResultSetDsl {
   /// TextColumn get name => text()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder(BuiltinDriftType.json)
+  @DriftColumnDeclarationBuilder._(BuiltinDriftType.json)
   ColumnBuilder<DatabaseJson> json() => isGenerated();
 
   /// Creates a column to store an `enum` class [T].
@@ -192,7 +206,7 @@ abstract class Table extends ResultSetDsl {
   /// BoolColumn get isAwesome => boolean()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder(BuiltinDriftType.bool)
+  @DriftColumnDeclarationBuilder._(BuiltinDriftType.bool)
   ColumnBuilder<bool> boolean() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds date and
@@ -214,7 +228,7 @@ abstract class Table extends ResultSetDsl {
   ///
   /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
   @protected
-  @DriftColumnDeclarationBuilder(BuiltinDriftType.dateTime)
+  @DriftColumnDeclarationBuilder._(BuiltinDriftType.dateTime)
   ColumnBuilder<DateTime> dateTime() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds arbitrary
@@ -223,7 +237,7 @@ abstract class Table extends ResultSetDsl {
   /// BlobColumn get payload => blob()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder(BuiltinDriftType.byteArray)
+  @DriftColumnDeclarationBuilder._(BuiltinDriftType.byteArray)
   ColumnBuilder<Uint8List> blob() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds floating
@@ -232,7 +246,7 @@ abstract class Table extends ResultSetDsl {
   /// RealColumn get averageSpeed => real()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder(BuiltinDriftType.double)
+  @DriftColumnDeclarationBuilder._(BuiltinDriftType.double)
   ColumnBuilder<double> real() => isGenerated();
 
   /// Defines a column with a custom [type] when used as a getter.
@@ -334,7 +348,7 @@ final class TableIndex {
   /// using `#nextUpdateSnapshot`.
   ///
   /// To further control options of the index, use an [IndexedColumn] instance.
-  final Set<Object /*IndexedColumn | Symbol*/ > columns;
+  final Set<Object /*IndexedColumn | Symbol*/> columns;
 
   /// As an alternative to [name], [unique] and [columns], a `CREATE INDEX` SQL
   /// statement defining the index.
@@ -360,9 +374,9 @@ final class TableIndex {
   /// collations or indexing expressions. It can also be used for partials
   /// indexes by adding a `WHERE` clause.
   const TableIndex.sql(String this.createIndexStatement)
-      : name = '',
-        unique = false,
-        columns = const {};
+    : name = '',
+      unique = false,
+      columns = const {};
 }
 
 /// A column that can appear in a [TableIndex].
@@ -567,8 +581,11 @@ class UseRowClass {
   /// table.
   ///
   /// For details, see the class documentation on [UseRowClass].
-  const UseRowClass(this.type,
-      {this.constructor = 'new', this.generateInsertable = false});
+  const UseRowClass(
+    this.type, {
+    this.constructor = 'new',
+    this.generateInsertable = false,
+  });
 }
 
 /// An annotation specifying view properties

@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:collection/collection.dart';
 
 import '../connection/connection.dart';
@@ -207,6 +209,7 @@ abstract base class StatementCompiler {
   InsertStatement? _currentInsertStatement;
   GeneratedView? _generatingCreateView;
 
+  /// The dialect to use when compiling dialect-specific structures.
   DriftDialect get dialect;
 
   void addPositionalVariable(int index);

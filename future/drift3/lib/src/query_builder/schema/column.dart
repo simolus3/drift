@@ -18,8 +18,10 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
   /// `NOT NULL` constraint applied to it.
   final bool isNullable;
 
+  /// The [ResultSet] that this column is part of.
   late ResultSet owningResultSet;
 
+  /// @nodoc
   SchemaColumn({
     required this.name,
     required this.type,

@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import '../../connection/result_set.dart';
 import '../../database/connection_user.dart';
 import '../../database/data_class.dart';
@@ -7,18 +9,31 @@ import '../results.dart';
 import 'column.dart';
 import 'entities.dart';
 
+/// A result set as it appears in the database schema.
+///
+/// [Row] is the Dart type to represent a value of this result set. [Self] is
+/// the actual subtype.
+///
+/// To read a result set from a row, use [DriftRow.readTable].
 mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     implements ResultSetDsl, DatabaseSchemaEntity {
+  /// When created through [withAlias], an alias for this result set.
   String? get alias;
 
+  /// The columns of this result set.
   List<SchemaColumn> get columns;
 
+  /// If an [alias] is set, the alias. Otherwise, the [entityName] for this
+  /// result set.
   String get aliasOrName => alias ?? entityName;
 
+  /// All [columns], indexed by their name.
   late final Map<String, SchemaColumn> columnsByName = {
     for (final column in columns) column.name: column,
   };
 
+  /// Creates a function that, when receiving a [DriftRow], extracts columns for
+  /// this result set into the mapped [Row] type.
   Row? Function(DriftRow) createMapperToDart(ResultSetStructure structure) {
     final positions = structure.tables[this];
     if (positions == null) {
@@ -28,13 +43,10 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     return createMapperFromPositions(positions);
   }
 
+  /// Like [createMapperToDart], but with positions already resolved.
   Row? Function(DriftRow) createMapperFromPositions(
     List<ColumnPosition> positions,
   );
-
-  Row? mapToDart(DriftRow row) {
-    return createMapperToDart(row.resultSet.structure)(row);
-  }
 
   /// Converts a [companion] to the real model class, [Row].
   ///
@@ -76,6 +88,8 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     return mapper(mappedResultSet.first)!;
   }
 
+  /// Returns a new instance of this result set with [alias] set to the given
+  /// value.
   Self withAlias(String alias);
 
   /// Type-level hack: Result sets are supposed to inherit from the [Self] type
@@ -94,6 +108,9 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
   @override
   int get hashCode => Object.hash(alias, entityName);
 
+  /// Internal, cast from [ResultSetDsl] (which will implement [ResultSet] for
+  /// drift-generated result sets) to [ResultSet].
+  @internal
   static ResultSet fromDsl(ResultSetDsl dsl) {
     return dsl as ResultSet;
   }

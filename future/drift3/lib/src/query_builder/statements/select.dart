@@ -1,6 +1,5 @@
 import 'package:meta/meta.dart';
 
-import '../../connection/connection.dart';
 import '../../connection/result_set.dart';
 import '../../connection/streams/store.dart';
 import '../../connection/streams/update_rules.dart';
@@ -19,17 +18,28 @@ import '../schema/result_set.dart';
 import 'statement.dart';
 import 'query.dart';
 
+@optionalTypeArgs
 sealed class BaseSelectStatement<
   Self extends BaseSelectStatement<Self, Row>,
   Row
 >
     extends SqlStatement
     with Selectable<Row> {
+  /// The [ResultSetStructure] for this statement, describing columns we expect
+  /// it to return.
+  ///
+  /// The structure allows looking up indices for expressions added to this
+  /// statement, as well as column ranges for tables.
   final ResultSetStructure structure = ResultSetStructure();
 
+  /// Whether to add a `DISTINCT` clause to this select, meaning that duplicate
+  /// rows would be removed.
   final bool distinct;
+
+  /// All tables that this statement selects from.
   final List<FromClauseElement> from = [];
 
+  /// The filtering `WHERE` clause of this select statement.
   WhereClause? whereClause;
 
   /// The optional `GROUP BY` clause for this select statement.
@@ -56,11 +66,19 @@ sealed class BaseSelectStatement<
     return ColumnPosition(index);
   }
 
+  /// Adds a column to this query.
+  ///
+  /// The column will be evaluated for each row of the expression. To read the
+  /// result of the expression in a row, use [DriftRow.read].
   SelectStatement addColumn(Expression expression) {
     return _asSelectStatement()
       ..structure.expressions[expression] ??= _nextPosition;
   }
 
+  /// Adds multiple columns to this query.
+  ///
+  /// The column will be evaluated for each row of the expression. To read the
+  /// result of the expression in a row, use [DriftRow.read].
   SelectStatement addColumns(Iterable<Expression> expressions) {
     final stmt = _asSelectStatement();
     for (final expression in expressions) {
@@ -69,6 +87,7 @@ sealed class BaseSelectStatement<
     return stmt;
   }
 
+  /// Adds all columns from [ResultSet] to this query.
   @internal
   void addResultSet(ResultSet resultSet) {
     if (structure.tables.containsKey(resultSet)) {
@@ -480,11 +499,19 @@ sealed class FromClauseElement implements SqlComponent {}
 
 /// An operator used to compose joins, see [Join].
 enum JoinOperator implements SqlComponent {
-  /// Perform an inner join,
+  /// Perform an `INNER` join.
   inner('INNER JOIN'),
+
+  /// Perform a `LEFT OUTER` join.
   leftOuter('LEFT OUTER JOIN'),
+
+  /// Perform a `RIGHT OUTER` join.
   rightOuter('RIGHT OUTER JOIN'),
+
+  /// Perform a `FULL OUTER` join.
   fullOuter('FULL OUTER JOIN'),
+
+  /// Perform a `CROSS` join.
   cross('CROSS JOIN');
 
   /// The default lexeme to generate for this join operator. Some SQL dialects

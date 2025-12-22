@@ -82,14 +82,25 @@ final class ResultSetStructure {
   }
 }
 
+/// A list of [DriftRow]s from which structured values can be read in a
+/// type-safe way.
+///
+/// [DriftRow]s are used to represent the results of running `SELECT`
+/// statements.
 final class DriftResultSet
     with ListMixin<DriftRow>, NonGrowableListMixin<DriftRow> {
+  /// The structure of this result set, describing which columns are available.
   final ResultSetStructure structure;
+
+  /// The underlying [RawResultSet] from the database connection.
   final RawResultSet resultSet;
+
+  /// The dialect, used to resolve SQL type implementations when reading values.
   final DriftDialect dialect;
 
-  Map<ResultSet, Object? Function(DriftRow)> _createdMappers = {};
+  final Map<ResultSet, Object? Function(DriftRow)> _createdMappers = {};
 
+  /// @nodoc
   DriftResultSet(this.structure, this.resultSet, this.dialect);
 
   ColumnPosition _expressionPosition(Expression<Object> expression) {
@@ -116,6 +127,12 @@ final class DriftResultSet
     return DriftRow(this, resultSet[index]);
   }
 
+  /// Returns a function reading the given expression from a [DriftRow] of this
+  /// result set.
+  ///
+  /// When reading expressions from many rows, calling [bindExpression] and then
+  /// invoking the returned function for each row is faster than calling
+  /// [DriftRow.read] on each row since types only have to be resolved once.
   T? Function(DriftRow) bindExpression<T extends Object>(Expression<T> expr) {
     final position = _expressionPosition(expr);
     final resolvedType = expr.resolveType(dialect);
@@ -124,17 +141,21 @@ final class DriftResultSet
   }
 
   Object? Function(DriftRow) _mapperFor(ResultSet resultSet) {
-    return _createdMappers.putIfAbsent(
-      resultSet,
-      () => resultSet.createMapperToDart(structure),
-    );
+    return _createdMappers.putIfAbsent(resultSet, () {
+      return resultSet.createMapperToDart(structure);
+    });
   }
 }
 
+/// A row in a [DriftResultSet].
 final class DriftRow {
+  /// The result set describing the column structure of this row.
   final DriftResultSet resultSet;
+
+  /// The underlying [RawRow].
   final RawRow raw;
 
+  /// @nodoc
   DriftRow(this.resultSet, this.raw);
 
   T? _readAtPositionWithType<T extends Object>(
@@ -147,6 +168,10 @@ final class DriftRow {
     };
   }
 
+  /// Reads the value of evaluating [Expression] from this row.
+  ///
+  /// The expression must have been added to the select statement (either
+  /// through a result set or through [BaseSelectStatement.addColumn]).
   T? read<T extends Object>(Expression<T> expr) {
     return _readAtPositionWithType(
       resultSet._expressionPosition(expr),
@@ -167,12 +192,10 @@ final class DriftRow {
     );
   }
 
-  Row? readTableOrNull<Row extends Object, RS extends ResultSet<Row, RS>>(
-    RS resultSet,
-  ) {
-    return this.resultSet._mapperFor(resultSet)(this) as Row?;
-  }
-
+  /// Reads a full [ResultSet] from this row.
+  ///
+  /// For result sets that might be absent from some rows (e.g. those added as
+  /// outer joins), consider using [readTableOrNull] instead.
   Row readTable<Row extends Object, RS extends ResultSet<Row, RS>>(
     RS resultSet,
   ) {
@@ -186,5 +209,16 @@ final class DriftRow {
     }
 
     return parsed;
+  }
+
+  /// Reads a full [ResultSet] from this row, or null if it doesn't have
+  /// non-null values in this row.
+  ///
+  /// This does not allow reading result sets whose columns don't exist in this
+  /// row at all (e.g. a result set not joined into a select statement).
+  Row? readTableOrNull<Row extends Object, RS extends ResultSet<Row, RS>>(
+    RS resultSet,
+  ) {
+    return this.resultSet._mapperFor(resultSet)(this) as Row?;
   }
 }
