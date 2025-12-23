@@ -18,6 +18,7 @@ import '../schema/result_set.dart';
 import 'statement.dart';
 import 'query.dart';
 
+/// Common class for generated `SELECT` statements on databases.
 @optionalTypeArgs
 sealed class BaseSelectStatement<
   Self extends BaseSelectStatement<Self, Row>,
@@ -57,7 +58,7 @@ sealed class BaseSelectStatement<
   final List<CompoundSelect> compounds = [];
 
   /// The database this statement should be sent to.
-  DatabaseConnectionUser _database;
+  final DatabaseConnectionUser _database;
 
   BaseSelectStatement(this._database, {this.distinct = false});
 
@@ -306,12 +307,20 @@ sealed class BaseSelectStatement<
   }
 }
 
+/// A select statement referencing multiple tables.
 final class SelectStatement
     extends BaseSelectStatement<SelectStatement, DriftRow> {
   final bool _includeJoinsByDefault;
 
+  /// @nodoc
   SelectStatement(
     super.database, {
+
+    /// Whether tables joined to this statement should have their columns added
+    /// by default.
+    ///
+    /// It may make sense not to add those columns in case the join is only
+    /// referenced in a `WHERE` clause.
     bool includeJoinsByDefault = true,
     super.distinct,
   }) : _includeJoinsByDefault = includeJoinsByDefault;
@@ -430,6 +439,10 @@ final class SelectStatement
 /// a table.
 typedef OrderClauseGenerator<T> = OrderingTerm Function(T tbl);
 
+/// A select statement selecting from a single table.
+///
+/// Because only a single table is in scope, some helper methods are available
+/// through [SingleTableStatementMixin].
 final class SingleTableSelectStatement<
   Row extends Object,
   RS extends ResultSet<Row, RS>
@@ -444,6 +457,7 @@ final class SingleTableSelectStatement<
   @override
   final ResultSet<Row, RS> resultSet;
 
+  /// @nodoc
   SingleTableSelectStatement(
     super._database,
     this.resultSet, {
@@ -495,6 +509,7 @@ final class SingleTableSelectStatement<
   }
 }
 
+/// A source for from clauses
 sealed class FromClauseElement implements SqlComponent {}
 
 /// An operator used to compose joins, see [Join].
@@ -573,9 +588,12 @@ final class Join extends FromClauseElement {
   }
 }
 
+/// Select from a generated table or view.
 final class FromResultSet extends FromClauseElement {
+  /// The result set to select from.
   final ResultSet resultSet;
 
+  /// @nodoc
   FromResultSet(this.resultSet);
 
   @override
@@ -617,7 +635,10 @@ enum CompoundOperator implements SqlComponent {
 /// A select statement that has been added to an existing [SelectStatement] by
 /// using a [CompoundOperator].
 final class CompoundSelect implements SqlComponent {
+  /// The operator (e.g. `UNION`) to use for the [statement].
   final CompoundOperator operator;
+
+  /// The statement being added to a compound select.
   final SelectStatement statement;
 
   CompoundSelect._(this.operator, this.statement);

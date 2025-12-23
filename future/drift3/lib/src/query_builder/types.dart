@@ -6,11 +6,19 @@ import 'package:collection/collection.dart';
 
 import 'dialect.dart';
 
+/// A JSON value in a drift database.
+///
+/// This is a dedicated class to ensure that e.g. JSON strings are still
+/// represented as [DatabaseJson]s consistently (whereas raw [String]s might be
+/// interpreted as raw text).
 final class DatabaseJson {
+  /// The decoded JSON value.
   final Object? dartValue;
 
+  /// @nodoc
   const DatabaseJson(this.dartValue);
 
+  /// Returns the [dartValue].
   Object? toJson() => dartValue;
 
   @override
@@ -36,21 +44,37 @@ abstract interface class SqlType<T extends Object> {
     required Map<KnownSqlDialect, SqlType<T>> overrides,
   }) = _DialectAwareType;
 
+  /// Resolves an implementation of the type in the given dialect.
   PhysicalSqlType<T> resolveIn(DriftDialect dialect);
 }
 
+/// Adds type implementation methods to [SqlType] by looking up the type in a
+/// [DriftDialect] implementation.
+
 extension TypeExtension<T extends Object> on SqlType<T> {
+  /// The name of the type in SQL, e.g. in a column definition or a `CAST`.
   String typeName(DriftDialect dialect) => resolveIn(dialect).typeName;
 
+  /// Maps a Dart [value] to bind to a parameter in a generated statement to a
+  /// value understood by database drivers.
   Object sqlParameter(DriftDialect dialect, T value) {
     return resolveIn(dialect).dartValue(value);
   }
 }
 
+/// A dialect-specific implementation of a [SqlType].
 abstract base class PhysicalSqlType<T extends Object> implements SqlType<T> {
+  /// The name of the type in SQL, e.g. in a column definition or a `CAST`.
   String get typeName;
+
+  /// Maps a Dart [value] to bind to a parameter in a generated statement to a
+  /// value understood by database drivers.
   Object sqlParameter(T value);
+
+  /// Maps [value] to its (escaped) SQL literal.
   String sqlLiteral(T value);
+
+  /// Maps a raw value returned in a raw result set into the [T] for [SqlType].
   T dartValue(Object databaseValue);
 
   @override
@@ -123,15 +147,37 @@ abstract interface class TypeProvider {
 
 interface class _BuiltinDriftTypeWithoutBound<T> {}
 
+/// A builtin type drift expects every database to implement.
+///
+/// These are not necessarily different types in all databases. For instance,
+/// SQLite does not have a dedicated [json] type. So depending on dialect
+/// options, drift would use a `TEXT` or `BLOB` (JSONB) type for that.
 enum BuiltinDriftType<T extends Object>
     implements _BuiltinDriftTypeWithoutBound<T>, SqlType<T> {
+  /// A type suitable for storing text of arbitrary length.
   text<core.String>._(),
+
+  /// A type suitable for storing 64-bit integers.
   int<core.int>._(),
+
+  /// Guaranteed to be the same SQL type as [int], but stores [BigInt] values
+  /// to ensure we don't loose precision when compiling Dart to JavaScript
+  /// (where ints are doubles).
   int64<core.BigInt>._(),
+
+  /// A type suitable for storing double values.
   double<core.double>._(),
+
+  /// A type suitable for storing byte arrays as blobs.
   byteArray<Uint8List>._(),
+
+  /// A type suitable for storing boolean values.
   bool<core.bool>._(),
+
+  /// A type suitable for storing datetime values.
   dateTime<DateTime>._(),
+
+  /// A type suitable for storing JSON values.
   json<DatabaseJson>._();
 
   const BuiltinDriftType._();

@@ -13,13 +13,19 @@ abstract interface class GeneratedView<
   Self extends GeneratedView<Row, Self>
 >
     implements ResultSet<Row, Self> {
+  /// For views defined in Dart, the select statement backing this view.
+  ///
+  /// Otherwise, drift generates [sqlDefinition] from the original SQL text.
   SelectStatement? get query;
+
+  /// If [query] is not available, the generated SQL text for this view.
   CustomComponent? get sqlDefinition;
 
   /// The names of tables that this view is reading from.
   Set<String> get readsFrom;
 }
 
+/// A column in a [GeneratedView].
 final class ViewColumn<T extends Object> extends SchemaColumn<T> {
   /// The expression backing this column in the view.
   ///

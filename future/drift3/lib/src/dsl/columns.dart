@@ -85,6 +85,7 @@ extension type BaseColumnBuilder<T extends Object>._(SchemaColumn<T> _never)
   ///
   /// Note that using [named] __does not__ have an effect on the json key of an
   /// object. To change the json key, annotate this column getter with
+  // ignore: deprecated_member_use_from_same_package
   /// [JsonKey].
   ColumnBuilder<T> named(String name) => isGenerated();
 

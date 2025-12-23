@@ -13,6 +13,9 @@ import 'subquery.dart';
 import 'tuple.dart';
 import 'variables.dart';
 
+/// Parameters that can be passed to SQL function calls.
+///
+/// This includes all [Expression]s, as well [StarFunctionParameter]s.
 sealed class FunctionParameter implements SqlComponent {}
 
 /// An SQL expression, which evaluates to a value when evaluated by a database
@@ -437,6 +440,7 @@ final class _DartCastExpression<D1 extends Object, D2 extends Object>
   }
 }
 
+/// A `CAST ([inner]) AS [type]` expression in SQL.
 final class CastExpression<D1 extends Object, D2 extends Object>
     extends Expression<D2> {
   /// The expression for which the typecast should be performed.
@@ -460,7 +464,9 @@ final class CastExpression<D1 extends Object, D2 extends Object>
   }
 }
 
+/// A `*` parameter passed to functions.
 final class StarFunctionParameter implements FunctionParameter {
+  /// @nodoc
   const StarFunctionParameter();
 
   @override

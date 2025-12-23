@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+import 'package:meta/meta.dart';
+
 import '../../connection/result_set.dart';
 import '../../connection/streams/update_rules.dart';
 import '../../database/connection_user.dart';
@@ -125,6 +127,7 @@ final class InsertStatement<
     return this;
   }
 
+  /// Adds an [upsert] clause to this insert statement.
   InsertStatement<Row, RS, DB> onConflict(UpsertClause<Row, RS> upsert) {
     assert(upsertClause == null, 'upsert clause already set');
     upsertClause = upsert;
@@ -137,6 +140,7 @@ final class InsertStatement<
   }
 }
 
+///
 extension InsertStatementWithDatabase<
   Row extends Object,
   RS extends GeneratedTable<Row, RS>,
@@ -405,9 +409,15 @@ sealed class UpsertClause<
 final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
     extends UpsertClause<Row, RS> {
   final Insertable<Row> Function(RS old, RS excluded) _creator;
+
+  /// Change the [DoUpdate] into a no-op if [where] evaluates to false.f
   final WhereClause Function(RS old, RS excluded)? where;
+
+  /// Only applies the [DoUpdate] if the target table matches a condition.
   final Expression<bool> Function(RS table)? targetCondition;
 
+  /// Whether the insertable, [where] or [targetCondition] use both the old and
+  /// the excluded rows.
   final bool usesExcludedTable;
 
   /// An optional list of columns to serve as an "conflict target", which
@@ -479,6 +489,8 @@ final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
            ? null
            : ((old, excluded) => WhereClause(where(old, excluded)));
 
+  /// Generates the [Insertable]
+  @internal
   Insertable<Row> createInsertable(GeneratedTable<Row, RS> table) {
     return _creator(
       table.asSelfType(),
@@ -486,6 +498,8 @@ final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
     );
   }
 
+  /// Generates the `WHERE` filter for this update action, if one has been set.
+  @internal
   WhereClause? buildWhereClause(GeneratedTable<Row, RS> table) {
     return switch (where) {
       null => null,
@@ -496,6 +510,8 @@ final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
     };
   }
 
+  /// Generates the `WHERE` filter for this target condition, if one has been set.
+  @internal
   WhereClause? buildTargetCondition(GeneratedTable<Row, RS> table) {
     return switch (targetCondition) {
       null => null,

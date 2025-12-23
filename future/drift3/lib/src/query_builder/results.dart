@@ -34,6 +34,15 @@ final class ColumnPosition {
   ColumnPosition(this.index);
 }
 
+/// The expected column structure of a result set.
+///
+/// This contains positions for [expressions] as well as the list of positions
+/// for each table added to the result set in [tables].
+///
+/// This information is used when mapping values to Dart. A table would look
+/// itself up in [tables] to obtain indices of its columns in each row. These
+/// positions are then used when each row is mapped to Dart, avoiding the
+/// duplicate map lookup.
 final class ResultSetStructure {
   /// For [Expression] instances added to a query, the index of the column
   /// added for that expression.
@@ -43,6 +52,7 @@ final class ResultSetStructure {
   /// a list of column indices for each column in the result set.
   final Map<ResultSet, List<ColumnPosition>> tables;
 
+  /// @nodoc
   ResultSetStructure({
     Map<Expression, ColumnPosition>? expressions,
     Map<ResultSet, List<ColumnPosition>>? tables,

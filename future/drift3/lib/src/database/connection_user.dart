@@ -367,10 +367,10 @@ abstract base class DatabaseConnectionUser {
   ///
   /// For more information on queries, see the
   /// [documentation](https://drift.simonbinder.eu/docs/getting-started/writing_queries/).
-  SingleTableSelectStatement<Row, RS>
-      select<Row extends Object, RS extends ResultSet<Row, RS>>(
-          ResultSet<Row, RS> table,
-          {bool distinct = false}) {
+  SingleTableSelectStatement<Row, RS> select<
+    Row extends Object,
+    RS extends ResultSet<Row, RS>
+  >(ResultSet<Row, RS> table, {bool distinct = false}) {
     return SingleTableSelectStatement<Row, RS>(this, table, distinct: distinct);
   }
 
@@ -421,10 +421,10 @@ abstract base class DatabaseConnectionUser {
   ///
   /// The returned [Selectable] can be run once with [Selectable.getSingle] to
   /// get the count once, or be watched as a stream with [Selectable.watchSingle].
-  SingleSelectable<int>
-      count<Row extends Object, RS extends ResultSet<Row, RS>>(
-          ResultSet<Row, RS> table,
-          {Expression<bool> Function(RS row)? where}) {
+  SingleSelectable<int> count<
+    Row extends Object,
+    RS extends ResultSet<Row, RS>
+  >(ResultSet<Row, RS> table, {Expression<bool> Function(RS row)? where}) {
     final count = countAll();
     final stmt = selectOnly(table).addColumns([count]);
     if (where != null) {
@@ -457,18 +457,20 @@ abstract base class DatabaseConnectionUser {
 
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
-  InsertStatement<Row, RS, DatabaseConnectionUser>
-      into<Row extends Object, RS extends GeneratedTable<Row, RS>>(
-          GeneratedTable<Row, RS> table) {
+  InsertStatement<Row, RS, DatabaseConnectionUser> into<
+    Row extends Object,
+    RS extends GeneratedTable<Row, RS>
+  >(GeneratedTable<Row, RS> table) {
     return InsertStatement<Row, RS, DatabaseConnectionUser>(this, table);
   }
 
   /// Starts an [UpdateStatement] for the given table. You can use that
   /// statement to update individual rows in that table by setting a where
   /// clause on that table and then use [UpdateStatement.write].
-  UpdateStatement<Row, RS>
-      update<Row extends Object, RS extends GeneratedTable<Row, RS>>(
-          GeneratedTable<Row, RS> table) {
+  UpdateStatement<Row, RS> update<
+    Row extends Object,
+    RS extends GeneratedTable<Row, RS>
+  >(GeneratedTable<Row, RS> table) {
     return UpdateStatement<Row, RS>(this, table);
   }
 
@@ -476,9 +478,10 @@ abstract base class DatabaseConnectionUser {
   ///
   /// See the [documentation](https://drift.simonbinder.eu/docs/dart-api/writes/#updates-and-deletes)
   /// for more details and example on how delete statements work.
-  DeleteStatement<Row, RS>
-      delete<Row extends Object, RS extends GeneratedTable<Row, RS>>(
-          GeneratedTable<Row, RS> table) {
+  DeleteStatement<Row, RS> delete<
+    Row extends Object,
+    RS extends GeneratedTable<Row, RS>
+  >(GeneratedTable<Row, RS> table) {
     return DeleteStatement<Row, RS>(this, table);
   }
 
@@ -517,6 +520,8 @@ abstract base class DatabaseConnectionUser {
     );
   }
 
+  /// A variant of [customSelect] that uses [createMapper] to obtain a select
+  /// statement for which rows can be mapped to a custom Dart type.
   Selectable<T> customSelectMapped<T>({
     required String query,
     required T Function(DriftRow) Function(DriftResultSet) createMapper,

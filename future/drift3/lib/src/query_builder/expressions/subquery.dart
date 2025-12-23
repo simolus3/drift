@@ -12,9 +12,13 @@ Expression<R> subqueryExpression<R extends Object>(
   return SubqueryExpression<R>(statement);
 }
 
+/// An expression evaluating to the single row and single column of an inner
+/// select [statement].
 final class SubqueryExpression<R extends Object> extends Expression<R> {
+  /// The inner select statement to evaluate.
   final BaseSelectStatement statement;
 
+  /// @nodoc
   SubqueryExpression(this.statement);
 
   @override
