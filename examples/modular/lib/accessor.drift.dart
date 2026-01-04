@@ -28,4 +28,14 @@ mixin $MyAccessorMixin on i0.DatabaseAccessor<i1.Database> {
   i4.UserQueriesDrift get userQueriesDrift =>
       i3.ReadDatabaseContainer(attachedDatabase)
           .accessor<i4.UserQueriesDrift>(i4.UserQueriesDrift.new);
+  MyAccessorManager get managers => MyAccessorManager(this);
+}
+
+class MyAccessorManager {
+  final $MyAccessorMixin _db;
+  MyAccessorManager(this._db);
+  i2.$UsersTableManager get users =>
+      i2.$UsersTableManager(_db.attachedDatabase, _db.users);
+  i2.$FollowsTableManager get follows =>
+      i2.$FollowsTableManager(_db.attachedDatabase, _db.follows);
 }

@@ -1,5 +1,6 @@
 import '../analysis/results/results.dart';
 import 'database_writer.dart';
+import 'manager/database_manager_writer.dart';
 import 'modules.dart';
 import 'queries/query_writer.dart';
 import 'writer.dart';
@@ -13,12 +14,14 @@ class AccessorWriter {
   void write() {
     final classScope = scope.child();
     final isModular = scope.generationOptions.isModular;
+    final elements = input.resolvedAccessor.availableElements;
 
     final daoName = input.accessor.declaration.name!;
 
     final prefix = isModular ? '' : r'_';
+    final mixinName = '$prefix\$${daoName}Mixin';
     classScope.leaf()
-      ..write('mixin $prefix\$${daoName}Mixin on ')
+      ..write('mixin $mixinName on ')
       ..writeDriftRef('DatabaseAccessor<')
       ..writeDart(input.accessor.databaseClass)
       ..writeln('> {');
@@ -50,6 +53,17 @@ class AccessorWriter {
         classScope.writeGetterForIncludedDriftFile(import, input.driver!,
             isAccessor: true);
       }
+    }
+
+    if (scope.options.generateManager) {
+      final managerWriter = DatabaseManagerWriter(scope.child(), daoName,
+          accessorMixin: mixinName);
+      for (var table in elements.whereType<DriftTable>()) {
+        managerWriter.addTable(table);
+      }
+
+      managerWriter.writeDatabaseManager();
+      classScope.leaf().writeln(managerWriter.databaseManagerGetter);
     }
 
     classScope.leaf().write('}');

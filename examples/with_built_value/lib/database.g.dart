@@ -11,19 +11,15 @@ class _$Foo extends Foo {
   final User driftGeneratedField;
 
   factory _$Foo([void Function(FooBuilder)? updates]) =>
-      (new FooBuilder()..update(updates))._build();
+      (FooBuilder()..update(updates))._build();
 
-  _$Foo._({required this.driftGeneratedField}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(
-        driftGeneratedField, r'Foo', 'driftGeneratedField');
-  }
-
+  _$Foo._({required this.driftGeneratedField}) : super._();
   @override
   Foo rebuild(void Function(FooBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  FooBuilder toBuilder() => new FooBuilder()..replace(this);
+  FooBuilder toBuilder() => FooBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
@@ -68,7 +64,6 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
 
   @override
   void replace(Foo other) {
-    ArgumentError.checkNotNull(other, 'other');
     _$v = other as _$Foo;
   }
 
@@ -82,7 +77,7 @@ class FooBuilder implements Builder<Foo, FooBuilder> {
 
   _$Foo _build() {
     final _$result = _$v ??
-        new _$Foo._(
+        _$Foo._(
           driftGeneratedField: BuiltValueNullFieldError.checkNotNull(
               driftGeneratedField, r'Foo', 'driftGeneratedField'),
         );

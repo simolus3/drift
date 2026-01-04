@@ -6019,4 +6019,19 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
           users,
         }).asyncMap(todosTable.mapFromRow);
   }
+
+  SomeDaoManager get managers => SomeDaoManager(this);
+}
+
+class SomeDaoManager {
+  final _$SomeDaoMixin _db;
+  SomeDaoManager(this._db);
+  $$UsersTableTableManager get users =>
+      $$UsersTableTableManager(_db.attachedDatabase, _db.users);
+  $$CategoriesTableTableManager get categories =>
+      $$CategoriesTableTableManager(_db.attachedDatabase, _db.categories);
+  $$TodosTableTableTableManager get todosTable =>
+      $$TodosTableTableTableManager(_db.attachedDatabase, _db.todosTable);
+  $$SharedTodosTableTableManager get sharedTodos =>
+      $$SharedTodosTableTableManager(_db.attachedDatabase, _db.sharedTodos);
 }

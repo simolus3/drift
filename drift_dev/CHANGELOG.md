@@ -1,6 +1,7 @@
-## 2.30.1-dev
+## 2.31.0-dev
 
 - `make_migrations`: Don't generate schema test helpers when `--no-test` is set.
+- Generate managers entrypoint for `@DriftAccessor`s as well.
 
 ## 2.30.0
 

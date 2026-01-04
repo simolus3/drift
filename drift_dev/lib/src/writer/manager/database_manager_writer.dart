@@ -11,13 +11,14 @@ class DatabaseManagerWriter {
   final Scope _scope;
   final String _dbClassName;
   final List<DriftTable> _addedTables = [];
+  final String? accessorMixin;
 
   /// Tables which may be referenced in added tables, but for which no code
   /// should be generated.
   final List<DriftTable> _additionalTables = [];
 
   /// Class used to write a manager for a database
-  DatabaseManagerWriter(this._scope, this._dbClassName);
+  DatabaseManagerWriter(this._scope, this._dbClassName, {this.accessorMixin});
 
   _ManagerCodeTemplates get _templates => _ManagerCodeTemplates(_scope);
 
@@ -54,21 +55,27 @@ class DatabaseManagerWriter {
     }
   }
 
+  String get _databaseManagerName =>
+      _templates.databaseManagerName(_dbClassName);
+
   /// The code for the database manager getter which will be added to the main database class
   ///
   /// E.g. `AppDatabase get managers => AppDatabaseManager(this);`
-  String get databaseManagerGetter =>
-      '${_templates.databaseManagerName(_dbClassName)} get managers => ${_templates.databaseManagerName(_dbClassName)}(this);';
+  String get databaseManagerGetter {
+    final managerName = _databaseManagerName;
+    return '$managerName get managers => $managerName(this);';
+  }
 
   /// Write the database manager class
   void writeDatabaseManager() {
     final leaf = _scope.leaf();
+    final managerName = _databaseManagerName;
 
     // Write the database manager class with the required getters
     leaf
-      ..writeln('class ${_templates.databaseManagerName(_dbClassName)} {')
-      ..writeln('final $_dbClassName _db;')
-      ..writeln('${_templates.databaseManagerName(_dbClassName)}(this._db);');
+      ..writeln('class $managerName {')
+      ..writeln('final ${accessorMixin ?? _dbClassName} _db;')
+      ..writeln('$managerName(this._db);');
 
     for (final table in _addedTables) {
       // Get the name of the table manager class
@@ -76,8 +83,10 @@ class DatabaseManagerWriter {
           _templates.rootTableManagerWithPrefix(table, leaf);
 
       /// Write the getter for the table manager
+      final databaseInstance =
+          accessorMixin != null ? '_db.attachedDatabase' : '_db';
       leaf.writeln(
-          '$rootTableManagerClass get ${table.dbGetterName} => $rootTableManagerClass(_db, _db.${table.dbGetterName});');
+          '$rootTableManagerClass get ${table.dbGetterName} => $rootTableManagerClass($databaseInstance, _db.${table.dbGetterName});');
     }
     leaf.writeln('}');
   }
