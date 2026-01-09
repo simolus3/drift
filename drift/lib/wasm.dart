@@ -180,7 +180,8 @@ class WasmDatabase extends DelegatedDatabase {
     if (currentDb != null && currentDb != selectedImplementation.storageApi) {
       // ... except if we want to move from IndexedDB to OPFS
       var didMove = false;
-      if (currentDb == WebStorageApi.indexedDb &&
+      if (moveExistingIndexedDbToOpfs &&
+          currentDb == WebStorageApi.indexedDb &&
           selectedImplementation.storageApi == WebStorageApi.opfs) {
         try {
           await probed.moveFromIndexedDBToOpfs(databaseName);
