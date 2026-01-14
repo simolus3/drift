@@ -106,10 +106,10 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   static const SqliteVersion current = v3_51;
 
   /// Version `3.51.0` added the `jsonb_each` and `jsonb_tree` functions.
-  static const SqliteVersion v3_51 = SqliteVersion.v3(48);
+  static const SqliteVersion v3_51 = SqliteVersion.v3(51);
 
   /// Version `3.50.0` added the `unistr` and `unistr_quote` functions.
-  static const SqliteVersion v3_50 = SqliteVersion.v3(48);
+  static const SqliteVersion v3_50 = SqliteVersion.v3(50);
 
   /// Version `3.48.0` added `if` as an alternative spelling for `iif` and
   /// introduces a two-argument version of `iif`.
