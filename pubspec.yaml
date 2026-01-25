@@ -44,7 +44,7 @@ dev_dependencies:
   melos: ^7.0.0
 
 dependency_overrides:
-  #test_api: ^0.7.9 # To test analyzer 10
+  test_api: ^0.7.9 # To test analyzer 10
 
 melos:
   name: drift

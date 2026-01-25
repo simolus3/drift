@@ -481,12 +481,10 @@ class _GeneratesConstDataClasses extends Matcher {
 
     final definedClasses = parsed.declarations.whereType<ClassDeclaration>();
     for (final definedClass in definedClasses) {
-      // On analyzer 10: definedClass.namePart.typeName.lexeme
-      final definedClassName = definedClass.name.lexeme;
+      final definedClassName = definedClass.namePart.typeName.lexeme;
 
       if (expectedWithConstConstructor.contains(definedClassName)) {
-        // On analyzer 10: definedClass.body.childEntities
-        final constructor = definedClass.members
+        final constructor = definedClass.body.childEntities
             .whereType<ConstructorDeclaration>()
             .firstWhereOrNull((e) => e.name == null);
         if (constructor?.constKeyword == null) {

@@ -192,8 +192,7 @@ class DartAccessorResolver
     if (element == null) return null;
 
     try {
-      // On analyzer 10: element.isOriginGetterSetter
-      if (element.isSynthetic) {
+      if (element.isOriginGetterSetter) {
         // Getter, read from `=>` body if possible.
         final expr = returnExpressionOfMethod(await resolver.driver.backend
             .loadElementDeclaration(element.getter!) as MethodDeclaration);

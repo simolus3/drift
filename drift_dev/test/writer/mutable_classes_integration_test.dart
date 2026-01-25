@@ -67,10 +67,9 @@ class _WithoutFinalFields extends Matcher {
 
     final definedClasses = parsed.declarations.whereType<ClassDeclaration>();
     for (final definedClass in definedClasses) {
-      final definedClassName = definedClass.name.lexeme;
+      final definedClassName = definedClass.namePart.typeName.lexeme;
       if (expectedWithoutFinals.contains(definedClassName)) {
-        // On analyzer 10: definedClass.body.childEntities
-        for (final member in definedClass.members) {
+        for (final member in definedClass.body.childEntities) {
           if (member is FieldDeclaration) {
             if (member.fields.isFinal) {
               matchState['desc'] =
