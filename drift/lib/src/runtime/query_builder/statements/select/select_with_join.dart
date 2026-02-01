@@ -413,7 +413,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
   /// Builds a query which which will emit a new result whenever any of the
   /// tables this query depends on changes.
   /// You can pass additional tables to watch to this method.
-  Stream<List<TypedResult>> _watchWithAdditionalTables(
+  Stream<List<TypedResult>> watchWithAdditionalTables(
       [Iterable<ResultSetImplementation<dynamic, dynamic>> tables = const []]) {
     final ctx = constructQuery();
     final fetcher = QueryStreamFetcher(
@@ -430,7 +430,7 @@ class JoinedSelectStatement<FirstT extends HasResultSet, FirstD>
 
   @override
   Stream<List<TypedResult>> watch() {
-    return _watchWithAdditionalTables();
+    return watchWithAdditionalTables();
   }
 
   @override
@@ -563,14 +563,6 @@ class _ResultStructure {
   final List<ResultSetImplementation> queriedTables;
 
   _ResultStructure({required this.columnAliases, required this.queriedTables});
-}
-
-@internal
-extension JoinedSelectStatementAdditionalTables on JoinedSelectStatement {
-  Stream<List<TypedResult>> watchWithAdditionalTables(
-          [Iterable<ResultSetImplementation<dynamic, dynamic>> tables =
-              const []]) =>
-      _watchWithAdditionalTables(tables);
 }
 
 enum _CompoundOperator {
