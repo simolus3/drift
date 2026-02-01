@@ -19,7 +19,6 @@ export 'src/runtime/executor/executor.dart';
 export 'src/runtime/executor/interceptor.dart';
 export 'src/runtime/query_builder/query_builder.dart'
     hide
-        JoinedSelectStatementAdditionalTables,
         CaseWhenExpressionWithBase,
         BaseCaseWhenExpression,
         SelectWithoutTables,
