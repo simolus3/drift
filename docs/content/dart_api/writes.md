@@ -1,7 +1,7 @@
 ---
 
 title: Writes (update, insert, delete)
-description: Select rows or invidiual columns from tables in Dart
+description: Change the contents of your database
 
 ---
 
