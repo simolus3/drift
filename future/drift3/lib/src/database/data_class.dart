@@ -202,6 +202,7 @@ abstract class ValueSerializer {
   /// ([DateTime.toIso8601String]).
   /// In either case, date time values can be _deserialized_ from both formats.
   const factory ValueSerializer.defaults({
+    bool serializeDateTimeAsUtc,
     bool serializeDateTimeValuesAsString,
   }) = _DefaultValueSerializer;
 
@@ -215,9 +216,13 @@ abstract class ValueSerializer {
 }
 
 class _DefaultValueSerializer extends ValueSerializer {
+  final bool serializeDateTimeAsUtc;
   final bool serializeDateTimeValuesAsString;
 
-  const _DefaultValueSerializer({this.serializeDateTimeValuesAsString = false});
+  const _DefaultValueSerializer({
+    this.serializeDateTimeAsUtc = false,
+    this.serializeDateTimeValuesAsString = false,
+  });
 
   @override
   T fromJson<T>(dynamic json) {
@@ -229,7 +234,11 @@ class _DefaultValueSerializer extends ValueSerializer {
 
     if (typeList is List<DateTime?>) {
       if (json is int) {
-        return DateTime.fromMillisecondsSinceEpoch(json) as T;
+        return DateTime.fromMillisecondsSinceEpoch(
+              json,
+              isUtc: serializeDateTimeAsUtc,
+            )
+            as T;
       } else {
         return DateTime.parse(json.toString()) as T;
       }
@@ -252,9 +261,10 @@ class _DefaultValueSerializer extends ValueSerializer {
   @override
   dynamic toJson<T>(T value) {
     if (value is DateTime) {
+      final dateTime = (serializeDateTimeAsUtc ? value.toUtc() : value);
       return serializeDateTimeValuesAsString
-          ? value.toIso8601String()
-          : value.millisecondsSinceEpoch;
+          ? dateTime.toIso8601String()
+          : dateTime.millisecondsSinceEpoch;
     }
 
     return value;
