@@ -300,6 +300,29 @@ SELECT * FROM todos WHERE $predicate;
       ]);
     });
 
+    test('colon in comment does not break parsing', () {
+      // Regression test for https://github.com/simolus3/drift/issues/3763
+      final driftFile = _engine.parse(ParserEntrypoint.driftFile, r'''
+-- import 'status.dart';
+
+-- VIEW : For Definitions (handles the JSON ordering)
+CREATE VIEW definitions_json_view AS
+  SELECT 1;
+
+-- deleteById:
+DELETE FROM todos WHERE id = :id;
+''').rootNode;
+
+      final stmts = driftFile.statements;
+      expect(stmts, [
+        isA<ImportStatement>(),
+        isA<CreateViewStatement>()
+            .having((e) => e.viewName, 'viewName', 'definitions_json_view'),
+        isA<DeclaredStatement>()
+            .having((e) => e.identifier.name, 'identifier.name', 'deleteById'),
+      ]);
+    });
+
     test('keeps comments in definitions', () {
       final driftFile = _engine.parse(ParserEntrypoint.driftFile, r'''
 -- import 'status.dart';

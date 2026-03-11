@@ -536,6 +536,8 @@ class Scanner {
 
   static final _importComment = RegExp(r'^\s*import.*;', caseSensitive: false);
   // match `foo:` or `myQuery (:variable AS TEXT):`
+  // The colon must be at the end of the line to avoid matching regular
+  // comments that happen to contain colons (e.g. `-- VIEW : description`).
   static final _statementMeta =
-      RegExp(r'^\s*\w+\s*(?:\(.*\)\s*)?:', caseSensitive: false);
+      RegExp(r'^\s*\w+\s*(?:\(.*\)\s*)?:\s*$', caseSensitive: false);
 }
