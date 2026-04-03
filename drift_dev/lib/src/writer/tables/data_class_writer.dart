@@ -193,10 +193,11 @@ class DataClassWriter {
 
     if (scope.writer.options.generateFromJsonStringConstructor) {
       // also generate a constructor that only takes a json string
+      final dataClassType = _emitter.drift('DataClass');
       _buffer.write('factory $dataClassName.fromJsonString(String encodedJson, '
           '{$serializerType serializer}) => '
           '$dataClassName.fromJson('
-          'DataClass.parseJson(encodedJson) as Map<String, dynamic>, '
+          '$dataClassType.parseJson(encodedJson) as Map<String, dynamic>, '
           'serializer: serializer);');
     }
   }
