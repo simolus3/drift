@@ -363,8 +363,17 @@ class QueryStream<Rows extends Object> {
   Future<void> close() async {
     _isClosed = true;
 
-    final listenersDone = Future.wait(
-        [for (final listener in _listeners) listener.controller.close()]);
+    // Emit an error before closing so callers can distinguish a database
+    // shutdown from a normal stream completion and re-subscribe if needed.
+    // See https://github.com/simolus3/drift/issues/3782
+    const disconnected = DatabaseDisconnectedException();
+    final listenersDone = Future.wait([
+      for (final listener in _listeners)
+        Future.sync(() {
+          listener.controller.addError(disconnected);
+          return listener.controller.close();
+        }),
+    ]);
     _listeners.clear();
     await listenersDone;
   }

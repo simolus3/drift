@@ -44,6 +44,24 @@ class DriftWrappedException implements Exception {
   }
 }
 
+/// Exception thrown on active [watch()] streams when the database is closed.
+///
+/// When a database is closed while a [watch()] stream has active listeners,
+/// drift emits this exception before sending the done event. This lets callers
+/// distinguish a database shutdown from a normal stream completion and
+/// re-subscribe after the database is reopened.
+///
+/// In Flutter, check for this in [StreamBuilder] via
+/// `snapshot.hasError && snapshot.error is DatabaseDisconnectedException`.
+class DatabaseDisconnectedException implements Exception {
+  /// Constant constructor.
+  const DatabaseDisconnectedException();
+
+  @override
+  String toString() => 'DatabaseDisconnectedException: '
+      'The database was closed while this stream was still active.';
+}
+
 /// Exception thrown by drift when rolling back a transaction fails.
 ///
 /// When using a `transaction` block, transactions are automatically rolled back
