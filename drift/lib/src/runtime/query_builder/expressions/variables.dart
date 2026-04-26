@@ -84,17 +84,15 @@ final class Variable<T extends Object> extends Expression<T> {
     var explicitStart = context.explicitVariableIndex;
 
     var mark = '?';
-    var suffix = '';
     if (context.dialect == SqlDialect.postgres) {
       explicitStart = 1;
       mark = r'$';
     }
 
-    if (explicitStart != null) {
+    if (explicitStart != null && context.dialect.supportsIndexedParameters) {
       context.buffer
         ..write(mark)
-        ..write(explicitStart + context.amountOfVariables)
-        ..write(suffix);
+        ..write(explicitStart + context.amountOfVariables);
       context.introduceVariable(this, mapToSimpleValue(context));
     } else {
       context.buffer.write(mark);

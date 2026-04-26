@@ -309,6 +309,7 @@ const _$SqlDialectEnumMap = {
   SqlDialect.sqlite: 'sqlite',
   SqlDialect.mysql: 'mysql',
   SqlDialect.postgres: 'postgres',
+  SqlDialect.duckdb: 'duckdb',
   SqlDialect.mariadb: 'mariadb',
 };
 

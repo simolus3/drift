@@ -129,6 +129,16 @@ enum SqlDialect {
     realType: 'float8',
   ),
 
+  /// DuckDB (currently supported in an experimental state)
+  duckdb(
+    booleanType: 'BOOLEAN',
+    textType: 'TEXT',
+    integerType: 'BIGINT',
+    blobType: 'BLOB',
+    realType: 'DOUBLE',
+    supportsIndexedParameters: false,
+  ),
+
   /// MariaDB (currently supported in an experimental state)
   mariadb(
     booleanType: 'BOOLEAN',

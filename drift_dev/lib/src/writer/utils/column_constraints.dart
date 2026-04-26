@@ -24,6 +24,8 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
               dialectSpecificConstraints[dialect]!.add(
                 'PRIMARY KEY AUTO_INCREMENT',
               );
+            } else if (dialect == SqlDialect.duckdb) {
+              dialectSpecificConstraints[dialect]!.add('PRIMARY KEY');
             } else {
               dialectSpecificConstraints[dialect]!.add(
                 'PRIMARY KEY AUTOINCREMENT',
