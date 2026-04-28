@@ -519,11 +519,12 @@ enum InsertMode implements Component {
       throw ArgumentError('$this not supported on duckdb');
     }
 
-    final effectiveMode = ctx.dialect == SqlDialect.postgres
-        ? InsertMode.insert
-        : ctx.dialect == SqlDialect.duckdb && this == InsertMode.replace
-        ? InsertMode.insertOrReplace
-        : this;
+    final effectiveMode = switch (ctx.dialect) {
+      SqlDialect.postgres => InsertMode.insert,
+      SqlDialect.duckdb when this == InsertMode.replace =>
+        InsertMode.insertOrReplace,
+      _ => this,
+    };
 
     ctx.buffer.write(_insertKeywords[effectiveMode]);
   }
