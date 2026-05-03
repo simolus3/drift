@@ -68,14 +68,12 @@ host your database in a background thread, improving performance of your website
 the worker is also responsible for sharing your database between different tabs in real-time.
 Again, you can [compile this worker yourself](#compilation) or [grab one from drift releases](https://github.com/simolus3/drift/releases).
 
-!!! danger "Download the correct version"
+!!! danger "Download the correct versions"
 
-    You should download the `sqlite3.wasm` and `drift_worker.dart.js` files from the `sqlite3` and `drift`
-    releases that are used in your app (in doubt, check `pubspec.lock` to learn exact versions).
+    You should download the version of `sqlite3.wasm` that matches with the version of `sqlite3` you have installed
+    and download the version of `drift_worker.dart.js` that matches with the version of `drift` you have installed.
 
-    The files are usually forwards-compatible with newer versions of the packages. But note that drift currently
-    depends on version 2.x of the `sqlite3` package, and `sqlite3.wasm` files from the 3.x releases are
-    incompatible!
+    To find out which versions of `sqlite3` and `drift` you're currently using, check your `pubspec.lock` file!
 
 In the end, your `web/` directory may look like this:
 
