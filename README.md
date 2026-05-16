@@ -9,7 +9,7 @@
 
 Drift is a reactive persistence library for Flutter and Dart, built on top of
 SQLite.
-Drift is
+Drift is:
 
 - __Flexible__: Drift lets you write queries in both SQL and Dart,
 providing fluent apis for both languages. You can filter and order results
@@ -23,7 +23,7 @@ even have a builtin IDE for SQL!
 provide helpful and descriptive lints.
 - __⚡ Fast__: Even though drift lets you write powerful queries, it can keep
 up with the performance of key-value stores like shared preferences and Hive. Drift is the only major persistence library with builtin threading support, allowing you to run database code across isolates with zero additional effort.
-- __Reactive__: Turn any SQL query into an auto-updating stream! This includes complex queries across many tables
+- __Reactive__: Turn any SQL query into an auto-updating stream! This includes complex queries across many tables.
 - __⚙️ Cross-Platform support__: Drift works on Android, iOS, macOS, Windows, Linux and the web. [This template](https://github.com/simolus3/drift/tree/develop/examples/app) is a Flutter todo app that works on all platforms.
 - __🗡️ Battle tested and production ready__: Drift is stable and well tested with a wide range of unit and integration tests. It powers production Flutter apps.
 
@@ -61,7 +61,7 @@ notably:
    also contains a fully-featured SQL IDE for the Dart analyzer.
 - `sqlparser`: A SQL parser and static analyzer, written in pure Dart. This package can be used without drift to perform analysis on SQL statements.
 It's on pub at
-[![sqlparser](https://img.shields.io/pub/v/sqlparser.svg)](https://pub.dev/packages/sqlparser)
+[![sqlparser](https://img.shields.io/pub/v/sqlparser.svg)](https://pub.dev/packages/sqlparser).
 
 We use [melos](https://melos.invertase.dev/) to manage the different packages
 in this repository.
