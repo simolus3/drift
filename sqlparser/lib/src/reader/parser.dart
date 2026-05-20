@@ -2381,14 +2381,30 @@ extension Parser on ParserState {
 
     if (_matchOne(TokenType.add)) {
       final first = _previous;
+
+      final constraint = tableConstraintOrNull(parseOnlyCheckConstraints: true);
+      if (constraint != null) {
+        return AddConstraint(checkTable: constraint as CheckTable)
+          ..setSpan(first, _previous);
+      }
+
       _matchOne(TokenType.column);
       return AddColumn(_columnDefinition())..setSpan(first, _previous);
     }
 
     if (_matchOne(TokenType.drop)) {
       final first = _previous;
+
+      final constraintName = _constraintNameOrNull();
+      if (constraintName != null) {
+        return DropConstraint(name: constraintName.identifier)
+          ..setSpan(first, _previous);
+      }
+
       _matchOne(TokenType.column);
-      final name = _consumeIdentifier('Expected column to drop');
+      final name = _consumeIdentifier(
+        'Expected column to drop or CONSTRAINT keyword',
+      );
       return DropColumn(Reference.fromTokens(columnName: name))
         ..setSpan(first, _previous);
     }
@@ -2630,13 +2646,21 @@ extension Parser on ParserState {
     _error('Expected a constraint (primary key, nullability, etc.)');
   }
 
-  TableConstraint? tableConstraintOrNull({bool requireConstraint = false}) {
+  TableConstraint? tableConstraintOrNull({
+    bool requireConstraint = false,
+    bool parseOnlyCheckConstraints = false,
+  }) {
     final first = _peek;
     final nameToken = _constraintNameOrNull();
     final name = nameToken?.identifier;
 
     TableConstraint? result;
-    if (_match([TokenType.unique, TokenType.primary])) {
+    if (_matchOne(TokenType.check)) {
+      final expr = _expressionInParentheses();
+      result = CheckTable(name, expr);
+    } else if (parseOnlyCheckConstraints) {
+      return null;
+    } else if (_match([TokenType.unique, TokenType.primary])) {
       final isPrimaryKey = _previous.type == TokenType.primary;
 
       if (isPrimaryKey) {
@@ -2660,9 +2684,6 @@ extension Parser on ParserState {
         columns: columns,
         onConflict: conflictClause,
       );
-    } else if (_matchOne(TokenType.check)) {
-      final expr = _expressionInParentheses();
-      result = CheckTable(name, expr);
     } else if (_matchOne(TokenType.foreign)) {
       _consume(TokenType.key, 'Expected KEY to start FOREIGN KEY clause');
       final columns = _listColumnsInParentheses(allowEmpty: false);

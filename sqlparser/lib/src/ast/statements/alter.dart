@@ -126,6 +126,44 @@ final class AlterColumn extends AlterTableInstruction {
   }
 }
 
+/// An `ALTER TABLE ADD CONSTRAINT` statement added in SQLite version 3.53.0.
+final class AddConstraint extends AlterTableInstruction {
+  CheckTable checkTable;
+
+  AddConstraint({required this.checkTable});
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitAddConstraint(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => [checkTable];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {
+    checkTable = transformer.transformChild(checkTable, this, arg);
+  }
+}
+
+/// An `ALTER TABLE Drop CONSTRAINT` statement added in SQLite version 3.53.0.
+final class DropConstraint extends AlterTableInstruction {
+  final String name;
+
+  DropConstraint({required this.name});
+
+  @override
+  R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
+    return visitor.visitDropConstraint(this, arg);
+  }
+
+  @override
+  Iterable<AstNode> get childNodes => const [];
+
+  @override
+  void transformChildren<A>(Transformer<A> transformer, A arg) {}
+}
+
 /// An instruction that appears in an [AlterColumn] instruction.
 sealed class AlterColumnInstruction extends AstNode {}
 

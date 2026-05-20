@@ -226,5 +226,179 @@ CREATE TABLE tbl (
         ),
       ]);
     });
+
+    group('add constraint', () {
+      test('no existing constraint', () {
+        process('CREATE TABLE original (a INTEGER);');
+        process('ALTER TABLE original ADD CHECK (a >= 0);');
+
+        expect(buffer.definitions, {
+          'original': 'CREATE TABLE original (a INTEGER, CHECK (a >= 0));',
+        });
+      });
+
+      test('existing table constraint', () {
+        process(
+          'CREATE TABLE original (a INTEGER, CONSTRAINT smaller_zero CHECK (a < 0));',
+        );
+        process(
+          'ALTER TABLE original ADD CONSTRAINT check_constraint CHECK (a >= 0);',
+        );
+
+        expect(buffer.definitions, {
+          'original':
+              'CREATE TABLE original (a INTEGER, CONSTRAINT smaller_zero CHECK (a < 0), CONSTRAINT check_constraint CHECK (a >= 0));',
+        });
+      });
+
+      test('existing column constraint', () {
+        process(
+          'CREATE TABLE original (a INTEGER CONSTRAINT smaller_zero CHECK (a < 0));',
+        );
+        process('ALTER TABLE original ADD CHECK (a >= 0);');
+
+        expect(buffer.definitions, {
+          'original':
+              'CREATE TABLE original (a INTEGER CONSTRAINT smaller_zero CHECK (a < 0), CHECK (a >= 0));',
+        });
+      });
+
+      group('constraint name already exists', () {
+        test('in column', () {
+          process(
+            'CREATE TABLE original (a INTEGER CONSTRAINT check_constraint CHECK (id > 0));',
+          );
+
+          expect(
+            processWithErrors(
+              'ALTER TABLE original ADD CONSTRAINT check_constraint CHECK (a >= 0);',
+            ),
+            [
+              analysisErrorWith(
+                type: AnalysisErrorType.other,
+                lexeme: 'ADD CONSTRAINT check_constraint CHECK (a >= 0)',
+                message: 'constraint check_constraint already exists',
+              ),
+            ],
+          );
+        });
+
+        test('in table', () {
+          process(
+            'CREATE TABLE original (a INTEGER, CONSTRAINT check_constraint CHECK (a >=0));',
+          );
+          expect(
+            processWithErrors(
+              'ALTER TABLE original ADD CONSTRAINT check_constraint CHECK (a >= 0);',
+            ),
+            [
+              analysisErrorWith(
+                type: AnalysisErrorType.other,
+                lexeme: 'ADD CONSTRAINT check_constraint CHECK (a >= 0)',
+                message: 'constraint check_constraint already exists',
+              ),
+            ],
+          );
+        });
+      });
+    });
+
+    group("drop constraint", () {
+      test("table constraint", () {
+        process(
+          'CREATE TABLE original (a INTEGER, CONSTRAINT check_constraint CHECK (a > 0));',
+        );
+        process('ALTER TABLE original DROP CONSTRAINT check_constraint;');
+
+        expect(buffer.definitions, {
+          'original': 'CREATE TABLE original (a INTEGER);',
+        });
+      });
+
+      test("check", () {
+        process(
+          'CREATE TABLE original (a INTEGER CONSTRAINT check_constraint CHECK (a > 0));',
+        );
+        process('ALTER TABLE original DROP CONSTRAINT check_constraint;');
+
+        expect(buffer.definitions, {
+          'original': 'CREATE TABLE original (a INTEGER );',
+        });
+      });
+
+      test("not null", () {
+        process(
+          'CREATE TABLE original (a INTEGER CONSTRAINT not_null NOT NULL);',
+        );
+        process('ALTER TABLE original DROP CONSTRAINT not_null;');
+
+        expect(buffer.definitions, {
+          'original': 'CREATE TABLE original (a INTEGER );',
+        });
+      });
+
+      test("multiple", () {
+        process(
+          'CREATE TABLE original (a INTEGER, CONSTRAINT check_constraint CHECK (a > 0), CHECK (a != 5));',
+        );
+        process('ALTER TABLE original DROP CONSTRAINT check_constraint;');
+
+        expect(buffer.definitions, {
+          'original': 'CREATE TABLE original (a INTEGER, CHECK (a != 5));',
+        });
+      });
+
+      test("name doesn't exists", () {
+        process(
+          'CREATE TABLE original (a INTEGER CONSTRAINT not_null NOT NULL, CHECK (a >=0));',
+        );
+        expect(
+          processWithErrors(
+            'ALTER TABLE original DROP CONSTRAINT check_constraint;',
+          ),
+          [
+            analysisErrorWith(
+              type: AnalysisErrorType.other,
+              lexeme: 'DROP CONSTRAINT check_constraint',
+              message: 'no such constraint: check_constraint',
+            ),
+          ],
+        );
+      });
+
+      test("may not be dropped", () {
+        process(
+          'CREATE TABLE original (a INTEGER CONSTRAINT unique_constraint UNIQUE, CONSTRAINT primary_constraint PRIMARY KEY (a));',
+        );
+
+        // check column constraint
+        expect(
+          processWithErrors(
+            'ALTER TABLE original DROP CONSTRAINT unique_constraint;',
+          ),
+          [
+            analysisErrorWith(
+              type: AnalysisErrorType.other,
+              lexeme: 'CONSTRAINT unique_constraint UNIQUE',
+              message: 'constraint may not be dropped: unique_constraint',
+            ),
+          ],
+        );
+
+        // check table constraint
+        expect(
+          processWithErrors(
+            'ALTER TABLE original DROP CONSTRAINT primary_constraint;',
+          ),
+          [
+            analysisErrorWith(
+              type: AnalysisErrorType.other,
+              lexeme: 'CONSTRAINT primary_constraint PRIMARY KEY (a)',
+              message: 'constraint may not be dropped: primary_constraint',
+            ),
+          ],
+        );
+      });
+    });
   });
 }

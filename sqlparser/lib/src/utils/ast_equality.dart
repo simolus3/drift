@@ -927,6 +927,18 @@ class EqualityEnforcingVisitor implements AstVisitor<void, void> {
     _currentAs<AlterColumnDropNotNull>(e);
   }
 
+  @override
+  void visitAddConstraint(AddConstraint e, void arg) {
+    _currentAs<AddConstraint>(e);
+    _checkChildren(e);
+  }
+
+  @override
+  void visitDropConstraint(DropConstraint e, void arg) {
+    final current = _currentAs<DropConstraint>(e);
+    _assert(current.name == e.name, e);
+  }
+
   void _assert(bool contentEqual, AstNode context) {
     if (!contentEqual) _notEqual(context);
   }

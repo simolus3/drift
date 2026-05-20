@@ -286,6 +286,83 @@ final class SchemaBuffer {
             ),
           );
         }
+      case AddConstraint(checkTable: final checkTable):
+        if (checkTable.name != null) {
+          for (final tableConstraint in element._tableConstraints) {
+            if (checkTable.name == tableConstraint.constraint.name) {
+              errors.add(
+                AnalysisError(
+                  type: AnalysisErrorType.other,
+                  relevantNode: instruction,
+                  message: 'constraint ${checkTable.name} already exists',
+                ),
+              );
+              return;
+            }
+          }
+
+          for (final column in element._columns) {
+            for (final columnConstraint in column.constraints) {
+              if (checkTable.name == columnConstraint.constraint.name) {
+                errors.add(
+                  AnalysisError(
+                    type: AnalysisErrorType.other,
+                    relevantNode: instruction,
+                    message: 'constraint ${checkTable.name} already exists',
+                  ),
+                );
+                return;
+              }
+            }
+          }
+        }
+
+        element.addConstraint(statement, checkTable);
+      case DropConstraint(name: final name):
+        for (final tableConstraint in element._tableConstraints) {
+          if (name == tableConstraint.constraint.name) {
+            if (tableConstraint.constraint is! CheckTable) {
+              errors.add(
+                AnalysisError(
+                  type: AnalysisErrorType.other,
+                  relevantNode: tableConstraint.constraint,
+                  message: 'constraint may not be dropped: $name',
+                ),
+              );
+              return;
+            }
+            element.dropConstraint(tableConstraint);
+            return;
+          }
+        }
+
+        for (final column in element._columns) {
+          for (final columnConstraint in column.constraints) {
+            if (name == columnConstraint.constraint.name) {
+              if (columnConstraint.constraint is! CheckColumn &&
+                  columnConstraint.constraint is! NotNull) {
+                errors.add(
+                  AnalysisError(
+                    type: AnalysisErrorType.other,
+                    relevantNode: columnConstraint.constraint,
+                    message: 'constraint may not be dropped: $name',
+                  ),
+                );
+                return;
+              }
+              column.dropConstraint(columnConstraint);
+              return;
+            }
+          }
+        }
+
+        errors.add(
+          AnalysisError(
+            type: AnalysisErrorType.other,
+            relevantNode: instruction,
+            message: 'no such constraint: $name',
+          ),
+        );
     }
   }
 }
@@ -306,6 +383,7 @@ final class _TableSchemaElement extends _SchemaElement {
   String lowercaseName;
   late _SourceElement name;
   final List<_ColumnDefinition> _columns = [];
+  final List<_TableConstraint> _tableConstraints = [];
 
   _TableSchemaElement(this.originalStatement)
     : lowercaseName = originalStatement.createdName {
@@ -327,6 +405,13 @@ final class _TableSchemaElement extends _SchemaElement {
       );
 
       _columns.add(columnDef);
+    }
+
+    for (final constraint in originalStatement.tableConstraints) {
+      final before = fromText.elementUntil(constraint.firstPosition);
+      final constraintDef = fromText._readTableConstraint(before, constraint);
+
+      _tableConstraints.add(constraintDef);
     }
 
     // Add remaining text from the CREATE TABLE statement.
@@ -368,6 +453,38 @@ final class _TableSchemaElement extends _SchemaElement {
     }
 
     _columns.remove(definition);
+  }
+
+  void addConstraint(AstNode originalStatement, CheckTable checkTable) {
+    final _SourceElement precedingComma;
+
+    if (_tableConstraints.lastOrNull case final lastConstraint?) {
+      precedingComma =
+          lastConstraint.precedingComma?.clone() ?? _SourceElement(', ');
+
+      lastConstraint.source.insertAfter(precedingComma);
+    } else if (_columns.lastOrNull case final lastColumn?) {
+      precedingComma =
+          lastColumn.precedingComma?.clone() ?? _SourceElement(', ');
+
+      lastColumn.end.insertAfter(precedingComma);
+    } else {
+      throw UnsupportedError('TODO: Adding constraint to empty table');
+    }
+
+    final text = originalStatement.span!.text;
+    final startOffset = originalStatement.firstPosition;
+    final fromText = _SourceFromText(text, startOffset, precedingComma);
+    fromText.currentPosition = checkTable.firstPosition;
+    _tableConstraints.add(
+      fromText._readTableConstraint(precedingComma, checkTable),
+    );
+  }
+
+  void dropConstraint(_TableConstraint tableConstraint) {
+    _tableConstraints.remove(tableConstraint);
+    tableConstraint.precedingComma?.unlink();
+    tableConstraint.source.unlink();
   }
 
   @override
@@ -428,6 +545,19 @@ final class _ColumnDefinition {
       return false;
     });
   }
+
+  void dropConstraint(_ColumnConstraint columnConstraint) {
+    constraints.remove(columnConstraint);
+    columnConstraint.source.unlink();
+  }
+}
+
+final class _TableConstraint {
+  final TableConstraint constraint;
+  final _SourceElement source;
+  final _SourceElement? precedingComma;
+
+  _TableConstraint(this.precedingComma, this.constraint, this.source);
 }
 
 /// Any schema element that isn't a (non-virtual) table.
@@ -530,7 +660,18 @@ final class _SourceFromText {
       name,
       column.columnName.toLowerCase(),
       typeName,
-      [],
+      constraints,
+    );
+  }
+
+  _TableConstraint _readTableConstraint(
+    _SourceElement? precedingComma,
+    TableConstraint tableConstraint,
+  ) {
+    return _TableConstraint(
+      precedingComma,
+      tableConstraint,
+      elementUntil(tableConstraint.lastPosition)!,
     );
   }
 }

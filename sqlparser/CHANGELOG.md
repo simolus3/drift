@@ -1,3 +1,7 @@
+## 0.44.5 (unreleased)
+
+- Support `ALTER TABLE ADD/DROP CONSTRAINT` statements. 
+
 ## 0.44.4
 
 - Support `ALTER TABLE ALTER COLUMN` statements.

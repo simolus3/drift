@@ -266,6 +266,12 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
         'ALTER TABLE foo ALTER COLUMN bar SET NOT NULL ON CONFLICT FAIL',
       );
     });
+
+    test('alter constraint', () {
+      testFormat('ALTER TABLE foo ADD CHECK (x != 1)');
+      testFormat('ALTER TABLE foo ADD CONSTRAINT bar CHECK (x != 1)');
+      testFormat('ALTER TABLE foo DROP CONSTRAINT bar');
+    });
   });
 
   group('query statements', () {

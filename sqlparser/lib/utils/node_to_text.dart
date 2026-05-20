@@ -1523,6 +1523,19 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     keyword(TokenType.$null);
   }
 
+  @override
+  void visitAddConstraint(AddConstraint e, void arg) {
+    keyword(TokenType.add);
+    visitTableConstraint(e.checkTable, arg);
+  }
+
+  @override
+  void visitDropConstraint(DropConstraint e, void arg) {
+    keyword(TokenType.drop);
+    keyword(TokenType.constraint);
+    identifier(e.name);
+  }
+
   void _conflictClause(ConflictClause? clause) {
     if (clause != null) {
       keyword(TokenType.on);

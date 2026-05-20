@@ -117,6 +117,8 @@ abstract class AstVisitor<A, R> {
   R visitAlterColumn(AlterColumn e, A arg);
   R visitAlterColumnSetNotNull(AlterColumnSetNotNull e, A arg);
   R visitAlterColumnDropNotNull(AlterColumnDropNotNull e, A arg);
+  R visitAddConstraint(AddConstraint e, A arg);
+  R visitDropConstraint(DropConstraint e, A arg);
 
   R visitDriftSpecificNode(DriftSpecificNode e, A arg);
 }
@@ -664,27 +666,27 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
 
   @override
   R? visitRenameTo(RenameTo e, A arg) {
-    return defaultAlterTableInstructrion(e, arg);
+    return defaultAlterTableInstruction(e, arg);
   }
 
   @override
   R? visitRenameColumnTo(RenameColumnTo e, A arg) {
-    return defaultAlterTableInstructrion(e, arg);
+    return defaultAlterTableInstruction(e, arg);
   }
 
   @override
   R? visitAddColumn(AddColumn e, A arg) {
-    return defaultAlterTableInstructrion(e, arg);
+    return defaultAlterTableInstruction(e, arg);
   }
 
   @override
   R? visitDropColumn(DropColumn e, A arg) {
-    return defaultAlterTableInstructrion(e, arg);
+    return defaultAlterTableInstruction(e, arg);
   }
 
   @override
   R? visitAlterColumn(AlterColumn e, A arg) {
-    return defaultAlterTableInstructrion(e, arg);
+    return defaultAlterTableInstruction(e, arg);
   }
 
   @override
@@ -697,7 +699,17 @@ class RecursiveVisitor<A, R> implements AstVisitor<A, R?> {
     return defaultNode(e, arg);
   }
 
-  R? defaultAlterTableInstructrion(AlterTableInstruction e, A arg) {
+  @override
+  R? visitAddConstraint(AddConstraint e, A arg) {
+    return defaultNode(e, arg);
+  }
+
+  @override
+  R? visitDropConstraint(DropConstraint e, A arg) {
+    return defaultNode(e, arg);
+  }
+
+  R? defaultAlterTableInstruction(AlterTableInstruction e, A arg) {
     return defaultNode(e, arg);
   }
 

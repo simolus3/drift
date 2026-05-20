@@ -55,7 +55,7 @@ void main() {
     );
   });
 
-  test('add column', () {
+  test('drop column', () {
     testStatement(
       'ALTER TABLE foo DROP bar',
       AlterTableStatement(
@@ -88,6 +88,49 @@ void main() {
         TableReference('foo'),
         AlterColumn(columnName: 'bar', instruction: AlterColumnDropNotNull()),
       ),
+    );
+  });
+
+  test('add constraint', () {
+    testStatement(
+      'ALTER TABLE foo ADD CONSTRAINT bar CHECK (foo >= 18);',
+      AlterTableStatement(
+        TableReference('foo'),
+        AddConstraint(
+          checkTable: CheckTable(
+            "bar",
+            BinaryExpression(
+              Reference(columnName: 'foo'),
+              token(TokenType.moreEqual),
+              NumericLiteral(18),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    testStatement(
+      'ALTER TABLE foo ADD CHECK (foo != 18);',
+      AlterTableStatement(
+        TableReference('foo'),
+        AddConstraint(
+          checkTable: CheckTable(
+            null,
+            BinaryExpression(
+              Reference(columnName: 'foo'),
+              token(TokenType.exclamationEqual),
+              NumericLiteral(18),
+            ),
+          ),
+        ),
+      ),
+    );
+  });
+
+  test('DROP CONSTRAINT', () {
+    testStatement(
+      'ALTER TABLE foo DROP CONSTRAINT bar;',
+      AlterTableStatement(TableReference('foo'), DropConstraint(name: 'bar')),
     );
   });
 }
