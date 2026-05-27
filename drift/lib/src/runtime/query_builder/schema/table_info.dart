@@ -99,16 +99,16 @@ mixin TableInfo<TableDsl extends Table, D> on Table
 
   @override
   bool operator ==(Object other) {
-    // tables are singleton instances except for aliases
+    // Tables are singletons within the databases they're attached to (except for aliases).
     if (other is TableInfo) {
       return other.runtimeType == runtimeType &&
-          other.aliasedName == aliasedName;
+          other.aliasedName == aliasedName && other.attachedDatabase == attachedDatabase;
     }
     return false;
   }
 
   @override
-  int get hashCode => Object.hash(aliasedName, actualTableName);
+  int get hashCode => Object.hash(aliasedName, actualTableName, attachedDatabase);
 }
 
 /// Additional interface for tables in a drift file that have been created with
