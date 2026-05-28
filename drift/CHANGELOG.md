@@ -1,6 +1,7 @@
 ## 2.34.0 (unreleased)
 
 - Use `BEGIN IMMEDIATE` to start transactions.
+- Make `TableInfo`'s `==` and `hashCode` take into account the database its attached to.
 
 ## 2.33.0
 

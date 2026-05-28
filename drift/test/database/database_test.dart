@@ -111,6 +111,36 @@ void main() {
     verifyNever(ex2.runSelect(any, any));
   });
 
+  test('database tables can be equated', () {
+    final ex1 = MockExecutor();
+
+    final db1 = TodoDb(ex1);
+
+    addTearDown(db1.close);
+
+    final reference1 = db1.todosTable;
+    final reference2 = db1.todosTable;
+
+    expect(reference1, equals(reference1));
+    expect(reference1.hashCode, equals(reference2.hashCode));
+  });
+
+  test(
+    'database tables from different databases with same names are unequal',
+    () {
+      final ex1 = MockExecutor();
+      final ex2 = MockExecutor();
+
+      final db1 = TodoDb(ex1);
+      final db2 = TodoDb(ex2);
+
+      addTearDown(db1.close);
+      addTearDown(db2.close);
+
+      expect(db1.todosTable, isNot(equals(db2.todosTable)));
+    },
+  );
+
   test('disallows zero as a schema version', () async {
     var db = TodoDb(MockExecutor(OpeningDetails(null, 0)))..schemaVersion = 0;
     await expectLater(db.customSelect('SELECT 1').get(), throwsStateError);
