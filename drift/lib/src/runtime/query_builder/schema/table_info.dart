@@ -102,13 +102,15 @@ mixin TableInfo<TableDsl extends Table, D> on Table
     // Tables are singletons within the databases they're attached to (except for aliases).
     if (other is TableInfo) {
       return other.runtimeType == runtimeType &&
-          other.aliasedName == aliasedName && other.attachedDatabase == attachedDatabase;
+          other.aliasedName == aliasedName &&
+          other.attachedDatabase == attachedDatabase;
     }
     return false;
   }
 
   @override
-  int get hashCode => Object.hash(aliasedName, actualTableName, attachedDatabase);
+  int get hashCode =>
+      Object.hash(aliasedName, actualTableName, attachedDatabase);
 }
 
 /// Additional interface for tables in a drift file that have been created with
