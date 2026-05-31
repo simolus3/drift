@@ -1,9 +1,11 @@
+import '../expressions/expression.dart';
 import '../../connection/result_set.dart';
 import '../../connection/streams/update_rules.dart';
 import '../../database/connection_user.dart';
 import '../../database/data_class.dart';
 import '../clauses/returning.dart';
 import '../compiler.dart';
+import '../results.dart';
 import '../schema/table.dart';
 import 'query.dart';
 import 'statement.dart';
@@ -20,7 +22,7 @@ final class DeleteStatement<
   final GeneratedTable<Row, RS> resultSet;
 
   /// An optional `RETURNING` clause part of this statement.
-  ReturningClause<Row, RS>? returning;
+  ReturningClause? returning;
 
   final DatabaseConnectionUser _database;
 
@@ -38,8 +40,13 @@ final class DeleteStatement<
     whereSamePrimaryKey(entity);
   }
 
-  void _addReturning() {
-    returning = ReturningClause(resultSet);
+  void _addReturning({List<Expression>? expressions}) {
+    returning = ReturningClause();
+    if (expressions != null) {
+      returning!.structure.addColumns(expressions);
+    } else {
+      returning!.structure.addResultSet(resultSet);
+    }
   }
 
   @override
@@ -96,7 +103,14 @@ final class DeleteStatement<
 
   Future<List<Row>> _goReturning() async {
     final result = await _run();
-    return returning!.interpretResults(_database, result);
+    return returning!.interpretResults(_database, result, resultSet);
+  }
+
+  /// Like [go], but it also returns [expressions] of all rows affected by this delete operation.
+  Future<List<DriftRow>> goAndReturnOnly(List<Expression> expressions) async {
+    _addReturning(expressions: expressions);
+    final result = await _run();
+    return returning!.interpretExpressionResults(_database, result);
   }
 
   @override

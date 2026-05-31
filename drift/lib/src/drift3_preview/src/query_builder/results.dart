@@ -41,6 +41,11 @@ final class ResultSetStructure {
   }) : expressions = expressions ?? {},
        tables = tables ?? {};
 
+  ColumnPosition get _nextPosition {
+    final index = expressions.length;
+    return ColumnPosition(index);
+  }
+
   /// If an explicit name has been set for the given column position, returns
   /// it.
   ///
@@ -60,18 +65,50 @@ final class ResultSetStructure {
     );
   }
 
-  /// Adds all columns from the given [ResultSet] in order.
-  void addSelectStarFromSingleTable(ResultSet resultSet) {
-    assert(expressions.isEmpty);
+  /// Adds a column to this query.
+  ///
+  /// The column will be evaluated for each row of the expression. To read the
+  /// result of the expression in a row, use [DriftRow.read].
+  void addColumn(Expression expression) {
+    expressions[expression] ??= _nextPosition;
+  }
+
+  /// Adds multiple columns to this query.
+  ///
+  /// The column will be evaluated for each row of the expression. To read the
+  /// result of the expression in a row, use [DriftRow.read].
+  void addColumns(Iterable<Expression> columns) {
+    for (final column in columns) {
+      expressions[column] ??= _nextPosition;
+    }
+  }
+
+  /// Adds all columns from [ResultSet] to this [ResultSetStructure].
+  void addResultSet(ResultSet resultSet) {
+    if (tables.containsKey(resultSet)) {
+      throw StateError(
+        'Result set $resultSet has been added to select multiple times, please use an alias',
+      );
+    }
 
     final positions = <ColumnPosition>[];
-    for (final (i, column) in resultSet.columns.indexed) {
-      final position = ColumnPosition(i);
-      expressions[column] = position;
-      positions.add(position);
+    for (final column in resultSet.columns) {
+      final columnPosition = _nextPosition;
+      positions.add(columnPosition);
+      expressions[column] = columnPosition;
     }
 
     tables[resultSet] = positions;
+  }
+
+  /// Creates a function that, given a [RawRow], extracts the [DriftRow] for [expressions].
+  DriftRow Function(RawRow) createMapperToDriftRow(DriftDialect dialect) {
+    final fakeResultSet = DriftResultSet(
+      this,
+      RawResultSet.fromRows(columnNames: [], rows: []),
+      dialect,
+    );
+    return (row) => DriftRow(fakeResultSet, row);
   }
 
   /// Transforms this [ResultSetStructure] into a new one, mapping values in

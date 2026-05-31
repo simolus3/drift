@@ -35,7 +35,7 @@ final class InsertStatement<
   UpsertClause<Row, RS>? upsertClause;
 
   /// An optional `RETURNING` clause part of this statement.
-  ReturningClause<Row, RS>? returning;
+  ReturningClause? returning;
 
   /// Constructs an insert statement from the database and the table. Used
   /// internally by drift.
@@ -115,8 +115,13 @@ final class InsertStatement<
     return result;
   }
 
-  void _addReturning() {
-    returning = ReturningClause(table);
+  void _addReturning({List<Expression>? expressions}) {
+    returning = ReturningClause();
+    if (expressions != null) {
+      returning!.structure.addColumns(expressions);
+    } else {
+      returning!.structure.addResultSet(table);
+    }
   }
 
   /// Runs this insert statement with a `RETURNING` clause, returning inserted
@@ -130,7 +135,21 @@ final class InsertStatement<
     _addReturning();
 
     final result = await _run();
-    return returning!.interpretResults(_database, result);
+    return returning!.interpretResults(_database, result, table);
+  }
+
+  /// Runs this insert statement with a `RETURNING` clause, returning [expressions}
+  /// of inserted rows.
+  ///
+  /// This method requires that [source] (and optionally also an [upsertClause])
+  /// have already been set (e.g. through [values]).
+  /// For a method that does all of this, use [insertReturning] or
+  /// [insertReturningOrNull].
+  Future<List<DriftRow>> runReturningOnly(List<Expression> expressions) async {
+    _addReturning(expressions: expressions);
+
+    final result = await _run();
+    return returning!.interpretExpressionResults(_database, result);
   }
 
   /// Inserts a row constructed from the fields in [entity].

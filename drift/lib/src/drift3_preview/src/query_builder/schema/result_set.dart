@@ -73,7 +73,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
       );
     }
 
-    final structure = ResultSetStructure()..addSelectStarFromSingleTable(this);
+    final structure = ResultSetStructure()..addResultSet(this);
     final values = [
       for (final value in asColumnMap.values)
         (value as Variable).resolveValue(database.dialect).rawValue,

@@ -594,36 +594,70 @@ void main() {
     );
   });
 
-  test('generates RETURNING clauses', () async {
-    when(session.execute(any)).thenAnswer(
-      (_) => Future.value(
-        queryResult([
-          {
-            'id': 1,
-            'desc': 'description',
-            'priority': 1,
-            'description_in_upper_case': 'DESCRIPTION',
-          },
-        ]),
-      ),
-    );
+  group('generates RETURNING', () {
+    test('for one row', () async {
+      when(session.execute(any)).thenAnswer(
+        (_) => Future.value(
+          queryResult([
+            {
+              'id': 1,
+              'desc': 'description',
+              'priority': 1,
+              'description_in_upper_case': 'DESCRIPTION',
+            },
+          ]),
+        ),
+      );
 
-    await db
-        .into(db.categories)
-        .insertReturning(
-          CategoriesCompanion.insert(
-            description: 'description',
-            priority: const Value(CategoryPriority.medium),
-          ),
-        );
+      await db
+          .into(db.categories)
+          .insertReturning(
+            CategoriesCompanion.insert(
+              description: 'description',
+              priority: const Value(CategoryPriority.medium),
+            ),
+          );
 
-    verify(
-      session.executeSql(
-        'INSERT INTO "categories" ("desc","priority") VALUES (?1,?2) '
-        'RETURNING "id","desc","priority","description_in_upper_case"',
-        ['description', 1],
-      ),
-    );
+      verify(
+        session.executeSql(
+          'INSERT INTO "categories" ("desc","priority") VALUES (?1,?2) '
+          'RETURNING "id","desc","priority","description_in_upper_case"',
+          ['description', 1],
+        ),
+      );
+    });
+
+    test('only', () async {
+      when(session.execute(any)).thenAnswer(
+        (_) => Future.value(
+          queryResult(const [
+            {'desc': 'description'},
+          ]),
+        ),
+      );
+
+      final result = await db
+          .into(db.categories)
+          .values(
+            CategoriesCompanion.insert(
+              description: 'description',
+              priority: const Value(CategoryPriority.medium),
+            ),
+          )
+          .runReturningOnly([db.categories.description]);
+
+      expect(result.map((s) => s.raw), const [
+        ['description'],
+      ]);
+
+      verify(
+        session.executeSql(
+          'INSERT INTO "categories" ("desc","priority") VALUES (?1,?2) '
+          'RETURNING "desc"',
+          ['description', 1],
+        ),
+      );
+    });
   });
 
   group('insert from select', () {

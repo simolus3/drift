@@ -8,6 +8,7 @@ import '../../database/data_class.dart';
 import '../clauses/returning.dart';
 import '../compiler.dart';
 import '../expressions/expression.dart';
+import '../results.dart';
 import '../schema/column_constraints.dart';
 import '../schema/table.dart';
 import 'query.dart';
@@ -26,7 +27,7 @@ final class UpdateStatement<
   final DatabaseConnectionUser _database;
 
   /// An optional `RETURNING` clause part of this statement.
-  ReturningClause<Row, RS>? returning;
+  ReturningClause? returning;
 
   /// The columns set by this update statement.
   final Map<String, Expression> updatedColumns = {};
@@ -54,6 +55,15 @@ final class UpdateStatement<
     updatedColumns
       ..clear()
       ..addAll(entity.toColumns(nullToAbsent));
+  }
+
+  void _addReturning({List<Expression>? expressions}) {
+    returning = ReturningClause();
+    if (expressions != null) {
+      returning!.structure.addColumns(expressions);
+    } else {
+      returning!.structure.addResultSet(resultSet);
+    }
   }
 
   /// Sets the `SET` components used for this update statement to the columns
@@ -104,10 +114,30 @@ final class UpdateStatement<
       return const [];
     }
 
-    returning = ReturningClause(resultSet);
+    _addReturning();
 
     final result = await _run();
-    return returning!.interpretResults(_database, result);
+    return returning!.interpretResults(_database, result, resultSet);
+  }
+
+  /// Applies the updates from [entity] to all rows matching the applied `where`
+  /// clause and returns [expressions] of the affected rows _after the update_.
+  ///
+  /// For more details on writing entries, see [write].
+  /// Note that this requires sqlite 3.35 or later.
+  Future<List<DriftRow>> writeReturningOnly(
+    Insertable<Row> entity,
+    List<Expression> expressions,
+  ) async {
+    _applyColumns(entity, true);
+    if (updatedColumns.isEmpty) {
+      return const [];
+    }
+
+    _addReturning(expressions: expressions);
+
+    final result = await _run();
+    return returning!.interpretExpressionResults(_database, result);
   }
 
   /// Update this statement to generate the SQL for a [replace] call.

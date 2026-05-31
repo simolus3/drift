@@ -106,6 +106,33 @@ void main() {
         );
         expect(streamQueries.recordedUpdates, isEmpty);
       });
+
+      test('only', () async {
+        when(session.execute(any)).thenAnswer((_) {
+          return Future.value(
+            queryResult(const [
+              {'name': 'foo', 'id': 1},
+              {'name': 'bar', 'id': 2},
+            ], affectedRows: 2),
+          );
+        });
+
+        final rows = await db.delete(db.users).goAndReturnOnly([
+          db.users.name,
+          db.users.id,
+        ]);
+
+        expect(rows.map((s) => s.raw), const [
+          ["foo", 1],
+          ["bar", 2],
+        ]);
+        verify(
+          session.executeSql('DELETE FROM "users" RETURNING "name","id";', []),
+        );
+        expect(streamQueries.recordedUpdates, {
+          TableUpdate.onTable(db.users, kind: UpdateKind.delete),
+        });
+      });
     });
   });
 

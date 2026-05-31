@@ -63,18 +63,12 @@ sealed class BaseSelectStatement<
 
   BaseSelectStatement(this._database, {this.distinct = false});
 
-  ColumnPosition get _nextPosition {
-    final index = structure.expressions.length;
-    return ColumnPosition(index);
-  }
-
   /// Adds a column to this query.
   ///
   /// The column will be evaluated for each row of the expression. To read the
   /// result of the expression in a row, use [DriftRow.read].
   SelectStatement addColumn(Expression expression) {
-    return _asSelectStatement()
-      ..structure.expressions[expression] ??= _nextPosition;
+    return _asSelectStatement()..structure.addColumn(expression);
   }
 
   /// Adds multiple columns to this query.
@@ -82,30 +76,13 @@ sealed class BaseSelectStatement<
   /// The column will be evaluated for each row of the expression. To read the
   /// result of the expression in a row, use [DriftRow.read].
   SelectStatement addColumns(Iterable<Expression> expressions) {
-    final stmt = _asSelectStatement();
-    for (final expression in expressions) {
-      stmt.structure.expressions[expression] ??= _nextPosition;
-    }
-    return stmt;
+    return _asSelectStatement()..structure.addColumns(expressions);
   }
 
   /// Adds all columns from [ResultSet] to this query.
   @internal
   void addResultSet(ResultSet resultSet) {
-    if (structure.tables.containsKey(resultSet)) {
-      throw StateError(
-        'Result set $resultSet has been added to select multiple times, please use an alias',
-      );
-    }
-
-    final positions = <ColumnPosition>[];
-    for (final column in resultSet.columns) {
-      final columnPosition = _nextPosition;
-      positions.add(columnPosition);
-      structure.expressions[column] = columnPosition;
-    }
-
-    structure.tables[resultSet] = positions;
+    structure.addResultSet(resultSet);
   }
 
   /// Adds [table] to this query using an `INNER JOIN` operator.
@@ -463,12 +440,7 @@ final class SelectStatement
     DriftDialect dialect,
     ResultSetStructure structure,
   ) {
-    final fakeResultSet = DriftResultSet(
-      structure,
-      RawResultSet.fromRows(columnNames: [], rows: []),
-      _database.dialect,
-    );
-    return (row) => DriftRow(fakeResultSet, row);
+    return structure.createMapperToDriftRow(dialect);
   }
 }
 
@@ -500,7 +472,7 @@ final class SingleTableSelectStatement<
     this.resultSet, {
     super.distinct,
   }) {
-    structure.addSelectStarFromSingleTable(resultSet);
+    structure.addResultSet(resultSet);
     from.add(FromResultSet(resultSet));
   }
 

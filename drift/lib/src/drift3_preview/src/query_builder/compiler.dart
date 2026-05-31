@@ -624,8 +624,6 @@ abstract base class StatementCompiler {
   }
 
   void addReturningClause(ReturningClause returning) {
-    // We currently only support the `RETURNING *` format without arbitrary
-    // columns.
     statement.resultSetStructure = returning.structure;
     statement.buffer.write('RETURNING ');
     addResultSetExpressions(returning.structure);

@@ -208,43 +208,77 @@ void main() {
     });
   });
 
-  test('RETURNING', () async {
-    when(executor.execute(any)).thenAnswer((_) {
-      return Future.value(
-        queryResult([
-          {
-            'id': 3,
-            'desc': 'test',
-            'priority': 0,
-            'description_in_upper_case': 'TEST',
-          },
-        ], affectedRows: 1),
+  group('RETURNING', () {
+    test('for one row', () async {
+      when(executor.execute(any)).thenAnswer((_) {
+        return Future.value(
+          queryResult([
+            {
+              'id': 3,
+              'desc': 'test',
+              'priority': 0,
+              'description_in_upper_case': 'TEST',
+            },
+          ], affectedRows: 1),
+        );
+      });
+
+      final rows = await db
+          .update(db.categories)
+          .writeReturning(
+            const CategoriesCompanion(description: Value('test')),
+          );
+
+      verify(
+        executor.executeSql(
+          'UPDATE "categories" SET "desc" = ?1 RETURNING '
+          '"id","desc","priority","description_in_upper_case";',
+          ['test'],
+        ),
       );
+      expect(streamQueries.recordedUpdates, {
+        TableUpdate.onTable(db.categories, kind: UpdateKind.update),
+      });
+
+      expect(rows, const [
+        Category(
+          id: RowId(3),
+          description: 'test',
+          priority: CategoryPriority.low,
+          descriptionInUpperCase: 'TEST',
+        ),
+      ]);
     });
 
-    final rows = await db
-        .update(db.categories)
-        .writeReturning(const CategoriesCompanion(description: Value('test')));
+    test('only', () async {
+      when(executor.execute(any)).thenAnswer((_) {
+        return Future.value(
+          queryResult([
+            {'description_in_upper_case': 'TEST'},
+          ], affectedRows: 1),
+        );
+      });
 
-    verify(
-      executor.executeSql(
-        'UPDATE "categories" SET "desc" = ?1 RETURNING '
-        '"id","desc","priority","description_in_upper_case";',
-        ['test'],
-      ),
-    );
-    expect(streamQueries.recordedUpdates, {
-      TableUpdate.onTable(db.categories, kind: UpdateKind.update),
+      final rows = await db.update(db.categories).writeReturningOnly(
+        const CategoriesCompanion(priority: Value(CategoryPriority.high)),
+        [db.categories.descriptionInUpperCase],
+      );
+
+      verify(
+        executor.executeSql(
+          'UPDATE "categories" SET "priority" = ?1 RETURNING '
+          '"description_in_upper_case";',
+          [2],
+        ),
+      );
+      expect(streamQueries.recordedUpdates, {
+        TableUpdate.onTable(db.categories, kind: UpdateKind.update),
+      });
+
+      expect(rows.map((s) => s.raw), const [
+        ['TEST'],
+      ]);
     });
-
-    expect(rows, const [
-      Category(
-        id: RowId(3),
-        description: 'test',
-        priority: CategoryPriority.low,
-        descriptionInUpperCase: 'TEST',
-      ),
-    ]);
   });
 
   test('can use empty companion for update', () async {
