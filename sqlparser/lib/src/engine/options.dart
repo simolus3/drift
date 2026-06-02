@@ -117,12 +117,9 @@ class SqliteVersion implements Comparable<SqliteVersion> {
   /// Newer features in `sqlite3` may not be recognized by this library.
   static const SqliteVersion current = v3_53;
 
-  /// Version `3.53.0`
-  static const SqliteVersion v3_53 = SqliteVersion.v3(53);
-
-  /// Version `3.52.0` added the `json_array_insert` and `jsonb_array_insert`
+  /// Version `3.53.0` added the `json_array_insert` and `jsonb_array_insert`
   /// functions and enhanced `ALTER TABLE`.
-  static const SqliteVersion v3_52 = SqliteVersion.v3(52);
+  static const SqliteVersion v3_53 = SqliteVersion.v3(53);
 
   /// Version `3.51.0` added the `jsonb_each` and `jsonb_tree` functions.
   static const SqliteVersion v3_51 = SqliteVersion.v3(51);
