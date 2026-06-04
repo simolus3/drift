@@ -18,6 +18,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'override_hash_and_equals_in_result_sets',
         'skip_verification_code',
         'use_data_class_name_for_companions',
+        'use_sql_table_name_for_accessors',
         'use_column_name_as_json_key_when_defined_in_moor_file',
         'use_sql_column_name_as_json_key',
         'generate_connect_constructor',
@@ -65,6 +66,10 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
       ),
       useDataClassNameForCompanions: $checkedConvert(
         'use_data_class_name_for_companions',
+        (v) => v as bool? ?? false,
+      ),
+      useSqlTableNameForAccessors: $checkedConvert(
+        'use_sql_table_name_for_accessors',
         (v) => v as bool? ?? false,
       ),
       useColumnNameAsJsonKeyWhenDefinedInMoorFile: $checkedConvert(
@@ -183,6 +188,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'override_hash_and_equals_in_result_sets',
     'skipVerificationCode': 'skip_verification_code',
     'useDataClassNameForCompanions': 'use_data_class_name_for_companions',
+    'useSqlTableNameForAccessors': 'use_sql_table_name_for_accessors',
     'useColumnNameAsJsonKeyWhenDefinedInMoorFile':
         'use_column_name_as_json_key_when_defined_in_moor_file',
     'useSqlColumnNameAsJsonKey': 'use_sql_column_name_as_json_key',
@@ -221,6 +227,7 @@ Map<String, dynamic> _$DriftOptionsToJson(
       instance.overrideHashAndEqualsInResultSets,
   'skip_verification_code': instance.skipVerificationCode,
   'use_data_class_name_for_companions': instance.useDataClassNameForCompanions,
+  'use_sql_table_name_for_accessors': instance.useSqlTableNameForAccessors,
   'use_column_name_as_json_key_when_defined_in_moor_file':
       instance.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
   'use_sql_column_name_as_json_key': instance.useSqlColumnNameAsJsonKey,

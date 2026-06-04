@@ -51,6 +51,12 @@ class DriftOptions {
   @JsonKey(name: 'use_data_class_name_for_companions', defaultValue: false)
   final bool useDataClassNameForCompanions;
 
+  /// Names the table getters generated on the database class after the table's
+  /// SQL name (as set by its `tableName` definition) instead of after the Dart
+  /// class name.
+  @JsonKey(name: 'use_sql_table_name_for_accessors', defaultValue: false)
+  final bool useSqlTableNameForAccessors;
+
   /// For a column defined in a moor file, use the name directly instead of
   /// the transformed `camelCaseDartGetter`.
   @JsonKey(
@@ -156,6 +162,7 @@ class DriftOptions {
     this.overrideHashAndEqualsInResultSets = false,
     this.skipVerificationCode = false,
     this.useDataClassNameForCompanions = false,
+    this.useSqlTableNameForAccessors = false,
     this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = true,
     this.useSqlColumnNameAsJsonKey = false,
     this.generateConnectConstructor = false,
@@ -190,6 +197,7 @@ class DriftOptions {
     required this.overrideHashAndEqualsInResultSets,
     required this.skipVerificationCode,
     required this.useDataClassNameForCompanions,
+    required this.useSqlTableNameForAccessors,
     required this.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
     required this.useSqlColumnNameAsJsonKey,
     required this.generateConnectConstructor,

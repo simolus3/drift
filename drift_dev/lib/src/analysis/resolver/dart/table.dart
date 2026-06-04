@@ -72,6 +72,9 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       existingRowClass: dataClassInfo.existingClass,
       customParentClass: dataClassInfo.extending,
       baseDartName: element.name!,
+      fixedDbGetterName: resolver.driver.options.useSqlTableNameForAccessors
+          ? DriftSchemaElement.dbFieldName(discovered.ownId.name)
+          : null,
       tableConstraints: [
         if (primaryKey != null) PrimaryKeyColumns(primaryKey),
         for (final uniqueKey in uniqueKeys ?? const <Set<DriftColumn>>[])

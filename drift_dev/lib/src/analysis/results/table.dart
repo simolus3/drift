@@ -33,6 +33,10 @@ class DriftTable extends DriftElementWithResultSet {
   /// The default name to use for the [entityInfoName].
   String baseDartName;
 
+  /// The fixed [dbGetterName] to use, overriding the default derived from
+  /// [baseDartName].
+  String? fixedDbGetterName;
+
   @override
   String nameOfRowClass;
 
@@ -81,6 +85,7 @@ class DriftTable extends DriftElementWithResultSet {
     this.existingRowClass,
     this.customParentClass,
     this.fixedEntityInfoName,
+    this.fixedDbGetterName,
     this.withoutRowId = false,
     this.strict = false,
     this.tableConstraints = const [],
@@ -110,7 +115,8 @@ class DriftTable extends DriftElementWithResultSet {
   bool get isVirtual => virtualTableData != null;
 
   @override
-  String get dbGetterName => DriftSchemaElement.dbFieldName(baseDartName);
+  String get dbGetterName =>
+      fixedDbGetterName ?? DriftSchemaElement.dbFieldName(baseDartName);
 
   /// The primary key for this table, computed by looking at the primary key
   /// defined as a table constraint or as a column constraint.

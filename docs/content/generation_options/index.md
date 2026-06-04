@@ -44,6 +44,11 @@ At the moment, drift supports these options:
   is based on the table name (e.g. a `@DataClassName('Users') class UsersTable extends Table` would generate
   a `UsersTableCompanion`). With this option, the name is based on the data class (so `UsersCompanion` in
   this case).
+- `use_sql_table_name_for_accessors` (defaults to `false`): By default, the table getters generated on the database
+  class are named after the Dart table class (e.g. `class TodoItems extends Table` becomes `database.todoItems`).
+  With this option, the getters are named after the table's SQL name instead, so a table overriding its `tableName`
+  to `todos` would be accessible as `database.todos`. This only affects tables; getters for views, triggers and
+  indices are unchanged.
 - `use_column_name_as_json_key_when_defined_in_moor_file` (defaults to `true`): When serializing columns declared inside a
   `.drift` file from and to json, use their sql name instead of the generated Dart getter name
   (so a column named `user_name` would also use `user_name` as a json key instead of `userName`).

@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/driver/state.dart';
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:sqlparser/sqlparser.dart' show ReferenceAction;
 import 'package:test/test.dart';
@@ -147,6 +148,36 @@ class Pianos extends Table {
 
       expect(parsed.errorsDuringAnalysis, isEmpty);
       expect(table.schemaName, 'users');
+    });
+
+    test('getter is named after the class by default', () async {
+      final result = await findTable('TableWithCustomName');
+      final table = result!.result as DriftTable;
+
+      expect(table.dbGetterName, 'tableWithCustomName');
+    });
+
+    test('getter uses sql name with useSqlTableNameForAccessors', () async {
+      final withOption = await TestBackend.inTest(
+        {
+          'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class TableWithCustomName extends Table {
+  @override String get tableName => 'my-fancy-table';
+
+  @override bool get withoutRowId => true;
+}
+''',
+        },
+        options: const DriftOptions.defaults(useSqlTableNameForAccessors: true),
+      );
+
+      final state = await withOption.analyze('package:a/a.dart');
+      final table = state.analyzedElements.single as DriftTable;
+
+      expect(table.schemaName, 'my-fancy-table');
+      expect(table.dbGetterName, 'myFancyTable');
     });
 
     test('reports discovery error for table with wrong name', () async {

@@ -33,6 +33,26 @@ sqlite:
     );
   });
 
+  test('parses use_sql_table_name_for_accessors', () {
+    expect(
+      parse('use_sql_table_name_for_accessors: true'),
+      isA<DriftOptions>().having(
+        (e) => e.useSqlTableNameForAccessors,
+        'useSqlTableNameForAccessors',
+        isTrue,
+      ),
+    );
+
+    expect(
+      parse('{}'),
+      isA<DriftOptions>().having(
+        (e) => e.useSqlTableNameForAccessors,
+        'useSqlTableNameForAccessors',
+        isFalse,
+      ),
+    );
+  });
+
   test('parses sqlite version', () {
     expect(
       parse('''
