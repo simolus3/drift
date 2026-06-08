@@ -13,6 +13,8 @@ import 'package:io/ansi.dart';
 import 'package:path/path.dart' as p;
 import 'package:recase/recase.dart';
 
+import '../../analysis/options.dart';
+
 class MakeMigrationCommand extends DriftCommand {
   MakeMigrationCommand(super.cli) {
     argParser.registerExportSchemaStartupCodeOption();
@@ -625,9 +627,11 @@ test('migration from v$from to v$to does not corrupt data',
   // migration.
   // TODO: Fill these lists
     ${tables.map((table) {
+      final getterName = table.computeDbGetterName(const DriftOptions.defaults());
+
       return """
-final old${table.dbGetterName.pascalCase}Data = <v$from.${table.nameOfRowClass}>[];
-final expectedNew${table.dbGetterName.pascalCase}Data = <v$to.${table.nameOfRowClass}>[];
+final old${getterName.pascalCase}Data = <v$from.${table.nameOfRowClass}>[];
+final expectedNew${getterName.pascalCase}Data = <v$to.${table.nameOfRowClass}>[];
 """;
     }).join('\n')}
 
@@ -639,12 +643,14 @@ final expectedNew${table.dbGetterName.pascalCase}Data = <v$to.${table.nameOfRowC
       openTestedDatabase: $dbClassName.new,
       createItems: (batch, oldDb) {
         ${tables.map((table) {
-      return "batch.insertAll(oldDb.${table.dbGetterName}, old${table.dbGetterName.pascalCase}Data);";
+      final getterName = table.computeDbGetterName(const DriftOptions.defaults());
+      return "batch.insertAll(oldDb.$getterName, old${getterName.pascalCase}Data);";
     }).join('\n')}
       },
       validateItems: (newDb) async {
         ${tables.map((table) {
-      return "expect(expectedNew${table.dbGetterName.pascalCase}Data, await newDb.select(newDb.${table.dbGetterName}).get());";
+      final getterName = table.computeDbGetterName(const DriftOptions.defaults());
+      return "expect(expectedNew${getterName.pascalCase}Data, await newDb.select(newDb.$getterName).get());";
     }).join('\n')}
       },
     );

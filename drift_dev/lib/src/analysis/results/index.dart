@@ -1,5 +1,6 @@
 import 'package:sqlparser/sqlparser.dart';
 
+import '../options.dart';
 import 'results.dart';
 
 /// An index on a drift table.
@@ -42,7 +43,9 @@ class DriftIndex extends DriftSchemaElement {
   DriftElementKind get kind => DriftElementKind.dbIndex;
 
   @override
-  String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
+  String computeDbGetterName(DriftOptions options) {
+    return DriftSchemaElement.dbFieldName(id.name);
+  }
 
   @override
   Iterable<DriftElement> get references => [?table];

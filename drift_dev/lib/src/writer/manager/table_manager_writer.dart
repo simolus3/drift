@@ -90,18 +90,21 @@ class _TableManagerWriter {
       }
     }
     for (var relation in relations) {
-      allFieldNames.add(relation.fieldName);
+      allFieldNames.add(relation.computeFieldName(leaf.writer.options));
     }
 
     // Use the above list to remove any relations whose names cause clashing
     relations = relations.where((relation) {
       final fieldNameCount = allFieldNames
-          .where((fieldName) => fieldName == relation.fieldName)
+          .where(
+            (fieldName) =>
+                fieldName == relation.computeFieldName(leaf.writer.options),
+          )
           .length;
       if (fieldNameCount != 1) {
         if (table.id.isDefinedInDart) {
           print(
-            "Duplicate orderings/filters detected for field \"${relation.fieldName}\" on table \"${table.entityInfoName}\"."
+            "Duplicate orderings/filters detected for field \"${relation.computeFieldName(leaf.writer.options)}\" on table \"${table.entityInfoName}\"."
             " Filter and orderings for this field wont be generated."
             " Use the @ReferenceName() annotation to resolve this issue."
             " See https://drift.simonbinder.eu/docs/manager/#name-clashes for more information",
@@ -297,11 +300,12 @@ class _Relation {
   /// What field name to use when generating filters/ordering for this column
   ///
   /// E.G todoRefs, category, categories
-  String get fieldName {
+  String computeFieldName(DriftOptions options) {
     return switch (isReverse) {
       false => currentColumn.nameInDart,
       true =>
-        referencedColumn.referenceName ?? "${referencedTable.dbGetterName}Refs",
+        referencedColumn.referenceName ??
+            "${referencedTable.computeDbGetterName(options)}Refs",
     };
   }
 }

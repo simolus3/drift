@@ -346,15 +346,19 @@ class _DriftBuildRun {
       } else if (result is DriftView) {
         ViewWriter(result, writer.child(), null).write();
       } else if (result is DriftTrigger) {
+        final getterName = result.computeDbGetterName(options);
+
         writer.leaf()
           ..writeDriftRef('Trigger')
-          ..write(' get ${result.dbGetterName} => ')
+          ..write(' get $getterName => ')
           ..write(DatabaseWriter.createTrigger(writer.child(), result))
           ..writeln(';');
       } else if (result is DriftIndex) {
+        final getterName = result.computeDbGetterName(options);
+
         writer.leaf()
           ..writeDriftRef('Index')
-          ..write(' get ${result.dbGetterName} => ')
+          ..write(' get $getterName => ')
           ..write(DatabaseWriter.createIndex(writer.child(), result))
           ..writeln(';');
       } else if (result is DriftDatabase) {
@@ -392,13 +396,14 @@ class _DriftBuildRun {
             // class.
             break;
           case QueryMode.atCreate:
+            final getterName = result.computeDbGetterName(options);
             final resolved =
                 entrypointState.fileAnalysis?.resolvedQueries[result.id];
 
             if (resolved != null) {
               writer.leaf()
                 ..writeDriftRef('OnCreateQuery')
-                ..write(' get ${result.dbGetterName} => ')
+                ..write(' get $getterName => ')
                 ..write(
                   DatabaseWriter.createOnCreate(
                     writer.child(),

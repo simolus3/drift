@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide DriftView;
 import 'package:sqlparser/sqlparser.dart';
 
+import '../options.dart';
 import 'results.dart';
 
 class DriftTrigger extends DriftSchemaElement {
@@ -33,7 +34,9 @@ class DriftTrigger extends DriftSchemaElement {
   DriftElementKind get kind => DriftElementKind.trigger;
 
   @override
-  String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
+  String computeDbGetterName(DriftOptions options) {
+    return DriftSchemaElement.dbFieldName(id.name);
+  }
 
   /// The parsed `CREATE VIEW` statement from [createView].
   ///

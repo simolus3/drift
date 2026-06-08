@@ -58,7 +58,7 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
   String get name => id.name;
 
   @override
-  String? get dbGetterName {
+  String? computeDbGetterName(DriftOptions options) {
     if (mode != QueryMode.regular) {
       return DriftSchemaElement.dbFieldName(id.name);
     } else {

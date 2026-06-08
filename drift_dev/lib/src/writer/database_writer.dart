@@ -80,7 +80,7 @@ class DatabaseWriter {
     final entityGetters = <DriftElement, String>{};
 
     for (final entity in elements.whereType<DriftElement>()) {
-      final getterName = entity.dbGetterName;
+      final getterName = entity.computeDbGetterName(dbScope.options);
 
       if (getterName != null) {
         // In the modular generation mode, table and view instances are still
@@ -102,21 +102,21 @@ class DatabaseWriter {
 
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
-          getterName: entity.dbGetterName,
+          getterName: getterName!,
           returnType: tableClassName,
           code: scope.drift3 ? '$tableClassName()' : '$tableClassName(this)',
         );
       } else if (entity is DriftTrigger) {
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
-          getterName: entity.dbGetterName,
+          getterName: getterName!,
           returnType: dbScope.drift('Trigger'),
           code: createTrigger(dbScope, entity),
         );
       } else if (entity is DriftIndex) {
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
-          getterName: entity.dbGetterName,
+          getterName: getterName!,
           returnType: dbScope.drift('Index'),
           code: createIndex(scope, entity),
         );
@@ -125,7 +125,7 @@ class DatabaseWriter {
 
         writeMemoizedGetter(
           buffer: dbScope.leaf().buffer,
-          getterName: entity.dbGetterName,
+          getterName: getterName!,
           returnType: viewClassName,
           code: '$viewClassName(this)',
         );

@@ -116,7 +116,8 @@ class QueryWriter {
     final singleValue = rowClass.singleValue;
     if (singleValue is MatchingDriftTable && singleValue.effectivelyNoAlias) {
       // Tear-off mapFromRow method on table
-      _emitter.write('${singleValue.table.dbGetterName}.mapFromRow');
+      final getterName = singleValue.table.computeDbGetterName(options);
+      _emitter.write('$getterName.mapFromRow');
     } else {
       // In all other cases, we're off to write the expression.
       _emitter.write('($queryRow row) $asyncModifier => ');
@@ -262,6 +263,7 @@ class QueryWriter {
     // use the mapFromRow() function of that table - the column names might
     // be different!
     final table = match.table;
+    final getterName = table.computeDbGetterName(options);
 
     if (match.effectivelyNoAlias) {
       final mappingMethod = context.isNullable
@@ -269,7 +271,7 @@ class QueryWriter {
           : 'mapFromRow';
       final sqlPrefix = context.sqlPrefix;
 
-      _emitter.write('await ${table.dbGetterName}.$mappingMethod(row');
+      _emitter.write('await $getterName.$mappingMethod(row');
       if (sqlPrefix != null) {
         _emitter.write(', tablePrefix: ${asDartLiteral(sqlPrefix)}');
       }
@@ -290,7 +292,7 @@ class QueryWriter {
         });
       }
 
-      _emitter.write('${table.dbGetterName}.mapFromRowWithAlias(row, const {');
+      _emitter.write('$getterName.mapFromRowWithAlias(row, const {');
 
       for (final columnSource in match.columnToSource.entries) {
         _emitter
@@ -636,7 +638,7 @@ class QueryWriter {
     _buffer.write('readsFrom: {');
 
     for (final table in select.readsFromTables) {
-      _buffer.write('${table.dbGetterName},');
+      _buffer.write('${table.computeDbGetterName(options)},');
     }
 
     for (final element
@@ -650,7 +652,9 @@ class QueryWriter {
   }
 
   void _writeUpdates(UpdatingQuery update) {
-    final from = update.updates.map((t) => t.table.dbGetterName).join(', ');
+    final from = update.updates
+        .map((t) => t.table.computeDbGetterName(options))
+        .join(', ');
     _buffer
       ..write('updates: {')
       ..write(from)
@@ -875,8 +879,9 @@ class _Drift3MappingCodeWriter {
   void _readMatchingTable(MatchingDriftTable match, _ArgumentContext context) {
     final table = match.table;
     final mappingFunctionName = 'map_${_mappingFunctionCounter++}';
+    final getterName = table.computeDbGetterName(_writer.options);
     _outerSetup.write(
-      'final $mappingFunctionName = ${table.dbGetterName}.createMapperFromPositions(dialect, const [',
+      'final $mappingFunctionName = $getterName.createMapperFromPositions(dialect, const [',
     );
 
     for (final column in table.columns) {
@@ -990,7 +995,7 @@ class _ExpandedDeclarationWriter {
         // The parameter is a function type that needs to be evaluated first
         final args = element.availableResultSets
             .map((e) {
-              final table = 'this.${e.entity.dbGetterName}';
+              final table = 'this.${e.entity.computeDbGetterName(options)}';
               final needsAlias = e.name != e.entity.schemaName;
 
               if (needsAlias) {
@@ -1029,7 +1034,7 @@ class _ExpandedDeclarationWriter {
 
       _buffer
         ..write(r'$writeInsertable(this.')
-        ..write(table?.dbGetterName)
+        ..write(table?.computeDbGetterName(options))
         ..write(', ')
         ..write(useExpression())
         ..write(', startIndex: $highestAssignedIndexVar');

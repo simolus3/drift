@@ -315,7 +315,7 @@ class SchemaVersionWriter {
     required TextEmitter definition,
   }) {
     final name = definition.parent!.getNonConflictingName(
-      element.dbGetterName!,
+      element.computeDbGetterName(definition.writer.options)!,
       (name) => name + _suffixForElement(element),
     );
 

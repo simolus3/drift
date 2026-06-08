@@ -72,10 +72,11 @@ class ModularAccessorWriter {
 
       if (reference is DriftElementWithResultSet) {
         final infoType = restOfClass.entityInfoType(reference);
+        final getterName = reference.computeDbGetterName(scope.options);
 
         restOfClass
           ..writeDart(infoType)
-          ..write(' get ${reference.dbGetterName} => ')
+          ..write(' get $getterName => ')
           ..writeDart(
             restOfClass.referenceElement(reference, 'attachedDatabase'),
           )

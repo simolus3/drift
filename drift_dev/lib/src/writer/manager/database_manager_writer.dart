@@ -4,6 +4,8 @@ import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:drift_dev/src/writer/tables/update_companion_writer.dart';
 import 'package:drift_dev/src/writer/writer.dart';
 
+import '../../analysis/options.dart';
+
 part 'manager_templates.dart';
 part 'table_manager_writer.dart';
 
@@ -88,8 +90,9 @@ class DatabaseManagerWriter {
       final databaseInstance = accessorMixin != null
           ? '_db.attachedDatabase'
           : '_db';
+      final getterName = table.computeDbGetterName(_scope.options);
       leaf.writeln(
-        '$rootTableManagerClass get ${table.dbGetterName} => $rootTableManagerClass($databaseInstance, _db.${table.dbGetterName});',
+        '$rootTableManagerClass get $getterName => $rootTableManagerClass($databaseInstance, _db.$getterName);',
       );
     }
     leaf.writeln('}');

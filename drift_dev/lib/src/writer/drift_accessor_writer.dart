@@ -31,7 +31,7 @@ class AccessorWriter {
         in input.resolvedAccessor.availableElements
             .whereType<DriftElementWithResultSet>()) {
       final infoType = scope.entityInfoType(entity);
-      final getterName = entity.dbGetterName;
+      final getterName = entity.computeDbGetterName(classScope.options);
 
       final getterText = classScope.leaf()
         ..writeDart(infoType)

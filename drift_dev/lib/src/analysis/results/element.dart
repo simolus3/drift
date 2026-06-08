@@ -5,6 +5,7 @@ import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../options.dart';
 import 'dart.dart';
 
 part '../../generated/analysis/results/element.g.dart';
@@ -95,7 +96,7 @@ abstract class DriftElement {
   /// The getter in a generated database accessor referring to this model.
   ///
   /// Returns null for entities that shouldn't have a getter.
-  String? get dbGetterName => null;
+  String? computeDbGetterName(DriftOptions options) => null;
 
   /// If this element was extracted from a defined Dart class, returns the name
   /// of that class.

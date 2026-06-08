@@ -154,7 +154,10 @@ class Pianos extends Table {
       final result = await findTable('TableWithCustomName');
       final table = result!.result as DriftTable;
 
-      expect(table.dbGetterName, 'tableWithCustomName');
+      expect(
+        table.computeDbGetterName(const DriftOptions.defaults()),
+        'tableWithCustomName',
+      );
     });
 
     test('getter uses sql name with useSqlTableNameForAccessors', () async {
@@ -177,7 +180,10 @@ class TableWithCustomName extends Table {
       final table = state.analyzedElements.single as DriftTable;
 
       expect(table.schemaName, 'my-fancy-table');
-      expect(table.dbGetterName, 'myFancyTable');
+      expect(
+        table.computeDbGetterName(withOption.driver.options),
+        'myFancyTable',
+      );
     });
 
     test('reports discovery error for table with wrong name', () async {

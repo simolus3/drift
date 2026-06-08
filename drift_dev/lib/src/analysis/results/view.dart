@@ -3,6 +3,7 @@ import 'package:drift_dev/src/analysis/results/dart.dart';
 import 'package:drift_dev/src/analysis/results/column.dart';
 import 'package:sqlparser/sqlparser.dart';
 
+import '../options.dart';
 import 'element.dart';
 import 'result_sets.dart';
 import 'table.dart';
@@ -49,7 +50,9 @@ class DriftView extends DriftElementWithResultSet {
   });
 
   @override
-  String get dbGetterName => DriftSchemaElement.dbFieldName(id.name);
+  String computeDbGetterName(DriftOptions options) {
+    return DriftSchemaElement.dbFieldName(id.name);
+  }
 
   @override
   DriftElementKind get kind => DriftElementKind.view;
