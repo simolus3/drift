@@ -269,7 +269,7 @@ class _ManagerCodeTemplates {
                   final relationFieldName = relation.computeFieldName(leaf.writer.options);
                   final referencesClassName = rowReferencesClassName(table: table, relations: relations, dbClassName: dbClassName, leaf: leaf, withTypeArgs: false);
                   return """
-                  if (${relationFieldName}){
+                  if ($relationFieldName){
                   state = state.withJoin(
                     currentTable: table,
                     currentColumn: table.${relation.currentColumn.nameInDart},
