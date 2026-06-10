@@ -43,6 +43,13 @@ workspace:
 dev_dependencies:
   melos: ^7.0.0
 
+# Flutter's bundled `flutter_test` pins `test_api` to an exact version, which
+# caps `package:test` (and transitively `analyzer`) below 13. Overriding it lets
+# the workspace resolve `analyzer` 13 for development. `test_api` is only a dev
+# dependency. See https://github.com/simolus3/drift/pull/3810.
+dependency_overrides:
+  test_api: ^0.7.11
+
 melos:
   name: drift
   repository: https://github.com/simolus3/drift
