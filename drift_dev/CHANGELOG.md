@@ -5,6 +5,7 @@
 - Add the `use_sql_table_name_for_accessors` build option, naming the table
   getters on the database class after the table's SQL name instead of the Dart
   class name.
+- Require analyzer version 13.
 
 ## 2.33.0
 

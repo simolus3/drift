@@ -126,7 +126,7 @@ class ColumnParser {
       ColumnType columnType;
 
       if (methodName == _startCustom || methodName == _startCustomCol) {
-        final expression = call.argumentList.arguments.single;
+        final expression = call.argumentList.arguments.single as Expression;
         final custom = readCustomType(
           expression,
           helper,
@@ -270,7 +270,7 @@ class ColumnParser {
           }
 
           foundExplicitName = readStringLiteral(
-            remainingExpr.argumentList.arguments.first,
+            remainingExpr.argumentList.arguments.first as Expression,
           );
           if (foundExplicitName == null) {
             _resolver.reportError(
@@ -360,10 +360,10 @@ class ColumnParser {
           }
 
           for (final expr in args) {
-            if (expr is! NamedExpression) continue;
+            if (expr is! NamedArgument) continue;
 
-            final name = expr.name.label.name;
-            final value = expr.expression;
+            final name = expr.name.lexeme;
+            final value = expr.argumentExpression;
             if (name == 'onUpdate') {
               onUpdate = parseAction(value);
             } else if (name == 'onDelete') {
@@ -473,7 +473,7 @@ class ColumnParser {
           }
 
           final stringLiteral = customConstraintSource =
-              remainingExpr.argumentList.arguments.first;
+              remainingExpr.argumentList.arguments.first as Expression;
           foundCustomConstraint = readStringLiteral(stringLiteral);
 
           if (foundCustomConstraint == null) {
@@ -498,15 +498,15 @@ class ColumnParser {
           break;
         case _methodMap:
           final args = remainingExpr.argumentList;
-          mappedAs = args.arguments.single;
+          mappedAs = args.arguments.single as Expression;
           break;
         case _methodGenerated:
           Expression? generatedExpression;
           var stored = false;
 
           for (final expr in remainingExpr.argumentList.arguments) {
-            if (expr is NamedExpression && expr.name.label.name == 'stored') {
-              final storedValue = expr.expression;
+            if (expr is NamedArgument && expr.name.lexeme == 'stored') {
+              final storedValue = expr.argumentExpression;
               if (storedValue is BooleanLiteral) {
                 stored = storedValue.value;
               } else {
@@ -519,7 +519,7 @@ class ColumnParser {
                 );
               }
             } else {
-              generatedExpression = expr;
+              generatedExpression = expr as Expression;
             }
           }
 

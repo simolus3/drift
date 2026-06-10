@@ -475,9 +475,9 @@ class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
     if (args == null) return;
 
     final includeArg = args.arguments
-        .whereType<NamedExpression>()
-        .firstWhereOrNull((arg) => arg.name.label.name == 'include')
-        ?.expression;
+        .whereType<NamedArgument>()
+        .firstWhereOrNull((arg) => arg.name.lexeme == 'include')
+        ?.argumentExpression;
     if (includeArg == null) return;
 
     final annotation = node.elementAnnotation?.computeConstantValue();
