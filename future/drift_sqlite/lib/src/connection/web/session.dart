@@ -29,17 +29,19 @@ abstract base class _BaseWebSession implements DriftSession {
       statement.variables.map((p) => p.rawValue).toList(),
     );
 
-    final response = await database.customRequest(
-      ExecuteRequest(
-        sql: statement.sql,
-        needsResultSet: statement.needsResultSet,
-        parameters: params,
-        parameterTypes: paramTypes,
-        requireInTransaction: requireInTransaction,
-        type: BaseRequest.typeExecute,
-      ),
-      token: lockToken,
-    );
+    final response = await database
+        .customRequest(
+          ExecuteRequest(
+            sql: statement.sql,
+            needsResultSet: statement.needsResultSet,
+            parameters: params,
+            parameterTypes: paramTypes,
+            requireInTransaction: requireInTransaction,
+            type: BaseRequest.typeExecute,
+          ),
+          token: lockToken,
+        )
+        .translateExceptions();
 
     return (response as SerializedQueryResult).asQueryResult();
   }
@@ -63,15 +65,17 @@ abstract base class _BaseWebSession implements DriftSession {
       );
     }
 
-    final response = await database.customRequest(
-      ExecuteBatchRequest(
-        sql: sql,
-        entries: entries,
-        requireInTransaction: requireInTransaction,
-        type: BaseRequest.typeExecuteBatch,
-      ),
-      token: lockToken,
-    );
+    final response = await database
+        .customRequest(
+          ExecuteBatchRequest(
+            sql: sql,
+            entries: entries,
+            requireInTransaction: requireInTransaction,
+            type: BaseRequest.typeExecuteBatch,
+          ),
+          token: lockToken,
+        )
+        .translateExceptions();
 
     final results = response as JSArray<SerializedQueryResult>;
     return results.toDart.map((e) => e.asQueryResult()).toList();
@@ -135,7 +139,7 @@ final class WebSession extends _BaseWebSession
 
           return session.closed;
         }, abortTrigger: cancellationSignal)
-        .abortExceptionToDrift()
+        .translateExceptions()
         .onError((Object error, StackTrace trace) {
           if (!completer.isCompleted) completer.completeError(error, trace);
         });
@@ -153,7 +157,7 @@ final class WebSession extends _BaseWebSession
 
           return await session.closed;
         }, abortTrigger: cancellationSignal)
-        .abortExceptionToDrift()
+        .translateExceptions()
         .onError((Object error, StackTrace trace) {
           if (!completer.isCompleted) completer.completeError(error, trace);
         });
@@ -248,10 +252,15 @@ final class _TransactionSession extends _InnerSession
 }
 
 extension<T> on Future<T> {
-  Future<T> abortExceptionToDrift() {
-    return onError<AbortException>(
-      (_, stackTrace) =>
-          Error.throwWithStackTrace(const CancellationException(), stackTrace),
-    );
+  Future<T> translateExceptions() {
+    return onError((Object error, StackTrace trace) {
+      if (error is AbortException) {
+        Error.throwWithStackTrace(const CancellationException(), trace);
+      } else if (error case RemoteException(:final exception?)) {
+        Error.throwWithStackTrace(exception, trace);
+      }
+
+      throw error;
+    });
   }
 }

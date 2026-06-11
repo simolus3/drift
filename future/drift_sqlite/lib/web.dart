@@ -20,8 +20,8 @@ final class WasmDatabase {
   /// Creates a [WasmDatabase] from the `sqlite3.wasm` and `drift_worker.js`
   /// URIs.
   static WasmDatabase withWorker({
-    required Uri databaseWorker,
-    required Uri sqlite3Uri,
+    required String databaseWorker,
+    required String sqlite3Uri,
   }) {
     final sqlite = WebSqlite.open(
       workers: WorkerConnector.defaultWorkers(databaseWorker),

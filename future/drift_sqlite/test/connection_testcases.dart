@@ -4,6 +4,7 @@ import 'package:async/async.dart';
 import 'package:drift3/drift.dart';
 import 'package:drift/src/drift3_preview/src/utils/cancellation_zone.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
+import 'package:sqlite3/common.dart';
 import 'package:test/test.dart';
 
 void declareConnectionTests(
@@ -212,6 +213,16 @@ void declareConnectionTests(
 
     finishTransaction.complete();
     await db.customSelect('SELECT 1').get();
+  });
+
+  test('errors throw SqliteExceptions', () async {
+    final db = openDrift();
+    addTearDown(db.close);
+
+    await expectLater(
+      db.customSelect('syntax error for test').get(),
+      throwsA(isA<SqliteException>()),
+    );
   });
 
   group('computeWithDatabase', () {

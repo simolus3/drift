@@ -21,7 +21,7 @@ void main() {
     final sqlite = WebSqlite.open(
       workers: WorkerConnector.unsupported(),
       controller: DriftDatabaseController(),
-      wasmModule: sqliteWasmUri,
+      wasmModule: sqliteWasmUri.toString(),
     );
     final db = await sqlite.connect('db-${dbCounter++}', .inMemoryLocal);
     return DriftDatabaseImplementation(
