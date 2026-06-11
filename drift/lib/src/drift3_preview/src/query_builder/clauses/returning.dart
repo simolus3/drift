@@ -1,9 +1,38 @@
 import '../../connection/result_set.dart';
 import '../../database/connection_user.dart';
 import '../compiler.dart';
+import '../expressions/expression.dart';
 import '../results.dart';
 import '../schema/result_set.dart';
 import '../schema/table.dart';
+import '../statements/statement.dart';
+
+/// A statement with an optional [ReturningClause].
+abstract base class StatementWithReturningClause<
+  Row extends Object,
+  RS extends GeneratedTable<Row, RS>
+>
+    extends SqlStatement {
+  /// The primary table affected by this statement.
+  final GeneratedTable<Row, RS> table;
+
+  /// An optional `RETURNING` clause part of this statement.
+  ReturningClause? returning;
+
+  /// @nodoc
+  StatementWithReturningClause(this.table);
+
+  /// Adds a `RETURNING *` clause to this insert statement.
+  void returningAll() {
+    returning = ReturningClause()..structure.addResultSet(table);
+  }
+
+  /// Adds a `RETURNING` clause returning the given [expressions] which are
+  /// evaluated against each row affected by this statement.
+  void returningOnly(List<Expression> expressions) {
+    returning = ReturningClause()..structure.addColumns(expressions);
+  }
+}
 
 /// A `RETURNING *` clause that can appear as part of an `INSERT`, `UPDATE` or
 /// `DELETE` statement.

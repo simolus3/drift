@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart';
 
 import '../../connection/result_set.dart';
 import '../../connection/streams/update_rules.dart';
@@ -12,28 +11,24 @@ import '../results.dart';
 import '../schema/column_constraints.dart';
 import '../schema/table.dart';
 import 'query.dart';
-import 'statement.dart';
 
 /// Represents an `UPDATE` statement in sql.
 final class UpdateStatement<
   Row extends Object,
   RS extends GeneratedTable<Row, RS>
 >
-    extends SqlStatement
+    extends StatementWithReturningClause<Row, RS>
     with SingleTableStatementMixin<Row, RS, UpdateStatement<Row, RS>> {
   /// The table from which rows should be updated.
   @override
-  final GeneratedTable<Row, RS> resultSet;
+  GeneratedTable<Row, RS> get resultSet => table;
   final DatabaseConnectionUser _database;
-
-  /// An optional `RETURNING` clause part of this statement.
-  ReturningClause? returning;
 
   /// The columns set by this update statement.
   final Map<String, Expression> updatedColumns = {};
 
   /// Used internally by drift to construct an update statement
-  UpdateStatement(this._database, this.resultSet);
+  UpdateStatement(this._database, super.table);
 
   @override
   UpdateStatement<Row, RS> asSelf() {
@@ -55,15 +50,6 @@ final class UpdateStatement<
     updatedColumns
       ..clear()
       ..addAll(entity.toColumns(nullToAbsent));
-  }
-
-  void _addReturning({List<Expression>? expressions}) {
-    returning = ReturningClause();
-    if (expressions != null) {
-      returning!.structure.addColumns(expressions);
-    } else {
-      returning!.structure.addResultSet(resultSet);
-    }
   }
 
   /// Sets the `SET` components used for this update statement to the columns
@@ -114,7 +100,7 @@ final class UpdateStatement<
       return const [];
     }
 
-    _addReturning();
+    returningAll();
 
     final result = await _run();
     return returning!.interpretResults(_database, result, resultSet);
@@ -134,7 +120,7 @@ final class UpdateStatement<
       return const [];
     }
 
-    _addReturning(expressions: expressions);
+    returningOnly(expressions);
 
     final result = await _run();
     return returning!.interpretExpressionResults(_database, result);
@@ -144,7 +130,6 @@ final class UpdateStatement<
   ///
   /// This is used internally when [replace] cannot be used because it also
   /// runs the statement, e.g. to build batches.
-  @internal
   void prepareReplace(Insertable<Row> entity) {
     // We don't turn nulls to absent values here (as opposed to a regular
     // update, where only non-null fields will be written).

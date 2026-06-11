@@ -1010,8 +1010,8 @@ abstract class RootTableManager<
   /// Create multiple rows in the table using the given function
   ///
   /// All fields in a row that don't have a default value or auto-increment
-  /// must be set and non-null. Otherwise, an [InvalidDataException] will be
-  /// thrown.
+  /// must be set and non-null.
+  ///
   /// By default, an exception will be thrown if another row with the same
   /// primary key already exists. This behavior can be overridden with [mode],
   /// for instance by using [InsertMode.replace] or [InsertMode.insertOrIgnore].
@@ -1019,18 +1019,35 @@ abstract class RootTableManager<
   /// checks.
   /// [onConflict] can be used to create an upsert clause for engines that
   /// support it. For details and examples, see [InsertStatement.insert].
-  Future<void> bulkCreate(
+  ///
+  /// When the `returning` parameter is enabled (it defaults to `false`, this
+  /// returns rows that have been created). Otherwise, this method returns an
+  /// empty list.
+  Future<List<$Dataclass>> bulkCreate(
     Iterable<Insertable<$Dataclass>> Function($CreateCompanionCallback o) f, {
     InsertMode? mode,
     UpsertClause<$Dataclass, $Table>? onConflict,
-  }) {
-    return $state.db.batch((b) {
+    bool returning = false,
+  }) async {
+    final statements = <(BatchedStatement, ReturningClause)>[];
+    final db = $state.db;
+
+    final results = await db.batch((b) {
       for (final insertable in f($state._createCompanionCallback)) {
-        b.addStatement(
-          _createInsertStatement(mode, onConflict).values(insertable),
-        );
+        final statement = _createInsertStatement(
+          mode,
+          onConflict,
+        ).values(insertable);
+        if (returning) {
+          statement.returningAll();
+          statements.add((b.addStatement(statement), statement.returning!));
+        } else {
+          b.addStatement(statement);
+        }
       }
     });
+
+    return _interpreteBatchResult(results, statements);
   }
 
   /// Replaces the old version of [entity] that is stored in the database with
@@ -1056,8 +1073,44 @@ abstract class RootTableManager<
   /// the field exists, that default value will be used. Otherwise, the field
   /// will be reset to null. This behavior is different to [update], which simply
   /// ignores such fields without changing them in the database.
-  Future<void> bulkReplace(Iterable<Insertable<$Dataclass>> entities) {
-    return $state.db.batch((b) => b.replaceAll($state.table, entities));
+  Future<List<$Dataclass>> bulkReplace(
+    Iterable<Insertable<$Dataclass>> entities, {
+    bool returning = false,
+  }) async {
+    final statements = <(BatchedStatement, ReturningClause)>[];
+    final db = $state.db;
+    final table = $state.table;
+
+    final result = await db.batch((b) {
+      for (final entity in entities) {
+        final stmt = UpdateStatement(db, table)..prepareReplace(entity);
+        if (returning) {
+          stmt.returningAll();
+          statements.add((b.addStatement(stmt), stmt.returning!));
+        } else {
+          b.addStatement(stmt);
+        }
+      }
+
+      b.replaceAll($state.table, entities);
+    });
+
+    return _interpreteBatchResult(result, statements);
+  }
+
+  List<$Dataclass> _interpreteBatchResult(
+    BatchResult result,
+    List<(BatchedStatement, ReturningClause)> statements,
+  ) {
+    final mappedRows = <$Dataclass>[];
+    for (final (stmt, returningClause) in statements) {
+      final queryResult = stmt.resolveResult(result);
+      mappedRows.addAll(
+        returningClause.interpretResults($state.db, queryResult, $state.table),
+      );
+    }
+
+    return mappedRows;
   }
 
   /// Create an computed field for adding additional columns to the query

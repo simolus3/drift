@@ -88,7 +88,8 @@ void main() {
     expect(await create7, null);
 
     // Test batch create
-    await db.managers.categories.bulkCreate(
+    final batch = await db.managers.categories.bulkCreate(
+      returning: true,
       (o) => [
         o(priority: Value(CategoryPriority.high), description: "Super High"),
         o(priority: Value(CategoryPriority.low), description: "Super Low"),
@@ -99,6 +100,26 @@ void main() {
       ],
     );
     expect(await db.managers.categories.count(), 6);
+    expect(batch, [
+      Category(
+        id: 5,
+        description: 'Super High',
+        priority: .high,
+        descriptionInUpperCase: 'SUPER HIGH',
+      ),
+      Category(
+        id: 6,
+        description: 'Super Low',
+        priority: .low,
+        descriptionInUpperCase: 'SUPER LOW',
+      ),
+      Category(
+        id: 7,
+        description: 'Super Medium',
+        priority: .medium,
+        descriptionInUpperCase: 'SUPER MEDIUM',
+      ),
+    ]);
   });
 
   test('manager - update', () async {
@@ -124,7 +145,7 @@ void main() {
     );
 
     // Bulk Replace
-    await db.managers.categories.bulkReplace([
+    final rows = await db.managers.categories.bulkReplace(returning: true, [
       obj1.copyWith(description: "Hello"),
       obj2.copyWith(description: "World"),
     ]);
@@ -142,6 +163,7 @@ void main() {
           .then((value) => value.description),
       "World",
     );
+    expect(rows.map((r) => r.description), ['Hello', 'World']);
 
     // Update All Rows
     final update2 = db.managers.categories.update(

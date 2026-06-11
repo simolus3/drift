@@ -209,6 +209,19 @@ void main() {
   });
 
   group('RETURNING', () {
+    test('in query builder', () {
+      final stmt = db.update(db.categories)
+        ..setValues(CategoriesCompanion(description: Value('new')))
+        ..returningOnly([db.categories.priority]);
+
+      expect(
+        stmt,
+        generates('UPDATE "categories" SET "desc" = ?1 RETURNING "priority";', [
+          'new',
+        ]),
+      );
+    });
+
     test('for one row', () async {
       when(executor.execute(any)).thenAnswer((_) {
         return Future.value(

@@ -220,6 +220,7 @@ abstract base class DatabaseConnectionUser {
   /// directly.
   ///
   /// An example that inserts users in a batch:
+  ///
   /// ```dart
   ///  await batch((b) {
   ///    b.insertAll(
@@ -230,6 +231,23 @@ abstract base class DatabaseConnectionUser {
   ///      ],
   ///    );
   ///  });
+  /// ```
+  ///
+  /// Each statement added to a batch is represented as a [BatchedStatement]
+  /// instance. By using [BatchedStatement.resolveResult], results of that
+  /// statement can be resolved after running it:
+  ///
+  /// ```dart
+  ///  late BatchedStatement statement;
+  ///  late ReturningClause returning;
+  ///  final results = await db.batch((b) {
+  ///    final stmt = db.insert(db.table).values(...).returningAll();
+  ///    returning = statement.returning!
+  ///    statement = b.addStatement(stmt);
+  ///  });
+  ///
+  ///  final rawResults = statement.resolveResult(results);
+  ///  final rows = returning.interpretResults(db, rawResults, db.table);
   /// ```
   Future<BatchResult> batch(
     FutureOr<void> Function(Batch batch) runInBatch,

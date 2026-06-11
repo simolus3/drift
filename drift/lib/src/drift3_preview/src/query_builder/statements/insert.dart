@@ -14,17 +14,13 @@ import '../expressions/variables.dart';
 import '../results.dart';
 import '../schema/table.dart';
 import 'select.dart';
-import 'statement.dart';
 
 /// An `INSERT` statement in SQL.
 final class InsertStatement<
   Row extends Object,
   RS extends GeneratedTable<Row, RS>
 >
-    extends SqlStatement {
-  /// The table we're inserting into.
-  final GeneratedTable<Row, RS> table;
-
+    extends StatementWithReturningClause<Row, RS> {
   /// The database used to run this insert statement.
   final DatabaseConnectionUser _database;
 
@@ -34,12 +30,9 @@ final class InsertStatement<
   /// An `ON CONFLICT DO UPDATE` clause added to this statement.
   UpsertClause<Row, RS>? upsertClause;
 
-  /// An optional `RETURNING` clause part of this statement.
-  ReturningClause? returning;
-
   /// Constructs an insert statement from the database and the table. Used
   /// internally by drift.
-  InsertStatement(this._database, this.table);
+  InsertStatement(this._database, super.table);
 
   void _checkNoSource() {
     assert(
@@ -115,15 +108,6 @@ final class InsertStatement<
     return result;
   }
 
-  void _addReturning({List<Expression>? expressions}) {
-    returning = ReturningClause();
-    if (expressions != null) {
-      returning!.structure.addColumns(expressions);
-    } else {
-      returning!.structure.addResultSet(table);
-    }
-  }
-
   /// Runs this insert statement with a `RETURNING` clause, returning inserted
   /// rows.
   ///
@@ -132,8 +116,7 @@ final class InsertStatement<
   /// For a method that does all of this, use [insertReturning] or
   /// [insertReturningOrNull].
   Future<List<Row>> runReturning() async {
-    _addReturning();
-
+    returningAll();
     final result = await _run();
     return returning!.interpretResults(_database, result, table);
   }
@@ -146,7 +129,7 @@ final class InsertStatement<
   /// For a method that does all of this, use [insertReturning] or
   /// [insertReturningOrNull].
   Future<List<DriftRow>> runReturningOnly(List<Expression> expressions) async {
-    _addReturning(expressions: expressions);
+    returningOnly(expressions);
 
     final result = await _run();
     return returning!.interpretExpressionResults(_database, result);

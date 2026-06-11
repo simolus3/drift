@@ -595,6 +595,17 @@ void main() {
   });
 
   group('generates RETURNING', () {
+    test('in query builder', () {
+      final stmt = db.into(db.categories)..returningAll();
+      expect(
+        stmt,
+        generates(
+          'INSERT INTO "categories" DEFAULT VALUES '
+          'RETURNING "id","desc","priority","description_in_upper_case"',
+        ),
+      );
+    });
+
     test('for one row', () async {
       when(session.execute(any)).thenAnswer(
         (_) => Future.value(
