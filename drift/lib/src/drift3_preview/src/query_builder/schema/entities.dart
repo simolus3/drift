@@ -1,9 +1,10 @@
 import '../compiler.dart';
 import '../statements/statement.dart';
+import 'result_set.dart';
 
 /// Some abstract schema entity that can be stored in a database. This includes
 /// tables, triggers, views, indexes, etc.
-abstract interface class DatabaseSchemaEntity {
+sealed class DatabaseSchemaEntity {
   /// The (unalised) name of this entity in the database.
   String get entityName;
 }
@@ -93,3 +94,10 @@ final class OnCreateQuery extends DatabaseSchemaEntity {
   /// definition generator.
   OnCreateQuery(this.definition);
 }
+
+/// A generated table or view that appears in a schema.
+abstract interface class SchemaEntityWithResultSet<
+  Row extends Object,
+  Self extends ResultSet<Row, Self>
+>
+    implements DatabaseSchemaEntity, ResultSet<Row, Self> {}

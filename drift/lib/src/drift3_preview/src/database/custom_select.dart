@@ -5,7 +5,7 @@ import '../connection/result_set.dart';
 import '../connection/streams/store.dart';
 import '../connection/streams/update_rules.dart';
 import '../query_builder/results.dart';
-import '../query_builder/schema/result_set.dart';
+import '../query_builder/schema/entities.dart';
 import '../query_builder/types.dart';
 import 'connection_user.dart';
 import 'selectable.dart';
@@ -17,7 +17,7 @@ abstract base class BaseCustomSelectStatement<T> with Selectable<T> {
   /// Tables this select statement reads from. When turning this select query
   /// into an auto-updating stream, that stream will emit new items whenever
   /// any of these tables changes.
-  final Set<ResultSet> tables;
+  final Set<SchemaEntityWithResultSet> tables;
 
   /// The sql query string for this statement.
   final String query;
@@ -66,7 +66,7 @@ final class CustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
   static CustomSelectStatement<CustomRow> unmapped(
     String query,
     List<MappedValue> variables,
-    Set<ResultSet> tables,
+    Set<SchemaEntityWithResultSet> tables,
     DatabaseConnectionUser db,
     bool isReadOnly,
   ) {

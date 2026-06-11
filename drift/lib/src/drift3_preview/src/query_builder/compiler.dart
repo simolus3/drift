@@ -28,7 +28,6 @@ import 'schema/column.dart';
 import 'schema/column_constraints.dart';
 import 'schema/drop.dart';
 import 'schema/entities.dart';
-import 'schema/result_set.dart';
 import 'schema/subquery.dart';
 import 'schema/table.dart';
 import 'schema/view.dart';
@@ -59,7 +58,7 @@ final class StatementBuffer {
   ///
   /// This is used to build query streams: Whenever any of these tables changes,
   /// we re-run the query.
-  final Set<ResultSet> watchedTables = {};
+  final Set<SchemaEntityWithResultSet> watchedTables = {};
 
   /// A set of tables that might get updated when running the statement.
   ///
@@ -171,7 +170,7 @@ final class CustomComponent implements SqlComponent {
   /// when any table in [watchedTables] changes.
   /// Usually, custom components don't introduce new tables to watch. This field
   /// is mainly used for view and subqueries used as expressions.
-  final Iterable<ResultSet> watchedTables;
+  final Iterable<SchemaEntityWithResultSet> watchedTables;
 
   /// Creates a custom component instance from the SQL text.
   const CustomComponent(
@@ -366,7 +365,9 @@ abstract base class StatementCompiler {
       component.compileWith(this);
     } else {
       if (isWatching) {
-        statement.watchedTables.add(resultSet.resultSet);
+        if (resultSet.resultSet case final SchemaEntityWithResultSet entity) {
+          statement.watchedTables.add(entity);
+        }
       }
       if (write != null && resolved is GeneratedTable) {
         statement.isReadOnly = false;

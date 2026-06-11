@@ -13,7 +13,7 @@ abstract interface class GeneratedTable<
   Self extends GeneratedTable<Row, Self>
 >
     extends Table
-    implements ResultSet<Row, Self> {
+    implements ResultSet<Row, Self>, SchemaEntityWithResultSet<Row, Self> {
   @override
   List<TableColumn> get columns;
 }

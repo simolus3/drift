@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-import '../../query_builder/schema/result_set.dart';
+import '../../query_builder/schema/entities.dart';
 import '../../query_builder/schema/table.dart';
 import '../../query_builder/schema/view.dart';
 
@@ -147,7 +147,7 @@ sealed class TableUpdateQuery {
   /// The optional [limitUpdateKind] parameter can be used to limit the updates
   /// to a certain kind.
   factory TableUpdateQuery.onTable(
-    ResultSet table, {
+    SchemaEntityWithResultSet table, {
     UpdateKind? limitUpdateKind,
   }) {
     if (table is GeneratedView) {
@@ -164,7 +164,9 @@ sealed class TableUpdateQuery {
   }
 
   /// A query that listens for any change on any table in [tables].
-  factory TableUpdateQuery.onAllTables(Iterable<ResultSet> tables) {
+  factory TableUpdateQuery.onAllTables(
+    Iterable<SchemaEntityWithResultSet> tables,
+  ) {
     return TableUpdateQuery.allOf([
       for (final table in tables)
         if (table is GeneratedView)

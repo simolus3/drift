@@ -110,7 +110,7 @@ class EntityDescription {
         _ => 'unknown',
       },
       columns: switch (entity) {
-        ResultSet() => [
+        SchemaEntityWithResultSet() => [
           for (final column in entity.columns)
             ColumnDescription.fromDrift(dialect, column),
         ],

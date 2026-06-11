@@ -12,7 +12,7 @@ abstract interface class GeneratedView<
   Row extends Object,
   Self extends GeneratedView<Row, Self>
 >
-    implements ResultSet<Row, Self> {
+    implements ResultSet<Row, Self>, SchemaEntityWithResultSet<Row, Self> {
   /// For views defined in Dart, the select statement backing this view.
   ///
   /// Otherwise, drift generates [sqlDefinition] from the original SQL text.

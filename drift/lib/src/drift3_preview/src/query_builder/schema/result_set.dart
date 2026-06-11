@@ -8,7 +8,6 @@ import '../dialect.dart';
 import '../expressions/variables.dart';
 import '../results.dart';
 import 'column.dart';
-import 'entities.dart';
 
 /// A result set as it appears in the database schema.
 ///
@@ -17,12 +16,15 @@ import 'entities.dart';
 ///
 /// To read a result set from a row, use [DriftRow.readTable].
 mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
-    implements ResultSetDsl, DatabaseSchemaEntity {
+    implements ResultSetDsl {
   /// When created through [withAlias], an alias for this result set.
   String? get alias;
 
   /// The columns of this result set.
   List<SchemaColumn> get columns;
+
+  /// The default name of this result set (if no [alias] is set).
+  String get entityName;
 
   /// If an [alias] is set, the alias. Otherwise, the [entityName] for this
   /// result set.

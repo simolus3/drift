@@ -13,6 +13,7 @@ import '../query_builder/compiler.dart';
 import '../query_builder/dialect.dart';
 import '../query_builder/expressions/aggregate.dart';
 import '../query_builder/expressions/expression.dart';
+import '../query_builder/schema/entities.dart';
 import '../query_builder/schema/result_set.dart';
 import '../query_builder/schema/table.dart';
 import '../query_builder/statements/delete.dart';
@@ -526,7 +527,7 @@ abstract base class DatabaseConnectionUser {
   Selectable<CustomRow> customSelect(
     String query, {
     List<MappedValue> variables = const [],
-    Set<ResultSet> readsFrom = const {},
+    Set<SchemaEntityWithResultSet> readsFrom = const {},
     bool isReadOnly = true,
   }) {
     return CustomSelectStatement.unmapped(
@@ -544,7 +545,7 @@ abstract base class DatabaseConnectionUser {
     required String query,
     required T Function(RawRow) Function(RawResultSet) createMapper,
     List<MappedValue> variables = const [],
-    Set<ResultSet> readsFrom = const {},
+    Set<SchemaEntityWithResultSet> readsFrom = const {},
     bool isReadOnly = true,
   }) {
     return CustomSelectStatement(
@@ -563,7 +564,7 @@ abstract base class DatabaseConnectionUser {
     required String query,
     required Future<T> Function(RawRow) Function(RawResultSet) createMapper,
     List<MappedValue> variables = const [],
-    Set<ResultSet> readsFrom = const {},
+    Set<SchemaEntityWithResultSet> readsFrom = const {},
     bool isReadOnly = true,
   }) {
     return AsyncCustomSelectStatement(
@@ -606,7 +607,7 @@ abstract base class DatabaseConnectionUser {
   Future<int> customUpdate(
     String query, {
     List<MappedValue> variables = const [],
-    Set<ResultSet>? updates,
+    Set<SchemaEntityWithResultSet>? updates,
     UpdateKind? updateKind,
   }) async {
     final result = await _customWrite(
@@ -627,7 +628,7 @@ abstract base class DatabaseConnectionUser {
   Future<int> customInsert(
     String query, {
     List<MappedValue> variables = const [],
-    Set<ResultSet>? updates,
+    Set<SchemaEntityWithResultSet>? updates,
   }) async {
     final result = await _customWrite(
       query,
@@ -650,7 +651,7 @@ abstract base class DatabaseConnectionUser {
   Future<RawResultSet> customWriteReturning(
     String query, {
     List<MappedValue> variables = const [],
-    Set<ResultSet>? updates,
+    Set<SchemaEntityWithResultSet>? updates,
     UpdateKind? updateKind,
   }) async {
     final result = await _customWrite(
@@ -669,7 +670,7 @@ abstract base class DatabaseConnectionUser {
   Future<QueryResult> _customWrite(
     String query,
     List<MappedValue> variables,
-    Set<ResultSet>? updates,
+    Set<SchemaEntityWithResultSet>? updates,
     UpdateKind? updateKind,
     bool needsResultSet,
   ) async {
