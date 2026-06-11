@@ -173,7 +173,10 @@ class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
 
 abstract base class _$Database extends GeneratedDatabase {
   _$Database(super.implementation);
-  late final $TodoCategoriesTable todoCategories = $TodoCategoriesTable();
+  $TodoCategoriesTable get todoCategories => $TodoCategoriesTable();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [todoCategories];
+  DatabaseSchema get schema => _$schema;
+  static final DatabaseSchema _$schema = DatabaseSchema([
+    $TodoCategoriesTable(),
+  ]);
 }

@@ -8,7 +8,7 @@ import '../connection/streams/delayed_stream_queries.dart';
 import '../connection/streams/store.dart';
 import '../connection/streams/update_rules.dart';
 import '../devtools/devtools.dart' as devtools;
-import '../query_builder/schema/entities.dart';
+import '../query_builder.dart';
 import 'connection_user.dart';
 import 'migrations.dart';
 
@@ -59,11 +59,9 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   StreamQueryUpdateRules get streamUpdateRules =>
       const StreamQueryUpdateRules.none();
 
-  /// A list of all [DatabaseSchemaEntity] that are specified in this database.
-  ///
-  /// This contains all tables, views, triggers, indexes and other drift-
-  /// specific entities that are also encoded as schema entities.
-  Iterable<DatabaseSchemaEntity> get allSchemaEntities;
+  /// The schema of this database, providing access to underlying
+  /// [DatabaseSchema.entities].
+  DatabaseSchema get schema;
 
   @override
   GeneratedDatabase get attachedDatabase => this;

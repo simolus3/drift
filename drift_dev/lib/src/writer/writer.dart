@@ -129,7 +129,14 @@ abstract class _NodeOrWriter {
     DriftElementWithResultSet element,
     String database,
   ) {
-    if (writer.generationOptions.isModular) {
+    if (writer.options.drift3Preview) {
+      final infoType = entityInfoType(element);
+      return AnnotatedDartCode.build(
+        (b) => b
+          ..addCode(infoType)
+          ..addText('()'),
+      );
+    } else if (writer.generationOptions.isModular) {
       final infoType = entityInfoType(element);
 
       return AnnotatedDartCode.build(

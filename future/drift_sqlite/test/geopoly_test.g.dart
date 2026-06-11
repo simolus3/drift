@@ -209,7 +209,7 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
 
 abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
   _$_GeopolyTestDatabase(super.implementation);
-  late final GeopolyTest geopolyTest = GeopolyTest();
+  GeopolyTest get geopolyTest => GeopolyTest();
   Selectable<double?> area(int var1) {
     return customSelectMapped<double?>(
       query: 'SELECT geopoly_area(_shape) FROM geopoly_test WHERE "rowid" = ?1',
@@ -224,5 +224,6 @@ abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
   }
 
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [geopolyTest];
+  DatabaseSchema get schema => _$schema;
+  static final DatabaseSchema _$schema = DatabaseSchema([GeopolyTest()]);
 }

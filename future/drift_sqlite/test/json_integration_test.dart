@@ -158,7 +158,7 @@ final class _TestDatabase extends GeneratedDatabase {
   _TestDatabase(super.implementation);
 
   @override
-  Iterable<DatabaseSchemaEntity> get allSchemaEntities => [categories, todos];
+  DatabaseSchema get schema => DatabaseSchema([categories, todos]);
 
   @override
   int get schemaVersion => 1;

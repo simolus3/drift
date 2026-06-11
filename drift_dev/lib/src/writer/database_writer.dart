@@ -78,58 +78,10 @@ class DatabaseWriter {
     }
 
     final entityGetters = <DriftElement, String>{};
-
-    for (final entity in elements.whereType<DriftElement>()) {
-      final getterName = entity.computeDbGetterName(dbScope.options);
-
-      if (getterName != null) {
-        // In the modular generation mode, table and view instances are still
-        // created in the database instance. However, triggers and indices are
-        // generated as a top-level field which is simply imported.
-        if (scope.generationOptions.isModular &&
-            (entity is! DriftElementWithResultSet)) {
-          final import = dbScope.generatedElement(entity, getterName);
-
-          entityGetters[entity] = dbScope.dartCode(import);
-          continue;
-        }
-
-        entityGetters[entity] = getterName;
-      }
-
-      if (entity is DriftTable) {
-        final tableClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
-
-        writeMemoizedGetter(
-          buffer: dbScope.leaf().buffer,
-          getterName: getterName!,
-          returnType: tableClassName,
-          code: scope.drift3 ? '$tableClassName()' : '$tableClassName(this)',
-        );
-      } else if (entity is DriftTrigger) {
-        writeMemoizedGetter(
-          buffer: dbScope.leaf().buffer,
-          getterName: getterName!,
-          returnType: dbScope.drift('Trigger'),
-          code: createTrigger(dbScope, entity),
-        );
-      } else if (entity is DriftIndex) {
-        writeMemoizedGetter(
-          buffer: dbScope.leaf().buffer,
-          getterName: getterName!,
-          returnType: dbScope.drift('Index'),
-          code: createIndex(scope, entity),
-        );
-      } else if (entity is DriftView) {
-        final viewClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
-
-        writeMemoizedGetter(
-          buffer: dbScope.leaf().buffer,
-          getterName: getterName!,
-          returnType: viewClassName,
-          code: '$viewClassName(this)',
-        );
-      }
+    if (scope.drift3) {
+      _defineDrift3SchemaEntities(dbScope, entityGetters);
+    } else {
+      _defineDrift2SchemaEntities(dbScope, entityGetters);
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
@@ -191,27 +143,7 @@ class DatabaseWriter {
         ..write('allSchemaEntities.whereType<$tableInfoType>();\n');
     }
 
-    final schemaEntity = dbScope.drift('DatabaseSchemaEntity');
-    schemaScope
-      ..write('@override\nList<$schemaEntity> get allSchemaEntities ')
-      ..write('=> [')
-      ..write(
-        elements
-            .map((e) {
-              if (e is DefinedSqlQuery &&
-                  e.mode == QueryMode.atCreate &&
-                  !scope.generationOptions.isModular) {
-                final resolved = input.importedQueries[e]!;
-                return createOnCreate(dbScope, e, resolved);
-              }
-
-              return entityGetters[e];
-            })
-            .whereType<String>()
-            .join(', '),
-      )
-      // close list literal and allSchemaEntities getter
-      ..write('];\n');
+    _writeSchemaOverride(schemaScope, entityGetters);
 
     final updateRules = FindStreamUpdateRules(
       input.resolvedAccessor,
@@ -251,8 +183,205 @@ class DatabaseWriter {
         );
     }
 
+    if (scope.drift3) {
+      _defineStaticSchemaEntities(schemaScope);
+    }
+
     // close the class
     schemaScope.write('}\n');
+  }
+
+  void _defineStaticSchemaEntities(TextEmitter writer) {
+    final elements = input.resolvedAccessor.availableElements;
+    final entityExpressions = <String>[];
+
+    for (final entity in elements.whereType<DriftElement>()) {
+      final getterName = entity.computeDbGetterName(scope.options);
+      final staticGetterName = '_\$$getterName';
+
+      if (entity is DriftTrigger) {
+        entityExpressions.add(staticGetterName);
+
+        writer
+          ..write('static final $staticGetterName = ')
+          ..write(createTrigger(scope, entity))
+          ..writeln(';');
+      } else if (entity is DriftIndex) {
+        entityExpressions.add(staticGetterName);
+
+        writer
+          ..write('static final $staticGetterName = ')
+          ..write(createIndex(scope, entity))
+          ..writeln(';');
+      } else if (entity is DriftElementWithResultSet) {
+        final className = writer.dartCode(writer.entityInfoType(entity));
+        entityExpressions.add('$className()');
+      }
+    }
+
+    final schemaType = writer.drift('DatabaseSchema');
+    writer
+      ..write('static final $schemaType _\$schema = ')
+      ..writeln('$schemaType([');
+
+    for (final entity in entityExpressions) {
+      writer
+        ..write(entity)
+        ..writeln(',');
+    }
+
+    for (final element in elements) {
+      if (element is DefinedSqlQuery &&
+          element.mode == QueryMode.atCreate &&
+          !scope.generationOptions.isModular) {
+        final resolved = input.importedQueries[element]!;
+        writer
+          ..write(createOnCreate(writer.parent!, element, resolved))
+          ..writeln(',');
+      }
+    }
+
+    writer.writeln(']);');
+  }
+
+  void _defineDrift2SchemaEntities(
+    Scope dbScope,
+    Map<DriftElement, String> entityGetters,
+  ) {
+    final elements = input.resolvedAccessor.availableElements;
+
+    for (final entity in elements.whereType<DriftElement>()) {
+      final getterName = entity.computeDbGetterName(dbScope.options);
+
+      if (getterName != null) {
+        // In the modular generation mode, table and view instances are still
+        // created in the database instance. However, triggers and indices are
+        // generated as a top-level field which is simply imported.
+        if (scope.generationOptions.isModular &&
+            (entity is! DriftElementWithResultSet)) {
+          final import = dbScope.generatedElement(entity, getterName);
+
+          entityGetters[entity] = dbScope.dartCode(import);
+          continue;
+        }
+
+        entityGetters[entity] = getterName;
+      }
+
+      if (entity is DriftTable) {
+        final tableClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
+
+        writeMemoizedGetter(
+          buffer: dbScope.leaf().buffer,
+          getterName: getterName!,
+          returnType: tableClassName,
+          code: '$tableClassName(this)',
+        );
+      } else if (entity is DriftTrigger) {
+        writeMemoizedGetter(
+          buffer: dbScope.leaf().buffer,
+          getterName: getterName!,
+          returnType: dbScope.drift('Trigger'),
+          code: createTrigger(dbScope, entity),
+        );
+      } else if (entity is DriftIndex) {
+        writeMemoizedGetter(
+          buffer: dbScope.leaf().buffer,
+          getterName: getterName!,
+          returnType: dbScope.drift('Index'),
+          code: createIndex(scope, entity),
+        );
+      } else if (entity is DriftView) {
+        final viewClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
+
+        writeMemoizedGetter(
+          buffer: dbScope.leaf().buffer,
+          getterName: getterName!,
+          returnType: viewClassName,
+          code: '$viewClassName(this)',
+        );
+      }
+    }
+  }
+
+  void _defineDrift3SchemaEntities(
+    Scope dbScope,
+    Map<DriftElement, String> entityGetters,
+  ) {
+    final elements = input.resolvedAccessor.availableElements;
+
+    for (final entity in elements.whereType<DriftElement>()) {
+      final getterName = entity.computeDbGetterName(dbScope.options);
+
+      if (getterName != null) {
+        // In the modular generation mode, table and view instances are still
+        // created in the database instance. However, triggers and indices are
+        // generated as a top-level field which is simply imported.
+        if (scope.generationOptions.isModular &&
+            (entity is! DriftElementWithResultSet)) {
+          final import = dbScope.generatedElement(entity, getterName);
+
+          entityGetters[entity] = dbScope.dartCode(import);
+          continue;
+        }
+
+        entityGetters[entity] = getterName;
+      }
+
+      void define(String type, String definition) {
+        final buffer = dbScope.leaf().buffer;
+        buffer.writeln('$type get $getterName => $definition;');
+      }
+
+      if (entity is DriftTable) {
+        final tableClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
+        define(tableClassName, '$tableClassName()');
+      } else if (entity is DriftTrigger) {
+        define(dbScope.drift('Trigger'), '_\$$getterName');
+      } else if (entity is DriftIndex) {
+        define(dbScope.drift('Index'), '_\$$getterName');
+      } else if (entity is DriftView) {
+        final viewClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
+        define(viewClassName, '$viewClassName()');
+      }
+    }
+  }
+
+  void _writeSchemaOverride(
+    TextEmitter schemaScope,
+    Map<DriftElement, String> entityGetters,
+  ) {
+    schemaScope.writeln('@override');
+    if (schemaScope.writer.options.drift3Preview) {
+      schemaScope
+        ..writeDriftRef('DatabaseSchema')
+        ..writeln(' get schema => _\$schema;');
+      return;
+    }
+
+    final elements = input.resolvedAccessor.availableElements;
+    final schemaEntity = schemaScope.drift('DatabaseSchemaEntity');
+
+    schemaScope
+      ..write('List<$schemaEntity> get allSchemaEntities ')
+      ..write('=> [')
+      ..write(
+        elements
+            .map((e) {
+              if (e is DefinedSqlQuery &&
+                  e.mode == QueryMode.atCreate &&
+                  !scope.generationOptions.isModular) {
+                final resolved = input.importedQueries[e]!;
+                return createOnCreate(schemaScope.parent!, e, resolved);
+              }
+
+              return entityGetters[e];
+            })
+            .whereType<String>()
+            .join(', '),
+      )
+      // close list literal and allSchemaEntities getter
+      ..write('];\n');
   }
 
   static String createTrigger(Scope scope, DriftTrigger entity) {

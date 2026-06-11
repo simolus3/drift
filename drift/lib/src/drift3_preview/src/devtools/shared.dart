@@ -153,7 +153,7 @@ class DatabaseDescription {
   factory DatabaseDescription.fromDrift(GeneratedDatabase database) {
     return DatabaseDescription(
       entities: [
-        for (final entity in database.allSchemaEntities)
+        for (final entity in database.schema)
           EntityDescription.fromDrift(database.dialect, entity),
       ],
     );

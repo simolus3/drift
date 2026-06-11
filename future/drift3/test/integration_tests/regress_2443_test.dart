@@ -37,5 +37,5 @@ final class TestDb extends GeneratedDatabase {
   @override
   final int schemaVersion = 1;
   @override
-  Iterable<DatabaseSchemaEntity> get allSchemaEntities => const [];
+  DatabaseSchema get schema => DatabaseSchema.empty;
 }

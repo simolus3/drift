@@ -29,7 +29,7 @@ final class _FakeDb extends GeneratedDatabase {
   }
 
   @override
-  Iterable<DatabaseSchemaEntity> get allSchemaEntities => const [];
+  DatabaseSchema get schema => DatabaseSchema.empty;
 
   @override
   int schemaVersion = 1;

@@ -282,7 +282,7 @@ final class EmptyDb extends GeneratedDatabase {
   EmptyDb(super.implementation);
 
   @override
-  Iterable<DatabaseSchemaEntity> get allSchemaEntities => const [];
+  DatabaseSchema get schema => .empty;
 
   @override
   final int schemaVersion = 1;

@@ -1,3 +1,6 @@
+import 'package:drift/src/drift3_preview/src/database/db_base.dart';
+
+import '../../database/connection_user.dart';
 import '../compiler.dart';
 import '../expressions/custom.dart';
 import '../expressions/expression.dart';
@@ -23,6 +26,16 @@ abstract interface class GeneratedView<
 
   /// The names of tables that this view is reading from.
   Set<String> get readsFrom;
+
+  /// Generates a [SelectStatement] for [query].
+  ///
+  /// Meant to be used by generated code.
+  static SelectStatement defineStatementForView(
+    ResultSet table, {
+    bool distinct = false,
+  }) {
+    return _NullDatabaseConnectionUser().selectOnly(table, distinct: distinct);
+  }
 }
 
 /// A column in a [GeneratedView].
@@ -86,4 +99,9 @@ final class CreateViewStatement extends CreateStatement<GeneratedView> {
   void compileWith(StatementCompiler compiler) {
     return compiler.addCreateViewStatement(this);
   }
+}
+
+final class _NullDatabaseConnectionUser extends DatabaseConnectionUser {
+  @override
+  GeneratedDatabase get attachedDatabase => throw UnimplementedError();
 }

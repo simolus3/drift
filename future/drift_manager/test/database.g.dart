@@ -2396,26 +2396,27 @@ class ListingCompanion extends UpdateCompanion<ListingData> {
 abstract base class _$TestDatabase extends GeneratedDatabase {
   _$TestDatabase(super.implementation);
   $TestDatabaseManager get managers => $TestDatabaseManager(this);
-  late final $CategoriesTable categories = $CategoriesTable();
-  late final $TableWithEveryColumnTypeTable tableWithEveryColumnType =
+  $CategoriesTable get categories => $CategoriesTable();
+  $TableWithEveryColumnTypeTable get tableWithEveryColumnType =>
       $TableWithEveryColumnTypeTable();
-  late final $TodosTableTable todosTable = $TodosTableTable();
-  late final $UsersTable users = $UsersTable();
-  late final $DepartmentTable department = $DepartmentTable();
-  late final $ProductTable product = $ProductTable();
-  late final $StoreTable store = $StoreTable();
-  late final $ListingTable listing = $ListingTable();
+  $TodosTableTable get todosTable => $TodosTableTable();
+  $UsersTable get users => $UsersTable();
+  $DepartmentTable get department => $DepartmentTable();
+  $ProductTable get product => $ProductTable();
+  $StoreTable get store => $StoreTable();
+  $ListingTable get listing => $ListingTable();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    categories,
-    tableWithEveryColumnType,
-    todosTable,
-    users,
-    department,
-    product,
-    store,
-    listing,
-  ];
+  DatabaseSchema get schema => _$schema;
+  static final DatabaseSchema _$schema = DatabaseSchema([
+    $CategoriesTable(),
+    $TableWithEveryColumnTypeTable(),
+    $TodosTableTable(),
+    $UsersTable(),
+    $DepartmentTable(),
+    $ProductTable(),
+    $StoreTable(),
+    $ListingTable(),
+  ]);
 }
 
 typedef $$CategoriesTableCreateCompanionBuilder =
@@ -2437,14 +2438,14 @@ final class $$CategoriesTableReferences
 
   static MultiTypedResultKey<List<TodoEntry>> _todosTable(_$TestDatabase db) =>
       MultiTypedResultKey.fromTable(
-        db.todosTable,
+        $TodosTableTable(),
         aliasName: 'categories__id__todos__category',
       );
 
   $$TodosTableTableProcessedTableManager get todos {
     final manager = $$TodosTableTableTableManager(
       $_db,
-      $_db.todosTable,
+      $TodosTableTable(),
     ).filter((f) => f.category.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_todosTable($_db));
@@ -2490,7 +2491,7 @@ class $$CategoriesTableFilterComposer
     final $$TodosTableTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.todosTable,
+      referencedTable: $TodosTableTable(),
       getReferencedColumn: (t) => t.category,
       builder:
           (
@@ -2499,7 +2500,7 @@ class $$CategoriesTableFilterComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$TodosTableTableFilterComposer(
             $db: $db,
-            $table: $db.todosTable,
+            $table: $TodosTableTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2571,7 +2572,7 @@ class $$CategoriesTableAnnotationComposer
     final $$TodosTableTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.todosTable,
+      referencedTable: $TodosTableTable(),
       getReferencedColumn: (t) => t.category,
       builder:
           (
@@ -2580,7 +2581,7 @@ class $$CategoriesTableAnnotationComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$TodosTableTableAnnotationComposer(
             $db: $db,
-            $table: $db.todosTable,
+            $table: $TodosTableTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2648,7 +2649,7 @@ class $$CategoriesTableTableManager
           prefetchHooksCallback: ({todos = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (todos) db.todosTable],
+              explicitlyWatchedTables: [if (todos) $TodosTableTable()],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -3029,14 +3030,14 @@ final class $$TodosTableTableReferences
   $$TodosTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _categoryTable(_$TestDatabase db) =>
-      db.categories.withAlias('todos__category__categories__id');
+      $CategoriesTable().withAlias('todos__category__categories__id');
 
   $$CategoriesTableProcessedTableManager? get category {
     final $_column = $_itemColumn<int>('category');
     if ($_column == null) return null;
     final manager = $$CategoriesTableTableManager(
       $_db,
-      $_db.categories,
+      $CategoriesTable(),
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryTable($_db));
     if (item == null) return manager;
@@ -3085,7 +3086,7 @@ class $$TodosTableTableFilterComposer
     final $$CategoriesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.category,
-      referencedTable: $db.categories,
+      referencedTable: $CategoriesTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -3094,7 +3095,7 @@ class $$TodosTableTableFilterComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$CategoriesTableFilterComposer(
             $db: $db,
-            $table: $db.categories,
+            $table: $CategoriesTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3143,7 +3144,7 @@ class $$TodosTableTableOrderingComposer
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.category,
-      referencedTable: $db.categories,
+      referencedTable: $CategoriesTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -3152,7 +3153,7 @@ class $$TodosTableTableOrderingComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$CategoriesTableOrderingComposer(
             $db: $db,
-            $table: $db.categories,
+            $table: $CategoriesTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3193,7 +3194,7 @@ class $$TodosTableTableAnnotationComposer
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.category,
-      referencedTable: $db.categories,
+      referencedTable: $CategoriesTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -3202,7 +3203,7 @@ class $$TodosTableTableAnnotationComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$CategoriesTableAnnotationComposer(
             $db: $db,
-            $table: $db.categories,
+            $table: $CategoriesTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3541,14 +3542,14 @@ final class $$DepartmentTableReferences
   static MultiTypedResultKey<List<ProductData>> _productRefsTable(
     _$TestDatabase db,
   ) => MultiTypedResultKey.fromTable(
-    db.product,
+    $ProductTable(),
     aliasName: 'department__id__product__department',
   );
 
   $$ProductTableProcessedTableManager get productRefs {
     final manager = $$ProductTableTableManager(
       $_db,
-      $_db.product,
+      $ProductTable(),
     ).filter((f) => f.department.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_productRefsTable($_db));
@@ -3583,7 +3584,7 @@ class $$DepartmentTableFilterComposer
     final $$ProductTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.product,
+      referencedTable: $ProductTable(),
       getReferencedColumn: (t) => t.department,
       builder:
           (
@@ -3592,7 +3593,7 @@ class $$DepartmentTableFilterComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$ProductTableFilterComposer(
             $db: $db,
-            $table: $db.product,
+            $table: $ProductTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3644,7 +3645,7 @@ class $$DepartmentTableAnnotationComposer
     final $$ProductTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.product,
+      referencedTable: $ProductTable(),
       getReferencedColumn: (t) => t.department,
       builder:
           (
@@ -3653,7 +3654,7 @@ class $$DepartmentTableAnnotationComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$ProductTableAnnotationComposer(
             $db: $db,
-            $table: $db.product,
+            $table: $ProductTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3711,7 +3712,7 @@ class $$DepartmentTableTableManager
           prefetchHooksCallback: ({productRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (productRefs) db.product],
+              explicitlyWatchedTables: [if (productRefs) $ProductTable()],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -3776,14 +3777,14 @@ final class $$ProductTableReferences
   $$ProductTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $DepartmentTable _departmentTable(_$TestDatabase db) =>
-      db.department.withAlias('product__department__department__id');
+      $DepartmentTable().withAlias('product__department__department__id');
 
   $$DepartmentTableProcessedTableManager? get department {
     final $_column = $_itemColumn<int>('department');
     if ($_column == null) return null;
     final manager = $$DepartmentTableTableManager(
       $_db,
-      $_db.department,
+      $DepartmentTable(),
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_departmentTable($_db));
     if (item == null) return manager;
@@ -3795,14 +3796,14 @@ final class $$ProductTableReferences
   static MultiTypedResultKey<List<ListingData>> _listingsTable(
     _$TestDatabase db,
   ) => MultiTypedResultKey.fromTable(
-    db.listing,
+    $ListingTable(),
     aliasName: 'product__sku__listing__product',
   );
 
   $$ListingTableProcessedTableManager get listings {
     final manager = $$ListingTableTableManager(
       $_db,
-      $_db.listing,
+      $ListingTable(),
     ).filter((f) => f.product.sku.sqlEquals($_itemColumn<String>('sku')!));
 
     final cache = $_typedResult.readTableOrNull(_listingsTable($_db));
@@ -3835,7 +3836,7 @@ class $$ProductTableFilterComposer
     final $$DepartmentTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.department,
-      referencedTable: $db.department,
+      referencedTable: $DepartmentTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -3844,7 +3845,7 @@ class $$ProductTableFilterComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$DepartmentTableFilterComposer(
             $db: $db,
-            $table: $db.department,
+            $table: $DepartmentTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3860,7 +3861,7 @@ class $$ProductTableFilterComposer
     final $$ListingTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.sku,
-      referencedTable: $db.listing,
+      referencedTable: $ListingTable(),
       getReferencedColumn: (t) => t.product,
       builder:
           (
@@ -3869,7 +3870,7 @@ class $$ProductTableFilterComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$ListingTableFilterComposer(
             $db: $db,
-            $table: $db.listing,
+            $table: $ListingTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3903,7 +3904,7 @@ class $$ProductTableOrderingComposer
     final $$DepartmentTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.department,
-      referencedTable: $db.department,
+      referencedTable: $DepartmentTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -3912,7 +3913,7 @@ class $$ProductTableOrderingComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$DepartmentTableOrderingComposer(
             $db: $db,
-            $table: $db.department,
+            $table: $DepartmentTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3942,7 +3943,7 @@ class $$ProductTableAnnotationComposer
     final $$DepartmentTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.department,
-      referencedTable: $db.department,
+      referencedTable: $DepartmentTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -3951,7 +3952,7 @@ class $$ProductTableAnnotationComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$DepartmentTableAnnotationComposer(
             $db: $db,
-            $table: $db.department,
+            $table: $DepartmentTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3967,7 +3968,7 @@ class $$ProductTableAnnotationComposer
     final $$ListingTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.sku,
-      referencedTable: $db.listing,
+      referencedTable: $ListingTable(),
       getReferencedColumn: (t) => t.product,
       builder:
           (
@@ -3976,7 +3977,7 @@ class $$ProductTableAnnotationComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$ListingTableAnnotationComposer(
             $db: $db,
-            $table: $db.listing,
+            $table: $ListingTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4048,7 +4049,7 @@ class $$ProductTableTableManager
           prefetchHooksCallback: ({department = false, listings = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (listings) db.listing],
+              explicitlyWatchedTables: [if (listings) $ListingTable()],
               addJoins:
                   <
                     T extends TableManagerState<
@@ -4133,14 +4134,14 @@ final class $$StoreTableReferences
   static MultiTypedResultKey<List<ListingData>> _listingsTable(
     _$TestDatabase db,
   ) => MultiTypedResultKey.fromTable(
-    db.listing,
+    $ListingTable(),
     aliasName: 'store__id__listing__store',
   );
 
   $$ListingTableProcessedTableManager get listings {
     final manager = $$ListingTableTableManager(
       $_db,
-      $_db.listing,
+      $ListingTable(),
     ).filter((f) => f.store.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_listingsTable($_db));
@@ -4174,7 +4175,7 @@ class $$StoreTableFilterComposer extends Composer<_$TestDatabase, $StoreTable> {
     final $$ListingTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.listing,
+      referencedTable: $ListingTable(),
       getReferencedColumn: (t) => t.store,
       builder:
           (
@@ -4183,7 +4184,7 @@ class $$StoreTableFilterComposer extends Composer<_$TestDatabase, $StoreTable> {
             $removeJoinBuilderFromRootComposer,
           }) => $$ListingTableFilterComposer(
             $db: $db,
-            $table: $db.listing,
+            $table: $ListingTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4235,7 +4236,7 @@ class $$StoreTableAnnotationComposer
     final $$ListingTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.listing,
+      referencedTable: $ListingTable(),
       getReferencedColumn: (t) => t.store,
       builder:
           (
@@ -4244,7 +4245,7 @@ class $$StoreTableAnnotationComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$ListingTableAnnotationComposer(
             $db: $db,
-            $table: $db.listing,
+            $table: $ListingTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4300,7 +4301,7 @@ class $$StoreTableTableManager
           prefetchHooksCallback: ({listings = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (listings) db.listing],
+              explicitlyWatchedTables: [if (listings) $ListingTable()],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -4362,14 +4363,14 @@ final class $$ListingTableReferences
   $$ListingTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $ProductTable _productTable(_$TestDatabase db) =>
-      db.product.withAlias('listing__product__product__sku');
+      $ProductTable().withAlias('listing__product__product__sku');
 
   $$ProductTableProcessedTableManager get product {
     final $_column = $_itemColumn<String>('product')!;
 
     final manager = $$ProductTableTableManager(
       $_db,
-      $_db.product,
+      $ProductTable(),
     ).filter((f) => f.sku.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_productTable($_db));
     if (item == null) return manager;
@@ -4379,14 +4380,14 @@ final class $$ListingTableReferences
   }
 
   static $StoreTable _storeTable(_$TestDatabase db) =>
-      db.store.withAlias('listing__store__store__id');
+      $StoreTable().withAlias('listing__store__store__id');
 
   $$StoreTableProcessedTableManager? get store {
     final $_column = $_itemColumn<int>('store');
     if ($_column == null) return null;
     final manager = $$StoreTableTableManager(
       $_db,
-      $_db.store,
+      $StoreTable(),
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_storeTable($_db));
     if (item == null) return manager;
@@ -4419,7 +4420,7 @@ class $$ListingTableFilterComposer
     final $$ProductTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.product,
-      referencedTable: $db.product,
+      referencedTable: $ProductTable(),
       getReferencedColumn: (t) => t.sku,
       builder:
           (
@@ -4428,7 +4429,7 @@ class $$ListingTableFilterComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$ProductTableFilterComposer(
             $db: $db,
-            $table: $db.product,
+            $table: $ProductTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4442,7 +4443,7 @@ class $$ListingTableFilterComposer
     final $$StoreTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.store,
-      referencedTable: $db.store,
+      referencedTable: $StoreTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -4451,7 +4452,7 @@ class $$ListingTableFilterComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$StoreTableFilterComposer(
             $db: $db,
-            $table: $db.store,
+            $table: $StoreTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4485,7 +4486,7 @@ class $$ListingTableOrderingComposer
     final $$ProductTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.product,
-      referencedTable: $db.product,
+      referencedTable: $ProductTable(),
       getReferencedColumn: (t) => t.sku,
       builder:
           (
@@ -4494,7 +4495,7 @@ class $$ListingTableOrderingComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$ProductTableOrderingComposer(
             $db: $db,
-            $table: $db.product,
+            $table: $ProductTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4508,7 +4509,7 @@ class $$ListingTableOrderingComposer
     final $$StoreTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.store,
-      referencedTable: $db.store,
+      referencedTable: $StoreTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -4517,7 +4518,7 @@ class $$ListingTableOrderingComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$StoreTableOrderingComposer(
             $db: $db,
-            $table: $db.store,
+            $table: $StoreTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4547,7 +4548,7 @@ class $$ListingTableAnnotationComposer
     final $$ProductTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.product,
-      referencedTable: $db.product,
+      referencedTable: $ProductTable(),
       getReferencedColumn: (t) => t.sku,
       builder:
           (
@@ -4556,7 +4557,7 @@ class $$ListingTableAnnotationComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$ProductTableAnnotationComposer(
             $db: $db,
-            $table: $db.product,
+            $table: $ProductTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4570,7 +4571,7 @@ class $$ListingTableAnnotationComposer
     final $$StoreTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.store,
-      referencedTable: $db.store,
+      referencedTable: $StoreTable(),
       getReferencedColumn: (t) => t.id,
       builder:
           (
@@ -4579,7 +4580,7 @@ class $$ListingTableAnnotationComposer
             $removeJoinBuilderFromRootComposer,
           }) => $$StoreTableAnnotationComposer(
             $db: $db,
-            $table: $db.store,
+            $table: $StoreTable(),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:

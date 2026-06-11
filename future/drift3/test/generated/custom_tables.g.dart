@@ -1598,8 +1598,7 @@ class MyView
     implements GeneratedView<MyViewData, MyView> {
   @override
   final String? alias;
-  final _$CustomTablesDb _attachedDatabase;
-  MyView(this._attachedDatabase, [this.alias]);
+  MyView([this.alias]);
   @override
   List<SchemaColumn> get columns => [
     configKey,
@@ -1670,7 +1669,7 @@ class MyView
         ..owningResultSet = this;
   @override
   MyView withAlias(String alias) {
-    return MyView(_attachedDatabase, alias);
+    return MyView(alias);
   }
 
   @override
@@ -1681,28 +1680,16 @@ class MyView
 
 abstract base class _$CustomTablesDb extends GeneratedDatabase {
   _$CustomTablesDb(super.implementation);
-  late final NoIds noIds = NoIds();
-  late final WithDefaults withDefaults = WithDefaults();
-  late final WithConstraints withConstraints = WithConstraints();
-  late final ConfigTable config = ConfigTable();
-  late final Index valueIdx = Index(
-    'value_idx',
-    CustomComponent(
-      'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)',
-      dialectSpecificSql: {},
-    ),
-  );
-  late final Mytable mytable = Mytable();
-  late final Email email = Email();
-  late final WeirdTable weirdTable = WeirdTable();
-  late final Trigger myTrigger = Trigger(
-    'my_trigger',
-    CustomComponent(
-      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
-      dialectSpecificSql: {},
-    ),
-  );
-  late final MyView myView = MyView(this);
+  NoIds get noIds => NoIds();
+  WithDefaults get withDefaults => WithDefaults();
+  WithConstraints get withConstraints => WithConstraints();
+  ConfigTable get config => ConfigTable();
+  Index get valueIdx => _$valueIdx;
+  Mytable get mytable => Mytable();
+  Email get email => Email();
+  WeirdTable get weirdTable => WeirdTable();
+  Trigger get myTrigger => _$myTrigger;
+  MyView get myView => MyView();
   Future<int> writeConfig({required String key, DriftAny? value}) {
     return customInsert(
       switch (dialect.known) {
@@ -2142,17 +2129,42 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   }
 
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    noIds,
-    withDefaults,
-    withConstraints,
-    config,
-    valueIdx,
-    mytable,
-    email,
-    weirdTable,
-    myTrigger,
-    myView,
+  DatabaseSchema get schema => _$schema;
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'config',
+        limitUpdateKind: UpdateKind.insert,
+      ),
+      result: [TableUpdate('with_defaults', kind: UpdateKind.insert)],
+    ),
+  ]);
+  static final _$valueIdx = Index(
+    'value_idx',
+    CustomComponent(
+      'CREATE INDEX IF NOT EXISTS value_idx ON config (config_value)',
+      dialectSpecificSql: {},
+    ),
+  );
+  static final _$myTrigger = Trigger(
+    'my_trigger',
+    CustomComponent(
+      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
+      dialectSpecificSql: {},
+    ),
+  );
+  static final DatabaseSchema _$schema = DatabaseSchema([
+    NoIds(),
+    WithDefaults(),
+    WithConstraints(),
+    ConfigTable(),
+    _$valueIdx,
+    Mytable(),
+    Email(),
+    WeirdTable(),
+    _$myTrigger,
+    MyView(),
     OnCreateQuery(
       CustomComponent(
         'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')',
@@ -2163,16 +2175,6 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
               'INSERT INTO config (config_key, config_value) VALUES (\'key\', \'values\')',
         },
       ),
-    ),
-  ];
-  @override
-  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'config',
-        limitUpdateKind: UpdateKind.insert,
-      ),
-      result: [TableUpdate('with_defaults', kind: UpdateKind.insert)],
     ),
   ]);
 }

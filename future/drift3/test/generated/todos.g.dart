@@ -2573,11 +2573,9 @@ class $CategoryTodoCountViewView extends CategoryTodoCountView
         GeneratedView<CategoryTodoCountViewData, $CategoryTodoCountViewView> {
   @override
   final String? alias;
-  final _$TodoDb _attachedDatabase;
-  $CategoryTodoCountViewView(this._attachedDatabase, [this.alias]);
-  $TodosTableTable get todos => _attachedDatabase.todosTable.withAlias('t0');
-  $CategoriesTable get categories =>
-      _attachedDatabase.categories.withAlias('t1');
+  $CategoryTodoCountViewView([this.alias]);
+  $TodosTableTable get todos => $TodosTableTable().withAlias('t0');
+  $CategoriesTable get categories => $CategoriesTable().withAlias('t1');
   @override
   List<SchemaColumn> get columns => [categoryId, description, itemCount];
   @override
@@ -2631,12 +2629,12 @@ class $CategoryTodoCountViewView extends CategoryTodoCountView
   )..owningResultSet = this;
   @override
   $CategoryTodoCountViewView withAlias(String alias) {
-    return $CategoryTodoCountViewView(_attachedDatabase, alias);
+    return $CategoryTodoCountViewView(alias);
   }
 
   @override
   SelectStatement? get query =>
-      (_attachedDatabase.selectOnly(categories)..addColumns(columns))
+      (GeneratedView.defineStatementForView(categories)..addColumns(columns))
           .innerJoin(todos, on: todos.category.equalsExp(categories.id))
           .groupBy([categories.id]);
   @override
@@ -2698,11 +2696,9 @@ class $TodoWithCategoryViewView extends TodoWithCategoryView
         GeneratedView<TodoWithCategoryViewData, $TodoWithCategoryViewView> {
   @override
   final String? alias;
-  final _$TodoDb _attachedDatabase;
-  $TodoWithCategoryViewView(this._attachedDatabase, [this.alias]);
-  $TodosTableTable get todos => _attachedDatabase.todosTable.withAlias('t0');
-  $CategoriesTable get categories =>
-      _attachedDatabase.categories.withAlias('t1');
+  $TodoWithCategoryViewView([this.alias]);
+  $TodosTableTable get todos => $TodosTableTable().withAlias('t0');
+  $CategoriesTable get categories => $CategoriesTable().withAlias('t1');
   @override
   List<SchemaColumn> get columns => [title, description];
   @override
@@ -2740,42 +2736,34 @@ class $TodoWithCategoryViewView extends TodoWithCategoryView
   )..owningResultSet = this;
   @override
   $TodoWithCategoryViewView withAlias(String alias) {
-    return $TodoWithCategoryViewView(_attachedDatabase, alias);
+    return $TodoWithCategoryViewView(alias);
   }
 
   @override
   SelectStatement? get query =>
-      (_attachedDatabase.selectOnly(todos)..addColumns(columns)).innerJoin(
-        categories,
-        on: categories.id.equalsExp(todos.category),
-      );
+      (GeneratedView.defineStatementForView(todos)..addColumns(columns))
+          .innerJoin(categories, on: categories.id.equalsExp(todos.category));
   @override
   Set<String> get readsFrom => const {'todos', 'categories'};
 }
 
 abstract base class _$TodoDb extends GeneratedDatabase {
   _$TodoDb(super.implementation);
-  late final $CategoriesTable categories = $CategoriesTable();
-  late final $TodosTableTable todosTable = $TodosTableTable();
-  late final $UsersTable users = $UsersTable();
-  late final $SharedTodosTable sharedTodos = $SharedTodosTable();
-  late final $TableWithEveryColumnTypeTable tableWithEveryColumnType =
+  $CategoriesTable get categories => $CategoriesTable();
+  $TodosTableTable get todosTable => $TodosTableTable();
+  $UsersTable get users => $UsersTable();
+  $SharedTodosTable get sharedTodos => $SharedTodosTable();
+  $TableWithEveryColumnTypeTable get tableWithEveryColumnType =>
       $TableWithEveryColumnTypeTable();
-  late final $TableWithoutPKTable tableWithoutPK = $TableWithoutPKTable();
-  late final $PureDefaultsTable pureDefaults = $PureDefaultsTable();
-  late final $WithCustomTypeTable withCustomType = $WithCustomTypeTable();
-  late final $DepartmentTable department = $DepartmentTable();
-  late final $CategoryTodoCountViewView categoryTodoCountView =
-      $CategoryTodoCountViewView(this);
-  late final $TodoWithCategoryViewView todoWithCategoryView =
-      $TodoWithCategoryViewView(this);
-  late final Index categoriesDesc = Index(
-    'categories_desc',
-    CustomComponent(
-      'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
-      dialectSpecificSql: {},
-    ),
-  );
+  $TableWithoutPKTable get tableWithoutPK => $TableWithoutPKTable();
+  $PureDefaultsTable get pureDefaults => $PureDefaultsTable();
+  $WithCustomTypeTable get withCustomType => $WithCustomTypeTable();
+  $DepartmentTable get department => $DepartmentTable();
+  $CategoryTodoCountViewView get categoryTodoCountView =>
+      $CategoryTodoCountViewView();
+  $TodoWithCategoryViewView get todoWithCategoryView =>
+      $TodoWithCategoryViewView();
+  Index get categoriesDesc => _$categoriesDesc;
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<TodoEntry> withIn(String? var1, String? var2, List<RowId> var3) {
     var $arrayStartIndex = 2;
@@ -2814,20 +2802,28 @@ abstract base class _$TodoDb extends GeneratedDatabase {
   }
 
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    categories,
-    todosTable,
-    users,
-    sharedTodos,
-    tableWithEveryColumnType,
-    tableWithoutPK,
-    pureDefaults,
-    withCustomType,
-    department,
-    categoryTodoCountView,
-    todoWithCategoryView,
-    categoriesDesc,
-  ];
+  DatabaseSchema get schema => _$schema;
+  static final _$categoriesDesc = Index(
+    'categories_desc',
+    CustomComponent(
+      'CREATE INDEX categories_desc ON categories ("desc" DESC, priority)',
+      dialectSpecificSql: {},
+    ),
+  );
+  static final DatabaseSchema _$schema = DatabaseSchema([
+    $CategoriesTable(),
+    $TodosTableTable(),
+    $UsersTable(),
+    $SharedTodosTable(),
+    $TableWithEveryColumnTypeTable(),
+    $TableWithoutPKTable(),
+    $PureDefaultsTable(),
+    $WithCustomTypeTable(),
+    $DepartmentTable(),
+    $CategoryTodoCountViewView(),
+    $TodoWithCategoryViewView(),
+    _$categoriesDesc,
+  ]);
 }
 
 base mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {

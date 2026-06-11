@@ -430,7 +430,7 @@ final class _DefaultDb extends GeneratedDatabase {
   _DefaultDb(super.executor);
 
   @override
-  Iterable<DatabaseSchemaEntity> get allSchemaEntities => [];
+  DatabaseSchema get schema => DatabaseSchema.empty;
 
   @override
   int get schemaVersion => 2;

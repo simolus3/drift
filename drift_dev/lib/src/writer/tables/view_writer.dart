@@ -37,8 +37,6 @@ class ViewWriter extends TableOrViewWriter {
     if (scope.drift3) {
       final typeArgs = '<$dataClass, $viewClassName>';
       final viewDslName = view.definingDartClass;
-      final dbClassName =
-          databaseWriter?.dbClassName ?? emitter.drift('GeneratedDatabase');
 
       emitter
         ..write('class ${view.entityInfoName}')
@@ -56,10 +54,7 @@ class ViewWriter extends TableOrViewWriter {
       buffer
         ..writeln('@override')
         ..writeln('final String? alias;')
-        ..writeln('final $dbClassName $_attachedDatabase;')
-        ..writeln(
-          '${view.entityInfoName}(this.$_attachedDatabase, [this.alias]);',
-        );
+        ..writeln('${view.entityInfoName}([this.alias]);');
     } else {
       emitter
         ..write(
@@ -203,7 +198,11 @@ class ViewWriter extends TableOrViewWriter {
     buffer
       ..writeln('@override')
       ..write('$typeName $methodName(String alias) {\n')
-      ..write('return $typeName($_attachedDatabase, alias);')
+      ..write(
+        scope.drift3
+            ? 'return $typeName(alias);'
+            : 'return $typeName($_attachedDatabase, alias);',
+      )
       ..writeln('}');
   }
 
@@ -214,9 +213,13 @@ class ViewWriter extends TableOrViewWriter {
     final source = view.source;
     if (source is DartViewSource) {
       final columnsGetter = scope.drift3 ? 'columns' : r'$columns';
+      final selectOnlyMethod = scope.drift3
+          ? '${scope.drift('GeneratedView')}.defineStatementForView'
+          : '$_attachedDatabase.selectOnly';
+
       emitter
         ..write(
-          '($_attachedDatabase.selectOnly(${scope.options.assumeCorrectReference ? source.primaryFrom?.name ?? source.staticSource : source.primaryFrom?.name})'
+          '($selectOnlyMethod(${scope.options.assumeCorrectReference ? source.primaryFrom?.name ?? source.staticSource : source.primaryFrom?.name})'
           '..addColumns($columnsGetter))',
         )
         ..writeDart(source.dartQuerySource)
@@ -226,6 +229,5 @@ class ViewWriter extends TableOrViewWriter {
     }
   }
 
-  String get _attachedDatabase =>
-      scope.drift3 ? '_attachedDatabase' : 'attachedDatabase';
+  String get _attachedDatabase => scope.drift3 ? 'db' : 'attachedDatabase';
 }

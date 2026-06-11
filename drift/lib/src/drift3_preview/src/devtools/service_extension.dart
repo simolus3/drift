@@ -115,7 +115,7 @@ final class DriftServiceExtension {
 
           // Refresh all stream queries
           database.notifyUpdates({
-            for (final entity in database.allSchemaEntities)
+            for (final entity in database.schema)
               if (entity is GeneratedTable) TableUpdate.onTable(entity),
           });
         });

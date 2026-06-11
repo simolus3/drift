@@ -74,7 +74,7 @@ final class Migrator {
   Migrator(this.database, [this._fixedVersion]);
 
   Iterable<DatabaseSchemaEntity> get _allSchemaEntities {
-    return _fixedVersion?.entities ?? database.allSchemaEntities;
+    return _fixedVersion?.entities ?? database.schema;
   }
 
   /// Creates all tables, triggers, views, indexes and everything else defined

@@ -185,7 +185,8 @@ class SomeTableCompanion extends UpdateCompanion<SomeTableData> {
 
 abstract base class _$_SomeDb extends GeneratedDatabase {
   _$_SomeDb(super.implementation);
-  late final $SomeTableTable someTable = $SomeTableTable();
+  $SomeTableTable get someTable => $SomeTableTable();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [someTable];
+  DatabaseSchema get schema => _$schema;
+  static final DatabaseSchema _$schema = DatabaseSchema([$SomeTableTable()]);
 }

@@ -29,6 +29,7 @@ export 'query_builder/schema/column.dart';
 export 'query_builder/schema/drop.dart';
 export 'query_builder/schema/entities.dart';
 export 'query_builder/schema/result_set.dart';
+export 'query_builder/schema/schema.dart';
 export 'query_builder/schema/subquery.dart';
 export 'query_builder/schema/table.dart';
 export 'query_builder/schema/view.dart';

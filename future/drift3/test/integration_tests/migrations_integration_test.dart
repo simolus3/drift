@@ -681,7 +681,7 @@ final class _TestDatabase extends GeneratedDatabase {
   _TestDatabase(super.implementation, this.schemaVersion, this.migration);
 
   @override
-  Iterable<DatabaseSchemaEntity> get allSchemaEntities => const [];
+  DatabaseSchema get schema => DatabaseSchema.empty;
 
   @override
   final int schemaVersion;

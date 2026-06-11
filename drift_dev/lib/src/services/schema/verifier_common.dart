@@ -42,7 +42,7 @@ Future<void> verifyDrift3Database(
   ValidationOptions options,
   drift3.DriftConnection connection,
 ) async {
-  final virtualTables = db.allSchemaEntities
+  final virtualTables = db.schema
       .whereType<drift3.VirtualTableInfo>()
       .map((e) => e.entityName)
       .toList();
@@ -343,8 +343,7 @@ final class _GenerateFromScratchDrift3 extends drift3.GeneratedDatabase {
   _GenerateFromScratchDrift3(this.reference, super.implementation);
 
   @override
-  Iterable<drift3.DatabaseSchemaEntity> get allSchemaEntities =>
-      reference.allSchemaEntities;
+  drift3.DatabaseSchema get schema => reference.schema;
 
   @override
   int get schemaVersion => reference.schemaVersion;
