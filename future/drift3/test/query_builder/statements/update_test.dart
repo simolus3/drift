@@ -304,4 +304,117 @@ void main() {
 
     verifyNever(executor.execute(any));
   });
+
+  group('generates update from statements', () {
+    test('regular', () async {
+      await (db.update(db.todosTable)
+            ..from(db.sharedTodos)
+            ..where((s) => s.id.equalsExp(db.sharedTodos.todo)))
+          .write(const TodosTableCompanion(title: Value('Changed title')));
+
+      verify(
+        executor.executeSql(
+          'UPDATE "todos" SET "title" = ?1 FROM "shared_todos" WHERE "todos"."id" = "shared_todos"."todo";',
+          ['Changed title'],
+        ),
+      );
+    });
+
+    test('subquery', () async {
+      final subquery = Subquery(
+        db.selectOnly(db.sharedTodos)..addColumns([db.sharedTodos.todo]),
+        's',
+      );
+      await (db.update(db.todosTable)
+            ..from(subquery)
+            ..where((s) => s.id.equalsExp(subquery.ref(db.sharedTodos.todo))))
+          .write(const TodosTableCompanion(title: Value('Changed title')));
+      verify(
+        executor.executeSql(
+          'UPDATE "todos" SET "title" = ?1 FROM (SELECT "shared_todos"."todo" AS "c0" FROM "shared_todos") "s" WHERE "todos"."id" = "s"."c0";',
+          ['Changed title'],
+        ),
+      );
+    });
+
+    test('join', () async {
+      final subquery = Subquery(
+        db.selectOnly(db.todosTable)..addColumns([db.todosTable.id]),
+        's',
+      );
+      await (db.update(db.categories)
+            ..from(subquery)
+            ..join([
+              Join.inner(
+                db.sharedTodos,
+                on: subquery
+                    .ref(db.todosTable.id)
+                    .equalsExp(db.sharedTodos.todo),
+              ),
+              Join.inner(
+                db.users,
+                on: db.users.id.equalsExp(db.sharedTodos.user),
+              ),
+            ])
+            ..where((s) => s.id.equalsExp(subquery.ref(db.todosTable.id))))
+          .write(
+            const CategoriesCompanion(description: Value('New description')),
+          );
+      verify(
+        executor.executeSql(
+          'UPDATE "categories" SET "desc" = ?1 FROM (SELECT "todos"."id" AS "c0" FROM "todos") "s" INNER JOIN "shared_todos" ON "s"."c0" = "shared_todos"."todo" INNER JOIN "users" ON "users"."id" = "shared_todos"."user" WHERE "categories"."id" = "s"."c0";',
+          ['New description'],
+        ),
+      );
+    });
+
+    test('multiple from tables', () async {
+      final subquery = Subquery(
+        db.selectOnly(db.todosTable)..addColumns([db.todosTable.id]),
+        's',
+      );
+      final shared1 = db.sharedTodos.withAlias('shared1');
+      final shared2 = db.sharedTodos.withAlias('shared2');
+      await (db.update(db.categories)
+            ..from(shared1)
+            ..join([
+              Join.inner(
+                subquery,
+                on: subquery.ref(db.todosTable.id).equalsExp(shared1.todo),
+              ),
+            ])
+            ..from((shared2))
+            ..join([
+              Join.inner(db.users, on: db.users.id.equalsExp(shared2.user)),
+            ])
+            ..where(
+              (s) =>
+                  s.id.equalsExp(subquery.ref(db.todosTable.id)) &
+                  shared2.todo.equalsExp(shared1.todo) &
+                  shared2.user.equalsExp(shared1.user),
+            ))
+          .write(
+            const CategoriesCompanion(description: Value('New description')),
+          );
+      verify(
+        executor.executeSql(
+          'UPDATE "categories" SET "desc" = ?1 FROM "shared_todos" AS "shared1" INNER JOIN (SELECT "todos"."id" AS "c0" FROM "todos") "s" ON "s"."c0" = "shared1"."todo", "shared_todos" AS "shared2" INNER JOIN "users" ON "users"."id" = "shared2"."user" WHERE ("categories"."id" = "s"."c0" AND "shared2"."todo" = "shared1"."todo") AND "shared2"."user" = "shared1"."user";',
+          ['New description'],
+        ),
+      );
+    });
+
+    test('writeExpression', () async {
+      await (db.update(db.todosTable)
+            ..from(db.sharedTodos)
+            ..where((s) => s.id.equalsExp(db.sharedTodos.todo)))
+          .writeExpressions({db.todosTable.title.name: db.sharedTodos.todo});
+      verify(
+        executor.executeSql(
+          'UPDATE "todos" SET "title" = "shared_todos"."todo" FROM "shared_todos" WHERE "todos"."id" = "shared_todos"."todo";',
+          [],
+        ),
+      );
+    });
+  });
 }

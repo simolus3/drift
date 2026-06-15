@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 
 import '../connection/connection.dart';
 import '../connection/streams/update_rules.dart';
+import 'clauses/from.dart';
 import 'clauses/group_by.dart';
 import 'clauses/limit.dart';
 import 'clauses/order_by.dart';
@@ -520,6 +521,11 @@ abstract base class StatementCompiler {
     );
     statement.buffer.write(' SET ');
 
+    // hasMultipleTable must be set before adding the values in case a table is referenced
+    if (update.fromClause?.elements.isNotEmpty == true) {
+      statement.hasMultipleTables = true;
+    }
+
     var first = true;
     update.updatedColumns.forEach((name, variable) {
       if (!first) {
@@ -532,6 +538,10 @@ abstract base class StatementCompiler {
       statement.buffer.write(' = ');
       variable.compileWith(this);
     });
+
+    if (update.fromClause case final fromClause?) {
+      fromClause.compileWith(this);
+    }
 
     if (update.whereClause case final where?) {
       statement.space();
@@ -659,7 +669,7 @@ abstract base class StatementCompiler {
       statement.buffer.write('DISTINCT ');
     }
 
-    statement.hasMultipleTables |= select.from.length > 1;
+    statement.hasMultipleTables |= select.fromClause.elements.length > 1;
 
     if (!_ignoreResultSet) {
       addResultSetExpressions(select.structure);
@@ -669,20 +679,7 @@ abstract base class StatementCompiler {
 
     _ignoreResultSet = false;
 
-    if (select.from case [final first, ...final rest]) {
-      statement.buffer.write(' FROM ');
-      first.compileWith(this);
-
-      for (final entry in rest) {
-        if (entry is! Join) {
-          statement.buffer.write(', ');
-        } else {
-          statement.space();
-        }
-
-        entry.compileWith(this);
-      }
-    }
+    select.fromClause.compileWith(this);
 
     if (select.whereClause case final where?) {
       statement.space();
@@ -1227,4 +1224,22 @@ abstract base class StatementCompiler {
   void addUnixTimestampToDateTime(UnixTimestampToDateTime e);
 
   void addDateExtractionOperator(DateExtractionOperator e);
+
+  void addFromClause(FromClause fromClause) {
+    if (fromClause.elements case [final first, ...final rest]) {
+      statement.buffer.write(' FROM ');
+      first.compileWith(this);
+
+      for (final entry in rest) {
+        switch (entry) {
+          case Join():
+            statement.space();
+          case FromResultSet():
+            statement.buffer.write(', ');
+        }
+
+        entry.compileWith(this);
+      }
+    }
+  }
 }

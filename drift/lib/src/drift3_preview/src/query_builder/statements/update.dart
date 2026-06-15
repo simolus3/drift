@@ -4,11 +4,13 @@ import '../../connection/result_set.dart';
 import '../../connection/streams/update_rules.dart';
 import '../../database/connection_user.dart';
 import '../../database/data_class.dart';
+import '../clauses/from.dart';
 import '../clauses/returning.dart';
 import '../compiler.dart';
 import '../expressions/expression.dart';
 import '../results.dart';
 import '../schema/column_constraints.dart';
+import '../schema/result_set.dart';
 import '../schema/table.dart';
 import 'query.dart';
 
@@ -26,6 +28,9 @@ final class UpdateStatement<
 
   /// The columns set by this update statement.
   final Map<String, Expression> updatedColumns = {};
+
+  /// The fromClause of this update statement
+  FromClause? fromClause;
 
   /// Used internally by drift to construct an update statement
   UpdateStatement(this._database, super.table);
@@ -61,6 +66,16 @@ final class UpdateStatement<
     _applyColumns(entity, true);
   }
 
+  /// Adds a [Table] or [Subquery] to the from clause of this update statement
+  void from(ResultSet resultSet) {
+    (fromClause ??= FromClause()).addResultSet(resultSet);
+  }
+
+  /// Adds joins to the from claus of this update statement
+  void join(Iterable<Join> joins) {
+    (fromClause ??= FromClause()).addJoins(joins);
+  }
+
   /// Writes all non-null fields from [entity] into the columns of all rows
   /// that match the [where] clause. Warning: That also means that, when you're
   /// not setting a where clause explicitly, this method will update all rows in
@@ -82,6 +97,23 @@ final class UpdateStatement<
 
     if (updatedColumns.isEmpty) {
       // nothing to update, we're done
+      return Future.value(0);
+    }
+
+    final result = await _run();
+    return result.affectedRows!;
+  }
+
+  /// Updates all columns provided in [expressions] keys with the corresponding [Expression].
+  ///
+  /// This is useful in combination with [from] and [join] to set columns based on other tables.
+  /// For all other use cases see [write].
+  Future<int> writeExpressions(Map<String, Expression> expressions) async {
+    updatedColumns
+      ..clear()
+      ..addAll(expressions);
+
+    if (updatedColumns.isEmpty) {
       return Future.value(0);
     }
 
