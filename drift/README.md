@@ -15,7 +15,8 @@ Drift is proudly Sponsored by [Stream 💙](https://getstream.io/chat/sdk/flutte
                 <a href="https://getstream.io/chat/sdk/flutter/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_FlutterChatSDK_klmh22" target="_blank"><img width="250px" src="https://stream-blog.s3.amazonaws.com/blog/wp-content/uploads/fc148f0fc75d02841d017bb36e14e388/Stream-logo-with-background-.png"/></a><br/><span><a href="https://getstream.io/chat/sdk/flutter/?utm_source=Moor&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Moor_July2022_FlutterChatSDK_klmh22" target="_blank">Try the Flutter Chat Tutorial &nbsp💬</a></span>
             </td>
             <td align="center">
-                <a href="https://powersync.com/?utm_source=drift&utm_campaign=drift_sponsorship" target="_blank"><img width="250px" src="https://powersync.com/images/brand/powersync-logo-light-bg.png"/></a>
+                <a href="https://powersync.com/?utm_source=drift&utm_campaign=drift_sponsorship" target="_blank"><img width="250px" src="https://powersync.com/images/brand/powersync-logo-light-bg.png"/></a><br/>
+                <span><a href="https://docs.powersync.com/integrations/supabase/guide?&utm_campaign=drift_sponsorship">Try PowerSync with Supabase</a></span>
             </td>
         </tr>
     </tbody>
