@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../connection/streams/store.dart';
 import '../utils/async_map.dart';
 import '../utils/single_transformer.dart';
 
@@ -27,7 +28,7 @@ abstract interface class MultiSelectable<T> {
 
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
-  Stream<List<T>> watch();
+  QueryStream<List<T>> watch();
 }
 
 /// [Selectable] methods for returning or streaming single,
@@ -149,7 +150,7 @@ abstract mixin class Selectable<T>
   Future<List<T>> get();
 
   @override
-  Stream<List<T>> watch();
+  QueryStream<List<T>> watch();
 
   @override
   Future<T> getSingle() async {
@@ -204,8 +205,9 @@ class _MappedSelectable<S, T> extends Selectable<T> {
   }
 
   @override
-  Stream<List<T>> watch() {
-    return _source.watch().map(_mapResults);
+  QueryStream<List<T>> watch() {
+    final inner = _source.watch();
+    return QueryStream(fetcher: inner.fetcher, stream: inner.map(_mapResults));
   }
 
   List<T> _mapResults(List<S> results) => results.map(_mapper).toList();
@@ -223,10 +225,14 @@ class _AsyncMappedSelectable<S, T> extends Selectable<T> {
   }
 
   @override
-  Stream<List<T>> watch() {
-    return AsyncMapPerSubscription(
-      _source.watch(),
-    ).asyncMapPerSubscription(_mapResults);
+  QueryStream<List<T>> watch() {
+    final inner = _source.watch();
+    return QueryStream(
+      fetcher: inner.fetcher,
+      stream: AsyncMapPerSubscription(
+        inner,
+      ).asyncMapPerSubscription(_mapResults),
+    );
   }
 
   Future<List<T>> _mapResults(List<S> results) async {

@@ -1,3 +1,6 @@
+/// @docImport '../../database/selectable.dart';
+library;
+
 import 'dart:async';
 import 'dart:collection';
 
@@ -13,7 +16,7 @@ const _listEquality = ListEquality<Object?>();
 /// well as dispatching table updates.
 abstract base class StreamQueryStore {
   /// Active streams with a [QueryStreamFetcher.key], used to de-duplicate them.
-  final Map<StreamKey, QueryStream> _activeKeyStreams = {};
+  final Map<StreamKey, _StreamImpl> _activeKeyStreams = {};
   final HashSet<StreamKey?> _keysPendingRemoval = HashSet<StreamKey?>();
 
   /// Whether resources associated with a query stream should be closed
@@ -61,7 +64,7 @@ abstract base class StreamQueryStore {
 
     // no cached instance found, create a new stream and register it so later
     // requests with the same key can be cached.
-    final stream = QueryStream<T>(fetcher, this);
+    final stream = _StreamImpl<T>(fetcher, this);
     // todo this adds the stream to a map, where it will only be removed when
     // somebody listens to it and later calls .cancel(). Failing to do so will
     // cause a memory leak. Is there any way we can work around it? Perhaps a
@@ -89,7 +92,7 @@ abstract base class StreamQueryStore {
     _activeKeyStreams.clear();
   }
 
-  void _markAsClosed(QueryStream stream, void Function() whenRemoved) {
+  void _markAsClosed(_StreamImpl stream, void Function() whenRemoved) {
     if (_isShuttingDown) return;
 
     final key = stream._fetcher.key;
@@ -125,7 +128,7 @@ abstract base class StreamQueryStore {
     });
   }
 
-  void _markAsOpened(QueryStream stream) {
+  void _markAsOpened(_StreamImpl stream) {
     final key = stream._fetcher.key;
 
     if (key != null) {
@@ -137,7 +140,7 @@ abstract base class StreamQueryStore {
 
 /// Representation of a select statement that knows from which tables the
 /// statement is reading its data and how to execute the query.
-class QueryStreamFetcher<Rows extends Object> {
+final class QueryStreamFetcher<Rows extends Object> {
   /// Table updates that will affect this stream.
   ///
   /// If any of these tables changes, the stream must fetch its data again.
@@ -199,8 +202,22 @@ final class StreamKey {
   }
 }
 
-@internal
-final class QueryStream<Rows extends Object> {
+/// A [Stream] emitting snapshots of database queries.
+///
+/// This is returned from [Selectable.watch] implementations.
+class QueryStream<Rows extends Object> extends StreamView<Rows> {
+  /// The fetcher backing this query stream.
+  ///
+  /// This can be used to access the tables a stream
+  /// [QueryStreamFetcher.readsFrom].
+  final QueryStreamFetcher fetcher;
+
+  /// Creates a [QueryStream] instance from
+  QueryStream({required this.fetcher, required Stream<Rows> stream})
+    : super(stream);
+}
+
+final class _StreamImpl<Rows extends Object> {
   final QueryStreamFetcher<Rows> _fetcher;
   final StreamQueryStore _store;
 
@@ -257,7 +274,7 @@ final class QueryStream<Rows extends Object> {
 
   bool get hasKey => _fetcher.key != null;
 
-  QueryStream(this._fetcher, this._store);
+  _StreamImpl(this._fetcher, this._store);
 
   void _onListenOrResume(_QueryStreamListener<Rows> newListener) {
     // First listener, start fetching data

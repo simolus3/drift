@@ -95,20 +95,19 @@ final class CustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
   }
 
   @override
-  Stream<List<T>> watch() {
+  QueryStream<List<T>> watch() {
     final streams = _db.currentStreamQueryStore();
-    final raw = streams.registerStream(
-      QueryStreamFetcher(
-        readsFrom: TableUpdateQuery.onAllTables(tables),
-        key: StreamKey(query, variables),
-        fetchData: () async {
-          final currentSession = await _db.currentSession();
-          return currentSession.execute(_statement);
-        },
-        prepare: () async => await _db.currentSession(),
-      ),
+    final fetcher = QueryStreamFetcher(
+      readsFrom: TableUpdateQuery.onAllTables(tables),
+      key: StreamKey(query, variables),
+      fetchData: () async {
+        final currentSession = await _db.currentSession();
+        return currentSession.execute(_statement);
+      },
+      prepare: () async => await _db.currentSession(),
     );
-    return raw.map(_mapResults);
+    final raw = streams.registerStream(fetcher);
+    return QueryStream(fetcher: fetcher, stream: raw.map(_mapResults));
   }
 }
 
@@ -138,23 +137,25 @@ final class AsyncCustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
   }
 
   @override
-  Stream<List<T>> watch() {
+  QueryStream<List<T>> watch() {
     final streams = _db.currentStreamQueryStore();
-    return streams.registerStream(
-      QueryStreamFetcher(
-        readsFrom: TableUpdateQuery.onAllTables(tables),
-        // We want this stream to be unique since the mapper might run
-        // additional queries we don't know about yet.
-        key: null,
-        fetchData: () async {
-          // Spawn a read transaction since we might need multiple queries.
-          return await _db.transaction(
-            options: TransactionOptions(readOnly: isReadOnly),
-            get,
-          );
-        },
-        prepare: () async => await _db.currentSession(),
-      ),
+    final fetcher = QueryStreamFetcher(
+      readsFrom: TableUpdateQuery.onAllTables(tables),
+      // We want this stream to be unique since the mapper might run
+      // additional queries we don't know about yet.
+      key: null,
+      fetchData: () async {
+        // Spawn a read transaction since we might need multiple queries.
+        return await _db.transaction(
+          options: TransactionOptions(readOnly: isReadOnly),
+          get,
+        );
+      },
+      prepare: () async => await _db.currentSession(),
+    );
+    return QueryStream(
+      fetcher: fetcher,
+      stream: streams.registerStream(fetcher),
     );
   }
 }

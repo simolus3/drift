@@ -769,7 +769,7 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (disabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Stream<List<$ActiveDataclass>> watch({
+  QueryStream<List<$ActiveDataclass>> watch({
     bool distinct = false,
     int? limit,
     int? offset,
@@ -783,19 +783,21 @@ abstract class BaseTableManager<
     final asStatement = $state.db.dialect.compile(baseSelect);
     final streams = $state.db.currentStreamQueryStore();
 
-    return streams.registerStream(
-      QueryStreamFetcher(
-        prepare: () => {},
-        readsFrom: .allOf([
-          for (final watched in asStatement.watchedTables)
-            .onTableName(watched),
-          for (final additional in $state.prefetchHooks.explicitlyWatchedTables)
-            .onTable(additional),
-        ]),
-        fetchData: () async {
-          return get(distinct: distinct, limit: limit, offset: offset);
-        },
-      ),
+    final fetcher = QueryStreamFetcher(
+      prepare: () => {},
+      readsFrom: .allOf([
+        for (final watched in asStatement.watchedTables) .onTableName(watched),
+        for (final additional in $state.prefetchHooks.explicitlyWatchedTables)
+          .onTable(additional),
+      ]),
+      fetchData: () async {
+        return get(distinct: distinct, limit: limit, offset: offset);
+      },
+    );
+
+    return QueryStream(
+      fetcher: fetcher,
+      stream: streams.registerStream(fetcher),
     );
   }
 

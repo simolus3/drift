@@ -211,6 +211,11 @@ void main() {
         .select(todos)
         .innerJoin(categories, on: todos.category.equalsExp(categories.id));
 
+    expect(query.watch().fetcher.readsFrom.matchedTableNames, [
+      'todos',
+      'categories',
+    ]);
+
     final queue = StreamQueue(query.watch());
     expect(await queue.next, isEmpty);
 

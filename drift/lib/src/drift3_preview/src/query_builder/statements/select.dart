@@ -278,39 +278,40 @@ sealed class BaseSelectStatement<
     ResultSetStructure structure,
   );
 
-  List<Row> _mapResults(QueryResult result) {
-    final converter = createMapper(_database.dialect, structure);
-    return result.resultSet!.map(converter).toList();
-  }
-
   @override
   Future<List<Row>> get() async {
     final session = await _database.currentSession();
     final query = _database.dialect.compile(this);
+    final converter = createMapper(_database.dialect, structure);
     final results = await session.execute(query);
-    return _mapResults(results);
+
+    return results.resultSet!.map(converter).toList();
   }
 
   @override
-  Stream<List<Row>> watch() {
+  QueryStream<List<Row>> watch() {
     final stmt = _database.dialect.compile(this);
+    final converter = createMapper(_database.dialect, structure);
 
     final streams = _database.currentStreamQueryStore();
-    final raw = streams.registerStream<QueryResult>(
-      QueryStreamFetcher(
-        readsFrom: TableUpdateQuery.allOf([
-          for (final watched in stmt.watchedTables)
-            TableUpdateQuery.onTableName(watched),
-        ]),
-        key: StreamKey(stmt.sql, stmt.variables),
-        fetchData: () async {
-          final currentSession = await _database.currentSession();
-          return currentSession.execute(stmt);
-        },
-        prepare: () => _database.currentSession(),
-      ),
+    final fetcher = QueryStreamFetcher(
+      readsFrom: TableUpdateQuery.allOf([
+        for (final watched in stmt.watchedTables)
+          TableUpdateQuery.onTableName(watched),
+      ]),
+      key: StreamKey(stmt.sql, stmt.variables),
+      fetchData: () async {
+        final currentSession = await _database.currentSession();
+        return currentSession.execute(stmt);
+      },
+      prepare: () => _database.currentSession(),
     );
-    return raw.map(_mapResults);
+    final raw = streams.registerStream<QueryResult>(fetcher);
+
+    return QueryStream(
+      fetcher: fetcher,
+      stream: raw.map((rows) => rows.resultSet!.map(converter).toList()),
+    );
   }
 }
 

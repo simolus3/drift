@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import '../../query_builder/schema/entities.dart';
@@ -179,6 +180,11 @@ sealed class TableUpdateQuery {
 
   /// Determines whether the [update] would be picked up by this query.
   bool matches(TableUpdate update);
+
+  /// All tables matched by this query.
+  ///
+  /// This returns null for [TableUpdateQuery.any] instances.
+  Iterable<String>? get matchedTableNames;
 }
 
 @internal
@@ -187,6 +193,9 @@ final class AnyUpdateQuery extends TableUpdateQuery {
 
   @override
   bool matches(TableUpdate update) => true;
+
+  @override
+  Iterable<String>? get matchedTableNames => null;
 }
 
 @internal
@@ -197,6 +206,18 @@ final class MultipleUpdateQuery extends TableUpdateQuery {
 
   @override
   bool matches(TableUpdate update) => queries.any((q) => q.matches(update));
+
+  @override
+  Iterable<String>? get matchedTableNames {
+    final inner = <Iterable<String>>[];
+    for (final query in queries) {
+      final matchedTables = query.matchedTableNames;
+      if (matchedTables == null) return const [];
+      inner.add(matchedTables);
+    }
+
+    return inner.flattened;
+  }
 }
 
 @internal
@@ -224,4 +245,7 @@ final class SpecificUpdateQuery extends TableUpdateQuery {
         other.limitUpdateKind == limitUpdateKind &&
         other.table == table;
   }
+
+  @override
+  Iterable<String> get matchedTableNames => [table];
 }

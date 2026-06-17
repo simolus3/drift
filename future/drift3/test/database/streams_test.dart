@@ -21,6 +21,11 @@ void main() {
     clearInteractions(executor);
   });
 
+  test('report underlying tables', () async {
+    final stream = db.select(db.users).watch();
+    expect(stream.fetcher.readsFrom.matchedTableNames, ['users']);
+  });
+
   test('streams fetch when the first listener attaches', () async {
     final stream = db.select(db.users).watch();
 
