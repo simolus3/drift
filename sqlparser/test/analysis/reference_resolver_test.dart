@@ -76,6 +76,58 @@ void main() {
     ]);
   });
 
+  test('correctly resolves columns from views with CTE', () {
+    final engine = SqlEngine()
+      ..registerTable(demoTable)
+      ..registerTableFromSql('''
+         CREATE TABLE changes (
+           "id" INT NOT NULL PRIMARY KEY,
+           "object_id" TEXT,
+           "updated_field" TEXT,
+           "updated_value" BLOB,
+         )
+       ''');
+
+    final viewCtx = engine.analyze('''
+     CREATE VIEW "my_view" AS
+       WITH pivoted_changes AS (
+         SELECT
+             CAST(MAX(CASE WHEN updated_field = 'id' THEN updated_value ->> '\$.v' END) AS INTEGER)
+         AS id,
+             CAST(MAX(CASE WHEN updated_field = 'content' THEN updated_value ->> '\$.v' END) AS TEXT)
+         AS content
+         FROM "changes"
+         GROUP BY "object_id"
+       )
+
+       SELECT
+           COALESCE(c.id, i.id) AS id,
+           COALESCE(c.content, i.content) AS content
+       FROM "demo" i
+       FULL OUTER JOIN "pivoted_changes" c ON i.id = c.id;
+''');
+    engine.registerView(
+      engine.schemaReader.readView(
+        viewCtx,
+        viewCtx.root as CreateViewStatement,
+      ),
+    );
+
+    final context = engine.analyze('SELECT * FROM my_view');
+    expect(context.errors, isEmpty);
+
+    final resolvedColumns = (context.root as SelectStatement).resolvedColumns!;
+    expect(resolvedColumns.map((e) => e.name), ['id', 'content']);
+    expect(resolvedColumns.map((e) => context.typeOf(e).type!.type), [
+      BasicType.int,
+      BasicType.text,
+    ]);
+    expect(resolvedColumns.map((e) => context.typeOf(e).type!.nullable), [
+      true,
+      true,
+    ]);
+  });
+
   test("resolved columns don't include drift nested results", () {
     final engine = SqlEngine(
       EngineOptions(driftOptions: const DriftSqlOptions()),

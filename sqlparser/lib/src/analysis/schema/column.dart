@@ -144,6 +144,11 @@ class TableColumn extends Column implements ColumnWithType {
   String humanReadableDescription() {
     return '$name in ${table!.humanReadableDescription()}';
   }
+
+  @override
+  String toString() {
+    return '${table?.name}.$name';
+  }
 }
 
 /// A column that is part of a view.

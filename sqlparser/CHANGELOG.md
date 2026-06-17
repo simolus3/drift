@@ -1,3 +1,8 @@
+## 0.44.6 (unreleased)
+
+- Fix join analysis to properly treat the left side of a `RIGHT` or `FULL`
+  join as nullable ([#3812](https://github.com/simolus3/drift/issues/3812)).
+
 ## 0.44.5
 
 - Support `ALTER TABLE ADD/DROP CONSTRAINT` statements. 

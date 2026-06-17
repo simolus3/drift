@@ -123,15 +123,25 @@ class _FindNonNullableJoins extends RecursiveVisitor<bool, void> {
   void visitJoinClause(JoinClause e, bool arg) {
     if (!arg) return;
 
-    visit(e.primary, true);
+    // All joined result sets and whether they're required to be non-nullable.
+    final joins = <(TableOrSubquery, bool)>[(e.primary, true)];
     for (final additional in e.joins) {
-      final operator = additional.operator;
-
-      if (operator.operator != JoinOperatorKind.left &&
-          operator.operator != JoinOperatorKind.right &&
-          operator.operator != JoinOperatorKind.full) {
-        visit(additional, true);
+      final operator = additional.operator.operator;
+      if (operator case JoinOperatorKind.right || JoinOperatorKind.full) {
+        // This is a RIGHT or FULL join, meaning that the previous result set
+        // is nullable.
+        joins[joins.length - 1] = (joins.last.$1, false);
       }
+
+      final rightSideIsNullable = switch (operator) {
+        JoinOperatorKind.left || JoinOperatorKind.full => true,
+        _ => false,
+      };
+      joins.add((additional.query, !rightSideIsNullable));
+    }
+
+    for (final (join, nonNullable) in joins) {
+      visit(join, nonNullable);
     }
   }
 
