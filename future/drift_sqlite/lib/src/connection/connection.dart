@@ -29,18 +29,13 @@ final class SqliteConnection implements DriftSession {
   /// time they're executed).
   final bool cachePreparedStatements;
 
-  /// For non-durable file systems, an explicit callback to flush pending
-  /// writes.
-  final Future<void> Function()? flush;
-
-  final Completer<void> _closedCompleter = Completer();
+  final Completer<void> _closedCompleter = Completer.sync();
 
   /// Wrap a [database] as a [DriftSession].
   SqliteConnection(
     this.database, {
     this.cachePreparedStatements = true,
     this.closeUnderlyingWhenClosed = true,
-    this.flush,
   }) {
     database.useNativeFunctions();
   }
@@ -79,7 +74,6 @@ final class SqliteConnection implements DriftSession {
     try {
       return _executeWithStatement(stmt, statement);
     } finally {
-      await _maybeFlush();
       stmt.close();
     }
   }
@@ -110,7 +104,6 @@ final class SqliteConnection implements DriftSession {
       }
     }
 
-    await _maybeFlush();
     return results;
   }
 
@@ -126,16 +119,10 @@ final class SqliteConnection implements DriftSession {
       if (closeUnderlyingWhenClosed) {
         database.close();
       }
-      _closedCompleter.complete(_maybeFlush());
+      _closedCompleter.complete();
     }
 
     return closed;
-  }
-
-  Future<void> _maybeFlush() async {
-    if (flush != null && database.autocommit) {
-      await flush!();
-    }
   }
 
   /// Returns a [DriftConnection] backed by a SQLite

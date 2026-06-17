@@ -99,6 +99,7 @@ void _writeCommaSeparated(
 /// An enumeration of database systems supported by drift. Only
 /// [SqlDialect.sqlite] is officially supported, all others are in an
 /// experimental state at the moment.
+@pragma('drift:v3-rename', 'KnownSqlDialect')
 enum SqlDialect {
   /// Use sqlite's sql dialect. This is the default option and the only
   /// officially supported dialect at the moment.

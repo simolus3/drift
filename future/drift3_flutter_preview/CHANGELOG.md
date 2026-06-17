@@ -1,0 +1,59 @@
+## 0.4.0-wip
+
+- Preview to integrate with `drift3_preview`.
+- Use `package:sqlite3_web` types in `DriftWebOptions`.
+- Remove `shareAcrossIsolates`, `isolateDebugLog` and `isolateSetup` functions from `DriftNativeOptions`.
+
+## 0.3.1
+
+- Return a `DatabaseConnection` instead of the less specific `QueryExecutor` type from `driftDatabase()`.
+
+## 0.3.0
+
+- Use versions 3.x of the `sqlite3` package.
+
+## 0.2.8
+
+- Add `isolateSetup` parameter to `DriftNativeOptions` to setup isolates spawned to host database connections.
+
+## 0.2.7
+
+- Add `isolateDebugLog` parameter to `DriftNativeOptions` to debug internal messages between isolates.
+
+## 0.2.6
+
+- Add `initializeDatabase` parameter to `DriftWebOptions` to enable loading initial database.
+
+## 0.2.5
+
+- Fix `DriftWebOptions.onResult` not being called.
+- Add `setup` parameter to `DriftNativeOptions` to customize native database connections.
+
+## 0.2.4
+
+- Allow providing a custom temporary directory.
+- Allow providing a custom database directory, making it easier to swap out the
+  default `getApplicationDocumentsDirectory()`.
+
+## 0.2.3
+
+- Fix compiling to WebAssembly with Dart 3.6.0.
+
+## 0.2.2
+
+- Fix infinite loop in isolate server lookups when using `shareAcrossIsolates`
+  across hot restarts.
+
+## 0.2.1
+
+- Enable serialization between background isolates where necessary.
+
+## 0.2.0
+
+- Add `DriftNativeOptions` with `shareAcrossIsolates` option that will give
+  multiple isolates access to the same drift database without having to manually
+  set up ports.
+
+## 0.1.0
+
+- Initial version.

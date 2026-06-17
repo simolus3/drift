@@ -11,6 +11,9 @@ import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
 
 import 'src/connection/pool.dart';
 import 'src/dialect/dialect.dart';
+import 'src/options.dart';
+
+export 'src/options.dart';
 
 /// Opens a pool of SQLite connection for high-performance and concurrent
 /// queries.
@@ -100,21 +103,4 @@ Future<DriftDatabaseImplementation> _sqliteConnectionPool({
     SqlitePoolSession(pool),
     SqlitePoolUpdates(pool, enableCustomUpdates: updates == .drift),
   );
-}
-
-/// How a [sqliteConnectionPool] should interact with watched queries in drift.
-///
-/// The default and recommended option is [native], which uses native SQLite
-/// update hooks to ensure drift streams only emit updates for writes that
-/// actually happened. However, [native] misses updates for `WITHOUT ROWID`
-/// tables and custom updates added via
-/// [DatabaseConnectionUser.markTablesUpdated]. To rely on this feature, use
-/// the [drift] mode instead.
-enum UpdateNotificationMode {
-  /// Use SQLite update hooks to track which tables were affected by a
-  /// statement.
-  native,
-
-  /// Disable SQLite update hooks and process updates entirely in Dart.
-  drift,
 }

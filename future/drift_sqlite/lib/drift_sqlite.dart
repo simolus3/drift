@@ -8,3 +8,4 @@ export 'src/dialect/migration.dart';
 export 'src/dialect/statements.dart';
 export 'src/dialect/table_valued_function.dart';
 export 'src/dialect/types.dart' show DriftAny, AnyType;
+export 'src/options.dart';

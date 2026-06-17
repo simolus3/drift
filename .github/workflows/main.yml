@@ -284,6 +284,9 @@ jobs:
       - name: Test drift_manager
         working-directory: future/drift_manager
         run: dart test
+      - name: Test drift3_flutter_preview
+        working-directory: future/drift3_flutter_preview
+        run: flutter test
   test_flutter:
     runs-on: ubuntu-latest
     needs: [setup]
