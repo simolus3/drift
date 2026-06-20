@@ -14,7 +14,7 @@ import '../ast.dart';
 ///  drift.
 ///  4. A list of order-by clauses, which will be exposed as a `OrderBy` from
 ///  drift.
-abstract class DartPlaceholder extends AstNode implements DriftSpecificNode {
+sealed class DartPlaceholder extends AstNode implements DriftSpecificNode {
   final String name;
 
   DollarSignVariableToken? token;
@@ -30,28 +30,6 @@ abstract class DartPlaceholder extends AstNode implements DriftSpecificNode {
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {
     return visitor.visitDriftSpecificNode(this, arg);
-  }
-
-  T? when<T>({
-    T Function(DartExpressionPlaceholder)? isExpression,
-    T Function(DartLimitPlaceholder)? isLimit,
-    T Function(DartOrderingTermPlaceholder)? isOrderingTerm,
-    T Function(DartOrderByPlaceholder)? isOrderBy,
-    T Function(DartInsertablePlaceholder)? isInsertable,
-  }) {
-    if (this is DartExpressionPlaceholder) {
-      return isExpression?.call(this as DartExpressionPlaceholder);
-    } else if (this is DartLimitPlaceholder) {
-      return isLimit?.call(this as DartLimitPlaceholder);
-    } else if (this is DartOrderingTermPlaceholder) {
-      return isOrderingTerm?.call(this as DartOrderingTermPlaceholder);
-    } else if (this is DartOrderByPlaceholder) {
-      return isOrderBy?.call(this as DartOrderByPlaceholder);
-    } else if (this is DartInsertablePlaceholder) {
-      return isInsertable?.call(this as DartInsertablePlaceholder);
-    }
-
-    throw AssertionError('Invalid placeholder: $runtimeType');
   }
 }
 
@@ -73,6 +51,10 @@ class DartOrderByPlaceholder extends DartPlaceholder implements OrderByBase {
 }
 
 class DartInsertablePlaceholder extends DartPlaceholder
-    implements InsertSource {
+    implements InsertSource, SetComponent {
   DartInsertablePlaceholder({required String name}) : super._(name);
+
+  /// Placeholders in [UpdateStatement] will generate columns dynamically at runtime.
+  @override
+  List<Reference> get columns => const [];
 }

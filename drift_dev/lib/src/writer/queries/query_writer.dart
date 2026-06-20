@@ -1032,8 +1032,13 @@ class _ExpandedDeclarationWriter {
     if (type is InsertableDartPlaceholderType) {
       final table = type.table;
 
+      if (type.isInsert) {
+        _buffer.write(r'$writeInsertable(this.');
+      } else {
+        _buffer.write(r'$writeUpdateInsertable(this.');
+      }
+
       _buffer
-        ..write(r'$writeInsertable(this.')
         ..write(table?.computeDbGetterName(options))
         ..write(', ')
         ..write(useExpression())

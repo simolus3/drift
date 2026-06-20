@@ -239,4 +239,33 @@ void main() {
     );
     expect(row.nested, hasLength(1));
   });
+
+  test('can run updateQuery with Insertable', () async {
+    await db.addConfig(
+      value: ConfigCompanion.insert(
+        configKey: 'updateKey',
+        configValue: Value(DriftAny(1)),
+        syncState: Value(null),
+        syncStateImplicit: Value(null),
+      ),
+    );
+    await db.updateAll(
+      all: ConfigCompanion(
+        configValue: Value(DriftAny(2)),
+        syncState: Value(SyncType.locallyCreated),
+      ),
+      key: (config) => config.configKey.equals('updateKey'),
+    );
+
+    final config = await db.readConfig('updateKey').getSingle();
+
+    expect(
+      config,
+      Config(
+        configKey: 'updateKey',
+        configValue: DriftAny(2),
+        syncState: SyncType.locallyCreated,
+      ),
+    );
+  });
 }

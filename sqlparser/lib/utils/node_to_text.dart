@@ -459,13 +459,17 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitDriftSpecificNode(DriftSpecificNode e, void arg) {
     if (e is DartPlaceholder) {
-      e.when(
-        isLimit: (_) => keyword(TokenType.limit),
-        isOrderBy: (_) {
+      switch (e) {
+        case DartLimitPlaceholder():
+          keyword(TokenType.limit);
+        case DartOrderByPlaceholder():
           keyword(TokenType.order);
           keyword(TokenType.by);
-        },
-      );
+        case DartExpressionPlaceholder():
+        case DartOrderingTermPlaceholder():
+        case DartInsertablePlaceholder():
+          break;
+      }
 
       symbol(r'$', spaceBefore: true);
       symbol(e.name, spaceAfter: true);

@@ -1409,6 +1409,15 @@ extension Parser on ParserState {
   }
 
   List<SetComponent> _setComponents() {
+    if (enableDriftExtensions && _matchOne(TokenType.dollarSignVariable)) {
+      final token = _previous as DollarSignVariableToken;
+      final placeholder = DartInsertablePlaceholder(name: token.name)
+        ..token = token
+        ..setSpan(token, token);
+
+      return [placeholder];
+    }
+
     final set = <SetComponent>[];
     do {
       if (_check(TokenType.leftParen)) {

@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
@@ -758,9 +759,11 @@ class QueryAnalyzer {
   ) {
     final name = placeholder.name;
 
-    final type = placeholder.when(
-      isExpression: (e) {
-        final foundType = context.typeOf(e);
+    final DartPlaceholderType type;
+
+    switch (placeholder) {
+      case DartExpressionPlaceholder():
+        final foundType = context.typeOf(placeholder);
         ColumnType? columnType;
         if (foundType.type != null) {
           columnType = typeMapping.sqlTypeToDrift(foundType.type);
@@ -769,23 +772,45 @@ class QueryAnalyzer {
         final defaultValue =
             context.stmtOptions.defaultValuesForPlaceholder[name];
 
-        return ExpressionDartPlaceholderType(columnType, defaultValue);
-      },
-      isLimit: (_) =>
-          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.limit),
-      isOrderBy: (_) =>
-          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderBy),
-      isOrderingTerm: (_) =>
-          SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderByTerm),
-      isInsertable: (_) {
-        final insert = placeholder.parents.whereType<InsertStatement>().first;
-        final table = insert.table.resultSet;
-
-        return InsertableDartPlaceholderType(
-          table is Table ? _lookupReference(table.name) as DriftTable : null,
+        type = ExpressionDartPlaceholderType(columnType, defaultValue);
+      case DartLimitPlaceholder():
+        type = SimpleDartPlaceholderType(SimpleDartPlaceholderKind.limit);
+      case DartOrderByPlaceholder():
+        type = SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderBy);
+      case DartOrderingTermPlaceholder():
+        type = SimpleDartPlaceholderType(SimpleDartPlaceholderKind.orderByTerm);
+      case DartInsertablePlaceholder():
+        final parentStatement = placeholder.parents.firstWhereOrNull(
+          (s) => s is InsertStatement || s is UpdateStatement,
         );
-      },
-    );
+
+        final (table, isInsert) = switch (parentStatement) {
+          InsertStatement() => (parentStatement.table, true),
+          UpdateStatement() => (parentStatement.table, false),
+          null => (null, true),
+          _ => throw AssertionError(
+            "Expected InsertableDartPlaceholderType to have an InsertStatement or UpdateStatement parent",
+          ),
+        };
+
+        DriftTable? driftTable;
+        if (table?.resultSet case Table table) {
+          driftTable = _lookupReference(table.name);
+        }
+
+        if (driftTable == null) {
+          lints.add(
+            AnalysisError(
+              type: AnalysisErrorType.other,
+              message:
+                  "Placeholder expects a Table but got ${table?.resultSet.runtimeType}",
+              relevantNode: placeholder,
+            ),
+          );
+        }
+
+        type = InsertableDartPlaceholderType(driftTable, isInsert);
+    }
 
     final availableResults = placeholder.statementScope.allAvailableResultSets;
     final availableDriftResults = <AvailableDriftResultSet>[];
@@ -817,7 +842,7 @@ class QueryAnalyzer {
       );
     }
 
-    return FoundDartPlaceholder(type!, name, availableDriftResults)
+    return FoundDartPlaceholder(type, name, availableDriftResults)
       ..astNode = placeholder;
   }
 

@@ -1353,6 +1353,37 @@ class MockTodoDb extends _i1.Mock implements _i3.TodoDb {
           as _i2.GenerationContext);
 
   @override
+  _i2.GenerationContext $writeUpdateInsertable(
+    _i2.TableInfo<_i2.Table, dynamic>? table,
+    _i2.Insertable<dynamic>? insertable, {
+    int? startIndex,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #$writeUpdateInsertable,
+              [table, insertable],
+              {#startIndex: startIndex},
+            ),
+            returnValue: _FakeGenerationContext_34(
+              this,
+              Invocation.method(
+                #$writeUpdateInsertable,
+                [table, insertable],
+                {#startIndex: startIndex},
+              ),
+            ),
+            returnValueForMissingStub: _FakeGenerationContext_34(
+              this,
+              Invocation.method(
+                #$writeUpdateInsertable,
+                [table, insertable],
+                {#startIndex: startIndex},
+              ),
+            ),
+          )
+          as _i2.GenerationContext);
+
+  @override
   String $expandVar(int? start, int? amount) =>
       (super.noSuchMethod(
             Invocation.method(#$expandVar, [start, amount]),
