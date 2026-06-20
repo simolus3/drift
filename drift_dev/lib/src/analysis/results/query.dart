@@ -1145,7 +1145,10 @@ class ExpressionDartPlaceholderType extends DartPlaceholderType {
 class InsertableDartPlaceholderType extends DartPlaceholderType {
   final DriftTable? table;
 
-  InsertableDartPlaceholderType(this.table);
+  /// Whether this placeholder was used in an [InsertStatement] or an [UpdateStatement]
+  final bool isInsert;
+
+  InsertableDartPlaceholderType(this.table, this.isInsert);
 
   @override
   int get hashCode => table.hashCode;

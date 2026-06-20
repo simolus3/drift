@@ -526,18 +526,7 @@ abstract base class StatementCompiler {
       statement.hasMultipleTables = true;
     }
 
-    var first = true;
-    update.updatedColumns.forEach((name, variable) {
-      if (!first) {
-        statement.comma();
-      } else {
-        first = false;
-      }
-
-      addReference(name);
-      statement.buffer.write(' = ');
-      variable.compileWith(this);
-    });
+    addUpdateValues(update.updatedColumns);
 
     if (update.fromClause case final fromClause?) {
       fromClause.compileWith(this);
@@ -1102,13 +1091,7 @@ abstract base class StatementCompiler {
     statement.buffer.write(' DO UPDATE SET ');
 
     final updateSet = clause.createInsertable(table).toColumns(true);
-    for (final (i, update) in updateSet.entries.indexed) {
-      if (i != 0) statement.comma();
-
-      addReference(update.key);
-      statement.buffer.write(' = ');
-      update.value.compileWith(this);
-    }
+    addUpdateValues(updateSet);
 
     if (clause.buildWhereClause(table) case final where?) {
       statement.space();
@@ -1241,5 +1224,20 @@ abstract base class StatementCompiler {
         entry.compileWith(this);
       }
     }
+  }
+
+  void addUpdateValues(Map<String, Expression> columns) {
+    var first = true;
+    columns.forEach((name, variable) {
+      if (!first) {
+        statement.comma();
+      } else {
+        first = false;
+      }
+
+      addReference(name);
+      statement.buffer.write(' = ');
+      variable.compileWith(this);
+    });
   }
 }

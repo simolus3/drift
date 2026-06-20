@@ -2173,6 +2173,30 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     ).then((rows) => Future.wait(rows.map(config.mapFromRow)));
   }
 
+  Future<int> updateAll({
+    required Insertable<Config> all,
+    required UpdateAll$key key,
+  }) {
+    var $arrayStartIndex = 1;
+    final generatedall = $writeUpdateInsertable(
+      this.config,
+      all,
+      startIndex: $arrayStartIndex,
+    );
+    $arrayStartIndex += generatedall.amountOfVariables;
+    final generatedkey = $write(key(this.config), startIndex: $arrayStartIndex);
+    $arrayStartIndex += generatedkey.amountOfVariables;
+    return customUpdate(
+      'UPDATE config SET ${generatedall.sql} WHERE ${generatedkey.sql}',
+      variables: [
+        ...generatedall.introducedVariables,
+        ...generatedkey.introducedVariables,
+      ],
+      updates: {config},
+      updateKind: UpdateKind.update,
+    );
+  }
+
   Selectable<NestedResult> nested(String? var1) {
     return customSelect(
       'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
@@ -3392,6 +3416,7 @@ class ReadRowIdResult extends CustomResultSet {
 
 typedef ReadRowId$expr = Expression<int> Function(ConfigTable config);
 typedef ReadView$where = Expression<bool> Function(MyView my_view);
+typedef UpdateAll$key = Expression<bool> Function(ConfigTable config);
 
 class NestedResult extends CustomResultSet {
   final WithDefault defaults;

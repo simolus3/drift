@@ -696,6 +696,27 @@ abstract class DatabaseConnectionUser {
     return context;
   }
 
+  /// Writes column names and values for an update statement.
+  ///
+  /// Used by generated code.
+  @protected
+  GenerationContext $writeUpdateInsertable(
+    TableInfo table,
+    Insertable insertable, {
+    int? startIndex,
+  }) {
+    final context = GenerationContext.fromDb(this)
+      ..explicitVariableIndex = startIndex;
+
+    table.validateIntegrity(insertable, isInserting: false);
+    UpdateStatement(
+      this,
+      table,
+    ).writeInsertable(context, insertable.toColumns(true));
+
+    return context;
+  }
+
   /// Used by generated code to expand array variables.
   String $expandVar(int start, int amount) {
     final buffer = StringBuffer();

@@ -738,6 +738,20 @@ abstract base class DatabaseConnectionUser {
     compiler.addInsertFromValues(InsertFromValues.create(table, insertable)!);
     return compiler.statement;
   }
+
+  /// Writes column names and values for an update statement.
+  ///
+  /// Used by generated code.
+  @protected
+  StatementBuffer $writeUpdateInsertable(
+    GeneratedTable table,
+    Insertable insertable, {
+    int? startIndex,
+  }) {
+    final compiler = dialect.createCompiler();
+    compiler.addUpdateValues(insertable.toColumns(true));
+    return compiler.statement;
+  }
 }
 
 final class _ScopedDatabaseSession {

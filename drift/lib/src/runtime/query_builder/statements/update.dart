@@ -14,20 +14,7 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
 
     ctx.buffer.write('UPDATE ${table.tableWithAlias} SET ');
 
-    var first = true;
-    _updatedFields.forEach((columnName, variable) {
-      if (!first) {
-        ctx.buffer.write(', ');
-      } else {
-        first = false;
-      }
-
-      ctx.buffer
-        ..write(ctx.identifier(columnName))
-        ..write(' = ');
-
-      variable.writeInto(ctx);
-    });
+    writeInsertable(ctx, _updatedFields);
   }
 
   Future<int> _performQuery() async {
@@ -163,5 +150,27 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     if (dontExecute) return false;
     final updatedRows = await _performQuery();
     return updatedRows != 0;
+  }
+
+  /// Write column names and values from the map
+  @internal
+  void writeInsertable(
+    GenerationContext ctx,
+    Map<String, Expression> insertable,
+  ) {
+    var first = true;
+    insertable.forEach((columnName, variable) {
+      if (!first) {
+        ctx.buffer.write(', ');
+      } else {
+        first = false;
+      }
+
+      ctx.buffer
+        ..write(ctx.identifier(columnName))
+        ..write(' = ');
+
+      variable.writeInto(ctx);
+    });
   }
 }
