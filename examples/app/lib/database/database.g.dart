@@ -758,10 +758,9 @@ final class $$CategoriesTableReferences
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$TodoEntriesTable, List<TodoEntry>>
-      _todoEntriesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.todoEntries,
-          aliasName:
-              $_aliasNameGenerator(db.categories.id, db.todoEntries.category));
+      _todoEntriesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.todoEntries,
+              aliasName: 'categories__id__todo_entries__category');
 
   $$TodoEntriesTableProcessedTableManager get todoEntriesRefs {
     final manager = $$TodoEntriesTableTableManager($_db, $_db.todoEntries)
@@ -981,8 +980,7 @@ final class $$TodoEntriesTableReferences
   $$TodoEntriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _categoryTable(_$AppDatabase db) =>
-      db.categories.createAlias(
-          $_aliasNameGenerator(db.todoEntries.category, db.categories.id));
+      db.categories.createAlias('todo_entries__category__categories__id');
 
   $$CategoriesTableProcessedTableManager? get category {
     final $_column = $_itemColumn<int>('category');

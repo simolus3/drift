@@ -214,11 +214,11 @@ int? readIntLiteral(Expression expression) {
 Expression? findNamedArgument(ArgumentList args, String argName) {
   final argument =
       args.arguments.singleWhereOrNull(
-            (e) => e is NamedExpression && e.name.label.name == argName,
+            (e) => e is NamedArgument && e.name.lexeme == argName,
           )
-          as NamedExpression?;
+          as NamedArgument?;
 
-  return argument?.expression;
+  return argument?.argumentExpression;
 }
 
 bool isColumn(DartType type) {

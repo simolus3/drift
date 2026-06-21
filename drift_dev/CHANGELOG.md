@@ -1,3 +1,8 @@
+## 2.24.1
+
+- Require analyzer version 13.
+- Support latest `cli_util` versions.
+
 ## 2.34.0
 
 - Add `setup` callback to `validateDatabaseSchema` in `VerifySelf` extension.
