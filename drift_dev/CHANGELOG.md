@@ -1,4 +1,4 @@
-## 2.24.1
+## 2.34.1
 
 - Require analyzer version 13.
 - Support latest `cli_util` versions.
