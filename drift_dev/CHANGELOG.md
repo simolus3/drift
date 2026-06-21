@@ -1,3 +1,8 @@
+## 2.24.1
+
+- Require analyzer version 13.
+- Support latest `cli_util` versions.
+
 ## 2.34.0
 
 - Add `setup` callback to `validateDatabaseSchema` in `VerifySelf` extension.
@@ -5,7 +10,6 @@
 - Add the `use_sql_table_name_for_accessors` build option, naming the table
   getters on the database class after the table's SQL name instead of the Dart
   class name.
-- Require analyzer version 13.
 
 ## 2.33.0
 

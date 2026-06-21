@@ -1,6 +1,6 @@
 name: drift_dev
 description: Dev-dependency for users of drift. Contains the generator and development tools.
-version: 2.34.0
+version: 2.34.1
 repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues
@@ -30,7 +30,7 @@ dependencies:
   # CLI
   args: ^2.4.0
   logging: ^1.2.0
-  cli_util: ^0.4.0
+  cli_util: '>=0.4.0 <0.6.0'
   yaml: ^3.1.0
   io: ^1.0.3
 
