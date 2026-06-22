@@ -11,3 +11,5 @@
 - Drift manager is now a standalone package, `drift_manager`.
 - Add `TransactionOptions`, which can be used to request read-only transactions.
 - `Selectable.watch` now returns a `QueryStream`, which can be used to track which tables it watches.
+- DML statements now support `RETURNING` partial rows.   
+- `FROM` can now be added to `UpdateStatement`

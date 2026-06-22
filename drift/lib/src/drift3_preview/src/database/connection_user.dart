@@ -429,7 +429,7 @@ abstract base class DatabaseConnectionUser {
       includeJoinsByDefault: false,
       distinct: distinct,
     );
-    statement.from.add(FromResultSet(table));
+    statement.fromClause.addResultSet(table);
     return statement;
   }
 

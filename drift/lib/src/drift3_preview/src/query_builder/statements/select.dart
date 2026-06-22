@@ -6,6 +6,7 @@ import '../../connection/streams/update_rules.dart';
 import '../../database/connection_user.dart';
 import '../../database/selectable.dart';
 import '../../dsl/table.dart';
+import '../clauses/from.dart';
 import '../clauses/group_by.dart';
 import '../clauses/limit.dart';
 import '../clauses/order_by.dart';
@@ -38,8 +39,8 @@ sealed class BaseSelectStatement<
   /// rows would be removed.
   final bool distinct;
 
-  /// All tables that this statement selects from.
-  final List<FromClauseElement> from = [];
+  /// The from clause of select statement.
+  final fromClause = FromClause();
 
   /// The filtering `WHERE` clause of this select statement.
   WhereClause? whereClause;
@@ -337,7 +338,7 @@ final class SelectStatement
     addResultSet(other.resultSet);
 
     assert(distinct == other.distinct);
-    from.addAll(other.from);
+    fromClause.elements.addAll(other.fromClause.elements);
     whereClause = other.whereClause;
     groupByClause = other.groupByClause;
     orderByClause = other.orderByClause;
@@ -382,7 +383,7 @@ final class SelectStatement
   SelectStatement _asSelectStatement() => this;
 
   void _addJoin(Join join) {
-    from.add(join);
+    fromClause.addJoin(join);
     if (join.includeInResult ?? _includeJoinsByDefault) {
       addResultSet(join.table.resultSet);
     }
@@ -474,7 +475,7 @@ final class SingleTableSelectStatement<
     super.distinct,
   }) {
     structure.addResultSet(resultSet);
-    from.add(FromResultSet(resultSet));
+    fromClause.addResultSet(resultSet);
   }
 
   /// Orders the result by the given clauses. The clauses coming first in the
@@ -519,109 +520,6 @@ final class SingleTableSelectStatement<
   @override
   SelectStatement _asSelectStatement() {
     return SelectStatement(_database, distinct: distinct).._applyFrom(this);
-  }
-}
-
-/// A source for from clauses
-sealed class FromClauseElement implements SqlComponent {}
-
-/// An operator used to compose joins, see [Join].
-enum JoinOperator implements SqlComponent {
-  /// Perform an `INNER` join.
-  inner('INNER JOIN'),
-
-  /// Perform a `LEFT OUTER` join.
-  leftOuter('LEFT OUTER JOIN'),
-
-  /// Perform a `RIGHT OUTER` join.
-  rightOuter('RIGHT OUTER JOIN'),
-
-  /// Perform a `FULL OUTER` join.
-  fullOuter('FULL OUTER JOIN'),
-
-  /// Perform a `CROSS` join.
-  cross('CROSS JOIN');
-
-  /// The default lexeme to generate for this join operator. Some SQL dialects
-  /// may choose to override this.
-  final String defaultLexeme;
-
-  const JoinOperator(this.defaultLexeme);
-
-  @override
-  void compileWith(StatementCompiler compiler) {
-    compiler.addJoinOperator(this);
-  }
-}
-
-/// Represents a join of a [table] to a query.
-///
-/// This allows applying a [JoinOperator] and optionally also an [on] condition.
-final class Join extends FromClauseElement {
-  /// The [JoinOperator] to use for this join.
-  final JoinOperator operator;
-
-  /// The [ResultSet] that will be added to the query.
-  final FromResultSet table;
-
-  /// For joins that aren't [JoinOperator.cross], contains an additional predicate
-  /// that must be matched for the join.
-  final Expression<bool>? on;
-
-  /// Whether [table] should appear in the result set (defaults to true).
-  /// Default value can be changed by `includeJoinedTableColumns` in
-  /// `selectOnly` statements.
-  ///
-  /// It can be useful to exclude some tables. Sometimes, tables are used in a
-  /// join only to run aggregate functions on them.
-  final bool? includeInResult;
-
-  /// Create a join clause with the given [operator] and [table].
-  Join(this.operator, ResultSetDsl table, {this.on, this.includeInResult})
-    : table = FromResultSet(ResultSet.fromDsl(table));
-
-  /// Create an `INNER JOIN` for the [table].
-  Join.inner(ResultSetDsl table, {this.on, this.includeInResult})
-    : operator = JoinOperator.inner,
-      table = FromResultSet(ResultSet.fromDsl(table));
-
-  /// Create an `LEFT OUTER JOIN` for the [table].
-  Join.leftOuter(ResultSetDsl table, {this.on, this.includeInResult})
-    : operator = JoinOperator.leftOuter,
-      table = FromResultSet(ResultSet.fromDsl(table));
-
-  /// Create an `RIGHT OUTER JOIN` for the [table].
-  Join.rightOuter(ResultSetDsl table, {this.on, this.includeInResult})
-    : operator = JoinOperator.rightOuter,
-      table = FromResultSet(ResultSet.fromDsl(table));
-
-  /// Create an `FULL OUTER JOIN` for the [table].
-  Join.fullOuter(ResultSetDsl table, {this.on, this.includeInResult})
-    : operator = JoinOperator.fullOuter,
-      table = FromResultSet(ResultSet.fromDsl(table));
-
-  /// Create a `CROSS JOIN` for the [table].
-  Join.cross(ResultSetDsl table, {this.on, this.includeInResult})
-    : operator = JoinOperator.cross,
-      table = FromResultSet(ResultSet.fromDsl(table));
-
-  @override
-  void compileWith(StatementCompiler compiler) {
-    compiler.addJoin(this);
-  }
-}
-
-/// Select from a generated table or view.
-final class FromResultSet extends FromClauseElement {
-  /// The result set to select from.
-  final ResultSet resultSet;
-
-  /// @nodoc
-  FromResultSet(this.resultSet);
-
-  @override
-  void compileWith(StatementCompiler compiler) {
-    compiler.addFromResultSet(this);
   }
 }
 
