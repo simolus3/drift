@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
-// ignore: implementation_imports
-import 'package:drift/src/drift3_preview/drift.dart' as drift3;
 import 'package:drift_dev/api/migrations_common.dart';
+import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
 
 import 'find_differences.dart';
@@ -35,37 +34,6 @@ void verify(
   if (!result.noChanges) {
     throw SchemaMismatch(result.describe());
   }
-}
-
-Future<void> verifyDrift3Database(
-  drift3.GeneratedDatabase db,
-  ValidationOptions options,
-  drift3.DriftConnection connection,
-) async {
-  final virtualTables = db.schema
-      .whereType<drift3.VirtualTableInfo>()
-      .map((e) => e.entityName)
-      .toList();
-
-  final schemaOfThisDatabase = await db.collectSchemaInput(virtualTables);
-
-  // The expectedSchema expando will store the expected schema for this
-  // database when it's opened in a migration test. This allows this method
-  // to be used in migration tests -- otherwise, this would always compare the
-  // runtime schema to the latest schema from generated code.
-  var referenceSchema = expectedSchema[db];
-
-  if (referenceSchema == null) {
-    // Collect the schema how it would be if we just called `createAll` on a
-    // clean database.
-    final referenceDb = _GenerateFromScratchDrift3(db, connection);
-    referenceSchema =
-        expectedSchema[db] ??
-        await referenceDb.collectSchemaInput(virtualTables);
-    await referenceDb.close();
-  }
-
-  verify(referenceSchema, schemaOfThisDatabase, options);
 }
 
 /// Thrown when the actual schema differs from the expected schema.
@@ -232,7 +200,8 @@ abstract base class VerifierImplementation<DB extends CommonDatabase>
   }
 }
 
-Input? _parseInputFromSchemaRow(
+@internal
+Input? parseInputFromSchemaRow(
   String name,
   String sql,
   List<String> virtualTables,
@@ -254,26 +223,7 @@ extension CollectSchemaDb on DatabaseConnectionUser {
     for (final row in result) {
       final name = row.data['name'] as String;
       final sql = row.data['sql'] as String;
-      final input = _parseInputFromSchemaRow(name, sql, virtualTables);
-      if (input != null) {
-        inputs.add(input);
-      }
-    }
-
-    return inputs;
-  }
-}
-
-extension CollectSchemaDbDrift3 on drift3.DatabaseConnectionUser {
-  Future<List<Input>> collectSchemaInput(List<String> virtualTables) async {
-    final result = await customSelect(
-      'SELECT name, sql FROM sqlite_master WHERE sql IS NOT NULL;',
-    ).get();
-    final inputs = <Input>[];
-
-    for (final row in result) {
-      final [name, sql] = row.row.cast<String>();
-      final input = _parseInputFromSchemaRow(name, sql, virtualTables);
+      final input = parseInputFromSchemaRow(name, sql, virtualTables);
       if (input != null) {
         inputs.add(input);
       }
@@ -294,7 +244,7 @@ extension CollectSchema on QueryExecutor {
     for (final row in result) {
       final name = row['name'] as String;
       final sql = row['sql'] as String;
-      final input = _parseInputFromSchemaRow(name, sql, virtualTables);
+      final input = parseInputFromSchemaRow(name, sql, virtualTables);
       if (input != null) {
         inputs.add(input);
       }
@@ -335,18 +285,6 @@ class _GenerateFromScratch extends GeneratedDatabase {
 
   @override
   int get schemaVersion => 1;
-}
-
-final class _GenerateFromScratchDrift3 extends drift3.GeneratedDatabase {
-  final drift3.GeneratedDatabase reference;
-
-  _GenerateFromScratchDrift3(this.reference, super.implementation);
-
-  @override
-  drift3.DatabaseSchema get schema => reference.schema;
-
-  @override
-  int get schemaVersion => reference.schemaVersion;
 }
 
 final class NullSchemaInstantiationHelper extends SchemaInstantiationHelper {
