@@ -2,10 +2,11 @@
 
 - Fix join analysis to properly treat the left side of a `RIGHT` or `FULL`
   join as nullable ([#3812](https://github.com/simolus3/drift/issues/3812)).
+- Fix `CaseInsensitiveMap.containsKey` to be case-insensitive.
 
 ## 0.44.5
 
-- Support `ALTER TABLE ADD/DROP CONSTRAINT` statements. 
+- Support `ALTER TABLE ADD/DROP CONSTRAINT` statements.
 
 ## 0.44.4
 

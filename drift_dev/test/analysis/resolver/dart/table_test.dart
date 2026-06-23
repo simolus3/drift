@@ -630,4 +630,29 @@ class Users extends Table {
       ),
     );
   });
+
+  test('can use references with correct casing', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3817.
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+class User extends Table {
+  late final userId = text()();
+}
+
+class UserReference extends Table {
+  late final userId = text()();
+
+  @override
+  List<String> get customConstraints => [
+    'FOREIGN KEY (userId) REFERENCES user (userId)'
+  ];
+}
+''',
+    }, options: DriftOptions.defaults(caseFromDartToSql: .camel));
+
+    final results = await backend.analyze('package:a/main.dart');
+    expect(results.allErrors, isEmpty);
+  });
 }

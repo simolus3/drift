@@ -38,6 +38,11 @@ class CaseInsensitiveMap<K extends String?, T> extends MapBase<K, T> {
   Iterable<K> get keys => _normalized.keys;
 
   @override
+  bool containsKey(Object? key) {
+    return key is String && super.containsKey(key.toLowerCase());
+  }
+
+  @override
   T? remove(Object? key) {
     if (key is String?) {
       return _normalized.remove(key?.toLowerCase());
