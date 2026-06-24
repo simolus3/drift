@@ -7,7 +7,7 @@ void main() {
     final uri = Uri.parse('drift:hidden');
 
     return DriftTable(
-      DriftElementId(uri, name),
+      DriftElementReference(DriftElementId(uri, name)),
       DriftDeclaration(uri, -1, name),
       columns: const [],
       baseDartName: name,

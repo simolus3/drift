@@ -28,9 +28,9 @@ class DriftIndexResolver extends DriftElementResolver<DiscoveredDriftIndex> {
     }
 
     return DriftIndex(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration.driftFile(stmt, file.ownUri),
-      table: target,
+      table: target?.reference,
       indexedColumns: [],
       unique: stmt.unique,
       createStmt: source.text.substring(stmt.firstPosition, stmt.lastPosition),

@@ -79,8 +79,10 @@ class DriftDeclaration {
 }
 
 abstract class DriftElement {
-  final DriftElementId id;
+  final DriftElementReference reference;
   final DriftDeclaration declaration;
+
+  DriftElementId get id => reference.id;
 
   DriftElementKind get kind;
 
@@ -110,7 +112,9 @@ abstract class DriftElement {
     return null;
   }
 
-  DriftElement(this.id, this.declaration);
+  DriftElement(this.reference, this.declaration) {
+    reference.replace(this);
+  }
 }
 
 enum DriftElementKind {
@@ -123,6 +127,25 @@ enum DriftElementKind {
   definedQuery;
 
   static Map<String, DriftElementKind> byName = values.asNameMap();
+}
+
+/// A reference to a valid drift element.
+///
+/// References are temporarily unresolved as drift elements are built to be able
+/// to handle circular references between elements.
+final class DriftElementReference {
+  final DriftElementId id;
+
+  DriftElement? _bound;
+
+  DriftElementReference(this.id);
+
+  DriftElement get element => _bound!;
+
+  void replace(DriftElement element) {
+    assert(element.id == id);
+    _bound = element;
+  }
 }
 
 abstract class DriftSchemaElement extends DriftElement {

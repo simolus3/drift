@@ -135,7 +135,9 @@ class GenerateUtils {
       ..writeln("import 'package:drift/drift.dart';");
 
     final database = DriftDatabase(
-      id: DriftElementId(SchemaReader.elementUri, 'database'),
+      reference: DriftElementReference(
+        DriftElementId(SchemaReader.elementUri, 'database'),
+      ),
       declaration: DriftDeclaration(SchemaReader.elementUri, 0, 'database'),
       declaredIncludes: const [],
       declaredQueries: const [],

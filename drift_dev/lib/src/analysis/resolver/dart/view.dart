@@ -27,7 +27,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     );
 
     return DriftView(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration.dartElement(discovered.dartElement),
       columns: columns,
       nameOfRowClass:

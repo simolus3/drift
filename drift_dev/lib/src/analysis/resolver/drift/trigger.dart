@@ -62,7 +62,7 @@ class DriftTriggerResolver
     }
 
     return DriftTrigger(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration.driftFile(stmt, file.ownUri),
       on:
           findInResolved(references, stmt.onTable.tableName)

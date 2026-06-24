@@ -60,7 +60,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     );
 
     final table = DriftTable(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration.dartElement(element),
       columns: columns,
       references: references.toList(),

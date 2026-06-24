@@ -153,7 +153,7 @@ class SchemaWriter {
     } else if (entity is DriftIndex) {
       type = 'index';
       data = {
-        'on': _idOf(entity.table!),
+        'on': _idOf(entity.table!.element),
         'name': entity.schemaName,
         'sql': entity.createStmt,
         'unique': entity.unique,
@@ -529,9 +529,9 @@ class SchemaReader {
       }
 
       final index = DriftIndex(
-        _id(name),
+        DriftElementReference(_id(name)),
         _declaration,
-        table: on,
+        table: on.reference,
         indexedColumns: [
           for (final col in content['columns'] as List)
             readColumn(col as Object),
@@ -556,9 +556,9 @@ class SchemaReader {
               as CreateIndexStatement;
 
       return DriftIndex(
-        _id(name),
+        DriftElementReference(_id(name)),
         _declaration,
-        table: on,
+        table: on.reference,
         createStmt: sql,
         unique: stmt.unique,
         indexedColumns: [
@@ -585,7 +585,7 @@ class SchemaReader {
         (content['references_in_body'] ?? content['refences_in_body']) as List;
 
     return DriftTrigger(
-        _id(name),
+        DriftElementReference(_id(name)),
         _declaration,
         on: on,
         onWrite: UpdateKind.delete,
@@ -617,7 +617,7 @@ class SchemaReader {
               as CreateVirtualTableStatement;
 
       return DriftTable(
-        _id(sqlName),
+        DriftElementReference(_id(sqlName)),
         _declaration,
         columns: columns,
         baseDartName: pascalCase,
@@ -657,7 +657,7 @@ class SchemaReader {
     }
 
     return DriftTable(
-      _id(sqlName),
+      DriftElementReference(_id(sqlName)),
       _declaration,
       columns: columns,
       baseDartName: pascalCase,
@@ -679,7 +679,7 @@ class SchemaReader {
     final entityInfoName = content['dart_info_name'] as String;
 
     return DriftView(
-      _id(name),
+      DriftElementReference(_id(name)),
       _declaration,
       columns: [
         for (final column in content['columns'] as Iterable)
@@ -706,7 +706,7 @@ class SchemaReader {
     required List<DriftElement> references,
   }) {
     return DefinedSqlQuery(
-      _id('create$id'),
+      DriftElementReference(_id('create$id')),
       _declaration,
       references: references,
       sql: content['sql'] as String,

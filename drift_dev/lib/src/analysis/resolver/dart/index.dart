@@ -80,9 +80,9 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
     }
 
     return DriftIndex(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration.dartElement(discovered.dartElement),
-      table: table,
+      table: table?.reference,
       indexedColumns: columns,
       unique: unique,
       createStmt: null,
@@ -149,9 +149,9 @@ class DartIndexResolver extends LocalElementResolver<DiscoveredDartIndex> {
     }
 
     return DriftIndex(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration.dartElement(discovered.dartElement),
-      table: table,
+      table: table?.reference,
       indexedColumns: const [],
       unique: unique,
       createStmt: createIndexStatement,

@@ -124,7 +124,7 @@ class DriftViewResolver extends DriftElementResolver<DiscoveredDriftView> {
         );
 
     return DriftView(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration.driftFile(stmt, file.ownUri),
       columns: columns,
       source: SqlViewSource('$createStmtForDatabase;'),

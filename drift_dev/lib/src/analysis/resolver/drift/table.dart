@@ -367,7 +367,7 @@ class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
     dataClassName ??= dataClassNameForClassName(dartTableName);
 
     final driftTable = DriftTable(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration(
         state.ownId.libraryUri,
         stmt.firstPosition,

@@ -11,7 +11,7 @@ class DriftIndex extends DriftSchemaElement {
   /// The table on which this index is created.
   ///
   /// This may be null if the table couldn't be resolved.
-  DriftTable? table;
+  DriftElementReference? table;
 
   /// Columns of [table] that have been indexed.
   ///
@@ -48,7 +48,7 @@ class DriftIndex extends DriftSchemaElement {
   }
 
   @override
-  Iterable<DriftElement> get references => [?table];
+  Iterable<DriftElement> get references => [?table?.element];
 
   /// The parsed `CREATE VIEW` statement from [createView].
   ///

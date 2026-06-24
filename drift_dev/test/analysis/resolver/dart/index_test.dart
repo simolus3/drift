@@ -31,11 +31,11 @@ class MyTable extends Table {
     final indexA = file.analysis[file.id('tbl_a')]!.result as DriftIndex;
     final indexBC = file.analysis[file.id('tbl_bc')]!.result as DriftIndex;
 
-    expect(indexA.table, table);
+    expect(indexA.table, table.reference);
     expect(indexA.unique, false);
     expect(indexA.indexedColumns, [indexedColumn('a')]);
 
-    expect(indexBC.table, table);
+    expect(indexBC.table, table.reference);
     expect(indexBC.unique, true);
     expect(indexBC.indexedColumns, [indexedColumn('b'), indexedColumn('c')]);
   });

@@ -160,7 +160,7 @@ class DartAccessorResolver
       }
 
       return DriftDatabase(
-        id: discovered.ownId,
+        reference: DriftElementReference(discovered.ownId),
         declaration: declaration,
         declaredTables: tables,
         declaredViews: views,
@@ -192,7 +192,7 @@ class DartAccessorResolver
       }
 
       return DatabaseAccessor(
-        id: discovered.ownId,
+        reference: DriftElementReference(discovered.ownId),
         declaration: declaration,
         declaredTables: tables,
         declaredViews: views,

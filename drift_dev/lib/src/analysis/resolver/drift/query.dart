@@ -47,7 +47,7 @@ class DriftQueryResolver
     }
 
     return DefinedSqlQuery(
-      discovered.ownId,
+      DriftElementReference(discovered.ownId),
       DriftDeclaration.driftFile(stmt, file.ownUri),
       references: references.referencedElements,
       sql: stmt.span!.text,

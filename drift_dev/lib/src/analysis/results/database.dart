@@ -29,13 +29,13 @@ abstract class BaseDriftAccessor extends DriftElement {
   final List<QueryOnAccessor> declaredQueries;
 
   BaseDriftAccessor({
-    required DriftElementId id,
+    required DriftElementReference reference,
     required DriftDeclaration declaration,
     required this.declaredTables,
     required this.declaredViews,
     required this.declaredIncludes,
     required this.declaredQueries,
-  }) : super(id, declaration);
+  }) : super(reference, declaration);
 
   @override
   Iterable<DriftElement> get references => [
@@ -61,7 +61,7 @@ class DriftDatabase extends BaseDriftAccessor {
   final List<DatabaseAccessor> accessors;
 
   DriftDatabase({
-    required super.id,
+    required super.reference,
     required super.declaration,
     required super.declaredTables,
     required super.declaredViews,
@@ -85,7 +85,7 @@ class DatabaseAccessor extends BaseDriftAccessor {
   final AnnotatedDartCode ownType;
 
   DatabaseAccessor({
-    required super.id,
+    required super.reference,
     required super.declaration,
     required super.declaredTables,
     required super.declaredViews,

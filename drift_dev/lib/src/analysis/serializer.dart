@@ -549,7 +549,7 @@ class ElementDeserializer {
         }
 
         final table = DriftTable(
-          id,
+          DriftElementReference(id),
           declaration,
           references: references,
           columns: columns,
@@ -606,9 +606,9 @@ class ElementDeserializer {
         final onTable = references.whereType<DriftTable>().firstOrNull;
 
         return DriftIndex(
-          id,
+          DriftElementReference(id),
           declaration,
-          table: onTable,
+          table: onTable?.reference,
           createStmt: json['sql'] as String?,
           indexedColumns: [
             for (final entry
@@ -646,7 +646,7 @@ class ElementDeserializer {
         }
 
         return DefinedSqlQuery(
-          id,
+          DriftElementReference(id),
           declaration,
           references: references,
           sql: json['sql'] as String,
@@ -667,7 +667,7 @@ class ElementDeserializer {
         }
 
         return DriftTrigger(
-          id,
+          DriftElementReference(id),
           declaration,
           references: references,
           createStmt: json['sql'] as String,
@@ -722,7 +722,7 @@ class ElementDeserializer {
         }
 
         return DriftView(
-          id,
+          DriftElementReference(id),
           declaration,
           references: references,
           columns: columns,
@@ -770,7 +770,7 @@ class ElementDeserializer {
 
         if (type == 'database') {
           return DriftDatabase(
-            id: id,
+            reference: DriftElementReference(id),
             declaration: declaration,
             declaredTables: tables,
             declaredViews: views,
@@ -789,7 +789,7 @@ class ElementDeserializer {
           assert(type == 'dao');
 
           return DatabaseAccessor(
-            id: id,
+            reference: DriftElementReference(id),
             declaration: declaration,
             declaredTables: tables,
             declaredViews: views,
