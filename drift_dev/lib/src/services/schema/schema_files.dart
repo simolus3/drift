@@ -142,7 +142,7 @@ class SchemaWriter {
     } else if (entity is DriftTrigger) {
       type = 'trigger';
       data = {
-        'on': _idOf(entity.on!),
+        'on': _idOf(entity.on!.element),
         'references_in_body': [
           for (final ref in entity.references.whereType<DriftSchemaElement>())
             _idOf(ref),
@@ -205,7 +205,7 @@ class SchemaWriter {
       'id': _idOf(entity),
       'references': [
         for (final reference in entity.references)
-          if (reference != entity) _idOf(reference),
+          if (reference.element != entity) _idOf(reference.element),
       ],
       'type': type,
       'data': data,
@@ -489,7 +489,7 @@ class SchemaReader {
           content,
           id: id,
           references: references
-              .map((id) => _entitiesById[id])
+              .map((id) => _entitiesById[id]?.reference)
               .nonNulls
               .toList(),
         );
@@ -587,7 +587,7 @@ class SchemaReader {
     return DriftTrigger(
         DriftElementReference(_id(name)),
         _declaration,
-        on: on,
+        on: on.reference,
         onWrite: UpdateKind.delete,
         references: [
           for (final bodyRef in bodyReferences) _existingEntity(bodyRef),
@@ -703,7 +703,7 @@ class SchemaReader {
   DefinedSqlQuery _readQuery(
     Map<String, dynamic> content, {
     required int id,
-    required List<DriftElement> references,
+    required List<DriftElementReference> references,
   }) {
     return DefinedSqlQuery(
       DriftElementReference(_id('create$id')),

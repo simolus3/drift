@@ -21,7 +21,7 @@ class DriftIndex extends DriftSchemaElement {
   List<DriftIndexedColumn> indexedColumns;
 
   /// Whethet the index has been declared to be unique.
-  final bool unique;
+  bool unique;
 
   /// For indices created in drift files, the `CREATE INDEX` SQL statements as
   /// written by the user in the drift file.
@@ -48,7 +48,7 @@ class DriftIndex extends DriftSchemaElement {
   }
 
   @override
-  Iterable<DriftElement> get references => [?table?.element];
+  Iterable<DriftElementReference> get references => [?table];
 
   /// The parsed `CREATE VIEW` statement from [createView].
   ///

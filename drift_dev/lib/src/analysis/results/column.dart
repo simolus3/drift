@@ -256,7 +256,7 @@ final class PrimaryKeyColumn extends DriftColumnConstraint {
 }
 
 final class ForeignKeyReference extends DriftColumnConstraint {
-  late final DriftColumn otherColumn;
+  final DriftColumn otherColumn;
   final ReferenceAction? onUpdate;
   final ReferenceAction? onDelete;
 
@@ -266,12 +266,6 @@ final class ForeignKeyReference extends DriftColumnConstraint {
 
   ForeignKeyReference(
     this.otherColumn,
-    this.onUpdate,
-    this.onDelete,
-    this.initiallyDeferred,
-  );
-
-  ForeignKeyReference.unresolved(
     this.onUpdate,
     this.onDelete,
     this.initiallyDeferred,

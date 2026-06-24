@@ -1,4 +1,4 @@
-import 'package:sqlparser/sqlparser.dart';
+import 'package:drift_dev/src/analysis/resolver/resolver.dart';
 
 import '../../driver/state.dart';
 import '../../results/results.dart';
@@ -9,31 +9,33 @@ class DriftIndexResolver extends DriftElementResolver<DiscoveredDriftIndex> {
   DriftIndexResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
-  Future<DriftIndex> resolve() async {
+  Future<PendingDriftElement> buildPending() async {
     final stmt = discovered.sqlNode;
-    final references = await resolveTableReferences(stmt);
-    final engine = await newEngineWithTables(references);
-
+    final tableRef = ResolvableSqlReference(stmt.on.tableName);
+    final references = await resolveTableReferences(
+      stmt,
+      additional: [tableRef],
+    );
+    final createEngine = await newEngineWithTables(references);
     final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
-    final context = engine.analyzeNode(stmt, source);
-    reportLints(context, references);
 
-    final onTable = stmt.on.resolved;
-    DriftTable? target;
-
-    if (onTable is Table) {
-      target = references.whereType<DriftTable>().firstWhere(
-        (e) => e.schemaName == onTable.name,
-      );
-    }
-
-    return DriftIndex(
-      DriftElementReference(discovered.ownId),
-      DriftDeclaration.driftFile(stmt, file.ownUri),
-      table: target?.reference,
-      indexedColumns: [],
-      unique: stmt.unique,
-      createStmt: source.text.substring(stmt.firstPosition, stmt.lastPosition),
+    return PendingDriftElement(
+      element: DriftIndex(
+        DriftElementReference(discovered.ownId),
+        DriftDeclaration.driftFile(stmt, file.ownUri),
+        table: tableRef.resolved?.reference,
+        indexedColumns: [],
+        unique: stmt.unique,
+        createStmt: source.text.substring(
+          stmt.firstPosition,
+          stmt.lastPosition,
+        ),
+      ),
+      resolve: (dependencies) {
+        final engine = createEngine(dependencies);
+        final context = engine.analyzeNode(stmt, source);
+        reportLints(context, dependencies, references);
+      },
     );
   }
 }

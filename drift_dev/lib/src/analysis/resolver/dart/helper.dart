@@ -299,7 +299,7 @@ class DataClassInformation {
   );
 
   static Future<DataClassInformation> resolve(
-    LocalElementResolver resolver,
+    TwoStageElementResolver resolver,
     List<DriftColumn> columns,
     ClassElement element,
   ) async {

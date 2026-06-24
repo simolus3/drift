@@ -16,7 +16,7 @@ import 'sqlparser/drift_lints.dart';
 import 'sqlparser/mapping.dart';
 
 abstract class DriftElementResolver<T extends DiscoveredElement>
-    extends LocalElementResolver<T> {
+    extends TwoStageElementResolver<T> {
   DriftElementResolver(
     super.file,
     super.discovered,
@@ -82,12 +82,18 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     );
   }
 
-  void reportLints(AnalysisContext context, Iterable<DriftElement> references) {
+  void reportLints(
+    AnalysisContext context,
+    ResolvedDependencies dependencies,
+    Iterable<DependencyToken> references,
+  ) {
     context.errors.forEach(reportLint);
 
     // Also run drift-specific lints on the query
-    final linter = DriftSqlLinter(context, references: references)
-      ..collectLints();
+    final linter = DriftSqlLinter(
+      context,
+      references: references.map(dependencies.resolve),
+    )..collectLints();
     linter.sqlParserErrors.forEach(reportLint);
   }
 
@@ -205,10 +211,6 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
     }
   }
 
-  DriftElement? findInResolved(List<DriftElement> references, String name) {
-    return references.firstWhereOrNull((e) => e.id.sameName(name));
-  }
-
   /// Creates a type resolver capable of resolving `ENUM` and `ENUMNAME` types.
   ///
   /// Because actual type resolving work is synchronous, types are pre-resolved
@@ -237,7 +239,7 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
 
 class FoundReferencesInSql {
   /// All referenced tables in the statement.
-  final List<DriftElement> referencedElements;
+  final List<DependencyToken> referencedElements;
 
   /// All inline Dart tokens used in a `MAPPED BY`.
   final List<String> dartExpressions;

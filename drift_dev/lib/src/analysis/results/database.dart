@@ -2,8 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'dart.dart';
 import 'element.dart';
-import 'table.dart';
 import 'query.dart';
+import 'table.dart';
 import 'view.dart';
 
 part '../../generated/analysis/results/database.g.dart';
@@ -14,13 +14,13 @@ abstract class BaseDriftAccessor extends DriftElement {
   ///
   /// This contains the `tables` field from a `DriftDatabase` or `DriftAccessor`
   /// annotation, but not tables that are declared in imported files.
-  final List<DriftTable> declaredTables;
+  final List<DriftElementReference> declaredTables;
 
   /// All views that have been declared on this accessor directly.
   ///
   /// This contains the `views` field from a `DriftDatabase` or `DriftAccessor`
   /// annotation, but not views that are declared in imported files.
-  final List<DriftView> declaredViews;
+  final List<DriftElementReference> declaredViews;
 
   /// The `includes` field from the annotation.
   final List<Uri> declaredIncludes;
@@ -37,8 +37,13 @@ abstract class BaseDriftAccessor extends DriftElement {
     required this.declaredQueries,
   }) : super(reference, declaration);
 
+  Iterable<DriftTable> get resolvedDeclaredTables =>
+      declaredTables.map((e) => e.element as DriftTable);
+  Iterable<DriftView> get resolvedDeclaredViews =>
+      declaredViews.map((e) => e.element as DriftView);
+
   @override
-  Iterable<DriftElement> get references => [
+  Iterable<DriftElementReference> get references => [
     // todo: Track dependencies on includes somehow
     ...declaredTables,
     ...declaredViews,
@@ -58,7 +63,7 @@ class DriftDatabase extends BaseDriftAccessor {
   /// argument accepting a `QueryExecutor` or `DatabaseConnection` instance.
   final bool hasConstructorArgumentForConnection;
 
-  final List<DatabaseAccessor> accessors;
+  final List<DriftElementReference> accessors;
 
   DriftDatabase({
     required super.reference,

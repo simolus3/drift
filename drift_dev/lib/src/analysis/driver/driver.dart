@@ -263,10 +263,10 @@ class DriftAnalysisDriver {
     if (state.elementIsAnalyzed(id)) {
       return state.analysis[id]?.result;
     } else {
-      final resolver = DriftResolver(this);
+      final resolver = DriftResolver(this, id);
 
       try {
-        return await resolver.resolveEntrypoint(id);
+        return await resolver.resolveEntrypoint();
       } catch (e, s) {
         if (e is! CouldNotResolveElementException) {
           backend.log.warning('Could not analyze $id', e, s);

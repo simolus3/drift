@@ -655,4 +655,38 @@ class UserReference extends Table {
     final results = await backend.analyze('package:a/main.dart');
     expect(results.allErrors, isEmpty);
   });
+
+  test('can use circular references to self', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+class TableA extends Table {
+  late final a = text().references(TableA, #a)();
+}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    expect(table.references, [table]);
+  });
+
+  test('can parse circular references', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': r'''
+import 'package:drift/drift.dart';
+
+class TableA extends Table {
+  late final a = text().references(TableB, #b)();
+}
+
+class TableB extends Table {
+  late final b = text().references(TableA, #a)();
+}
+''',
+    });
+  });
 }

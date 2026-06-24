@@ -33,7 +33,7 @@ class DriftView extends DriftElementWithResultSet {
   final String? nameOfCompanionClass;
 
   @override
-  List<DriftElement> references;
+  List<DriftElementReference> references;
 
   DriftView(
     super.id,

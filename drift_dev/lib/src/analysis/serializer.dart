@@ -180,11 +180,11 @@ class ElementSerializer {
         'type': type,
         'tables': [
           for (final table in element.declaredTables)
-            _serializeElementReference(table),
+            _serializeElementReference(table.element),
         ],
         'views': [
           for (final view in element.declaredViews)
-            _serializeElementReference(view),
+            _serializeElementReference(view.element),
         ],
         'includes': [
           for (final include in element.declaredIncludes) include.toString(),
@@ -198,7 +198,7 @@ class ElementSerializer {
           'schema_version': element.schemaVersion,
           'daos': [
             for (final dao in element.accessors)
-              _serializeElementReference(dao),
+              _serializeElementReference(dao.element),
           ],
           'has_constructor_arg': element.hasConstructorArgumentForConnection,
         },
@@ -212,7 +212,7 @@ class ElementSerializer {
       'declaration': element.declaration.toJson(),
       'references': [
         for (final referenced in element.references)
-          _serializeElementReference(referenced),
+          _serializeElementReference(referenced.element),
       ],
       ...additionalInformation,
     };
@@ -506,9 +506,9 @@ class ElementDeserializer {
     final type = json['type'] as String;
     final id = DriftElementId.fromJson(json['id'] as Map);
     final declaration = DriftDeclaration.fromJson(json['declaration'] as Map);
-    final references = <DriftElement>[
+    final references = <DriftElementReference>[
       for (final reference in json.list('references'))
-        await _readElementReference(reference as Map),
+        (await _readElementReference(reference as Map)).reference,
     ];
 
     switch (type) {
@@ -752,12 +752,15 @@ class ElementDeserializer {
 
         final tables = [
           for (final tableId in json.list('tables'))
-            referenceById[DriftElementId.fromJson(tableId as Map)]
-                as DriftTable,
+            (referenceById[DriftElementId.fromJson(tableId as Map)]
+                    as DriftTable)
+                .reference,
         ];
         final views = [
           for (final tableId in json.list('views'))
-            referenceById[DriftElementId.fromJson(tableId as Map)] as DriftView,
+            (referenceById[DriftElementId.fromJson(tableId as Map)]
+                    as DriftView)
+                .reference,
         ];
         final includes = (json['includes'] as List)
             .cast<String>()
@@ -779,8 +782,9 @@ class ElementDeserializer {
             schemaVersion: json['schema_version'] as int?,
             accessors: [
               for (final dao in json.list('daos'))
-                await _readElementReference(dao as Map<String, Object?>)
-                    as DatabaseAccessor,
+                (await _readElementReference(dao as Map<String, Object?>)
+                        as DatabaseAccessor)
+                    .reference,
             ],
             hasConstructorArgumentForConnection:
                 json['has_constructor_arg'] as bool,

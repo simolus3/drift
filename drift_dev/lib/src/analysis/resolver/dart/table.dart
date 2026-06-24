@@ -13,11 +13,11 @@ import '../resolver.dart';
 import 'column.dart';
 import 'helper.dart';
 
-class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
+class DartTableResolver extends TwoStageElementResolver<DiscoveredDartTable> {
   DartTableResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
-  Future<DriftElement> resolve() async {
+  Future<PendingDriftElement> buildPending() async {
     final element = discovered.dartElement;
 
     final pendingColumns = (await _parseColumns(element)).toList();
@@ -31,39 +31,14 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       element,
     );
 
-    final references = <DriftElement>{};
-
-    // Resolve local foreign key references in pending columns
-    for (final column in pendingColumns) {
-      if (column.referencesColumnInSameTable != null) {
-        final ref = column.column.constraints
-            .whereType<ForeignKeyReference>()
-            .first;
-        final referencedColumn = columns.firstWhere(
-          (e) => e.nameInDart == column.referencesColumnInSameTable,
-        );
-
-        ref.otherColumn = referencedColumn;
-      } else {
-        for (final constraint in column.column.constraints) {
-          if (constraint is ForeignKeyReference) {
-            references.add(constraint.otherColumn.owner);
-          }
-        }
-      }
-    }
-
-    final tableConstraints = await _readCustomConstraints(
-      references,
-      columns,
-      element,
-    );
+    final (tableConstraints, validateTableConstraints) =
+        await _readCustomConstraints(columns, element);
 
     final table = DriftTable(
-      DriftElementReference(discovered.ownId),
+      resolver.ownElementReference,
       DriftDeclaration.dartElement(element),
       columns: columns,
-      references: references.toList(),
+      references: resolver.references,
       nameOfRowClass:
           dataClassInfo.enforcedName ??
           dataClassNameForClassName(element.name!),
@@ -83,85 +58,93 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
       attachedIndices: [for (final id in discovered.attachedIndices) id.name],
     );
 
-    final columnsWithPrimaryKeyConstraint = columns
-        .where((c) => c.constraints.any((e) => e is PrimaryKeyColumn))
-        .length;
-    if (primaryKey != null && columnsWithPrimaryKeyConstraint > 0) {
-      reportError(
-        DriftAnalysisError.forDartElement(
-          element,
-          "Tables can't override primaryKey and use autoIncrement()",
-        ),
-      );
-    }
+    return PendingDriftElement(
+      element: table,
+      resolve: (dependencies) {
+        for (final column in pendingColumns) {
+          column.completeConstraints(dependencies);
+        }
+        validateTableConstraints?.call(dependencies);
 
-    if (columnsWithPrimaryKeyConstraint > 1) {
-      reportError(
-        DriftAnalysisError.forDartElement(
-          element,
-          'More than one column uses autoIncrement(). This would require '
-          'multiple primary keys, which is not supported.',
-        ),
-      );
-    }
+        final columnsWithPrimaryKeyConstraint = columns
+            .where((c) => c.constraints.any((e) => e is PrimaryKeyColumn))
+            .length;
+        if (primaryKey != null && columnsWithPrimaryKeyConstraint > 0) {
+          reportError(
+            DriftAnalysisError.forDartElement(
+              element,
+              "Tables can't override primaryKey and use autoIncrement()",
+            ),
+          );
+        }
 
-    if (primaryKey != null &&
-        primaryKey.length == 1 &&
-        primaryKey.first.constraints.contains(const UniqueColumn())) {
-      reportError(
-        DriftAnalysisError.forDartElement(
-          element,
-          'Primary key column cannot have UNIQUE constraint',
-        ),
-      );
-    }
+        if (columnsWithPrimaryKeyConstraint > 1) {
+          reportError(
+            DriftAnalysisError.forDartElement(
+              element,
+              'More than one column uses autoIncrement(). This would require '
+              'multiple primary keys, which is not supported.',
+            ),
+          );
+        }
 
-    if (uniqueKeys != null &&
-        uniqueKeys.any(
-          (key) =>
-              uniqueKeys.length == 1 &&
-              key.first.constraints.contains(const UniqueColumn()),
-        )) {
-      reportError(
-        DriftAnalysisError.forDartElement(
-          element,
-          'Column provided in a single-column uniqueKey set already has a '
-          'column-level UNIQUE constraint',
-        ),
-      );
-    }
+        if (primaryKey != null &&
+            primaryKey.length == 1 &&
+            primaryKey.first.constraints.contains(const UniqueColumn())) {
+          reportError(
+            DriftAnalysisError.forDartElement(
+              element,
+              'Primary key column cannot have UNIQUE constraint',
+            ),
+          );
+        }
 
-    if (uniqueKeys != null &&
-        primaryKey != null &&
-        uniqueKeys.any(
-          (unique) => const SetEquality().equals(unique, primaryKey),
-        )) {
-      reportError(
-        DriftAnalysisError.forDartElement(
-          element,
-          'The uniqueKeys override contains the primary key, which is '
-          'already unique by default.',
-        ),
-      );
-    }
+        if (uniqueKeys != null &&
+            uniqueKeys.any(
+              (key) =>
+                  uniqueKeys.length == 1 &&
+                  key.first.constraints.contains(const UniqueColumn()),
+            )) {
+          reportError(
+            DriftAnalysisError.forDartElement(
+              element,
+              'Column provided in a single-column uniqueKey set already has a '
+              'column-level UNIQUE constraint',
+            ),
+          );
+        }
 
-    if (!table.strict &&
-        table.columns.any(
-          (c) => switch (c.sqlType) {
-            ColumnDriftType(:final builtin) => builtin == DriftSqlType.any,
-            ColumnCustomType() => false,
-          },
-        )) {
-      reportError(
-        DriftAnalysisError.forDartElement(
-          element,
-          'The `ANY` type is only meaningful for `STRICT` tables. '
-          'Override `bool get isStrict => true;` to use the `ANY` type.',
-        ),
-      );
-    }
+        if (uniqueKeys != null &&
+            primaryKey != null &&
+            uniqueKeys.any(
+              (unique) => const SetEquality().equals(unique, primaryKey),
+            )) {
+          reportError(
+            DriftAnalysisError.forDartElement(
+              element,
+              'The uniqueKeys override contains the primary key, which is '
+              'already unique by default.',
+            ),
+          );
+        }
 
-    return table;
+        if (!table.strict &&
+            table.columns.any(
+              (c) => switch (c.sqlType) {
+                ColumnDriftType(:final builtin) => builtin == DriftSqlType.any,
+                ColumnCustomType() => false,
+              },
+            )) {
+          reportError(
+            DriftAnalysisError.forDartElement(
+              element,
+              'The `ANY` type is only meaningful for `STRICT` tables. '
+              'Override `bool get isStrict => true;` to use the `ANY` type.',
+            ),
+          );
+        }
+      },
+    );
   }
 
   Future<Set<DriftColumn>?> _readPrimaryKey(
@@ -445,8 +428,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
     return ColumnParser(this, allColumns).parse(declaration, element);
   }
 
-  Future<List<String>> _readCustomConstraints(
-    Set<DriftElement> references,
+  /// Resolves custom constraints from the `customConstraints` getter.
+  ///
+  /// Returns the custom constraints and a validation function to run once
+  /// dependencies have been resolved.
+  Future<(List<String>, void Function(ResolvedDependencies)?)>
+  _readCustomConstraints(
     List<DriftColumn> localColumns,
     ClassElement element,
   ) async {
@@ -457,7 +444,7 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
     if (customConstraints == null || customConstraints.isFromDefaultTable) {
       // Does not define custom constraints
-      return const [];
+      return const (<String>[], null);
     }
 
     final ast =
@@ -471,11 +458,12 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
           'This must return a list literal with the => syntax',
         ),
       );
-      return const [];
+      return const (<String>[], null);
     }
     final expression = body.expression;
     final foundConstraints = <String>[];
     final foundConstraintSources = <SyntacticEntity>[];
+    final validators = <void Function(ResolvedDependencies)>[];
 
     if (expression is ListLiteral) {
       for (final entry in expression.elements) {
@@ -535,31 +523,41 @@ class DartTableResolver extends LocalElementResolver<DiscoveredDartTable> {
 
         // Also see if we can resolve the referenced table.
         final clause = parsed.clause;
-        final table = await resolveSqlReferenceOrReportError<DriftTable>(
+        final tableDep = await resolveSqlReferenceOrReportError(
           clause.foreignTable.tableName,
           (msg) => DriftAnalysisError.inDartAst(element, source, msg),
+          enforceKind: DriftElementKind.table,
         );
 
-        if (table != null) {
-          references.add(table);
-          final missingColumns = clause.columnNames
-              .map((e) => e.columnName)
-              .where((e) => !table.columnBySqlName.containsKey(e));
+        if (tableDep != null) {
+          validators.add((deps) {
+            final table = deps.resolve(tableDep) as DriftTable;
+            final missingColumns = clause.columnNames
+                .map((e) => e.columnName)
+                .where((e) => !table.columnBySqlName.containsKey(e));
 
-          if (missingColumns.isNotEmpty) {
-            reportError(
-              DriftAnalysisError.inDartAst(
-                element,
-                source,
-                'Columns ${missingColumns.join(', ')} not found in table `${table.schemaName}`.',
-              ),
-            );
-          }
+            if (missingColumns.isNotEmpty) {
+              reportError(
+                DriftAnalysisError.inDartAst(
+                  element,
+                  source,
+                  'Columns ${missingColumns.join(', ')} not found in table `${table.schemaName}`.',
+                ),
+              );
+            }
+          });
         }
       }
     }
 
-    return foundConstraints;
+    return (
+      foundConstraints,
+      (ResolvedDependencies deps) {
+        for (final validator in validators) {
+          validator(deps);
+        }
+      },
+    );
   }
 }
 

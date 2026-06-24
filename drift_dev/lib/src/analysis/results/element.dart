@@ -93,7 +93,7 @@ abstract class DriftElement {
   ///  - tables referenced in a SQL query.
   ///  - tables referenced in the body of a view, index, or trigger declaration.
   ///  - tables included in the `@DriftDatabase` annotation.
-  Iterable<DriftElement> get references => const Iterable.empty();
+  Iterable<DriftElementReference> get references => const Iterable.empty();
 
   Set<DriftElement> get selfAndTransitiveReferences =>
       [this].transitiveClosureUnderReferences();
@@ -170,12 +170,18 @@ extension TransitiveClosure on Iterable<DriftElement> {
       final current = pending.removeLast();
 
       for (final reference in current.references) {
-        if (found.add(reference)) {
-          pending.add(reference);
+        if (found.add(reference.element)) {
+          pending.add(reference.element);
         }
       }
     }
 
     return found;
+  }
+}
+
+extension TransitiveClosureUnderReferences on Iterable<DriftElementReference> {
+  Set<DriftElement> transitiveClosureUnderReferences() {
+    return map((e) => e.element).transitiveClosureUnderReferences();
   }
 }

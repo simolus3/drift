@@ -52,7 +52,7 @@ class DefinedSqlQuery extends DriftElement implements DriftQueryDeclaration {
   final int sqlOffset;
 
   @override
-  final List<DriftElement> references;
+  final List<DriftElementReference> references;
 
   @override
   String get name => id.name;
