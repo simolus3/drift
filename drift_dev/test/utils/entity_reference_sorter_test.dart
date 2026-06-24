@@ -16,19 +16,16 @@ void main() {
     );
   }
 
-  test('throws cyclic exception when two tables reference each other', () {
+  test('can handle cyclic reference', () {
     final first = table('a');
     final second = table('b');
     first.references.add(second);
     second.references.add(first);
 
-    expect(
-      () => [first, second].sortTopologically(),
-      throwsA(isCircularReferenceException([first, second])),
-    );
+    expect([first, second].sortByReferences(), hasLength(2));
   });
 
-  test('throws cyclic exception on a circular reference with three tables', () {
+  test('can handle reference to cycle', () {
     final a = table('a');
     final b = table('b');
     final c = table('c');
@@ -39,31 +36,9 @@ void main() {
     c.references.add(d);
     d.references.add(b);
 
-    expect(
-      () => [a, b, c, d].sortTopologically(),
-      throwsA(isCircularReferenceException([b, c, d])),
-    );
-  });
-
-  test('sortOr returns original order and reports message for erro', () {
-    final a = table('a');
-    final b = table('b');
-    final c = table('c');
-    final d = table('d');
-
-    a.references.add(b);
-    b.references.add(c);
-    c.references.add(d);
-    d.references.add(b);
-
-    expect(
-      [a, b, c, d].sortTopologicallyOrElse(
-        expectAsync1((message) {
-          expect(message, contains('Invalid cycle from b->c->d->b'));
-        }),
-      ),
-      [a, b, c, d],
-    );
+    final [...cycle, last] = [a, b, c, d].sortByReferences();
+    expect(last, a);
+    expect(cycle.toSet(), {b, c, d});
   });
 
   test('sorts tables topologically when no cycles exist', () {
@@ -75,10 +50,10 @@ void main() {
     a.references.add(b);
     b.references.add(c);
 
-    expect([a, b, c, d].sortTopologically(), [c, b, a, d]);
+    expect([a, b, c, d].sortByReferences(), [c, b, a, d]);
   });
 
-  test('does not allow self-references', () {
+  test('allows self-references', () {
     final a = table('a');
     final b = table('b');
 
@@ -86,7 +61,7 @@ void main() {
       ..add(a)
       ..add(b);
 
-    expect(() => [a, b].sortTopologically(), throwsA(isA<AssertionError>()));
+    expect([a, b].sortByReferences(), [b, a]);
   });
 }
 

@@ -64,11 +64,8 @@ class DriftView extends DriftElementWithResultSet {
   /// views, their [transitiveTableReferences] will be included as well.
   Set<DriftTable> get transitiveTableReferences {
     return {
-      for (final reference in references)
-        if (reference is DriftTable)
-          reference
-        else if (reference is DriftView)
-          ...reference.transitiveTableReferences,
+      for (final reference in references.transitiveClosureUnderReferences())
+        if (reference is DriftTable) reference,
     };
   }
 }
