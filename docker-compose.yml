@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    stdin_open: true # Keeps the container alive if running interactive scripts
+    tty: true
+    environment:
+      # don't run geckodriver/chromedriver in this container;
+      # we have separate containers for this to be used
+      SKIP_BROWSER_SPAWN: "true"
+    depends_on:
+      - postgres
+      - mariadb
+      - chrome
+      - firefox
+    networks:
+      - test-network
+
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "15432:5432" # Exposed to your local machine for debugging
+    networks:
+      - test-network
+
+  mariadb:
+    image: mariadb:12
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: database
+    ports:
+      - "13306:3306" # Exposed to your local machine for debugging
+    networks:
+      - test-network
+
+  chrome:
+    image: selenium/standalone-chrome:latest
+    shm_size: 2gb # Prevents Chrome from crashing due to low shared memory
+    networks:
+      - test-network
+
+  firefox:
+    image: selenium/standalone-firefox:latest
+    shm_size: 2gb # Prevents Firefox from crashing due to low shared memory
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
