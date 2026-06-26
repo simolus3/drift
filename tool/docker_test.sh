@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+cd $SCRIPT_DIR
 cd ..
-DOCKER_BUILDKIT=0 docker build -t drift-test .
-docker run --rm --privileged -it drift-test
-docker image rm drift-test
+docker-compose run --build --rm app /bin/bash

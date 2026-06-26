@@ -72,9 +72,27 @@ melos:
       packageFilters:
         dependsOn: build_runner
 
+    test:dart:
+      name: Dart tests
+      exec: dart test --chain-stack-traces
+      packageFilters:
+        flutter: false
+        dirExists: test
+        ignore:
+          - drift_postgres # this is an integration test
+
+    test:flutter:
+      name: Flutter tests
+      exec: flutter test
+      packageFilters:
+        flutter: true
+        dirExists: test
+        ignore:
+          - drift_postgres # this is an integration test
+
     test:
-      run: dart test
+      run: melos run test:dart && melos run test:flutter
       exec: { concurrency: 1 }
       packageFilters:
-        dependsOn: test
-        ignore: drift_postgres # this is an integration test
+        ignore:
+          - drift_postgres # this is an integration test
