@@ -16,7 +16,8 @@ import '../shared/data_class.dart';
 import 'element_resolver.dart';
 import 'sqlparser/drift_lints.dart';
 
-class DriftTableResolver extends DriftElementResolver<DiscoveredDriftTable> {
+final class DriftTableResolver
+    extends TwoStageElementResolver<DiscoveredDriftTable> {
   DriftTableResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override

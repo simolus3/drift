@@ -9,8 +9,8 @@ import '../intermediate_state.dart';
 import '../resolver.dart';
 import 'element_resolver.dart';
 
-class DriftTriggerResolver
-    extends DriftElementResolver<DiscoveredDriftTrigger> {
+final class DriftTriggerResolver
+    extends TwoStageElementResolver<DiscoveredDriftTrigger> {
   DriftTriggerResolver(
     super.file,
     super.discovered,

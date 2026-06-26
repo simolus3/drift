@@ -12,7 +12,7 @@ class DriftView extends DriftElementWithResultSet {
   @override
   final List<DriftColumn> columns;
 
-  final DriftViewSource source;
+  DriftViewSource? source;
 
   @override
   final CustomParentClass? customParentClass;
@@ -92,7 +92,7 @@ class SqlViewSource extends DriftViewSource {
 /// A table added to a view via a getter.
 class TableReferenceInDartView {
   /// The table referenced by the getter.
-  final DriftTable table;
+  final DriftElementReference table;
 
   /// Name of the getter adding the table.
   final String name;

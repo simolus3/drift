@@ -10,7 +10,7 @@ import '../intermediate_state.dart';
 import '../resolver.dart';
 import 'helper.dart';
 
-class DartAccessorResolver
+final class DartAccessorResolver
     extends TwoStageElementResolver<DiscoveredBaseAccessor> {
   DartAccessorResolver(
     super.file,

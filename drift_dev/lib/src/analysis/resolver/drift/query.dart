@@ -6,8 +6,8 @@ import '../intermediate_state.dart';
 import '../resolver.dart';
 import 'element_resolver.dart';
 
-class DriftQueryResolver
-    extends DriftElementResolver<DiscoveredDriftStatement> {
+final class DriftQueryResolver
+    extends TwoStageElementResolver<DiscoveredDriftStatement> {
   DriftQueryResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override

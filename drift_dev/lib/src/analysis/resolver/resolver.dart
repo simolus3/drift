@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:analyzer/dart/element/element.dart';
@@ -45,11 +46,35 @@ final class DriftResolver {
     // resolve them!
     final groups = stronglyConnectedComponents(_DependencyGraph(this));
     for (final group in groups) {
+      if (group.length > 1) {
+        final resolver = group.map((e) {
+          if (e case _ResolvingElement(
+            resolver: final SingleStageElementResolver r,
+          )) {
+            return r;
+          }
+          return null;
+        }).firstOrNull;
+
+        if (resolver != null) {
+          final ids = group.map((e) => e.state.ownId).toList();
+          resolver.addInCircularReferenceError(ids);
+        }
+      }
+
       for (final pending in group) {
         if (pending is _ResolvingElement) {
-          final intermediate = pending.intermediate!;
-          pending.state.result = intermediate.element;
-          pending.intermediate!.resolve(ResolvedDependencies._(this));
+          final resolver = pending.resolver;
+
+          if (resolver is SingleStageElementResolver) {
+            final createElement = pending.resolveElement!;
+            pending.state.result = await createElement(
+              SingleStageResolvedDependencies._(this),
+            );
+          } else {
+            final intermediate = pending.intermediate!;
+            await intermediate.resolve(ResolvedDependencies._(this));
+          }
         }
 
         pending.state.isUpToDate = true;
@@ -135,7 +160,7 @@ final class DriftResolver {
     final dependencyAware = DependencyAwareResolver._(pending, this);
     _involvedElements[discovered.ownId] = pending;
 
-    final TwoStageElementResolver resolver = switch (discovered) {
+    final BaseElementResolver resolver = switch (discovered) {
       DiscoveredDriftTable() => drift_table.DriftTableResolver(
         fileState,
         discovered,
@@ -194,7 +219,16 @@ final class DriftResolver {
     };
 
     pending.resolver = resolver;
-    pending.intermediate = await resolver.buildPending();
+
+    switch (resolver) {
+      case SingleStageElementResolver():
+        pending.resolveElement = await resolver.resolveDependencies();
+      case TwoStageElementResolver():
+        final intermediate = pending.intermediate = await resolver
+            .buildPending();
+        elementState.result = intermediate.element;
+    }
+
     return pending;
   }
 
@@ -328,15 +362,26 @@ final class DependencyAwareResolver {
   }
 }
 
-final class ResolvedDependencies {
+final class SingleStageResolvedDependencies {
   final DriftResolver _resolver;
 
-  ResolvedDependencies._(this._resolver);
+  SingleStageResolvedDependencies._(this._resolver);
+
+  DriftElement? resolveNullable(DependencyToken? token) {
+    if (token == null) return null;
+
+    return _resolver._involvedElements[token.id]!.state.result;
+  }
+}
+
+final class ResolvedDependencies extends SingleStageResolvedDependencies {
+  ResolvedDependencies._(super._resolver) : super._();
 
   DriftElement resolve(DependencyToken token) {
     return _resolver._involvedElements[token.id]!.state.result!;
   }
 
+  @override
   DriftElement? resolveNullable(DependencyToken? token) {
     return token == null ? null : resolve(token);
   }
@@ -355,22 +400,21 @@ final class DependencyToken {
   DependencyToken(this.reference, this.kind);
 }
 
-abstract class TwoStageElementResolver<T extends DiscoveredElement> {
+/// A resolver responsible for analyzing a single element.
+///
+/// Resolvers can either operate in two stages, which allows circular
+/// references, or in a single stage.
+///
+/// Wherever possible, two-stage resolvers should be preferred. Currently, views
+/// require a single stage resolver with all dependencies resolved before we can
+/// analyze the view (as it involves resolving a SQL query).
+sealed class BaseElementResolver<T extends DiscoveredElement> {
   final FileState file;
   final T discovered;
   final DependencyAwareResolver resolver;
   final ElementAnalysisState state;
 
-  TwoStageElementResolver(
-    this.file,
-    this.discovered,
-    this.resolver,
-    this.state,
-  );
-
-  void reportError(DriftAnalysisError error) {
-    state.errorsDuringAnalysis.add(error);
-  }
+  BaseElementResolver(this.file, this.discovered, this.resolver, this.state);
 
   Future<DependencyToken?> resolveSqlReferenceOrReportError(
     String reference,
@@ -440,13 +484,13 @@ abstract class TwoStageElementResolver<T extends DiscoveredElement> {
     }
   }
 
-  Future<SqlEngine Function(ResolvedDependencies)> newEngineWithTables(
-    Iterable<DependencyToken> references,
-  ) async {
+  Future<SqlEngine Function(SingleStageResolvedDependencies)>
+  newEngineWithTables(Iterable<DependencyToken> references) async {
     final mapping = await resolver.driver.typeMapping;
-    return (ResolvedDependencies dependencies) {
+    return (SingleStageResolvedDependencies dependencies) {
       return mapping.newEngineWithTables([
-        for (final reference in references) dependencies.resolve(reference),
+        for (final reference in references)
+          ?dependencies.resolveNullable(reference),
       ]);
     };
   }
@@ -518,6 +562,20 @@ abstract class TwoStageElementResolver<T extends DiscoveredElement> {
     );
   }
 
+  void reportError(DriftAnalysisError error) {
+    state.errorsDuringAnalysis.add(error);
+  }
+}
+
+abstract base class TwoStageElementResolver<T extends DiscoveredElement>
+    extends BaseElementResolver<T> {
+  TwoStageElementResolver(
+    super.file,
+    super.discovered,
+    super.resolver,
+    super.state,
+  );
+
   /// Performs async resolve work that might discover dependencies, e.g. for
   /// foreign keys.
   ///
@@ -526,38 +584,38 @@ abstract class TwoStageElementResolver<T extends DiscoveredElement> {
   Future<PendingDriftElement> buildPending();
 }
 
-final class PendingDriftElement {
-  final DriftElement element;
-  final void Function(ResolvedDependencies) resolve;
-
-  PendingDriftElement({required this.element, required this.resolve});
-}
-
-final class ResolvableSqlReference {
-  final String name;
-  DependencyToken? resolved;
-
-  ResolvableSqlReference(this.name);
-}
-
-/// A [TwoStageElementResolver] without support for circular references,
-/// resolving everything in the first stage.
-abstract class LocalElementResolver<T extends DiscoveredElement>
-    extends TwoStageElementResolver<T> {
-  LocalElementResolver(
+abstract base class SingleStageElementResolver<T extends DiscoveredElement>
+    extends BaseElementResolver<T> {
+  SingleStageElementResolver(
     super.file,
     super.discovered,
     super.resolver,
     super.state,
   );
 
-  Future<DriftElement> resolve();
+  void addInCircularReferenceError(List<DriftElementId> ids);
 
-  @override
-  Future<PendingDriftElement> buildPending() async {
-    final element = await resolve();
-    return PendingDriftElement(element: element, resolve: (_) {});
-  }
+  Future<Future<DriftElement> Function(SingleStageResolvedDependencies)>
+  resolveDependencies();
+}
+
+final class PendingDriftElement {
+  final DriftElement element;
+  final FutureOr<void> Function(ResolvedDependencies) resolve;
+
+  PendingDriftElement({required this.element, required this.resolve});
+}
+
+/// An additional reference to pass into
+/// [BaseElementResolver.resolveTableReferences].
+///
+/// It allows extracting the [resolved] dependency for a table or other element
+/// given its name.
+final class ResolvableSqlReference {
+  final String name;
+  DependencyToken? resolved;
+
+  ResolvableSqlReference(this.name);
 }
 
 sealed class _ResolvingOrCachedElement {
@@ -568,10 +626,16 @@ sealed class _ResolvingOrCachedElement {
 }
 
 final class _ResolvingElement extends _ResolvingOrCachedElement {
-  late TwoStageElementResolver resolver;
+  late BaseElementResolver resolver;
   final Set<DriftElementId> dependencies = {};
 
+  /// For two-stage resolvers, the pending element.
   PendingDriftElement? intermediate;
+
+  /// For a single-stage resolver, a function resolving to the element if
+  /// references have been resolved.
+  Future<DriftElement> Function(SingleStageResolvedDependencies)?
+  resolveElement;
 
   _ResolvingElement({required super.token, required super.state});
 }

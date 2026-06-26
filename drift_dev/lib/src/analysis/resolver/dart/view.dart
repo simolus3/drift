@@ -12,21 +12,16 @@ import '../resolver.dart';
 import '../shared/data_class.dart';
 import 'helper.dart';
 
-class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
+final class DartViewResolver
+    extends TwoStageElementResolver<DiscoveredDartView> {
   DartViewResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
-  Future<DriftElement> resolve() async {
+  Future<PendingDriftElement> buildPending() async {
     final staticReferences = await _parseStaticReferences();
-    final structure = await _parseSelectStructure(staticReferences);
-    final columns = await _parseColumns(structure, staticReferences);
-    final dataClassInfo = await DataClassInformation.resolve(
-      this,
-      columns,
-      discovered.dartElement,
-    );
+    final columns = <DriftColumn>[];
 
-    return DriftView(
+    final view = DriftView(
       DriftElementReference(discovered.ownId),
       DriftDeclaration.dartElement(discovered.dartElement),
       columns: columns,
@@ -37,13 +32,28 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       customParentClass: dataClassInfo.extending,
       interfacesForRowClass: dataClassInfo.interfaces,
       entityInfoName: '\$${discovered.dartElement.name}View',
-      source: DartViewSource(
-        structure.dartQuerySource,
-        structure.primarySource,
-        staticReferences,
-        structure.staticSource,
-      ),
-      references: [for (final reference in staticReferences) reference.table],
+      source: null,
+      references: resolver.references,
+    );
+
+    return PendingDriftElement(
+      element: view,
+      resolve: (deps) async {
+        final structure = await _parseSelectStructure(staticReferences);
+        columns.addAll(await _parseColumns(structure, staticReferences));
+        final dataClassInfo = await DataClassInformation.resolve(
+          this,
+          columns,
+          discovered.dartElement,
+        );
+
+        view.source = DartViewSource(
+          structure.dartQuerySource,
+          structure.primarySource,
+          staticReferences,
+          structure.staticSource,
+        );
+      },
     );
   }
 
@@ -78,20 +88,19 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
           getter,
         );
         if (node is MethodDeclaration && node.body is EmptyFunctionBody) {
-          final table = await resolveDartReferenceOrReportError<DriftTable>(
-            type.element,
-            (msg) {
-              return DriftAnalysisError.inDartAst(
-                field,
-                node.returnType ?? node.name,
-                msg,
-              );
-            },
-          );
+          final table = await resolveDartReferenceOrReportError(type.element, (
+            msg,
+          ) {
+            return DriftAnalysisError.inDartAst(
+              field,
+              node.returnType ?? node.name,
+              msg,
+            );
+          }, enforceKind: DriftElementKind.table);
 
           if (table != null) {
             final name = node.name.lexeme;
-            return TableReferenceInDartView(table, name);
+            return TableReferenceInDartView(table.reference, name);
           }
         }
       } catch (_) {}

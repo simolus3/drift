@@ -1,13 +1,12 @@
 import 'package:analyzer/dart/ast/ast.dart' as dart;
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:collection/collection.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:drift_dev/src/analysis/resolver/intermediate_state.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 import '../../backend.dart';
 import '../../driver/error.dart';
-import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../dart/helper.dart';
 import '../resolver.dart';
@@ -15,15 +14,7 @@ import '../shared/dart_types.dart';
 import 'sqlparser/drift_lints.dart';
 import 'sqlparser/mapping.dart';
 
-abstract class DriftElementResolver<T extends DiscoveredElement>
-    extends TwoStageElementResolver<T> {
-  DriftElementResolver(
-    super.file,
-    super.discovered,
-    super.resolver,
-    super.state,
-  );
-
+extension DriftElementResolver on BaseElementResolver<DiscoveredDriftElement> {
   Future<CustomColumnType?> resolveCustomColumnType(
     InlineDartToken type,
   ) async {
@@ -84,16 +75,18 @@ abstract class DriftElementResolver<T extends DiscoveredElement>
 
   void reportLints(
     AnalysisContext context,
-    ResolvedDependencies dependencies,
+    SingleStageResolvedDependencies dependencies,
     Iterable<DependencyToken> references,
   ) {
     context.errors.forEach(reportLint);
 
+    final foundReferences = references
+        .map(dependencies.resolveNullable)
+        .nonNulls;
+
     // Also run drift-specific lints on the query
-    final linter = DriftSqlLinter(
-      context,
-      references: references.map(dependencies.resolve),
-    )..collectLints();
+    final linter = DriftSqlLinter(context, references: foundReferences)
+      ..collectLints();
     linter.sqlParserErrors.forEach(reportLint);
   }
 

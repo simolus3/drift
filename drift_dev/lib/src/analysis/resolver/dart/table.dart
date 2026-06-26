@@ -13,7 +13,8 @@ import '../resolver.dart';
 import 'column.dart';
 import 'helper.dart';
 
-class DartTableResolver extends TwoStageElementResolver<DiscoveredDartTable> {
+final class DartTableResolver
+    extends TwoStageElementResolver<DiscoveredDartTable> {
   DartTableResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
