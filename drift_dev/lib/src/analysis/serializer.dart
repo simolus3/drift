@@ -112,7 +112,8 @@ class ElementSerializer {
       additionalInformation = {
         'type': 'trigger',
         'sql': element.createStmt,
-        if (element.on != null) 'on': _serializeElementReference(element.on!),
+        if (element.on != null)
+          'on': _serializeElementReference(element.on!.element),
         'onWrite': element.onWrite.name,
         'writes': [
           for (final write in element.writes)
@@ -394,7 +395,10 @@ class ElementSerializer {
   Map<String, Object?> _serializeTableReferenceInDartView(
     TableReferenceInDartView ref,
   ) {
-    return {'table': _serializeElementReference(ref.table), 'name': ref.name};
+    return {
+      'table': _serializeElementReference(ref.table.element),
+      'name': ref.name,
+    };
   }
 
   int? _serializeType(DartType? type) {
@@ -671,7 +675,7 @@ class ElementDeserializer {
           declaration,
           references: references,
           createStmt: json['sql'] as String,
-          on: on,
+          on: on?.reference,
           onWrite: UpdateKind.values.byName(json['onWrite'] as String),
           writes: [
             for (final write in json.list('writes').cast<Map>())
@@ -698,10 +702,7 @@ class ElementDeserializer {
           TableReferenceInDartView readReference(Map json) {
             final id = DriftElementId.fromJson(json['table'] as Map);
             final reference = references.firstWhere((e) => e.id == id);
-            return TableReferenceInDartView(
-              reference as DriftTable,
-              json['name'] as String,
-            );
+            return TableReferenceInDartView(reference, json['name'] as String);
           }
 
           source = DartViewSource(

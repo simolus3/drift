@@ -81,13 +81,13 @@ class ViewWriter extends TableOrViewWriter {
       var tableCounter = 0;
 
       for (final ref in source.staticReferences) {
-        final table = ref.table;
+        final table = ref.table.element as DriftTable;
         final alias = asDartLiteral('t${tableCounter++}');
 
         emitter
           ..writeDart(emitter.entityInfoType(table))
           ..write(' get ${ref.name} => ')
-          ..writeDart(emitter.referenceElement(ref.table, _attachedDatabase))
+          ..writeDart(emitter.referenceElement(table, _attachedDatabase))
           ..writeln(
             scope.drift3 ? '.withAlias($alias);' : '.createAlias($alias);',
           );
