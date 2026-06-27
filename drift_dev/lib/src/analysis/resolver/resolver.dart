@@ -719,7 +719,9 @@ final class _DependencyGraph
       return key.dependencies.map((id) => _resolver._involvedElements[id]!);
     }
 
-    return null;
+    // Return no dependencies for pre-resolved elements, if they formed a cycle
+    // we'd only see it when resolving that element itself.
+    return const Iterable.empty();
   }
 
   @override

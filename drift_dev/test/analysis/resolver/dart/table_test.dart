@@ -511,7 +511,7 @@ class Videos extends Table {
 
     final table = state.analyzedElements.single as DriftTable;
     expect(
-      table.references,
+      table.references.map((r) => r.element),
       contains(
         isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'topics'),
       ),
@@ -671,7 +671,7 @@ class TableA extends Table {
     backend.expectNoErrors();
 
     final table = file.analyzedElements.single as DriftTable;
-    expect(table.references, [table]);
+    expect(table.references, [table.reference]);
   });
 
   test('can parse circular references', () async {
@@ -688,5 +688,12 @@ class TableB extends Table {
 }
 ''',
     });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final [tableA, tableB] = file.analyzedElements.cast<DriftTable>().toList();
+    expect(tableA.references, [tableB.reference]);
+    expect(tableB.references, [tableA.reference]);
   });
 }
