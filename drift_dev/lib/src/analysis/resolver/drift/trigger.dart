@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
@@ -45,21 +46,14 @@ final class DriftTriggerResolver
         reportLints(context, deps, references);
 
         WrittenDriftTable? mapWrite(TableWrite parserWrite) {
-          drift.UpdateKind kind;
-          switch (parserWrite.kind) {
-            case UpdateKind.insert:
-              kind = drift.UpdateKind.insert;
-              break;
-            case UpdateKind.update:
-              kind = drift.UpdateKind.update;
-              break;
-            case UpdateKind.delete:
-              kind = drift.UpdateKind.delete;
-              break;
-          }
+          final kind = switch (parserWrite.kind) {
+            UpdateKind.insert => drift.UpdateKind.insert,
+            UpdateKind.update => drift.UpdateKind.update,
+            UpdateKind.delete => drift.UpdateKind.delete,
+          };
 
           final table = deps.resolveNullable(
-            references.firstWhere(
+            references.firstWhereOrNull(
               (e) =>
                   e.id.name.toLowerCase() ==
                   parserWrite.table.name.toLowerCase(),
