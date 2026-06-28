@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/find_referenced_tables.dart';
@@ -27,7 +26,7 @@ final class DriftTriggerResolver
     final writes = <WrittenDriftTable>[];
 
     final trigger = DriftTrigger(
-      DriftElementReference(discovered.ownId),
+      resolver.ownElementReference,
       DriftDeclaration.driftFile(stmt, file.ownUri),
       on: on.resolved?.reference,
       onWrite: drift.UpdateKind.delete, // Set in resolve
@@ -59,10 +58,14 @@ final class DriftTriggerResolver
               break;
           }
 
-          final table = references.whereType<DriftTable>().firstWhereOrNull(
-            (e) => e.schemaName == parserWrite.table.name,
+          final table = deps.resolveNullable(
+            references.firstWhere(
+              (e) =>
+                  e.id.name.toLowerCase() ==
+                  parserWrite.table.name.toLowerCase(),
+            ),
           );
-          if (table != null) {
+          if (table is DriftTable) {
             return WrittenDriftTable(table, kind);
           } else {
             return null;

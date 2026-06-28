@@ -31,12 +31,6 @@ final class DriftResolver {
 
   final Map<DriftElementId, _ResolvingOrCachedElement> _involvedElements = {};
 
-  late final ElementDeserializer _deserializer = ElementDeserializer(
-    driver,
-    // TODO: Track dependencies here??
-    [],
-  );
-
   DriftResolver(this.driver, this._entrypoint);
 
   Future<DriftElement> resolveEntrypoint() async {
@@ -49,7 +43,7 @@ final class DriftResolver {
       if (group.length > 1) {
         final resolver = group.map((e) {
           if (e case _ResolvingElement(
-            resolver: final SingleStageElementResolver r,
+            singleStageResolver: final SingleStageElementResolver r,
           )) {
             return r;
           }
@@ -64,9 +58,7 @@ final class DriftResolver {
 
       for (final pending in group) {
         if (pending is _ResolvingElement) {
-          final resolver = pending.resolver;
-
-          if (resolver is SingleStageElementResolver) {
+          if (pending.singleStageResolver != null) {
             final createElement = pending.resolveElement!;
             pending.state.result = await createElement(
               SingleStageResolvedDependencies._(this),
@@ -95,7 +87,7 @@ final class DriftResolver {
         driver.cache.knownFiles[element.libraryUri]?.analysis[element];
     if (existing != null && existing.isUpToDate) {
       final existingElement = existing.result!;
-      final resolving = _ExternallyResolvedElement(
+      final resolving = _AlreadyResolvedElement(
         token: DependencyToken(existingElement.reference, existingElement.kind),
         state: existing,
       );
@@ -103,53 +95,56 @@ final class DriftResolver {
       return resolving;
     }
 
-    try {
-      if (await driver.readStoredAnalysisResult(element.libraryUri) != null) {
-        final resolvedElement = await _deserializer.readDriftElement(element);
-        final state = driver.cache
-            .stateForUri(element.libraryUri)
-            .analysis[element]!;
-        state.result = resolvedElement;
+    final owningFile = driver.cache.stateForUri(element.libraryUri);
+    final elementState = owningFile.analysis.putIfAbsent(
+      element,
+      () => ElementAnalysisState(element),
+    );
+    elementState.errorsDuringAnalysis.clear();
 
-        final resolving = _ExternallyResolvedElement(
-          token: DependencyToken(
-            resolvedElement.reference,
-            resolvedElement.kind,
-          ),
-          state: state,
+    try {
+      if (await driver.readStoredAnalysisResult(element.libraryUri)
+          case final restored?) {
+        final deserializer = ElementFileDeserializer(restored);
+        final kind = deserializer.kindFor(element.name);
+        final state = _ResolvingElement(
+          token: DependencyToken(DriftElementReference(element), kind),
+          state: elementState,
         );
-        _involvedElements[element] = resolving;
-        return resolving;
+        _involvedElements[element] = state;
+        final resolved = await deserializer.deserialize(
+          DependencyAwareResolver._(state, this),
+          kind,
+        );
+        state.intermediate = resolved;
+        elementState.result = resolved.element;
+
+        return state;
       }
     } on CouldNotDeserializeException catch (e, s) {
       driver.backend.log.warning('Could not deserialize $element', e, s);
+      _involvedElements.remove(element);
       if (driver.isTesting) {
         rethrow;
       }
     }
 
     // We can't resolve the element from cache, so we need to resolve it.
-    final owningFile = driver.cache.stateForUri(element.libraryUri);
+
     await driver.discoverIfNecessary(owningFile);
     final discovered = owningFile.discovery!.locallyDefinedElements.firstWhere(
       (e) => e.ownId == element,
     );
 
-    return await _resolveDependencies(discovered);
+    return await _resolveDependencies(discovered, owningFile, elementState);
   }
 
   /// Runs the first step of the two-stage resolving process.
   Future<_ResolvingElement> _resolveDependencies(
     DiscoveredElement discovered,
+    FileState fileState,
+    ElementAnalysisState elementState,
   ) async {
-    final fileState = driver.cache.knownFiles[discovered.ownId.libraryUri]!;
-    final elementState = fileState.analysis.putIfAbsent(
-      discovered.ownId,
-      () => ElementAnalysisState(discovered.ownId),
-    );
-
-    elementState.errorsDuringAnalysis.clear();
-
     final pending = _ResolvingElement(
       token: DependencyToken(
         DriftElementReference(discovered.ownId),
@@ -218,10 +213,9 @@ final class DriftResolver {
       _ => throw UnimplementedError('TODO: Handle $discovered'),
     };
 
-    pending.resolver = resolver;
-
     switch (resolver) {
       case SingleStageElementResolver():
+        pending.singleStageResolver = resolver;
         pending.resolveElement = await resolver.resolveDependencies();
       case TwoStageElementResolver():
         final intermediate = pending.intermediate = await resolver
@@ -625,8 +619,8 @@ sealed class _ResolvingOrCachedElement {
   _ResolvingOrCachedElement({required this.token, required this.state});
 }
 
+/// An element being analyzed by a [BaseElementResolver].
 final class _ResolvingElement extends _ResolvingOrCachedElement {
-  late BaseElementResolver resolver;
   final Set<DriftElementId> dependencies = {};
 
   /// For two-stage resolvers, the pending element.
@@ -636,12 +630,14 @@ final class _ResolvingElement extends _ResolvingOrCachedElement {
   /// references have been resolved.
   Future<DriftElement> Function(SingleStageResolvedDependencies)?
   resolveElement;
+  SingleStageElementResolver? singleStageResolver;
 
   _ResolvingElement({required super.token, required super.state});
 }
 
-final class _ExternallyResolvedElement extends _ResolvingOrCachedElement {
-  _ExternallyResolvedElement({required super.token, required super.state});
+/// An element that has already been fully analyzed and cached in-memory.
+final class _AlreadyResolvedElement extends _ResolvingOrCachedElement {
+  _AlreadyResolvedElement({required super.token, required super.state});
 }
 
 sealed class ResolveReferencedElementResult {

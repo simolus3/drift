@@ -36,7 +36,7 @@ CREATE TABLE b (
       expect((a as DriftTable).schemaName, 'a');
       expect((b as DriftTable).schemaName, 'b');
 
-      expect(a.references, [b]);
+      expect(a.references, [b.reference]);
       expect(b.references, isEmpty);
     });
   });
@@ -59,7 +59,7 @@ CREATE TABLE a (
       expect(state, hasNoErrors);
 
       final a = state.analysis.values.single.result as DriftTable;
-      expect(a.references, isEmpty);
+      expect(a.references, [a.reference]);
     });
 
     test('across files', () async {
@@ -92,7 +92,7 @@ CREATE TABLE b (
       final a = stateA.analysis.values.single.result!;
       final b = stateB.analysis.values.single.result!;
 
-      expect(a.references, [b]);
+      expect(a.references, [b.reference]);
     });
 
     test('for triggers', () async {
@@ -119,7 +119,7 @@ CREATE TABLE deleted_b (
       backend.expectNoErrors();
 
       final trigger = file.analyzedElements.single as DriftTrigger;
-      expect(trigger.references, [
+      expect(trigger.references.map((e) => e.element), [
         isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'b'),
         isA<DriftTable>().having(
           (e) => e.schemaName,
@@ -154,7 +154,7 @@ END;
 
       final trigger = file.analyzedElements.whereType<DriftTrigger>().single;
       expect(
-        trigger.references,
+        trigger.references.map((e) => e.element),
         unorderedEquals([
           isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
           isA<DriftView>().having(
@@ -191,7 +191,7 @@ END;
 
       final trigger = file.analyzedElements.whereType<DriftTrigger>().single;
       expect(
-        trigger.references,
+        trigger.references.map((e) => e.element),
         unorderedEquals([
           isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
           isA<DriftView>().having(
@@ -228,7 +228,7 @@ END;
 
       final trigger = file.analyzedElements.whereType<DriftTrigger>().single;
       expect(
-        trigger.references,
+        trigger.references.map((e) => e.element),
         unorderedEquals([
           isA<DriftTable>().having((e) => e.schemaName, 'schemaName', 'foo'),
           isA<DriftView>().having(
@@ -245,8 +245,6 @@ END;
             .having((e) => e.kind, 'kind', UpdateKind.delete),
       ]);
     });
-
-    test('for indices', () async {});
 
     group('non-existing', () {
       test('from table', () async {

@@ -109,7 +109,7 @@ class Foo extends Table {
         file.analysis[DriftElementId(uri, 'other_table')]!.result as DriftTable;
     final foo = file.analysis[DriftElementId(uri, 'foo')]!.result as DriftTable;
 
-    expect(foo.references, [otherTable]);
+    expect(foo.references, [otherTable.reference]);
 
     final column = foo.columns.single;
     final feature = column.constraints.whereType<ForeignKeyReference>().first;
@@ -137,7 +137,7 @@ class Foo extends Table {
     );
     final table = file.analysis.values.single.result as DriftTable;
 
-    expect(table.references, isEmpty);
+    expect(table.references, [table.reference]);
 
     final id = table.columns[0];
     final parentId = table.columns[1];

@@ -71,7 +71,7 @@ CREATE VIRTUAL TABLE fts2 USING fts5(a, c, content=tbl, content_rowid=rowid);
     final tables = result.analyzedElements.toList();
 
     expect(tables, hasLength(3));
-    expect(tables[1].references, contains(tables[0]));
-    expect(tables[2].references, contains(tables[0]));
+    expect(tables[1].references, contains(tables[0].reference));
+    expect(tables[2].references, contains(tables[0].reference));
   });
 }

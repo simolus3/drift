@@ -129,7 +129,7 @@ class Database {}
     );
 
     expect(
-      foo.references,
+      foo.references.map((e) => e.element),
       contains(
         isA<DriftTable>().having(
           (tbl) => tbl.schemaName,
@@ -172,7 +172,7 @@ class Database {}
         file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
             as DriftTable;
 
-    expect(foo.references, isEmpty);
+    expect(foo.references, [foo.reference]);
 
     final column = foo.columns[1];
     final constraint = column.constraints

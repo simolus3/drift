@@ -22,7 +22,7 @@ final class DriftIndexResolver
 
     return PendingDriftElement(
       element: DriftIndex(
-        DriftElementReference(discovered.ownId),
+        resolver.ownElementReference,
         DriftDeclaration.driftFile(stmt, file.ownUri),
         table: tableRef.resolved?.reference,
         indexedColumns: [],

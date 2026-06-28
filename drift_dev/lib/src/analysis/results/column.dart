@@ -76,7 +76,7 @@ class DriftColumn implements HasType {
   final String? referenceName;
 
   @override
-  final AppliedTypeConverter? typeConverter;
+  AppliedTypeConverter? typeConverter;
 
   final DriftDeclaration declaration;
 

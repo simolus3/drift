@@ -144,8 +144,8 @@ class SchemaWriter {
       data = {
         'on': _idOf(entity.on!.element),
         'references_in_body': [
-          for (final ref in entity.references.whereType<DriftSchemaElement>())
-            _idOf(ref),
+          for (final ref in entity.references)
+            if (ref.element case final DriftSchemaElement e) _idOf(e),
         ],
         'name': entity.schemaName,
         'sql': entity.createStmt,
@@ -590,7 +590,8 @@ class SchemaReader {
         on: on.reference,
         onWrite: UpdateKind.delete,
         references: [
-          for (final bodyRef in bodyReferences) _existingEntity(bodyRef),
+          for (final bodyRef in bodyReferences)
+            _existingEntity(bodyRef).reference,
         ],
         createStmt: sql,
         writes: const [],

@@ -163,7 +163,7 @@ final class DartAccessorResolver
       }
 
       final db = DriftDatabase(
-        reference: DriftElementReference(discovered.ownId),
+        reference: resolver.ownElementReference,
         declaration: declaration,
         declaredTables: tables,
         declaredViews: views,
@@ -196,7 +196,7 @@ final class DartAccessorResolver
       }
 
       final accessor = DatabaseAccessor(
-        reference: DriftElementReference(discovered.ownId),
+        reference: resolver.ownElementReference,
         declaration: declaration,
         declaredTables: tables,
         declaredViews: views,

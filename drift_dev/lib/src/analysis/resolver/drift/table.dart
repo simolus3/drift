@@ -390,7 +390,7 @@ final class DriftTableResolver
     dataClassName ??= dataClassNameForClassName(dartTableName);
 
     driftTable = DriftTable(
-      DriftElementReference(discovered.ownId),
+      resolver.ownElementReference,
       DriftDeclaration(
         state.ownId.libraryUri,
         stmt.firstPosition,
@@ -413,6 +413,10 @@ final class DriftTableResolver
     return PendingDriftElement(
       element: driftTable,
       resolve: (deps) {
+        for (final resolver in secondStageResolvers) {
+          resolver(deps);
+        }
+
         // Run drift-specific lints on the `CREATE TABLE` statement, which requires
         // having the resolved table structure first.
         final engineForAnalysis = typeMapping.newEngineWithTables(

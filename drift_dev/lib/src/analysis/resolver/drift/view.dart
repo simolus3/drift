@@ -152,7 +152,7 @@ final class DriftViewResolver
           );
 
       return DriftView(
-        DriftElementReference(discovered.ownId),
+        resolver.ownElementReference,
         DriftDeclaration.driftFile(stmt, file.ownUri),
         columns: columns,
         source: SqlViewSource('$createStmtForDatabase;'),
