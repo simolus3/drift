@@ -238,13 +238,13 @@ class FileAnalyzer {
     }
 
     final availableByDefault = <DriftSchemaElement>{
-      ...element.resolvedDeclaredTables,
-      ...element.resolvedDeclaredViews,
+      ...element.declaredTables,
+      ...element.declaredViews,
     };
 
     // For indices added to tables via an annotation, the index should
     // also be available.
-    for (final table in element.resolvedDeclaredTables) {
+    for (final table in element.declaredTables) {
       final fileState = driver.cache.knownFiles[table.id.libraryUri]!;
 
       for (final attachedIndex in table.attachedIndices) {

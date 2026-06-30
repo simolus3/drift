@@ -21,8 +21,10 @@ final class DartAccessorResolver
 
   @override
   Future<PendingDriftElement> buildPending() async {
-    final tables = <DriftElementReference>[];
-    final views = <DriftElementReference>[];
+    final tableDependencies = <DependencyToken>[];
+    final viewDependencies = <DependencyToken>[];
+    final tables = <DriftTable>[];
+    final views = <DriftView>[];
     final includes = <Uri>[];
     final queries = <QueryOnAccessor>[];
 
@@ -70,7 +72,7 @@ final class DartAccessorResolver
         enforceKind: DriftElementKind.table,
       );
       if (table != null) {
-        tables.add(table.reference);
+        tableDependencies.add(table);
       }
     }
 
@@ -95,7 +97,7 @@ final class DartAccessorResolver
         enforceKind: DriftElementKind.view,
       );
       if (view != null) {
-        views.add(view.reference);
+        viewDependencies.add(view);
       }
     }
 
@@ -134,6 +136,15 @@ final class DartAccessorResolver
 
       queries.add(QueryOnAccessor(keyStr, valueStr));
     });
+
+    void completeTablesAndViews(ResolvedDependencies deps) {
+      for (final table in tableDependencies) {
+        tables.add(deps.resolve(table) as DriftTable);
+      }
+      for (final view in viewDependencies) {
+        views.add(deps.resolve(view) as DriftView);
+      }
+    }
 
     final declaration = DriftDeclaration.dartElement(element);
     if (discovered.isDatabase) {
@@ -174,7 +185,7 @@ final class DartAccessorResolver
         hasConstructorArgumentForConnection:
             _hasConstructorWithDatabaseConnection(),
       );
-      return PendingDriftElement.fullyResolved(db);
+      return PendingDriftElement(element: db, resolve: completeTablesAndViews);
     } else {
       final dbType = element.allSupertypes.firstWhereOrNull(
         (i) => i.element.name == 'DatabaseAccessor',
@@ -205,7 +216,10 @@ final class DartAccessorResolver
         ownType: AnnotatedDartCode.type(element.thisType),
         databaseClass: AnnotatedDartCode.type(dbImpl),
       );
-      return PendingDriftElement.fullyResolved(accessor);
+      return PendingDriftElement(
+        element: accessor,
+        resolve: completeTablesAndViews,
+      );
     }
   }
 

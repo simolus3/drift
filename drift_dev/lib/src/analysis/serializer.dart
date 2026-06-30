@@ -111,8 +111,7 @@ class ElementSerializer {
       additionalInformation = {
         'type': 'trigger',
         'sql': element.createStmt,
-        if (element.on != null)
-          'on': _serializeElementReference(element.on!.element),
+        if (element.on != null) 'on': _serializeElementReference(element.on!),
         'onWrite': element.onWrite.name,
         'writes': [
           for (final write in element.writes)
@@ -180,11 +179,11 @@ class ElementSerializer {
         'type': type,
         'tables': [
           for (final table in element.declaredTables)
-            _serializeElementReference(table.element),
+            _serializeElementReference(table),
         ],
         'views': [
           for (final view in element.declaredViews)
-            _serializeElementReference(view.element),
+            _serializeElementReference(view),
         ],
         'includes': [
           for (final include in element.declaredIncludes) include.toString(),
@@ -706,16 +705,18 @@ final class ElementDeserializer {
           ));
         }
 
-        element = DriftTrigger(
+        final trigger = element = DriftTrigger(
           ownReference,
           declaration,
           references: references,
           createStmt: json['sql'] as String,
-          on: on?.reference,
+          on: null,
           onWrite: UpdateKind.values.byName(json['onWrite'] as String),
           writes: writes,
         );
         _resolve.add((deps) {
+          trigger.on = deps.resolveNullable(on) as DriftElementWithResultSet?;
+
           for (final (table, updateKind) in rawWrites) {
             writes.add(
               WrittenDriftTable(deps.resolve(table) as DriftTable, updateKind),
@@ -783,17 +784,13 @@ final class ElementDeserializer {
         );
       case DriftElementKind.database:
       case DriftElementKind.databaseAccessor:
-        final referenceById = {
-          for (final reference in references) reference.id: reference,
-        };
-
         final tables = [
           for (final tableId in json.list('tables'))
-            referenceById[DriftElementId.fromJson(tableId as Map)]!,
+            await _readDependency(tableId as Map),
         ];
         final views = [
-          for (final tableId in json.list('views'))
-            referenceById[DriftElementId.fromJson(tableId as Map)]!,
+          for (final viewId in json.list('views'))
+            await _readDependency(viewId as Map),
         ];
         final includes = (json['includes'] as List)
             .cast<String>()
@@ -803,13 +800,23 @@ final class ElementDeserializer {
             .cast<Map>()
             .map(QueryOnAccessor.fromJson)
             .toList();
+        final declaredTables = <DriftTable>[];
+        final declaredViews = <DriftView>[];
+        _resolve.add((deps) {
+          for (final table in tables) {
+            declaredTables.add(deps.resolve(table) as DriftTable);
+          }
+          for (final view in views) {
+            declaredViews.add(deps.resolve(view) as DriftView);
+          }
+        });
 
         if (kind == DriftElementKind.database) {
           element = DriftDatabase(
             reference: ownReference,
             declaration: declaration,
-            declaredTables: tables,
-            declaredViews: views,
+            declaredTables: declaredTables,
+            declaredViews: declaredViews,
             declaredIncludes: includes,
             declaredQueries: queries,
             schemaVersion: json['schema_version'] as int?,
@@ -826,8 +833,8 @@ final class ElementDeserializer {
           element = DatabaseAccessor(
             reference: ownReference,
             declaration: declaration,
-            declaredTables: tables,
-            declaredViews: views,
+            declaredTables: declaredTables,
+            declaredViews: declaredViews,
             declaredIncludes: includes,
             declaredQueries: queries,
             databaseClass: AnnotatedDartCode.fromJson(json['database'] as Map),

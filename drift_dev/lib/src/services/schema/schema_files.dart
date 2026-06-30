@@ -142,7 +142,7 @@ class SchemaWriter {
     } else if (entity is DriftTrigger) {
       type = 'trigger';
       data = {
-        'on': _idOf(entity.on!.element),
+        'on': _idOf(entity.on!),
         'references_in_body': [
           for (final ref in entity.references)
             if (ref.element case final DriftSchemaElement e) _idOf(e),
@@ -587,7 +587,7 @@ class SchemaReader {
     return DriftTrigger(
         DriftElementReference(_id(name)),
         _declaration,
-        on: on.reference,
+        on: on,
         onWrite: UpdateKind.delete,
         references: [
           for (final bodyRef in bodyReferences)

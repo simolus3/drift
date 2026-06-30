@@ -29,7 +29,7 @@ final class DriftTriggerResolver
     final trigger = DriftTrigger(
       resolver.ownElementReference,
       DriftDeclaration.driftFile(stmt, file.ownUri),
-      on: on.resolved?.reference,
+      on: null, // Set in resolve
       onWrite: drift.UpdateKind.delete, // Set in resolve
       references: resolver.references,
       createStmt: stmt.span!.text,
@@ -39,6 +39,9 @@ final class DriftTriggerResolver
     return PendingDriftElement(
       element: trigger,
       resolve: (deps) {
+        trigger.on =
+            deps.resolveNullable(on.resolved) as DriftElementWithResultSet?;
+
         final engine = engineFactory(deps);
         final source =
             (file.discovery as DiscoveredDriftFile).originalSourceSpan;

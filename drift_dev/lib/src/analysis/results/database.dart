@@ -14,13 +14,13 @@ abstract class BaseDriftAccessor extends DriftElement {
   ///
   /// This contains the `tables` field from a `DriftDatabase` or `DriftAccessor`
   /// annotation, but not tables that are declared in imported files.
-  final List<DriftElementReference> declaredTables;
+  final List<DriftTable> declaredTables;
 
   /// All views that have been declared on this accessor directly.
   ///
   /// This contains the `views` field from a `DriftDatabase` or `DriftAccessor`
   /// annotation, but not views that are declared in imported files.
-  final List<DriftElementReference> declaredViews;
+  final List<DriftView> declaredViews;
 
   /// The `includes` field from the annotation.
   final List<Uri> declaredIncludes;
@@ -37,16 +37,11 @@ abstract class BaseDriftAccessor extends DriftElement {
     required this.declaredQueries,
   }) : super(reference, declaration);
 
-  Iterable<DriftTable> get resolvedDeclaredTables =>
-      declaredTables.map((e) => e.element as DriftTable);
-  Iterable<DriftView> get resolvedDeclaredViews =>
-      declaredViews.map((e) => e.element as DriftView);
-
   @override
   Iterable<DriftElementReference> get references => [
     // todo: Track dependencies on includes somehow
-    ...declaredTables,
-    ...declaredViews,
+    ...declaredTables.map((e) => e.reference),
+    ...declaredViews.map((e) => e.reference),
   ];
 }
 

@@ -6,7 +6,7 @@ import 'results.dart';
 
 class DriftTrigger extends DriftSchemaElement {
   /// The [DriftTable] or [DriftView] whose writes trigger this trigger.
-  final DriftElementReference? on;
+  DriftElementWithResultSet? on;
 
   /// The kind of write (insert, update, delete) causing this trigger to run.
   UpdateKind onWrite;
