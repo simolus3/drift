@@ -27,7 +27,7 @@ final class DriftTriggerResolver
     final writes = <WrittenDriftTable>[];
 
     final trigger = DriftTrigger(
-      resolver.ownElementReference,
+      resolver.ownElementId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
       on: null, // Set in resolve
       onWrite: drift.UpdateKind.delete, // Set in resolve

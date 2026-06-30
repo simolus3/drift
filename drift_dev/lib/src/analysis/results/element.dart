@@ -79,10 +79,8 @@ class DriftDeclaration {
 }
 
 abstract class DriftElement {
-  final DriftElementReference reference;
+  final DriftElementId id;
   final DriftDeclaration declaration;
-
-  DriftElementId get id => reference.id;
 
   DriftElementKind get kind;
 
@@ -93,7 +91,7 @@ abstract class DriftElement {
   ///  - tables referenced in a SQL query.
   ///  - tables referenced in the body of a view, index, or trigger declaration.
   ///  - tables included in the `@DriftDatabase` annotation.
-  Iterable<DriftElementReference> get references => const Iterable.empty();
+  Iterable<DriftElement> get references => const Iterable.empty();
 
   Set<DriftElement> get selfAndTransitiveReferences =>
       [this].transitiveClosureUnderReferences();
@@ -112,9 +110,7 @@ abstract class DriftElement {
     return null;
   }
 
-  DriftElement(this.reference, this.declaration) {
-    reference.replace(this);
-  }
+  DriftElement(this.id, this.declaration);
 }
 
 enum DriftElementKind {
@@ -127,25 +123,6 @@ enum DriftElementKind {
   definedQuery;
 
   static Map<String, DriftElementKind> byName = values.asNameMap();
-}
-
-/// A reference to a valid drift element.
-///
-/// References are temporarily unresolved as drift elements are built to be able
-/// to handle circular references between elements.
-final class DriftElementReference {
-  final DriftElementId id;
-
-  DriftElement? _bound;
-
-  DriftElementReference(this.id);
-
-  DriftElement get element => _bound!;
-
-  void replace(DriftElement element) {
-    assert(element.id == id);
-    _bound = element;
-  }
 }
 
 abstract class DriftSchemaElement extends DriftElement {
@@ -170,18 +147,12 @@ extension TransitiveClosure on Iterable<DriftElement> {
       final current = pending.removeLast();
 
       for (final reference in current.references) {
-        if (found.add(reference.element)) {
-          pending.add(reference.element);
+        if (found.add(reference)) {
+          pending.add(reference);
         }
       }
     }
 
     return found;
-  }
-}
-
-extension TransitiveClosureUnderReferences on Iterable<DriftElementReference> {
-  Set<DriftElement> transitiveClosureUnderReferences() {
-    return map((e) => e.element).transitiveClosureUnderReferences();
   }
 }

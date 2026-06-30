@@ -48,11 +48,9 @@ final class DriftQueryResolver
     }
 
     final query = DefinedSqlQuery(
-      resolver.ownElementReference,
+      resolver.ownElementId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
-      references: [
-        for (final element in references.referencedElements) element.reference,
-      ],
+      references: resolver.references,
       sql: stmt.span!.text,
       sqlOffset: stmt.firstPosition,
       mode: isCreate ? QueryMode.atCreate : QueryMode.regular,

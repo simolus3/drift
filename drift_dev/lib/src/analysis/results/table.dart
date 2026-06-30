@@ -17,7 +17,7 @@ class DriftTable extends DriftElementWithResultSet {
   final List<DriftTableConstraint> tableConstraints;
 
   @override
-  final List<DriftElementReference> references;
+  final List<DriftElement> references;
 
   @override
   final ExistingRowClass? existingRowClass;

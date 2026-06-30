@@ -32,7 +32,7 @@ void main() {
       ),
     ]);
 
-    expect(view.references.map((e) => e.element), [
+    expect(view.references, [
       isA<DriftTable>().having((t) => t.schemaName, 'schemaName', 't'),
     ]);
 
@@ -70,7 +70,7 @@ void main() {
     ]);
 
     expect(parentView.references.map((e) => e.id.name), ['t']);
-    expect(childView.references, [parentView.reference]);
+    expect(childView.references, [parentView]);
     expect(childView.transitiveTableReferences.map((e) => e.schemaName), ['t']);
 
     state.expectNoErrors();

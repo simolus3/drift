@@ -390,7 +390,7 @@ final class DriftTableResolver
     dataClassName ??= dataClassNameForClassName(dartTableName);
 
     driftTable = DriftTable(
-      resolver.ownElementReference,
+      resolver.ownElementId,
       DriftDeclaration(
         state.ownId.libraryUri,
         stmt.firstPosition,

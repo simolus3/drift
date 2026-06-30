@@ -33,7 +33,7 @@ final class DartIndexResolver
 
     final columns = <DriftIndexedColumn>[];
     final index = DriftIndex(
-      resolver.ownElementReference,
+      resolver.ownElementId,
       DriftDeclaration.dartElement(discovered.dartElement),
       table: null,
       indexedColumns: columns,
@@ -118,7 +118,7 @@ final class DartIndexResolver
     final prepareEngine = await newEngineWithTables(references);
 
     final index = DriftIndex(
-      resolver.ownElementReference,
+      resolver.ownElementId,
       DriftDeclaration.dartElement(discovered.dartElement),
       table: null,
       indexedColumns: const [],

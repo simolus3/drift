@@ -145,7 +145,7 @@ class SchemaWriter {
         'on': _idOf(entity.on!),
         'references_in_body': [
           for (final ref in entity.references)
-            if (ref.element case final DriftSchemaElement e) _idOf(e),
+            if (ref is DriftSchemaElement) _idOf(ref),
         ],
         'name': entity.schemaName,
         'sql': entity.createStmt,
@@ -205,7 +205,7 @@ class SchemaWriter {
       'id': _idOf(entity),
       'references': [
         for (final reference in entity.references)
-          if (reference.element != entity) _idOf(reference.element),
+          if (reference != entity) _idOf(reference),
       ],
       'type': type,
       'data': data,
@@ -489,7 +489,7 @@ class SchemaReader {
           content,
           id: id,
           references: references
-              .map((id) => _entitiesById[id]?.reference)
+              .map((id) => _entitiesById[id])
               .nonNulls
               .toList(),
         );
@@ -529,7 +529,7 @@ class SchemaReader {
       }
 
       final index = DriftIndex(
-        DriftElementReference(_id(name)),
+        _id(name),
         _declaration,
         table: on,
         indexedColumns: [
@@ -556,7 +556,7 @@ class SchemaReader {
               as CreateIndexStatement;
 
       return DriftIndex(
-        DriftElementReference(_id(name)),
+        _id(name),
         _declaration,
         table: on,
         createStmt: sql,
@@ -585,13 +585,12 @@ class SchemaReader {
         (content['references_in_body'] ?? content['refences_in_body']) as List;
 
     return DriftTrigger(
-        DriftElementReference(_id(name)),
+        _id(name),
         _declaration,
         on: on,
         onWrite: UpdateKind.delete,
         references: [
-          for (final bodyRef in bodyReferences)
-            _existingEntity(bodyRef).reference,
+          for (final bodyRef in bodyReferences) _existingEntity(bodyRef),
         ],
         createStmt: sql,
         writes: const [],
@@ -618,7 +617,7 @@ class SchemaReader {
               as CreateVirtualTableStatement;
 
       return DriftTable(
-        DriftElementReference(_id(sqlName)),
+        _id(sqlName),
         _declaration,
         columns: columns,
         baseDartName: pascalCase,
@@ -658,7 +657,7 @@ class SchemaReader {
     }
 
     return DriftTable(
-      DriftElementReference(_id(sqlName)),
+      _id(sqlName),
       _declaration,
       columns: columns,
       baseDartName: pascalCase,
@@ -680,7 +679,7 @@ class SchemaReader {
     final entityInfoName = content['dart_info_name'] as String;
 
     return DriftView(
-      DriftElementReference(_id(name)),
+      _id(name),
       _declaration,
       columns: [
         for (final column in content['columns'] as Iterable)
@@ -704,10 +703,10 @@ class SchemaReader {
   DefinedSqlQuery _readQuery(
     Map<String, dynamic> content, {
     required int id,
-    required List<DriftElementReference> references,
+    required List<DriftElement> references,
   }) {
     return DefinedSqlQuery(
-      DriftElementReference(_id('create$id')),
+      _id('create$id'),
       _declaration,
       references: references,
       sql: content['sql'] as String,

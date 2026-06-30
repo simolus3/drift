@@ -12,7 +12,7 @@ class DriftTrigger extends DriftSchemaElement {
   UpdateKind onWrite;
 
   @override
-  final List<DriftElementReference> references;
+  final List<DriftElement> references;
 
   /// The `CREATE TRIGGER` statement creating this trigger.
   final String createStmt;

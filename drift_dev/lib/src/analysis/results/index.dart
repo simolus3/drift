@@ -48,7 +48,7 @@ class DriftIndex extends DriftSchemaElement {
   }
 
   @override
-  Iterable<DriftElementReference> get references => [?table?.reference];
+  Iterable<DriftElement> get references => [?table];
 
   /// The parsed `CREATE VIEW` statement from [createView].
   ///

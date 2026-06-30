@@ -39,7 +39,7 @@ class IdentifyDatabases extends DriftCommand {
 
           if (element is DriftDatabase) {
             final daos = element.accessors
-                .map((e) => (e.element as DatabaseAccessor).ownType.toString())
+                .map((e) => e.ownType.toString())
                 .join(', ');
             message
               ..writeln()

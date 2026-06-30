@@ -65,9 +65,8 @@ class FileAnalyzer {
             }
 
             for (final dao in element.accessors) {
-              final element = dao.element as DatabaseAccessor;
               final schema = (await _resolveElementsAndImports(
-                element,
+                dao,
               )).availableElements.whereType<DriftSchemaElement>();
 
               final onlyReferencedFromDao = schema
@@ -77,7 +76,7 @@ class FileAnalyzer {
 
               if (onlyReferencedFromDao.isNotEmpty) {
                 driver.backend.log.warning(
-                  "Dao ${element.ownType} references tables that aren't available "
+                  "Dao ${dao.ownType} references tables that aren't available "
                   'on the main database: $onlyReferencedFromDao. These '
                   'must also be included in the main database.',
                 );
@@ -144,9 +143,7 @@ class FileAnalyzer {
       for (final elementAnalysis in state.analysis.values) {
         final element = elementAnalysis.result;
         if (element is DefinedSqlQuery) {
-          final engine = typeMapping.newEngineWithTables(
-            element.references.map((e) => e.element),
-          );
+          final engine = typeMapping.newEngineWithTables(element.references);
           final stmt = parsedFile.statements
               .whereType<DeclaredStatement>()
               .firstWhere(
@@ -176,7 +173,7 @@ class FileAnalyzer {
             state,
             driver,
             knownTypes: knownTypes,
-            references: element.references.map((e) => e.element).toList(),
+            references: element.references,
             typeMapping: typeMapping,
             requiredVariables: options.variables,
           );

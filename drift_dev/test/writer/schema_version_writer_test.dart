@@ -13,7 +13,7 @@ void main() {
 
   DriftTable buildTable(String name) {
     return DriftTable(
-      DriftElementReference(DriftElementId(fakeUri, name)),
+      DriftElementId(fakeUri, name),
       DriftDeclaration(fakeUri, -1, ''),
       columns: [
         DriftColumn(

@@ -39,7 +39,7 @@ final class DriftResolver {
     // At this stage, all dependencies are part of _involvedElements. Let's
     // resolve them!
     final groups = stronglyConnectedComponents(_DependencyGraph(this));
-    for (final group in groups) {
+    for (final group in groups.reversed) {
       if (group.length > 1) {
         final resolver = group.map((e) {
           if (e case _ResolvingElement(
@@ -58,6 +58,12 @@ final class DriftResolver {
 
       for (final pending in group) {
         if (pending is _ResolvingElement) {
+          for (final dep in pending.dependencies) {
+            if (_resolveExisting(dep) case final existing?) {
+              pending.resolvedDependencies.add(existing);
+            }
+          }
+
           if (pending.singleStageResolver != null) {
             final createElement = pending.resolveElement!;
             pending.state.result = await createElement(
@@ -88,7 +94,7 @@ final class DriftResolver {
     if (existing != null && existing.isUpToDate) {
       final existingElement = existing.result!;
       final resolving = _AlreadyResolvedElement(
-        token: DependencyToken(existingElement.reference, existingElement.kind),
+        token: DependencyToken(existingElement.id, existingElement.kind),
         state: existing,
       );
       _involvedElements[element] = resolving;
@@ -108,7 +114,7 @@ final class DriftResolver {
         final deserializer = ElementFileDeserializer(restored);
         final kind = deserializer.kindFor(element.name);
         final state = _ResolvingElement(
-          token: DependencyToken(DriftElementReference(element), kind),
+          token: DependencyToken(element, kind),
           state: elementState,
         );
         _involvedElements[element] = state;
@@ -146,10 +152,7 @@ final class DriftResolver {
     ElementAnalysisState elementState,
   ) async {
     final pending = _ResolvingElement(
-      token: DependencyToken(
-        DriftElementReference(discovered.ownId),
-        discovered.kind,
-      ),
+      token: DependencyToken(discovered.ownId, discovered.kind),
       state: elementState,
     );
     final dependencyAware = DependencyAwareResolver._(pending, this);
@@ -257,20 +260,27 @@ final class DriftResolver {
       'Unknown pending element $reference, this is a bug in drift_dev',
     );
   }
+
+  DriftElement? _resolveExisting(DriftElementId id) {
+    return _involvedElements[id]!.state.result;
+  }
 }
 
 final class DependencyAwareResolver {
   final _ResolvingElement _ownElement;
   final DriftResolver _resolver;
-  final Set<DriftElementReference> _references = {};
 
   DependencyAwareResolver._(this._ownElement, this._resolver);
 
   DriftAnalysisDriver get driver => _resolver.driver;
 
-  DriftElementReference get ownElementReference => _ownElement.token.reference;
+  DriftElementId get ownElementId => _ownElement.token.id;
 
-  List<DriftElementReference> get references => _references.toList();
+  /// References tracked by this resolver.
+  ///
+  /// This list will be empty during the first resolve stage, but resolved
+  /// dependencies will be added to this list as part of the second stage.
+  List<DriftElement> get references => _ownElement.resolvedDependencies;
 
   Future<ResolveReferencedElementResult> resolveReferencedElement(
     DriftElementId reference,
@@ -280,9 +290,6 @@ final class DependencyAwareResolver {
       _ownElement.token.id,
       reference,
     );
-    if (resolved case ResolvedReferenceFound(:final token)) {
-      _references.add(token.reference);
-    }
 
     return resolved;
   }
@@ -364,7 +371,7 @@ final class SingleStageResolvedDependencies {
   DriftElement? resolveNullable(DependencyToken? token) {
     if (token == null) return null;
 
-    return _resolver._involvedElements[token.id]!.state.result;
+    return _resolver._resolveExisting(token.id);
   }
 }
 
@@ -386,12 +393,10 @@ final class ResolvedDependencies extends SingleStageResolvedDependencies {
 /// We return this instead of the resolved element to support circular
 /// references in a two-step resolve procedure.
 final class DependencyToken {
-  final DriftElementReference reference;
+  final DriftElementId id;
   final DriftElementKind kind;
 
-  DriftElementId get id => reference.id;
-
-  DependencyToken(this.reference, this.kind);
+  DependencyToken(this.id, this.kind);
 }
 
 /// A resolver responsible for analyzing a single element.
@@ -630,6 +635,7 @@ sealed class _ResolvingOrCachedElement {
 /// An element being analyzed by a [BaseElementResolver].
 final class _ResolvingElement extends _ResolvingOrCachedElement {
   final Set<DriftElementId> dependencies = {};
+  final List<DriftElement> resolvedDependencies = [];
 
   /// For two-stage resolvers, the pending element.
   PendingDriftElement? intermediate;

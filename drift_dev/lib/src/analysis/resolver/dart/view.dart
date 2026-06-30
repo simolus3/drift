@@ -37,17 +37,22 @@ final class DartViewResolver
     final staticReferences = await _parseStaticReferences();
 
     return (SingleStageResolvedDependencies deps) {
-      return _resolveWithRefs(staticReferences, deps);
+      final resolvedReferences = [
+        for (final ref in staticReferences)
+          if (deps.resolveNullable(ref.dependency) case final resolved?)
+            TableReferenceInDartView(resolved as DriftTable, ref.name),
+      ];
+
+      return _resolveWithRefs(resolvedReferences, deps);
     };
   }
 
   Future<DriftElement> _resolveWithRefs(
-    List<TableReference> refs,
+    List<TableReferenceInDartView> refs,
     SingleStageResolvedDependencies resolved,
   ) async {
-    final staticReferences = await _parseStaticReferences();
-    final structure = await _parseSelectStructure(staticReferences);
-    final columns = await _parseColumns(structure, staticReferences, resolved);
+    final structure = await _parseSelectStructure(refs);
+    final columns = await _parseColumns(structure, refs);
     final dataClassInfo = await DataClassInformation.resolve(
       this,
       columns,
@@ -55,7 +60,7 @@ final class DartViewResolver
     );
 
     return DriftView(
-      resolver.ownElementReference,
+      resolver.ownElementId,
       DriftDeclaration.dartElement(discovered.dartElement),
       columns: columns,
       nameOfRowClass:
@@ -67,13 +72,11 @@ final class DartViewResolver
       entityInfoName: '\$${discovered.dartElement.name}View',
       source: DartViewSource(
         structure.dartQuerySource,
-        structure.primarySource?.resolved,
-        staticReferences.map((e) => e.resolved).toList(),
+        structure.primarySource,
+        refs,
         structure.staticSource,
       ),
-      references: [
-        for (final reference in staticReferences) reference.resolved.table,
-      ],
+      references: [for (final reference in refs) reference.table],
     );
   }
 
@@ -118,10 +121,7 @@ final class DartViewResolver
 
           if (table != null) {
             final name = node.name.lexeme;
-            return TableReference(
-              TableReferenceInDartView(table.reference, name),
-              table,
-            );
+            return TableReference(name, table);
           }
         }
       } catch (_) {}
@@ -130,7 +130,7 @@ final class DartViewResolver
   }
 
   Future<_ParsedDartViewSelect> _parseSelectStructure(
-    List<TableReference> references,
+    List<TableReferenceInDartView> references,
   ) async {
     MethodElement? as;
 
@@ -175,8 +175,8 @@ final class DartViewResolver
       );
     }
 
-    final innerJoins = <TableReference>[];
-    final outerJoins = <TableReference>[];
+    final innerJoins = <TableReferenceInDartView>[];
+    final outerJoins = <TableReferenceInDartView>[];
 
     // We have something like Query as() => select([...]).from(foo).join(...).
     // First, crawl up so get the `select`:
@@ -194,8 +194,7 @@ final class DartViewResolver
               final isInnerJoin = entry.methodName.toSource() == 'innerJoin';
               final table = references.firstWhereOrNull(
                 (element) =>
-                    element.resolved.name ==
-                    entry.argumentList.arguments[0].toSource(),
+                    element.name == entry.argumentList.arguments[0].toSource(),
               );
 
               if (table != null) {
@@ -239,7 +238,7 @@ final class DartViewResolver
 
     final from = target.argumentList.arguments[0].toSource();
     final resolvedFrom = references.firstWhereOrNull(
-      (element) => element.resolved.name == from,
+      (element) => element.name == from,
     );
     if (resolvedFrom == null &&
         !resolver.driver.options.assumeCorrectReference) {
@@ -279,8 +278,7 @@ final class DartViewResolver
   DriftColumn? _readTableColumnReference(
     PrefixedIdentifier expression,
     _ParsedDartViewSelect structure,
-    List<TableReference> references,
-    SingleStageResolvedDependencies dependencies, {
+    List<TableReferenceInDartView> references, {
     bool warnOnUnresolved = true,
     ({String dart, String sql})? name,
   }) {
@@ -288,12 +286,10 @@ final class DartViewResolver
     final referencedColumnName = expression.identifier.name;
 
     final reference = references.firstWhereOrNull(
-      (ref) => ref.resolved.name == referencedTableGetter,
+      (ref) => ref.name == referencedTableGetter,
     );
-    final resolvedTable =
-        dependencies.resolveNullable(reference?.dependency) as DriftTable?;
 
-    if (reference == null || resolvedTable == null) {
+    if (reference == null) {
       if (warnOnUnresolved) {
         reportError(
           DriftAnalysisError.inDartAst(
@@ -308,7 +304,7 @@ final class DartViewResolver
       return null;
     }
 
-    final column = resolvedTable.columns.firstWhere(
+    final column = reference.table.columns.firstWhere(
       (col) => col.nameInDart == referencedColumnName,
     );
     final (:dart, :sql) = name ?? structure.uniqueColumnName(column);
@@ -322,7 +318,7 @@ final class DartViewResolver
       constraints: [
         ColumnGeneratedAs(
           AnnotatedDartCode.build(
-            (b) => b.addText('${reference.resolved.name}.${column.nameInDart}'),
+            (b) => b.addText('${reference.name}.${column.nameInDart}'),
           ),
           false,
         ),
@@ -334,8 +330,7 @@ final class DartViewResolver
 
   Future<List<DriftColumn>> _parseColumns(
     _ParsedDartViewSelect structure,
-    List<TableReference> references,
-    SingleStageResolvedDependencies dependencies,
+    List<TableReferenceInDartView> references,
   ) async {
     final columns = <DriftColumn>[];
 
@@ -347,7 +342,6 @@ final class DartViewResolver
           tableColumnReference,
           structure,
           references,
-          dependencies,
         );
         if (parsed != null) {
           columns.add(parsed);
@@ -385,7 +379,6 @@ final class DartViewResolver
             expression,
             structure,
             references,
-            dependencies,
             warnOnUnresolved: false,
             name: (dart: nameInDart, sql: nameInSql),
           );
@@ -462,9 +455,9 @@ final class DartViewResolver
 }
 
 class _ParsedDartViewSelect {
-  final TableReference? primarySource;
-  final List<TableReference> innerJoins;
-  final List<TableReference> outerJoins;
+  final TableReferenceInDartView? primarySource;
+  final List<TableReferenceInDartView> innerJoins;
+  final List<TableReferenceInDartView> outerJoins;
 
   final List<Expression> selectedColumns;
   final AnnotatedDartCode dartQuerySource;
@@ -480,7 +473,7 @@ class _ParsedDartViewSelect {
     this.staticSource,
   ]);
 
-  bool referenceIsNullable(TableReference ref) {
+  bool referenceIsNullable(TableReferenceInDartView ref) {
     return ref != primarySource && !innerJoins.contains(ref);
   }
 
@@ -501,8 +494,8 @@ class _ParsedDartViewSelect {
 }
 
 final class TableReference {
-  final TableReferenceInDartView resolved;
+  final String name;
   final DependencyToken dependency;
 
-  TableReference(this.resolved, this.dependency);
+  TableReference(this.name, this.dependency);
 }

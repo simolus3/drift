@@ -7,7 +7,7 @@ void main() {
     final uri = Uri.parse('drift:hidden');
 
     return DriftTable(
-      DriftElementReference(DriftElementId(uri, name)),
+      DriftElementId(uri, name),
       DriftDeclaration(uri, -1, name),
       columns: const [],
       baseDartName: name,
@@ -19,8 +19,8 @@ void main() {
   test('can handle cyclic reference', () {
     final first = table('a');
     final second = table('b');
-    first.references.add(second.reference);
-    second.references.add(first.reference);
+    first.references.add(second);
+    second.references.add(first);
 
     expect([first, second].sortByReferences(), hasLength(2));
   });
@@ -31,10 +31,10 @@ void main() {
     final c = table('c');
     final d = table('d');
 
-    a.references.add(b.reference);
-    b.references.add(c.reference);
-    c.references.add(d.reference);
-    d.references.add(b.reference);
+    a.references.add(b);
+    b.references.add(c);
+    c.references.add(d);
+    d.references.add(b);
 
     final [...cycle, last] = [a, b, c, d].sortByReferences();
     expect(last, a);
@@ -47,8 +47,8 @@ void main() {
     final c = table('c');
     final d = table('d');
 
-    a.references.add(b.reference);
-    b.references.add(c.reference);
+    a.references.add(b);
+    b.references.add(c);
 
     expect([a, b, c, d].sortByReferences(), [c, b, a, d]);
   });
@@ -58,8 +58,8 @@ void main() {
     final b = table('b');
 
     a.references
-      ..add(a.reference)
-      ..add(b.reference);
+      ..add(a)
+      ..add(b);
 
     expect([a, b].sortByReferences(), [b, a]);
   });

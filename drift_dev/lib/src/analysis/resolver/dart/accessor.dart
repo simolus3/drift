@@ -148,7 +148,8 @@ final class DartAccessorResolver
 
     final declaration = DriftDeclaration.dartElement(element);
     if (discovered.isDatabase) {
-      final accessors = <DriftElementReference>[];
+      final accessors = <DependencyToken>[];
+      final resolvedAccessors = <DatabaseAccessor>[];
       final rawDaos = annotation.getField('daos')?.toListValue() ?? const [];
       for (final value in rawDaos) {
         final type = value.toTypeValue()!;
@@ -170,22 +171,31 @@ final class DartAccessorResolver
           (msg) => DriftAnalysisError.forDartElement(element, msg),
           enforceKind: DriftElementKind.databaseAccessor,
         );
-        if (dao != null) accessors.add(dao.reference);
+        if (dao != null) accessors.add(dao);
       }
 
       final db = DriftDatabase(
-        reference: resolver.ownElementReference,
+        id: resolver.ownElementId,
         declaration: declaration,
         declaredTables: tables,
         declaredViews: views,
         declaredIncludes: includes,
         declaredQueries: queries,
         schemaVersion: await _readSchemaVersion(),
-        accessors: accessors,
+        accessors: resolvedAccessors,
         hasConstructorArgumentForConnection:
             _hasConstructorWithDatabaseConnection(),
       );
-      return PendingDriftElement(element: db, resolve: completeTablesAndViews);
+      return PendingDriftElement(
+        element: db,
+        resolve: (deps) {
+          completeTablesAndViews(deps);
+
+          for (final accessor in accessors) {
+            resolvedAccessors.add(deps.resolve(accessor) as DatabaseAccessor);
+          }
+        },
+      );
     } else {
       final dbType = element.allSupertypes.firstWhereOrNull(
         (i) => i.element.name == 'DatabaseAccessor',
@@ -207,7 +217,7 @@ final class DartAccessorResolver
       }
 
       final accessor = DatabaseAccessor(
-        reference: resolver.ownElementReference,
+        id: resolver.ownElementId,
         declaration: declaration,
         declaredTables: tables,
         declaredViews: views,

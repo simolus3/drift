@@ -49,9 +49,7 @@ class ModularAccessorWriter {
     for (final query in queries.entries) {
       final queryElement = file.analysis[query.key]?.result as DefinedSqlQuery?;
       if (queryElement != null) {
-        referencedElements.addAll(
-          queryElement.references.map((e) => e.element),
-        );
+        referencedElements.addAll(queryElement.references);
 
         if (queryElement.mode != QueryMode.regular) {
           // Not a query for which a public API should exist

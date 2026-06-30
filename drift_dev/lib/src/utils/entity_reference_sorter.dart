@@ -37,6 +37,6 @@ final class _ReferenceGraph
 
   @override
   Iterable<DriftElement>? operator [](Object? key) {
-    return key is DriftElement ? key.references.map((e) => e.element) : null;
+    return key is DriftElement ? key.references : null;
   }
 }

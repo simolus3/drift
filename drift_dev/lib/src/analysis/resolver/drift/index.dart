@@ -19,7 +19,7 @@ final class DriftIndexResolver
     final createEngine = await newEngineWithTables(references);
     final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
     final index = DriftIndex(
-      resolver.ownElementReference,
+      resolver.ownElementId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
       table: null,
       indexedColumns: [],

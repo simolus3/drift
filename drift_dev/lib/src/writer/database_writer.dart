@@ -85,8 +85,7 @@ class DatabaseWriter {
     }
 
     // Write fields to access an dao. We use a lazy getter for that.
-    for (final daoReference in db.accessors) {
-      final dao = daoReference.element as DatabaseAccessor;
+    for (final dao in db.accessors) {
       final typeName = firstLeaf.dartCode(dao.ownType);
       final getterName = ReCase(dao.ownType.toString()).camelCase;
       final databaseImplName = scope.dartCode(dao.databaseClass);

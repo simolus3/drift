@@ -197,7 +197,7 @@ class ElementSerializer {
           'schema_version': element.schemaVersion,
           'daos': [
             for (final dao in element.accessors)
-              _serializeElementReference(dao.element),
+              _serializeElementReference(dao),
           ],
           'has_constructor_arg': element.hasConstructorArgumentForConnection,
         },
@@ -211,7 +211,7 @@ class ElementSerializer {
       'declaration': element.declaration.toJson(),
       'references': [
         for (final referenced in element.references)
-          _serializeElementReference(referenced.element),
+          _serializeElementReference(referenced),
       ],
       ...additionalInformation,
     };
@@ -393,10 +393,7 @@ class ElementSerializer {
   Map<String, Object?> _serializeTableReferenceInDartView(
     TableReferenceInDartView ref,
   ) {
-    return {
-      'table': _serializeElementReference(ref.table.element),
-      'name': ref.name,
-    };
+    return {'table': _serializeElementReference(ref.table), 'name': ref.name};
   }
 
   int? _serializeType(DartType? type) {
@@ -452,8 +449,8 @@ final class ElementFileDeserializer {
   ) {
     final deserializer = ElementDeserializer._(resolver);
     return deserializer.readDriftElement(
-      _serializedElement(resolver.ownElementReference.id.name),
-      resolver.ownElementReference,
+      _serializedElement(resolver.ownElementId.name),
+      resolver,
       kind,
     );
   }
@@ -520,18 +517,16 @@ final class ElementDeserializer {
 
   Future<PendingDriftElement> readDriftElement(
     Map json,
-    DriftElementReference ownReference,
+    DependencyAwareResolver resolver,
     DriftElementKind kind,
   ) async {
     final id = DriftElementId.fromJson(json['id'] as Map);
-    assert(id == ownReference.id);
 
     final declaration = DriftDeclaration.fromJson(json['declaration'] as Map);
     final dependencies = <DependencyToken>[
       for (final reference in json.list('references'))
         await _readDependency(reference as Map),
     ];
-    final references = dependencies.map((d) => d.reference).toList();
 
     DriftElement element;
     switch (kind) {
@@ -554,9 +549,9 @@ final class ElementDeserializer {
         }
 
         final table = element = DriftTable(
-          ownReference,
+          id,
           declaration,
-          references: references,
+          references: resolver.references,
           columns: columns,
           existingRowClass: json['existing_data_class'] != null
               ? await _readExistingRowClass(
@@ -624,9 +619,9 @@ final class ElementDeserializer {
         final indexedColumns = <DriftIndexedColumn>[];
 
         final index = element = DriftIndex(
-          ownReference,
+          id,
           declaration,
-          table: references.firstOrNull?.element as DriftTable?,
+          table: null,
           createStmt: json['sql'] as String?,
           indexedColumns: indexedColumns,
           unique: json['unique'] as bool,
@@ -677,9 +672,9 @@ final class ElementDeserializer {
         }
 
         element = DefinedSqlQuery(
-          ownReference,
+          id,
           declaration,
-          references: references,
+          references: resolver.references,
           sql: json['sql'] as String,
           sqlOffset: json['offset'] as int,
           resultClassName: json['result_class'] as String?,
@@ -706,9 +701,9 @@ final class ElementDeserializer {
         }
 
         final trigger = element = DriftTrigger(
-          ownReference,
+          id,
           declaration,
-          references: references,
+          references: resolver.references,
           createStmt: json['sql'] as String,
           on: null,
           onWrite: UpdateKind.values.byName(json['onWrite'] as String),
@@ -731,38 +726,11 @@ final class ElementDeserializer {
 
         final serializedSource = json['source'] as Map;
         final sourceKind = serializedSource['kind'];
-        DriftViewSource source;
 
-        if (sourceKind == 'sql') {
-          source = SqlViewSource(serializedSource['sql'] as String);
-        } else if (sourceKind == 'dart') {
-          TableReferenceInDartView readReference(Map json) {
-            final id = DriftElementId.fromJson(json['table'] as Map);
-            final reference = references.firstWhere((e) => e.id == id);
-            return TableReferenceInDartView(reference, json['name'] as String);
-          }
-
-          source = DartViewSource(
-            AnnotatedDartCode.fromJson(serializedSource['query'] as Map),
-            serializedSource['primaryFrom'] != null
-                ? readReference(serializedSource['primaryFrom'] as Map)
-                : null,
-            [
-              for (final element in serializedSource.list('staticReferences'))
-                readReference(element as Map),
-            ],
-            serializedSource['staticSource'] != null
-                ? serializedSource['staticSource'] as String
-                : null,
-          );
-        } else {
-          throw UnsupportedError('Unknown view source $serializedSource');
-        }
-
-        element = DriftView(
-          ownReference,
+        final view = element = DriftView(
+          id,
           declaration,
-          references: references,
+          references: resolver.references,
           columns: columns,
           entityInfoName: json['entity_info_name'] as String,
           customParentClass: _readCustomParentClass(
@@ -780,8 +748,42 @@ final class ElementDeserializer {
                   json['existing_data_class'] as Map,
                 )
               : null,
-          source: source,
+          source: null,
         );
+
+        if (sourceKind == 'sql') {
+          view.source = SqlViewSource(serializedSource['sql'] as String);
+        } else if (sourceKind == 'dart') {
+          _resolve.add((deps) {
+            TableReferenceInDartView readReference(Map json) {
+              final id = DriftElementId.fromJson(json['table'] as Map);
+              final reference = resolver.references.firstWhere(
+                (e) => e.id == id,
+              );
+              return TableReferenceInDartView(
+                reference as DriftTable,
+                json['name'] as String,
+              );
+            }
+
+            view.source = DartViewSource(
+              AnnotatedDartCode.fromJson(serializedSource['query'] as Map),
+              serializedSource['primaryFrom'] != null
+                  ? readReference(serializedSource['primaryFrom'] as Map)
+                  : null,
+              [
+                for (final element in serializedSource.list('staticReferences'))
+                  readReference(element as Map),
+              ],
+              serializedSource['staticSource'] != null
+                  ? serializedSource['staticSource'] as String
+                  : null,
+            );
+          });
+        } else {
+          throw UnsupportedError('Unknown view source $serializedSource');
+        }
+
       case DriftElementKind.database:
       case DriftElementKind.databaseAccessor:
         final tables = [
@@ -791,6 +793,11 @@ final class ElementDeserializer {
         final views = [
           for (final viewId in json.list('views'))
             await _readDependency(viewId as Map),
+        ];
+        final accessorDependencies = [
+          if (kind == DriftElementKind.database)
+            for (final dao in json.list('daos'))
+              (await _readDependency(dao as Map)),
         ];
         final includes = (json['includes'] as List)
             .cast<String>()
@@ -802,6 +809,7 @@ final class ElementDeserializer {
             .toList();
         final declaredTables = <DriftTable>[];
         final declaredViews = <DriftView>[];
+        final accessors = <DatabaseAccessor>[];
         _resolve.add((deps) {
           for (final table in tables) {
             declaredTables.add(deps.resolve(table) as DriftTable);
@@ -809,21 +817,21 @@ final class ElementDeserializer {
           for (final view in views) {
             declaredViews.add(deps.resolve(view) as DriftView);
           }
+          for (final accessor in accessorDependencies) {
+            accessors.add(deps.resolve(accessor) as DatabaseAccessor);
+          }
         });
 
         if (kind == DriftElementKind.database) {
           element = DriftDatabase(
-            reference: ownReference,
+            id: id,
             declaration: declaration,
             declaredTables: declaredTables,
             declaredViews: declaredViews,
             declaredIncludes: includes,
             declaredQueries: queries,
             schemaVersion: json['schema_version'] as int?,
-            accessors: [
-              for (final dao in json.list('daos'))
-                (await _readDependency(dao as Map)).reference,
-            ],
+            accessors: accessors,
             hasConstructorArgumentForConnection:
                 json['has_constructor_arg'] as bool,
           );
@@ -831,7 +839,7 @@ final class ElementDeserializer {
           assert(kind == DriftElementKind.databaseAccessor);
 
           element = DatabaseAccessor(
-            reference: ownReference,
+            id: id,
             declaration: declaration,
             declaredTables: declaredTables,
             declaredViews: declaredViews,

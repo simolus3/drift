@@ -152,7 +152,7 @@ final class DriftViewResolver
           );
 
       return DriftView(
-        resolver.ownElementReference,
+        resolver.ownElementId,
         DriftDeclaration.driftFile(stmt, file.ownUri),
         columns: columns,
         source: SqlViewSource('$createStmtForDatabase;'),
@@ -160,7 +160,7 @@ final class DriftViewResolver
         entityInfoName: entityInfoName,
         existingRowClass: existingRowClass,
         nameOfRowClass: rowClassName,
-        references: [for (final reference in references) reference.reference],
+        references: resolver.references,
       );
     };
   }

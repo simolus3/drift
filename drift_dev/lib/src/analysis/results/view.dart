@@ -33,7 +33,7 @@ class DriftView extends DriftElementWithResultSet {
   final String? nameOfCompanionClass;
 
   @override
-  List<DriftElementReference> references;
+  List<DriftElement> references;
 
   DriftView(
     super.id,
@@ -92,7 +92,7 @@ class SqlViewSource extends DriftViewSource {
 /// A table added to a view via a getter.
 class TableReferenceInDartView {
   /// The table referenced by the getter.
-  final DriftElementReference table;
+  final DriftTable table;
 
   /// Name of the getter adding the table.
   final String name;

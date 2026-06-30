@@ -81,7 +81,7 @@ class ViewWriter extends TableOrViewWriter {
       var tableCounter = 0;
 
       for (final ref in source.staticReferences) {
-        final table = ref.table.element as DriftTable;
+        final table = ref.table;
         final alias = asDartLiteral('t${tableCounter++}');
 
         emitter

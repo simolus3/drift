@@ -36,7 +36,7 @@ final class DartTableResolver
         await _readCustomConstraints(columns, element);
 
     final table = DriftTable(
-      resolver.ownElementReference,
+      resolver.ownElementId,
       DriftDeclaration.dartElement(element),
       columns: columns,
       references: resolver.references,
