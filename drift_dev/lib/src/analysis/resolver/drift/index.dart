@@ -1,8 +1,7 @@
-import 'package:drift_dev/src/analysis/resolver/resolver.dart';
-
 import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
+import '../resolver.dart';
 import 'element_resolver.dart';
 
 final class DriftIndexResolver
@@ -19,20 +18,21 @@ final class DriftIndexResolver
     );
     final createEngine = await newEngineWithTables(references);
     final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
+    final index = DriftIndex(
+      resolver.ownElementReference,
+      DriftDeclaration.driftFile(stmt, file.ownUri),
+      table: null,
+      indexedColumns: [],
+      unique: stmt.unique,
+      createStmt: source.text.substring(stmt.firstPosition, stmt.lastPosition),
+    );
 
     return PendingDriftElement(
-      element: DriftIndex(
-        resolver.ownElementReference,
-        DriftDeclaration.driftFile(stmt, file.ownUri),
-        table: tableRef.resolved?.reference,
-        indexedColumns: [],
-        unique: stmt.unique,
-        createStmt: source.text.substring(
-          stmt.firstPosition,
-          stmt.lastPosition,
-        ),
-      ),
+      element: index,
       resolve: (dependencies) {
+        index.table =
+            dependencies.resolveNullable(tableRef.resolved) as DriftTable?;
+
         final engine = createEngine(dependencies);
         final context = engine.analyzeNode(stmt, source);
         reportLints(context, dependencies, references);

@@ -391,17 +391,6 @@ class ColumnParser {
             resolvedTableClass,
           );
 
-          // if (referencedTable is ReferencesItself) {
-          //   // "Foreign" key to a column in the same table.
-          //   foundConstraints.add(
-          //     ForeignKeyReference.unresolved(
-          //       onUpdate,
-          //       onDelete,
-          //       initiallyDeferred,
-          //     ),
-          //   );
-          //   referencesColumnInSameTable = columnName;
-          // }
           if (referencedTable is ResolvedReferenceFound) {
             constraintResolvers.add((constraints, deps) {
               final driftElement = deps.resolve(referencedTable.token);

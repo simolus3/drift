@@ -174,7 +174,7 @@ final class DartAccessorResolver
         hasConstructorArgumentForConnection:
             _hasConstructorWithDatabaseConnection(),
       );
-      return PendingDriftElement(element: db, resolve: (_) {});
+      return PendingDriftElement.fullyResolved(db);
     } else {
       final dbType = element.allSupertypes.firstWhereOrNull(
         (i) => i.element.name == 'DatabaseAccessor',
@@ -205,7 +205,7 @@ final class DartAccessorResolver
         ownType: AnnotatedDartCode.type(element.thisType),
         databaseClass: AnnotatedDartCode.type(dbImpl),
       );
-      return PendingDriftElement(element: accessor, resolve: (_) {});
+      return PendingDriftElement.fullyResolved(accessor);
     }
   }
 

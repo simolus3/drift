@@ -624,32 +624,36 @@ final class ElementDeserializer {
       case DriftElementKind.dbIndex:
         final indexedColumns = <DriftIndexedColumn>[];
 
-        element = DriftIndex(
+        final index = element = DriftIndex(
           ownReference,
           declaration,
-          table: references.first,
+          table: references.firstOrNull?.element as DriftTable?,
           createStmt: json['sql'] as String?,
           indexedColumns: indexedColumns,
           unique: json['unique'] as bool,
         );
 
         _resolve.add((deps) {
-          final resolvedTable = deps.resolve(dependencies.first) as DriftTable;
+          final resolvedTable =
+              deps.resolveNullable(dependencies.firstOrNull) as DriftTable?;
+          index.table = resolvedTable;
 
-          for (final entry
-              in (json['columns'] as List).cast<Map<String, Object?>>()) {
-            indexedColumns.add(
-              DriftIndexedColumn(
-                column:
-                    resolvedTable.columnBySqlName[entry['column'] as String]!,
-                orderBy: switch (entry['order_by']) {
-                  null => null,
-                  final orderBy => OrderingMode.values.byName(
-                    orderBy as String,
-                  ),
-                },
-              ),
-            );
+          if (resolvedTable != null) {
+            for (final entry
+                in (json['columns'] as List).cast<Map<String, Object?>>()) {
+              indexedColumns.add(
+                DriftIndexedColumn(
+                  column:
+                      resolvedTable.columnBySqlName[entry['column'] as String]!,
+                  orderBy: switch (entry['order_by']) {
+                    null => null,
+                    final orderBy => OrderingMode.values.byName(
+                      orderBy as String,
+                    ),
+                  },
+                ),
+              );
+            }
           }
         });
 

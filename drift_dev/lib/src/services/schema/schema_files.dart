@@ -153,7 +153,7 @@ class SchemaWriter {
     } else if (entity is DriftIndex) {
       type = 'index';
       data = {
-        'on': _idOf(entity.table!.element),
+        'on': _idOf(entity.table!),
         'name': entity.schemaName,
         'sql': entity.createStmt,
         'unique': entity.unique,
@@ -531,7 +531,7 @@ class SchemaReader {
       final index = DriftIndex(
         DriftElementReference(_id(name)),
         _declaration,
-        table: on.reference,
+        table: on,
         indexedColumns: [
           for (final col in content['columns'] as List)
             readColumn(col as Object),
@@ -558,7 +558,7 @@ class SchemaReader {
       return DriftIndex(
         DriftElementReference(_id(name)),
         _declaration,
-        table: on.reference,
+        table: on,
         createStmt: sql,
         unique: stmt.unique,
         indexedColumns: [

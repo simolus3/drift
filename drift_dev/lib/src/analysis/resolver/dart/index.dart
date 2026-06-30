@@ -32,16 +32,19 @@ final class DartIndexResolver
     final unique = computed?.getField('unique')?.toBoolValue() ?? false;
 
     final columns = <DriftIndexedColumn>[];
+    final index = DriftIndex(
+      resolver.ownElementReference,
+      DriftDeclaration.dartElement(discovered.dartElement),
+      table: null,
+      indexedColumns: columns,
+      unique: unique,
+      createStmt: null,
+    );
     return PendingDriftElement(
-      element: DriftIndex(
-        resolver.ownElementReference,
-        DriftDeclaration.dartElement(discovered.dartElement),
-        table: table?.reference,
-        indexedColumns: columns,
-        unique: unique,
-        createStmt: null,
-      ),
+      element: index,
       resolve: (dependencies) {
+        index.table = dependencies.resolveNullable(table) as DriftTable?;
+
         final resolvedTable =
             dependencies.resolveNullable(table) as DriftTable?;
         final referencedColumns = computed?.getField('columns')?.toSetValue();
@@ -117,7 +120,7 @@ final class DartIndexResolver
     final index = DriftIndex(
       resolver.ownElementReference,
       DriftDeclaration.dartElement(discovered.dartElement),
-      table: table?.reference,
+      table: null,
       indexedColumns: const [],
       unique: false,
       createStmt: createIndexStatement,
@@ -125,6 +128,8 @@ final class DartIndexResolver
     return PendingDriftElement(
       element: index,
       resolve: (dependencies) {
+        index.table = dependencies.resolveNullable(table) as DriftTable?;
+
         if (root is CreateIndexStatement) {
           final engine = prepareEngine(dependencies);
           final context = engine.analyzeNode(root, span);

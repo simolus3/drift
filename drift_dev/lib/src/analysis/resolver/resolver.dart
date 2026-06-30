@@ -593,11 +593,19 @@ abstract base class SingleStageElementResolver<T extends DiscoveredElement>
   resolveDependencies();
 }
 
+/// A [DriftElement] that requires a second [resolve] step to finalize analysis.
+///
+/// When this is constructed, we know about the element's columns and structure.
+/// However, dependencies have not been resolved yet and some information (like
+/// column or table constraints including foreign keys) are finalized once
+/// dependencies are available.
 final class PendingDriftElement {
   final DriftElement element;
   final FutureOr<void> Function(ResolvedDependencies) resolve;
 
   PendingDriftElement({required this.element, required this.resolve});
+
+  PendingDriftElement.fullyResolved(this.element) : resolve = ((_) {});
 }
 
 /// An additional reference to pass into

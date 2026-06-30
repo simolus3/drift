@@ -62,6 +62,6 @@ final class DriftQueryResolver
       dartTokens: references.dartExpressions,
     );
 
-    return PendingDriftElement(element: query, resolve: (_) {});
+    return PendingDriftElement.fullyResolved(query);
   }
 }
