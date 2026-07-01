@@ -5,15 +5,14 @@ import 'dart:typed_data';
 
 import 'package:drift3/drift.dart';
 import 'package:drift3/internal/versioned_schema.dart';
-import 'package:drift_dev/api/migrations_common.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
+import 'package:drift_sqlite/schema_verifier.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 import '../generated/custom_tables.dart';
 import '../generated/todos.dart';
 import '../test_utils.dart';
-import '../test_utils/schema_verifier.dart';
 
 void main() {
   test('change column types', () async {

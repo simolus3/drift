@@ -88,22 +88,14 @@ final class Migrator {
   /// Creates the given [entity], which can be a table, a view, a trigger, an
   /// index or an [OnCreateQuery].
   Future<void> create(DatabaseSchemaEntity entity) async {
-    if (entity is GeneratedTable) {
-      await createTable(entity);
-    } else if (entity is Trigger) {
-      await createTrigger(entity);
-    } else if (entity is Index) {
-      await createIndex(entity);
-    } else if (entity is OnCreateQuery) {
+    if (entity is OnCreateQuery) {
       final stmt = database.dialect.createCompiler();
       entity.definition.compileWith(stmt);
       await (await database.currentSession()).execute(
         stmt.statement.toStatementInfo(),
       );
-    } else if (entity is GeneratedView) {
-      await createView(entity);
     } else {
-      throw ArgumentError('Unknown entity type: $entity');
+      await _run(CreateStatement.creatingElement(entity, ifNotExists: true));
     }
   }
 

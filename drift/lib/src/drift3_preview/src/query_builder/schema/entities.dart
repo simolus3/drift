@@ -1,6 +1,8 @@
 import '../compiler.dart';
 import '../statements/statement.dart';
 import 'result_set.dart';
+import 'table.dart';
+import 'view.dart';
 
 /// Some abstract schema entity that can be stored in a database. This includes
 /// tables, triggers, views, indexes, etc.
@@ -21,6 +23,29 @@ abstract base class CreateStatement<T extends DatabaseSchemaEntity>
 
   /// @nodoc
   CreateStatement(this.entity, {this.ifNotExists = false});
+
+  /// Returns a [CreateStatement] subclass suitable to create the given entity.
+  ///
+  /// For tables, this would return a [CreateTableStatement] for example.
+  static CreateStatement creatingElement(
+    DatabaseSchemaEntity entity, {
+    bool ifNotExists = false,
+  }) {
+    return switch (entity) {
+      GeneratedTable() => CreateTableStatement(
+        entity,
+        ifNotExists: ifNotExists,
+      ),
+      GeneratedView() => CreateViewStatement(entity, ifNotExists: ifNotExists),
+      Trigger() => CreateTriggerStatement(entity, ifNotExists: ifNotExists),
+      Index() => CreateIndexStatement(entity, ifNotExists: ifNotExists),
+      _ => throw ArgumentError.value(
+        entity,
+        'entity',
+        "Doesn't have a CREATE statement",
+      ),
+    };
+  }
 }
 
 /// A sqlite trigger that's executed before, after or instead of a subset of
