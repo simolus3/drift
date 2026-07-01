@@ -6,10 +6,11 @@ import 'package:sqlparser/utils/find_referenced_tables.dart';
 import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
+import '../resolver.dart';
 import 'element_resolver.dart';
 
-class DriftTriggerResolver
-    extends DriftElementResolver<DiscoveredDriftTrigger> {
+final class DriftTriggerResolver
+    extends TwoStageElementResolver<DiscoveredDriftTrigger> {
   DriftTriggerResolver(
     super.file,
     super.discovered,
@@ -18,61 +19,70 @@ class DriftTriggerResolver
   );
 
   @override
-  Future<DriftTrigger> resolve() async {
+  Future<PendingDriftElement> buildPending() async {
     final stmt = discovered.sqlNode;
-    final references = await resolveTableReferences(stmt);
-    final engine = await newEngineWithTables(references);
+    final on = ResolvableSqlReference(stmt.onTable.tableName);
+    final references = await resolveTableReferences(stmt, additional: [on]);
+    final engineFactory = await newEngineWithTables(references);
+    final writes = <WrittenDriftTable>[];
 
-    final source = (file.discovery as DiscoveredDriftFile).originalSourceSpan;
-    final context = engine.analyzeNode(stmt, source);
-    reportLints(context, references);
-
-    WrittenDriftTable? mapWrite(TableWrite parserWrite) {
-      drift.UpdateKind kind;
-      switch (parserWrite.kind) {
-        case UpdateKind.insert:
-          kind = drift.UpdateKind.insert;
-          break;
-        case UpdateKind.update:
-          kind = drift.UpdateKind.update;
-          break;
-        case UpdateKind.delete:
-          kind = drift.UpdateKind.delete;
-          break;
-      }
-
-      final table = references.whereType<DriftTable>().firstWhereOrNull(
-        (e) => e.schemaName == parserWrite.table.name,
-      );
-      if (table != null) {
-        return WrittenDriftTable(table, kind);
-      } else {
-        return null;
-      }
-    }
-
-    drift.UpdateKind onWrite;
-
-    if (stmt.target is DeleteTarget) {
-      onWrite = drift.UpdateKind.delete;
-    } else if (stmt.target is UpdateTarget) {
-      onWrite = drift.UpdateKind.update;
-    } else {
-      onWrite = drift.UpdateKind.insert;
-    }
-
-    return DriftTrigger(
-      discovered.ownId,
+    final trigger = DriftTrigger(
+      resolver.ownElementId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
-      on:
-          findInResolved(references, stmt.onTable.tableName)
-              as DriftElementWithResultSet?,
-      onWrite: onWrite,
-      references: references,
+      on: null, // Set in resolve
+      onWrite: drift.UpdateKind.delete, // Set in resolve
+      references: resolver.references,
       createStmt: stmt.span!.text,
-      writes: findWrittenTables(
-        stmt,
-      ).map(mapWrite).whereType<WrittenDriftTable>().toList(),
+      writes: writes,
+    );
+
+    return PendingDriftElement(
+      element: trigger,
+      resolve: (deps) {
+        trigger.on =
+            deps.resolveNullable(on.resolved) as DriftElementWithResultSet?;
+
+        final engine = engineFactory(deps);
+        final source =
+            (file.discovery as DiscoveredDriftFile).originalSourceSpan;
+        final context = engine.analyzeNode(stmt, source);
+        reportLints(context, deps, references);
+
+        WrittenDriftTable? mapWrite(TableWrite parserWrite) {
+          final kind = switch (parserWrite.kind) {
+            UpdateKind.insert => drift.UpdateKind.insert,
+            UpdateKind.update => drift.UpdateKind.update,
+            UpdateKind.delete => drift.UpdateKind.delete,
+          };
+
+          final table = deps.resolveNullable(
+            references.firstWhereOrNull(
+              (e) =>
+                  e.id.name.toLowerCase() ==
+                  parserWrite.table.name.toLowerCase(),
+            ),
+          );
+          if (table is DriftTable) {
+            return WrittenDriftTable(table, kind);
+          } else {
+            return null;
+          }
+        }
+
+        for (final table in findWrittenTables(stmt)) {
+          if (mapWrite(table) case final written?) {
+            writes.add(written);
+          }
+        }
+
+        if (stmt.target is DeleteTarget) {
+          trigger.onWrite = drift.UpdateKind.delete;
+        } else if (stmt.target is UpdateTarget) {
+          trigger.onWrite = drift.UpdateKind.update;
+        } else {
+          trigger.onWrite = drift.UpdateKind.insert;
+        }
+      },
     );
   }
 }

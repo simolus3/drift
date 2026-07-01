@@ -44,7 +44,7 @@ class DriftTable extends DriftElementWithResultSet {
 
   /// Information about the virtual table creating statement backing this table,
   /// if it [isVirtual].
-  final VirtualTableData? virtualTableData;
+  VirtualTableData? virtualTableData;
 
   /// Whether this table is defined as `STRICT`. Support for strict tables has
   /// been added in sqlite 3.37.
@@ -59,7 +59,7 @@ class DriftTable extends DriftElementWithResultSet {
 
   /// When non-empty, the generated table class will override the
   /// `customConstraints` getter in the table class with this value.
-  final List<String> overrideTableConstraints;
+  List<String> overrideTableConstraints;
 
   /// The names of indices that have been attached to this table using the
   /// `@TableIndex` annotation in drift.

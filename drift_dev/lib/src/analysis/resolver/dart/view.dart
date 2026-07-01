@@ -12,14 +12,47 @@ import '../resolver.dart';
 import '../shared/data_class.dart';
 import 'helper.dart';
 
-class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
+// TODO: We can know about columns before crawling dependencies, refactor this
+// to a two-stage resolver.
+final class DartViewResolver
+    extends SingleStageElementResolver<DiscoveredDartView> {
   DartViewResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
-  Future<DriftElement> resolve() async {
+  void addInCircularReferenceError(List<DriftElementId> ids) {
+    final formatted = ids.map((e) => e.name).join(', ');
+
+    reportError(
+      DriftAnalysisError.forDartElement(
+        discovered.dartElement,
+        'This view is part of a circular reference and cannot be '
+        'resolved. Reference cycle: $formatted',
+      ),
+    );
+  }
+
+  @override
+  Future<Future<DriftElement> Function(SingleStageResolvedDependencies)>
+  resolveDependencies() async {
     final staticReferences = await _parseStaticReferences();
-    final structure = await _parseSelectStructure(staticReferences);
-    final columns = await _parseColumns(structure, staticReferences);
+
+    return (SingleStageResolvedDependencies deps) {
+      final resolvedReferences = [
+        for (final ref in staticReferences)
+          if (deps.resolveNullable(ref.dependency) case final resolved?)
+            TableReferenceInDartView(resolved as DriftTable, ref.name),
+      ];
+
+      return _resolveWithRefs(resolvedReferences, deps);
+    };
+  }
+
+  Future<DriftElement> _resolveWithRefs(
+    List<TableReferenceInDartView> refs,
+    SingleStageResolvedDependencies resolved,
+  ) async {
+    final structure = await _parseSelectStructure(refs);
+    final columns = await _parseColumns(structure, refs);
     final dataClassInfo = await DataClassInformation.resolve(
       this,
       columns,
@@ -27,7 +60,7 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
     );
 
     return DriftView(
-      discovered.ownId,
+      resolver.ownElementId,
       DriftDeclaration.dartElement(discovered.dartElement),
       columns: columns,
       nameOfRowClass:
@@ -40,14 +73,14 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
       source: DartViewSource(
         structure.dartQuerySource,
         structure.primarySource,
-        staticReferences,
+        refs,
         structure.staticSource,
       ),
-      references: [for (final reference in staticReferences) reference.table],
+      references: [for (final reference in refs) reference.table],
     );
   }
 
-  Future<List<TableReferenceInDartView>> _parseStaticReferences() async {
+  Future<List<TableReference>> _parseStaticReferences() async {
     return await Stream.fromIterable(
           discovered.dartElement.allSupertypes
               .map((t) => t.element)
@@ -56,13 +89,11 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
         )
         .asyncMap((field) => _getStaticReference(field))
         .where((ref) => ref != null)
-        .cast<TableReferenceInDartView>()
+        .cast<TableReference>()
         .toList();
   }
 
-  Future<TableReferenceInDartView?> _getStaticReference(
-    FieldElement field,
-  ) async {
+  Future<TableReference?> _getStaticReference(FieldElement field) async {
     final type = field.type;
     final knownTypes = await resolver.driver.knownTypes;
     final typeSystem = field.library.typeSystem;
@@ -78,20 +109,19 @@ class DartViewResolver extends LocalElementResolver<DiscoveredDartView> {
           getter,
         );
         if (node is MethodDeclaration && node.body is EmptyFunctionBody) {
-          final table = await resolveDartReferenceOrReportError<DriftTable>(
-            type.element,
-            (msg) {
-              return DriftAnalysisError.inDartAst(
-                field,
-                node.returnType ?? node.name,
-                msg,
-              );
-            },
-          );
+          final table = await resolveDartReferenceOrReportError(type.element, (
+            msg,
+          ) {
+            return DriftAnalysisError.inDartAst(
+              field,
+              node.returnType ?? node.name,
+              msg,
+            );
+          }, enforceKind: DriftElementKind.table);
 
           if (table != null) {
             final name = node.name.lexeme;
-            return TableReferenceInDartView(table, name);
+            return TableReference(name, table);
           }
         }
       } catch (_) {}
@@ -461,4 +491,11 @@ class _ParsedDartViewSelect {
 
     return (dart: '$name$suffix', sql: '${source.nameInSql}$suffix');
   }
+}
+
+final class TableReference {
+  final String name;
+  final DependencyToken dependency;
+
+  TableReference(this.name, this.dependency);
 }

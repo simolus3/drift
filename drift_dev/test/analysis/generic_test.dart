@@ -244,7 +244,7 @@ class ThisTable extends Table {
     final thisTable =
         file.analysis[file.id('this_table')]?.result as DriftTable;
     expect(thisTable.references, [
-      file.analysis[file.id('other_table')]?.result,
+      file.analysis[file.id('other_table')]!.result!,
     ]);
   });
 

@@ -137,7 +137,7 @@ class Foo extends Table {
     );
     final table = file.analysis.values.single.result as DriftTable;
 
-    expect(table.references, isEmpty);
+    expect(table.references, [table]);
 
     final id = table.columns[0];
     final parentId = table.columns[1];

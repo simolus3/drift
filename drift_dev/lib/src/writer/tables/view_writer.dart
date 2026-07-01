@@ -87,7 +87,7 @@ class ViewWriter extends TableOrViewWriter {
         emitter
           ..writeDart(emitter.entityInfoType(table))
           ..write(' get ${ref.name} => ')
-          ..writeDart(emitter.referenceElement(ref.table, _attachedDatabase))
+          ..writeDart(emitter.referenceElement(table, _attachedDatabase))
           ..writeln(
             scope.drift3 ? '.withAlias($alias);' : '.createAlias($alias);',
           );

@@ -2,8 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'dart.dart';
 import 'element.dart';
-import 'table.dart';
 import 'query.dart';
+import 'table.dart';
 import 'view.dart';
 
 part '../../generated/analysis/results/database.g.dart';

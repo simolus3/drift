@@ -21,7 +21,7 @@ class DriftIndex extends DriftSchemaElement {
   List<DriftIndexedColumn> indexedColumns;
 
   /// Whethet the index has been declared to be unique.
-  final bool unique;
+  bool unique;
 
   /// For indices created in drift files, the `CREATE INDEX` SQL statements as
   /// written by the user in the drift file.

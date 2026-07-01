@@ -35,7 +35,7 @@ CustomParentClass? parseCustomParentClass(
   String? dartTypeName,
   DartObject dataClassName,
   ClassElement element,
-  LocalElementResolver resolver,
+  BaseElementResolver resolver,
 ) {
   final extending = dataClassName.getField('extending');
   if (extending != null && !extending.isNull) {

@@ -172,7 +172,7 @@ class Database {}
         file.analyzedElements.firstWhere((e) => e.id.name == 'foo')
             as DriftTable;
 
-    expect(foo.references, isEmpty);
+    expect(foo.references, [foo]);
 
     final column = foo.columns[1];
     final constraint = column.constraints

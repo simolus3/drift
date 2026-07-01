@@ -59,7 +59,7 @@ CREATE TABLE a (
       expect(state, hasNoErrors);
 
       final a = state.analysis.values.single.result as DriftTable;
-      expect(a.references, isEmpty);
+      expect(a.references, [a]);
     });
 
     test('across files', () async {
@@ -245,8 +245,6 @@ END;
             .having((e) => e.kind, 'kind', UpdateKind.delete),
       ]);
     });
-
-    test('for indices', () async {});
 
     group('non-existing', () {
       test('from table', () async {

@@ -419,6 +419,56 @@ CREATE TABLE foo (bar TEXT);
     expect(generated, contains('INSERT INTO foo DEFAULT VALUES'));
     expect(generated, contains("UPDATE foo SET bar = \\'testing\\'"));
   });
+
+  test('can generate for cyclic references', () async {
+    final options = DriftOptions.defaults();
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+@DriftDatabase(include: {'tables.drift'})
+class Database {}
+''',
+      'a|lib/tables.drift': '''
+CREATE TABLE contacts (
+  id INTEGER PRIMARY KEY,
+  main_uuid BLOB NOT NULL UNIQUE REFERENCES uuid_of_contacts(uuid)
+) STRICT;
+
+CREATE TABLE uuid_of_contacts (
+  contact_id INTEGER NOT NULL REFERENCES contacts(id) DEFERRABLE INITIALLY DEFERRED,
+  uuid BLOB NOT NULL UNIQUE
+) STRICT;
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
+    backend.expectNoErrors();
+
+    final schemaJson = await SchemaWriter(
+      db.availableElements,
+      options: options,
+    ).createSchemaJson();
+
+    final reader = await SchemaReader.readJson(schemaJson);
+    final fakeBuildConfig = runInBuildConfigZone(
+      () {
+        return BuildConfig(buildTargets: {});
+      },
+      'drift_dev',
+      [],
+    );
+    final generated = await GenerateUtils.generateSchemaCode(
+      DriftDevCli()
+        ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
+      1,
+      ExportedSchema(reader.entities.toList(), {}),
+      false,
+      false,
+    );
+    expect(generated, allOf(contains('uuidOfContacts'), contains('contacts')));
+  });
 }
 
 const expected = r'''

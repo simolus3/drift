@@ -93,6 +93,9 @@ abstract class DriftElement {
   ///  - tables included in the `@DriftDatabase` annotation.
   Iterable<DriftElement> get references => const Iterable.empty();
 
+  Set<DriftElement> get selfAndTransitiveReferences =>
+      [this].transitiveClosureUnderReferences();
+
   /// The getter in a generated database accessor referring to this model.
   ///
   /// Returns null for entities that shouldn't have a getter.

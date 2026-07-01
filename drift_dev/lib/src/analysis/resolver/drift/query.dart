@@ -3,14 +3,15 @@ import 'package:sqlparser/sqlparser.dart';
 
 import '../../results/results.dart';
 import '../intermediate_state.dart';
+import '../resolver.dart';
 import 'element_resolver.dart';
 
-class DriftQueryResolver
-    extends DriftElementResolver<DiscoveredDriftStatement> {
+final class DriftQueryResolver
+    extends TwoStageElementResolver<DiscoveredDriftStatement> {
   DriftQueryResolver(super.file, super.discovered, super.resolver, super.state);
 
   @override
-  Future<DefinedSqlQuery> resolve() async {
+  Future<PendingDriftElement> buildPending() async {
     final stmt = discovered.sqlNode.statement;
     final references = await resolveSqlReferences(stmt);
 
@@ -46,10 +47,10 @@ class DriftQueryResolver
       }
     }
 
-    return DefinedSqlQuery(
-      discovered.ownId,
+    final query = DefinedSqlQuery(
+      resolver.ownElementId,
       DriftDeclaration.driftFile(stmt, file.ownUri),
-      references: references.referencedElements,
+      references: resolver.references,
       sql: stmt.span!.text,
       sqlOffset: stmt.firstPosition,
       mode: isCreate ? QueryMode.atCreate : QueryMode.regular,
@@ -58,5 +59,7 @@ class DriftQueryResolver
       dartTypes: resolvedDartTypes,
       dartTokens: references.dartExpressions,
     );
+
+    return PendingDriftElement.fullyResolved(query);
   }
 }

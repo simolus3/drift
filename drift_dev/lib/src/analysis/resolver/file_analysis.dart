@@ -280,7 +280,7 @@ class FileAnalyzer {
         })
         .followedBy(availableByDefault)
         .transitiveClosureUnderReferences()
-        .sortTopologicallyOrElse(driver.backend.log.severe);
+        .sortByReferences();
 
     return (
       availableElements: availableElements,

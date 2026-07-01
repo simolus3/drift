@@ -10,8 +10,8 @@ import '../intermediate_state.dart';
 import '../resolver.dart';
 import 'helper.dart';
 
-class DartAccessorResolver
-    extends LocalElementResolver<DiscoveredBaseAccessor> {
+final class DartAccessorResolver
+    extends TwoStageElementResolver<DiscoveredBaseAccessor> {
   DartAccessorResolver(
     super.file,
     super.discovered,
@@ -20,7 +20,9 @@ class DartAccessorResolver
   );
 
   @override
-  Future<BaseDriftAccessor> resolve() async {
+  Future<PendingDriftElement> buildPending() async {
+    final tableDependencies = <DependencyToken>[];
+    final viewDependencies = <DependencyToken>[];
     final tables = <DriftTable>[];
     final views = <DriftView>[];
     final includes = <Uri>[];
@@ -64,12 +66,13 @@ class DartAccessorResolver
         continue;
       }
 
-      final table = await resolveDartReferenceOrReportError<DriftTable>(
+      final table = await resolveDartReferenceOrReportError(
         dartType.element,
         (msg) => DriftAnalysisError.forDartElement(element, msg),
+        enforceKind: DriftElementKind.table,
       );
       if (table != null) {
-        tables.add(table);
+        tableDependencies.add(table);
       }
     }
 
@@ -88,12 +91,13 @@ class DartAccessorResolver
         continue;
       }
 
-      final view = await resolveDartReferenceOrReportError<DriftView>(
+      final view = await resolveDartReferenceOrReportError(
         dartType.element,
         (msg) => DriftAnalysisError.forDartElement(element, msg),
+        enforceKind: DriftElementKind.view,
       );
       if (view != null) {
-        views.add(view);
+        viewDependencies.add(view);
       }
     }
 
@@ -133,9 +137,19 @@ class DartAccessorResolver
       queries.add(QueryOnAccessor(keyStr, valueStr));
     });
 
+    void completeTablesAndViews(ResolvedDependencies deps) {
+      for (final table in tableDependencies) {
+        tables.add(deps.resolve(table) as DriftTable);
+      }
+      for (final view in viewDependencies) {
+        views.add(deps.resolve(view) as DriftView);
+      }
+    }
+
     final declaration = DriftDeclaration.dartElement(element);
     if (discovered.isDatabase) {
-      final accessors = <DatabaseAccessor>[];
+      final accessors = <DependencyToken>[];
+      final resolvedAccessors = <DatabaseAccessor>[];
       final rawDaos = annotation.getField('daos')?.toListValue() ?? const [];
       for (final value in rawDaos) {
         final type = value.toTypeValue()!;
@@ -152,24 +166,35 @@ class DartAccessorResolver
           continue;
         }
 
-        final dao = await resolveDartReferenceOrReportError<DatabaseAccessor>(
+        final dao = await resolveDartReferenceOrReportError(
           type.element,
           (msg) => DriftAnalysisError.forDartElement(element, msg),
+          enforceKind: DriftElementKind.databaseAccessor,
         );
         if (dao != null) accessors.add(dao);
       }
 
-      return DriftDatabase(
-        id: discovered.ownId,
+      final db = DriftDatabase(
+        id: resolver.ownElementId,
         declaration: declaration,
         declaredTables: tables,
         declaredViews: views,
         declaredIncludes: includes,
         declaredQueries: queries,
         schemaVersion: await _readSchemaVersion(),
-        accessors: accessors,
+        accessors: resolvedAccessors,
         hasConstructorArgumentForConnection:
             _hasConstructorWithDatabaseConnection(),
+      );
+      return PendingDriftElement(
+        element: db,
+        resolve: (deps) {
+          completeTablesAndViews(deps);
+
+          for (final accessor in accessors) {
+            resolvedAccessors.add(deps.resolve(accessor) as DatabaseAccessor);
+          }
+        },
       );
     } else {
       final dbType = element.allSupertypes.firstWhereOrNull(
@@ -191,8 +216,8 @@ class DartAccessorResolver
         );
       }
 
-      return DatabaseAccessor(
-        id: discovered.ownId,
+      final accessor = DatabaseAccessor(
+        id: resolver.ownElementId,
         declaration: declaration,
         declaredTables: tables,
         declaredViews: views,
@@ -200,6 +225,10 @@ class DartAccessorResolver
         declaredQueries: queries,
         ownType: AnnotatedDartCode.type(element.thisType),
         databaseClass: AnnotatedDartCode.type(dbImpl),
+      );
+      return PendingDriftElement(
+        element: accessor,
+        resolve: completeTablesAndViews,
       );
     }
   }

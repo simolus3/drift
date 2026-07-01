@@ -32,7 +32,7 @@ ExistingRowClass? validateExistingClass(
   FoundDartClass dartClass,
   String constructor,
   bool generateInsertable,
-  LocalElementResolver step,
+  BaseElementResolver step,
   KnownDriftTypes knownTypes,
 ) {
   if (constructor == '') {
@@ -205,7 +205,7 @@ ExistingRowClass validateRowClassFromRecordType(
   Iterable<DriftColumn> columns,
   RecordType dartType,
   bool generateInsertable,
-  LocalElementResolver step,
+  BaseElementResolver step,
   KnownDriftTypes knownTypes,
 ) {
   final library = element.library!;
@@ -452,7 +452,7 @@ AppliedTypeConverter readEnumConverter(
 void _checkParameterType(
   FormalParameterElement element,
   DriftColumn column,
-  LocalElementResolver resolver,
+  BaseElementResolver resolver,
   KnownDriftTypes helper,
 ) {
   final type = element.type;

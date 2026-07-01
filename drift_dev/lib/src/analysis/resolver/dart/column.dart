@@ -70,6 +70,9 @@ const String _errorMessage =
     'columns are formed. If you have any questions, feel free to raise an '
     'issue.';
 
+typedef _ConstraintResolver =
+    void Function(List<DriftColumnConstraint>, ResolvedDependencies);
+
 /// Parses a single column defined in a Dart table. These columns are a chain
 /// or [MethodInvocation]s. An example getter might look like this:
 /// ```dart
@@ -236,12 +239,12 @@ class ColumnParser {
     AnnotatedDartCode? foundDefaultExpression;
     AnnotatedDartCode? clientDefaultExpression;
     Expression? mappedAs;
-    String? referencesColumnInSameTable;
 
     var nullable = false;
     var hasDefaultConstraints = false;
 
-    final foundConstraints = <DriftColumnConstraint>[];
+    final constraintsWithoutDependencies = <DriftColumnConstraint>[];
+    final constraintResolvers = <_ConstraintResolver>[];
 
     while (true) {
       final methodName = remainingExpr.methodName.name;
@@ -388,48 +391,40 @@ class ColumnParser {
             resolvedTableClass,
           );
 
-          if (referencedTable is ReferencesItself) {
-            // "Foreign" key to a column in the same table.
-            foundConstraints.add(
-              ForeignKeyReference.unresolved(
-                onUpdate,
-                onDelete,
-                initiallyDeferred,
-              ),
-            );
-            referencesColumnInSameTable = columnName;
-          } else if (referencedTable is ResolvedReferenceFound) {
-            final driftElement = referencedTable.element;
+          if (referencedTable is ResolvedReferenceFound) {
+            constraintResolvers.add((constraints, deps) {
+              final driftElement = deps.resolve(referencedTable.token);
 
-            if (driftElement is DriftTable) {
-              final column = driftElement.columns.firstWhereOrNull(
-                (element) => element.nameInDart == columnName,
-              );
-
-              if (column == null) {
-                _resolver.reportError(
-                  DriftAnalysisError.inDartAst(
-                    element,
-                    columnNameNode,
-                    'The referenced table `${driftElement.schemaName}` has no '
-                    'column named `$columnName` in Dart.',
-                  ),
+              if (driftElement is DriftTable) {
+                final column = driftElement.columns.firstWhereOrNull(
+                  (element) => element.nameInDart == columnName,
                 );
+
+                if (column == null) {
+                  _resolver.reportError(
+                    DriftAnalysisError.inDartAst(
+                      element,
+                      columnNameNode,
+                      'The referenced table `${driftElement.schemaName}` has no '
+                      'column named `$columnName` in Dart.',
+                    ),
+                  );
+                } else {
+                  constraints.add(
+                    ForeignKeyReference(
+                      column,
+                      onUpdate,
+                      onDelete,
+                      initiallyDeferred,
+                    ),
+                  );
+                }
               } else {
-                foundConstraints.add(
-                  ForeignKeyReference(
-                    column,
-                    onUpdate,
-                    onDelete,
-                    initiallyDeferred,
-                  ),
+                _resolver.reportError(
+                  DriftAnalysisError.inDartAst(element, first, 'Not a table'),
                 );
               }
-            } else {
-              _resolver.reportError(
-                DriftAnalysisError.inDartAst(element, first, 'Not a table'),
-              );
-            }
+            });
           } else {
             // Could not resolve foreign table, emit warning
             _resolver.reportErrorForUnresolvedReference(
@@ -444,7 +439,7 @@ class ColumnParser {
           final minArg = findNamedArgument(args, 'min');
           final maxArg = findNamedArgument(args, 'max');
 
-          foundConstraints.add(
+          constraintsWithoutDependencies.add(
             LimitingTextLength(
               minLength: minArg != null ? readIntLiteral(minArg) : null,
               maxLength: maxArg != null ? readIntLiteral(maxArg) : null,
@@ -452,13 +447,13 @@ class ColumnParser {
           );
           break;
         case _methodAutoIncrement:
-          foundConstraints.add(PrimaryKeyColumn(true));
+          constraintsWithoutDependencies.add(PrimaryKeyColumn(true));
           break;
         case _methodNullable:
           nullable = true;
           break;
         case _methodUnique:
-          foundConstraints.add(const UniqueColumn());
+          constraintsWithoutDependencies.add(const UniqueColumn());
           break;
         case _methodCustomConstraint:
           if (foundCustomConstraint != null) {
@@ -525,14 +520,14 @@ class ColumnParser {
 
           if (generatedExpression != null) {
             final code = _ast(generatedExpression);
-            foundConstraints.add(ColumnGeneratedAs(code, stored));
+            constraintsWithoutDependencies.add(ColumnGeneratedAs(code, stored));
           }
           break;
         case _methodCheck:
           final expr = remainingExpr.argumentList.arguments.first;
           final ast = _ast(expr);
 
-          foundConstraints.add(DartCheckExpression(ast));
+          constraintsWithoutDependencies.add(DartCheckExpression(ast));
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -621,8 +616,8 @@ class ColumnParser {
       );
     }
 
-    if (foundConstraints.contains(const UniqueColumn()) &&
-        foundConstraints.any((e) => e is PrimaryKeyColumn)) {
+    if (constraintsWithoutDependencies.contains(const UniqueColumn()) &&
+        constraintsWithoutDependencies.any((e) => e is PrimaryKeyColumn)) {
       _resolver.reportError(
         DriftAnalysisError.forDartElement(
           element,
@@ -647,7 +642,7 @@ class ColumnParser {
         .map((t) => t.toString())
         .join('\n');
 
-    foundConstraints.addAll(
+    constraintResolvers.add(
       await _driftConstraintsFromCustomConstraints(
         isNullable: nullable,
         customConstraints: foundCustomConstraint,
@@ -667,11 +662,15 @@ class ColumnParser {
         defaultArgument: foundDefaultExpression,
         overriddenJsonName: _readJsonKey(element),
         documentationComment: docString,
-        constraints: foundConstraints,
+        constraints: constraintsWithoutDependencies,
         customConstraints: foundCustomConstraint,
         referenceName: _readReferenceName(element),
       ),
-      referencesColumnInSameTable: referencesColumnInSameTable,
+      (deps) {
+        for (final resolver in constraintResolvers) {
+          resolver(constraintsWithoutDependencies, deps);
+        }
+      },
     );
   }
 
@@ -722,13 +721,15 @@ class ColumnParser {
     return object.computeConstantValue()!.getField('name')!.toStringValue();
   }
 
-  Future<List<DriftColumnConstraint>> _driftConstraintsFromCustomConstraints({
+  Future<_ConstraintResolver> _driftConstraintsFromCustomConstraints({
     required bool isNullable,
     required void Function(AnnotatedDartCode) setDefault,
     String? customConstraints,
     AstNode? sourceForCustomConstraints,
   }) async {
-    if (customConstraints == null) return const [];
+    if (customConstraints == null) {
+      return (List<DriftColumnConstraint> _, ResolvedDependencies _) {};
+    }
 
     /// Attempt to translate a span in the resolved Dart constant containing an
     /// SQL string into a Dart source span.
@@ -783,6 +784,7 @@ class ColumnParser {
     }
 
     final parsedConstraints = <DriftColumnConstraint>[];
+    final pendingConstraints = <_ConstraintResolver>[];
 
     for (final constraint in constraints) {
       if (constraint is sql.GeneratedAs) {
@@ -793,57 +795,65 @@ class ColumnParser {
         parsedConstraints.add(UniqueColumn());
       } else if (constraint is sql.ForeignKeyColumnConstraint) {
         final clause = constraint.clause;
-
-        final table = await _resolver
-            .resolveSqlReferenceOrReportError<DriftTable>(
-              clause.foreignTable.tableName,
-              (msg) => DriftAnalysisError(translateSpan(clause.span!), msg),
-            );
+        final table = await _resolver.resolveSqlReferenceOrReportError(
+          clause.foreignTable.tableName,
+          (msg) => DriftAnalysisError(translateSpan(clause.span!), msg),
+          enforceKind: DriftElementKind.table,
+        );
 
         if (table != null) {
-          final columnName = clause.columnNames.first;
-          final column =
-              table.columnBySqlName[clause.columnNames.first.columnName];
+          pendingConstraints.add((constraints, deps) {
+            final columnName = clause.columnNames.first;
+            final resolvedTable = deps.resolve(table) as DriftTable;
+            final column = resolvedTable
+                .columnBySqlName[clause.columnNames.first.columnName];
 
-          if (column == null) {
-            _resolver.reportError(
-              DriftAnalysisError.inDartAst(
-                _resolver.discovered.dartElement,
-                sourceForCustomConstraints!,
-                'The referenced table has no column named `$columnName`',
-              ),
-            );
-          } else {
-            parsedConstraints.add(
-              ForeignKeyReference(
-                column,
-                constraint.clause.onUpdate,
-                constraint.clause.onDelete,
-                constraint.clause.effectiveDeferrableMode ==
-                    InitialDeferrableMode.deferred,
-              ),
-            );
-          }
+            if (column == null) {
+              _resolver.reportError(
+                DriftAnalysisError.inDartAst(
+                  _resolver.discovered.dartElement,
+                  sourceForCustomConstraints!,
+                  'The referenced table has no column named `$columnName`',
+                ),
+              );
+            } else {
+              constraints.add(
+                ForeignKeyReference(
+                  column,
+                  constraint.clause.onUpdate,
+                  constraint.clause.onDelete,
+                  constraint.clause.effectiveDeferrableMode ==
+                      InitialDeferrableMode.deferred,
+                ),
+              );
+            }
+          });
         }
       } else if (constraint is sql.Default) {
         setDefault(DriftColumn.defaultFromParser(constraint));
       }
     }
 
-    return parsedConstraints;
+    return (
+      List<DriftColumnConstraint> constraints,
+      ResolvedDependencies deps,
+    ) {
+      constraints.addAll(parsedConstraints);
+      for (final pending in pendingConstraints) {
+        pending(constraints, deps);
+      }
+    };
   }
 }
 
 class PendingColumnInformation {
   final DriftColumn column;
 
-  /// If the returned column references another column in the same table, its
-  /// [ForeignKeyReference] is still unresolved when the local column resolver
-  /// returns.
+  /// Fully resolve constraints on the column.
   ///
-  /// It is the responsibility of the table resolver to patch the reference for
-  /// this column in that case.
-  final String? referencesColumnInSameTable;
+  /// This happens in a second step after all columns have been resolved to
+  /// allow circular references between tables.
+  final void Function(ResolvedDependencies) completeConstraints;
 
-  PendingColumnInformation(this.column, {this.referencesColumnInSameTable});
+  PendingColumnInformation(this.column, this.completeConstraints);
 }
