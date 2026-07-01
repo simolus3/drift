@@ -144,8 +144,8 @@ class SchemaWriter {
       data = {
         'on': _idOf(entity.on!),
         'references_in_body': [
-          for (final ref in entity.references)
-            if (ref is DriftSchemaElement) _idOf(ref),
+          for (final ref in entity.references.whereType<DriftSchemaElement>())
+            _idOf(ref),
         ],
         'name': entity.schemaName,
         'sql': entity.createStmt,
