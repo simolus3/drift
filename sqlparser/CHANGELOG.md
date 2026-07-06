@@ -1,4 +1,4 @@
-## 0.44.6 (unreleased)
+## 0.44.6
 
 - Fix join analysis to properly treat the left side of a `RIGHT` or `FULL`
   join as nullable ([#3812](https://github.com/simolus3/drift/issues/3812)).

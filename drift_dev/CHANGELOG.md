@@ -1,6 +1,6 @@
-## 2.35.0 (unreleased)
+## 2.34.2
 
-- Drift files: Support for dart placeholder in `update` statements to reference companions 
+- Drift files: Support for dart placeholder in `update` statements to reference companions.
 - Allow circular references between tables ([#3780](https://github.com/simolus3/drift/issues/3780)).
 
 ## 2.34.1+1
