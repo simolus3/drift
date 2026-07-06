@@ -1,3 +1,10 @@
+## 2.34.1
+
+- Fix reads queued in a `MultiExecutor` connection pool being resumed in the
+  wrong zone once an executor became available. Because Drift's cancellation
+  tokens are zone-scoped, this could cause queries to be cancelled or observed
+  in the wrong zone (#3824).
+
 ## 2.34.0
 
 - Use `BEGIN IMMEDIATE` to start transactions.

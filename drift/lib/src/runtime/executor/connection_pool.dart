@@ -27,11 +27,20 @@ sealed class MultiExecutor extends QueryExecutor {
 
 class _PendingSelect {
   _PendingSelect(this.statement, this.args)
-    : completer = Completer<List<Map<String, Object?>>>();
+    : completer = Completer<List<Map<String, Object?>>>(),
+      zone = Zone.current;
 
   final String statement;
   final List<Object?> args;
   final Completer<List<Map<String, Object?>>> completer;
+
+  /// The zone from which the select was issued.
+  ///
+  /// When this select is dequeued after waiting for an executor, it must be
+  /// started in this zone: Drift's cancellation tokens are zone-scoped, and
+  /// the dequeueing [_QueryExecutorPool._run] call runs in the zone of
+  /// whichever earlier select happened to free up the executor.
+  final Zone zone;
 }
 
 class _QueryExecutorPool {
@@ -77,15 +86,20 @@ class _QueryExecutorPool {
     _running.add(completer);
 
     completer.completer.complete(
-      Future.sync(() async {
-        try {
-          return await executor.runSelect(completer.statement, completer.args);
-        } finally {
-          _running.remove(completer);
-          _idleExecutors.add(executor);
-          _run();
-        }
-      }),
+      completer.zone.run(
+        () => Future.sync(() async {
+          try {
+            return await executor.runSelect(
+              completer.statement,
+              completer.args,
+            );
+          } finally {
+            _running.remove(completer);
+            _idleExecutors.add(executor);
+            _run();
+          }
+        }),
+      ),
     );
   }
 }
