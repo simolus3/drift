@@ -257,7 +257,8 @@ final class DriftResolver {
     }
 
     throw StateError(
-      'Unknown pending element $reference, this is a bug in drift_dev',
+      'Unknown pending element $reference (referenced from $owner), this is a '
+      'bug in drift_dev',
     );
   }
 
@@ -726,7 +727,17 @@ final class _DependencyGraph
   @override
   Iterable<_ResolvingOrCachedElement>? operator [](Object? key) {
     if (key is _ResolvingElement) {
-      return key.dependencies.map((id) => _resolver._involvedElements[id]!);
+      return key.dependencies.map((id) {
+        final resolved = _resolver._involvedElements[id];
+        if (resolved == null) {
+          throw StateError(
+            'Broken dependency graph: Reference $id (from '
+            '${key.token.id}) not found',
+          );
+        }
+
+        return resolved;
+      });
     }
 
     // Return no dependencies for pre-resolved elements, if they formed a cycle
