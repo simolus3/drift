@@ -1,3 +1,9 @@
+## 0.45.0
+
+- Re-release of version `0.44.6` which contained breaking changes and should not
+  have been released as a patch version.
+- Breaking: Refactor `DartPlaceholder` to a sealed class.
+
 ## 0.44.6
 
 - Fix join analysis to properly treat the left side of a `RIGHT` or `FULL`
