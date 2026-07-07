@@ -103,8 +103,11 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
     }
   }
 
-  Future<void> _runMigrations(PersistentSchemaVersion session) async {
-    final schemaVersion = this.schemaVersion;
+  Future<void> _runMigrations(
+    PersistentSchemaVersion session, [
+    int? targetVersion,
+  ]) async {
+    final schemaVersion = targetVersion ?? this.schemaVersion;
     if (schemaVersion <= 0) {
       throw StateError(
         'The schemaVersion getter returned $schemaVersion, but it must return '
@@ -174,12 +177,15 @@ extension InternalGeneratedDatabase on GeneratedDatabase {
     }
   }
 
-  Future<void> runMigrations([PersistentSchemaVersion? session]) async {
+  Future<void> runMigrations([
+    PersistentSchemaVersion? session,
+    int? targetVersion,
+  ]) async {
     if (session == null) {
       final root = await rootConnection();
       session = root.persistentSchemaVersion;
     }
 
-    if (session != null) await _runMigrations(session);
+    if (session != null) await _runMigrations(session, targetVersion);
   }
 }

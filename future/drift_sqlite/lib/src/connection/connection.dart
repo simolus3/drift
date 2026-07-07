@@ -24,19 +24,10 @@ final class SqliteConnection implements DriftSession {
   /// connections to the same database.
   final bool closeUnderlyingWhenClosed;
 
-  /// Whether this connection implementation will cache prepared statements to
-  /// re-use them when used frequently (as opposed to re-compiling them every
-  /// time they're executed).
-  final bool cachePreparedStatements;
-
   final Completer<void> _closedCompleter = Completer.sync();
 
   /// Wrap a [database] as a [DriftSession].
-  SqliteConnection(
-    this.database, {
-    this.cachePreparedStatements = true,
-    this.closeUnderlyingWhenClosed = true,
-  }) {
+  SqliteConnection(this.database, {this.closeUnderlyingWhenClosed = true}) {
     database.useNativeFunctions();
   }
 

@@ -37,10 +37,9 @@ extension VerifySelf on GeneratedDatabase {
     required DriftConnection connection,
     ValidationOptions options = const ValidationOptions(),
   }) async {
-    final reference = SyntacticSchema.fromDeclaredDriftSchema(
-      schema,
-      dialect: dialect,
-    );
+    final reference =
+        expectedSchema[this] ??
+        SyntacticSchema.fromDeclaredDriftSchema(schema, dialect: dialect);
 
     final actual = await SyntacticSchema.readFromDrift(await currentSession());
     verify(referenceSchema: reference, actualSchema: actual, options: options);

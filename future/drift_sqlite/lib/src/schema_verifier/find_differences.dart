@@ -24,7 +24,8 @@ final class SyntacticSchemaElement {
 }
 
 /// A collection of [SyntacticSchemaElement]s.
-extension type SyntacticSchema(List<SyntacticSchemaElement> elements) {
+extension type SyntacticSchema(List<SyntacticSchemaElement> elements)
+    implements List<SyntacticSchemaElement> {
   /// Reads the schema from a database connection.
   factory SyntacticSchema.readFromDatabase(CommonDatabase db) {
     final rows = db.select(_query);

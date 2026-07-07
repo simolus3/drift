@@ -6,4 +6,5 @@
 library;
 
 export 'src/schema_verifier/common.dart' show ValidationOptions, SchemaMismatch;
+export 'src/schema_verifier/verifier.dart';
 export 'src/schema_verifier/verify_self.dart';

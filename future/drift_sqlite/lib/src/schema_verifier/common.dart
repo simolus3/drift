@@ -2,6 +2,15 @@ import 'package:meta/meta.dart';
 
 import 'find_differences.dart';
 
+/// A per-database override of the expected schema.
+///
+/// For databases calling `validateDatabaseSchema()` to validate their schema
+/// when being opened, we need to patch the expected schema in migration test to
+/// reflect the actual target schema for the current test instead of the latest
+/// schema of the database.
+@internal
+Expando<SyntacticSchema> expectedSchema = Expando();
+
 /// Options that control how schemas are compared to find mismatches.
 final class ValidationOptions {
   /// When enabled (defaults to `false`), validate that no furhter tables,
