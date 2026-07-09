@@ -87,3 +87,5 @@ targets:
           - "test/**.browser_test.dart"
         options:
           compiler: dartdevc
+      build_web_compilers:dart2js_archive_extractor:
+        enabled: false
