@@ -1,3 +1,8 @@
+## 2.23.3 (unreleased)
+
+- Fix a bug introduced in version 2.24.2 where deserializing cached elements could cause
+  `Unknown pending element` errors.
+
 ## 2.34.2+1
 
 - Drift files: Support for dart placeholder in `update` statements to reference companions.

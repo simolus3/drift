@@ -1,4 +1,9 @@
+import 'dart:convert';
+
+import 'package:analyzer/dart/element/element.dart';
 import 'package:drift/drift.dart' hide DriftView;
+import 'package:drift_dev/src/analysis/driver/driver.dart';
+import 'package:drift_dev/src/analysis/driver/state.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
@@ -301,4 +306,86 @@ END;
       ),
     ]);
   });
+
+  test('resolves new file from cached reference', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3829
+
+    const contents = <String, String>{
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class TableA extends Table {
+  IntColumn get columnA => integer()();
+}
+''',
+      'a|lib/b.dart': '''
+import 'package:drift/drift.dart';
+
+import 'a.dart';
+
+class TableB extends Table {
+  IntColumn get columnB => integer().references(TableA, #columnA)();
+}
+''',
+      'a|lib/c.dart': '''
+import 'package:drift/drift.dart';
+
+import 'b.dart';
+
+class TableC extends Table {
+  IntColumn get columnC => integer().references(TableB, #columnB)();
+}
+''',
+    };
+
+    final initial = await TestBackend.inTest(contents);
+    final initialB = await initial.analyze('package:a/b.dart');
+    initial.expectNoErrors();
+    expect((initialB.analyzedElements.single as DriftTable).references, [
+      isA<DriftElement>().having((e) => e.id.name, 'name', 'table_a'),
+    ]);
+
+    // Create a new backend with access to cached data from the first run.
+    final second = await TestBackend.inTest(contents);
+    second.driver.cacheReader = _InMemoryCacheReader({
+      initialB.ownUri: json.encode(
+        initial.driver.serializeState(initialB).serializedData,
+      ),
+    });
+    final c = await second.analyze('package:a/c.dart');
+    second.expectNoErrors();
+
+    final table = c.analyzedElements.single as DriftTable;
+    expect(table.references, [
+      isA<DriftElement>().having((e) => e.id.name, 'name', 'table_b'),
+    ]);
+  });
+}
+
+final class _InMemoryCacheReader implements AnalysisResultCacheReader {
+  final Map<Uri, String> _elementCache;
+
+  _InMemoryCacheReader(this._elementCache);
+
+  @override
+  bool get findsLocalElementsReliably => false;
+
+  @override
+  bool get findsResolvedElementsReliably => false;
+
+  @override
+  Future<CachedDiscoveryResults?> readDiscovery(Uri uri) async {
+    return null;
+  }
+
+  @override
+  Future<String?> readElementCacheFor(Uri uri) async {
+    final found = _elementCache[uri];
+    return found;
+  }
+
+  @override
+  Future<LibraryElement?> readTypeHelperFor(Uri uri) async {
+    return null;
+  }
 }

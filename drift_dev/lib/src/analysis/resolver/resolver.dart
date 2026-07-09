@@ -244,22 +244,13 @@ final class DriftResolver {
       return ResolvedReferenceFound(alreadyTracked.token);
     }
 
-    final pending = driver.cache.discoveredElements[reference];
-    if (pending != null) {
-      // We know the element exists, but we haven't resolved it yet.
-      try {
-        final resolved = await _restoreOrResolve(reference);
-        return ResolvedReferenceFound(resolved.token);
-      } catch (e, s) {
-        driver.backend.log.warning('Could not analyze $reference', e, s);
-        return ReferencedElementCouldNotBeResolved();
-      }
+    try {
+      final resolved = await _restoreOrResolve(reference);
+      return ResolvedReferenceFound(resolved.token);
+    } catch (e, s) {
+      driver.backend.log.warning('Could not analyze $reference', e, s);
+      return ReferencedElementCouldNotBeResolved();
     }
-
-    throw StateError(
-      'Unknown pending element $reference (referenced from $owner), this is a '
-      'bug in drift_dev',
-    );
   }
 
   DriftElement? _resolveExisting(DriftElementId id) {
