@@ -1,0 +1,8 @@
+include: package:flutter_lints/flutter.yaml
+
+# Don't warn about generated code
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/generated_migrations/**"

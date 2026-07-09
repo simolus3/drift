@@ -1,0 +1,40 @@
+-- .drift files can contain SQL that is analyzed at compile time.
+-- First, let's import the Dart tables so that we can reference them here.
+import 'tables.dart';
+
+-- Create a text index of todo entries, see https://www.sqlite.org/fts5.html#external_content_tables
+
+CREATE VIRTUAL TABLE text_entries USING fts5 (
+    description,
+    content=todo_entries,
+    content_rowid=id
+);
+
+-- Triggers to keep todo entries and fts5 index in sync.
+CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN
+  INSERT INTO text_entries(rowid, description) VALUES (new.id, new.description);
+END;
+
+CREATE TRIGGER todos_delete AFTER DELETE ON todo_entries BEGIN
+  INSERT INTO text_entries(text_entries, rowid, description) VALUES ('delete', old.id, old.description);
+END;
+
+CREATE TRIGGER todos_update AFTER UPDATE ON todo_entries BEGIN
+  INSERT INTO text_entries(text_entries, rowid, description) VALUES ('delete', new.id, new.description);
+  INSERT INTO text_entries(rowid, description) VALUES (new.id, new.description);
+END;
+
+-- Queries can also be defined here, they're then added as methods to the database.
+_categoriesWithCount: SELECT c.*,
+  (SELECT COUNT(*) FROM todo_entries WHERE category = c.id) AS amount
+  FROM categories c
+UNION ALL
+  SELECT null, null, null, (SELECT COUNT(*) FROM todo_entries WHERE category IS NULL);
+
+-- The `.**` syntax instructs drift to generate nested result set classes.
+_search: SELECT todos.**, cat.** FROM text_entries
+    INNER JOIN todo_entries todos ON todos.id = text_entries.rowid
+    LEFT OUTER JOIN categories cat ON cat.id = todos.category
+    WHERE text_entries MATCH :query
+    ORDER BY rank;
+

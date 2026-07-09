@@ -1,0 +1,55 @@
+# This configures how `build_runner` and associated builders should behave.
+# For more information, see https://pub.dev/packages/build_config
+
+targets:
+  $default:
+    # Reducing sources makes the build slightly faster (some of these are required
+    # to exist in the default target).
+    sources:
+      - lib/**
+      - web/**
+      - "tool/**"
+      - pubspec.yaml
+      - lib/$lib$
+      - $package$
+    builders:
+      drift_dev:
+        # These options change how drift generates code
+        options:
+          databases:
+            default: lib/database/database.dart
+          # Drift analyzes SQL queries at compile-time. For this purpose, it needs to know which sqlite3
+          # features will be available. The sqlite3 package enables fts5 by default, so we can depend
+          # on that.
+          sql:
+            dialect: sqlite
+            options:
+              version: "3.38"
+              modules: [fts5]
+
+      # Configuring this builder isn't required for most apps. In our case, we
+      # want to compile the web worker in `web/worker.dart` to JS and we use the
+      # build system for that.
+      build_web_compilers:entrypoint:
+        generate_for:
+          - web/worker.dart
+        options:
+          compiler: dart2js
+
+  # JS outputs by the build system are private, we use a `build_to: source` builder
+  # afterwards to make them visible in `web/`.
+  copy_js:
+    auto_apply_builders: false
+    dependencies: [$default]
+    builders:
+      ":copy_compiled_worker_js":
+        enabled: true
+
+# build_web_compilers writes a hidden asset, but we want an asset in `web/` for
+# flutter to see. So, copy that output. Again, this is not needed for most apps.
+builders:
+  copy_compiled_worker_js:
+    import: "tool/builder.dart"
+    builder_factories: ["CopyCompiledJs.new"]
+    build_to: source
+    build_extensions: { "web/worker.dart.js": ["web/drift_worker.js"] }
