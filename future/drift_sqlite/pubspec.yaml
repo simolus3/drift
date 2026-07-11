@@ -28,3 +28,4 @@ dev_dependencies:
   shelf: ^1.4.2
   stream_channel: ^2.1.4
   async: ^2.13.1
+  build_web_compilers: ^4.8.0

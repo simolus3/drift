@@ -12,3 +12,8 @@ targets:
                 - json1
                 - fts5
                 - geopoly
+      build_web_compilers:entrypoint:
+        generate_for:
+          - "web/worker.dart"
+        options:
+          compiler: dart2js

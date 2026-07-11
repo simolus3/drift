@@ -19,6 +19,11 @@ final class WasmDatabase {
 
   /// Creates a [WasmDatabase] from the `sqlite3.wasm` and `drift_worker.js`
   /// URIs.
+  ///
+  /// The `drift_worker.js` file can be downloaded from a
+  /// [drift release](https://github.com/simolus3/drift/releases).
+  /// Alternatively, workers can be compiled from Dart. See
+  /// [driftDatabaseController] for more details on that.
   static WasmDatabase withWorker({
     required String databaseWorker,
     required String sqlite3Uri,
@@ -45,6 +50,26 @@ final class WasmDatabase {
   /// default though.
   static DriftSession wrapDatabase(Database database) {
     return WebSession(database);
+  }
+
+  /// Returns a [DatabaseController] suitable for hosting drift databases.
+  ///
+  /// This can be used to compile a custom `drift_worker.js` file by writing a
+  /// Dart program with a main method similar to this:
+  ///
+  /// ```dart
+  /// import 'package:drift_sqlite/web.dart`;
+  /// import 'package:sqlite3_web/sqlite3_web.dart';
+  ///
+  /// void main() {
+  ///   WebSqlite.workerEntrypoint(controller:
+  ///     WasmDatabase.driftDatabaseController());
+  /// }
+  /// ```
+  ///
+  /// Compiling such file with `dart compile js` creates a drift worker.
+  static DatabaseController driftDatabaseController() {
+    return DriftDatabaseController();
   }
 }
 
