@@ -1,4 +1,4 @@
-## 0.3.1-wip
+## 0.3.1
 
 - Return a `DatabaseConnection` instead of the less specific `QueryExecutor` type from `driftDatabase()`.
 
