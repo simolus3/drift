@@ -1,4 +1,4 @@
-## 2.23.3
+## 2.34.3
 
 - Fix a bug introduced in version 2.24.2 where deserializing cached elements could cause
   `Unknown pending element` errors.
