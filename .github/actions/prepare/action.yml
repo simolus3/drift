@@ -26,6 +26,5 @@ runs:
         restore-keys: |
           dart-dependencies-${{ inputs.flutter_version }}-
           dart-dependencies-
-    - name: Setup melos
-      run: dart pub global activate melos && dart pub get
+    - run: dart pub get
       shell: bash

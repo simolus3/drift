@@ -367,8 +367,8 @@ jobs:
         with:
           flutter_version: ${{ needs.setup.outputs.flutter_version }}
       - uses: nanasess/setup-chromedriver@v2
-      - run: melos bootstrap --scope web_wasm
-        working-directory: .
+      - name: Download WebAssembly assets
+        run: dart tool/download_sqlite_wasm.dart
       - name: Test
         working-directory: extras/integration_tests/web_wasm
         run: dart test -P gh_actions

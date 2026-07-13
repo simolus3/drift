@@ -20,6 +20,8 @@ jobs:
     environment: pub.dev
     permissions:
       id-token: write # Required for authentication using OIDC
+      packages: write # Needed to upload release assets
+      contents: write # Needed to upload release assets
     steps:
       - uses: actions/checkout@v4
       # Install dart because the action installs a pub token.
@@ -36,18 +38,36 @@ jobs:
           restore-keys: |
             dart-dependencies-${{ needs.setup.outputs.dart_version }}-
             dart-dependencies-
-      - name: Setup dependencies
-        run: |
-          dart pub global activate melos
-          dart pub get
-          melos bootstrap
-        shell: bash
+      # Prepare assets attached to releases. Because the drift worker needs a sqlite3.wasm from
+      # a matching package:sqlite3 version, we attach it to releases as well.
+      - name: Download WebAssembly assets
+        run: dart tool/download_sqlite_wasm.dart
+      - name: Compile drift worker
+        run: dart compile js -O4 --no-source-maps web/drift_worker.dart -o drift_worker.js
+        working-directory: drift
       - name: Build DevTools extension
         working-directory: extras/drift_devtools_extension
         run: ./build.sh
-
       - run: dart pub lish --dry-run
         working-directory: drift
+
+      - name: Set tag name
+        id: tag
+        run: |
+          tag=$(basename "${GITHUB_REF}")
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          STEPS_TAG_OUTPUTS_TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          tag="${STEPS_TAG_OUTPUTS_TAG}"
+          body="Pending release for $tag"
+          gh release create --draft "$tag" --title "$tag" --notes "$body"
+
+          gh release upload "$tag" extras/assets/*.wasm drift/drift_worker.js
+
       - run: dart pub lish -f
         working-directory: drift
 
@@ -68,8 +88,6 @@ jobs:
       - uses: ./.github/actions/prepare
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
-      - run: melos bootstrap --scope drift_dev
-        working-directory: .
       - run: dart pub lish --dry-run
       - run: dart pub lish -f
 
