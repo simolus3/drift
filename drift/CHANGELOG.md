@@ -1,3 +1,7 @@
+## 2.24.2 (unreleased)
+
+- Web: Flush IndexedDB writes after statements, making writes more reliable.
+
 ## 2.34.1
 
 - Fix reads queued in a `MultiExecutor` connection pool being resumed in the
