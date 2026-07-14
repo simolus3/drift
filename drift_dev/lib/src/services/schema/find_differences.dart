@@ -187,19 +187,73 @@ class FindSchemaDifferences {
       );
     }
 
-    if (options.validateColumnConstraints) {
-      try {
-        enforceEqualIterable(ref.constraints, act.constraints);
-      } catch (e) {
-        final firstSpan = ref.constraints.spanOrNull?.text ?? '';
-        final secondSpan = act.constraints.spanOrNull?.text ?? '';
-        return FoundDifference(
-          'Not equal: `$firstSpan` (expected) and `$secondSpan` (actual)',
-        );
-      }
+    if (options.validateColumnConstraints &&
+        !_columnConstraintsMatch(ref.constraints, act.constraints)) {
+      final firstSpan = ref.constraints.spanOrNull?.text ?? '';
+      final secondSpan = act.constraints.spanOrNull?.text ?? '';
+      return FoundDifference(
+        'Not equal: `$firstSpan` (expected) and `$secondSpan` (actual)',
+      );
     }
 
     return const Success();
+  }
+
+  /// Compares two column constraint lists like [enforceEqualIterable], but
+  /// tolerates a boolean default (`TRUE`/`FALSE`) being written as its
+  /// equivalent integer (`1`/`0`), optionally wrapped in parentheses.
+  ///
+  /// Booleans are stored as integers in SQLite, so a `DEFAULT TRUE` emitted by
+  /// an older drift version and a `DEFAULT (1)` emitted by a newer one describe
+  /// the same column and must not be reported as a schema difference.
+  /// See https://github.com/simolus3/drift/issues/3738.
+  bool _columnConstraintsMatch(
+    List<ColumnConstraint> reference,
+    List<ColumnConstraint> actual,
+  ) {
+    if (reference.length != actual.length) return false;
+
+    for (var i = 0; i < reference.length; i++) {
+      final ref = reference[i];
+      final act = actual[i];
+
+      // Only treat a boolean/integer default mismatch as equal when the two
+      // constraints are otherwise identical, including an optional
+      // `CONSTRAINT <name>`. Differing names fall through to enforceEqual.
+      if (ref is Default && act is Default && ref.name == act.name) {
+        final refValue = _booleanOrNumericLiteral(ref.expression);
+        final actValue = _booleanOrNumericLiteral(act.expression);
+
+        if (refValue != null && actValue != null) {
+          if (refValue != actValue) return false;
+          continue;
+        }
+      }
+
+      try {
+        enforceEqual(ref, act);
+      } catch (_) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /// Interprets [e] as a boolean or numeric literal, unwrapping parentheses,
+  /// and returns its numeric value (`true` -> 1, `false` -> 0). Returns `null`
+  /// if [e] is not a simple boolean or numeric literal.
+  static num? _booleanOrNumericLiteral(Expression e) {
+    var expression = e;
+    while (expression is Parentheses) {
+      expression = expression.expression;
+    }
+
+    return switch (expression) {
+      BooleanLiteral(:final value) => value ? 1 : 0,
+      NumericLiteral(:final value) => value,
+      _ => null,
+    };
   }
 
   CompareResult _compareByAst(AstNode reference, AstNode actual) {
