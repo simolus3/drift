@@ -1,9 +1,6 @@
 ## 2.34.4
 
-- Fix `VerifySelf.validateDatabaseSchema` (and `SchemaVerifier`) reporting a
-  spurious difference for boolean columns with a default value, where an older
-  schema snapshot serialized the default as `TRUE`/`FALSE` and a newer drift
-  version renders it as `(1)`/`(0)` ([#3738](https://github.com/simolus3/drift/issues/3738)).
+- Schema verifier: Treat `TRUE`/`FALSE` as equal to `1`/`0`, respectively.
 
 ## 2.34.3
 
