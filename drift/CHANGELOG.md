@@ -1,4 +1,4 @@
-## 2.24.2
+## 2.34.2
 
 - Web: Flush IndexedDB writes after statements, making writes more reliable.
 
