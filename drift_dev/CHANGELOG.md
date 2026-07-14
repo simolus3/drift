@@ -1,3 +1,7 @@
+## 2.34.4
+
+- Schema verifier: Treat `TRUE`/`FALSE` as equal to `1`/`0`, respectively.
+
 ## 2.34.3
 
 - Fix a bug introduced in version 2.24.2 where deserializing cached elements could cause

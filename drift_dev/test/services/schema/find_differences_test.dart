@@ -90,6 +90,62 @@ void main() {
         );
       });
 
+      test('with a boolean default written as an integer', () {
+        // Booleans are stored as integers in SQLite, so a `DEFAULT TRUE`
+        // written by an older drift version and a `DEFAULT (1)` emitted by a
+        // newer one describe the same column.
+        // https://github.com/simolus3/drift/issues/3738
+        final result = compare(
+          Input('a', 'CREATE TABLE a (b INTEGER NOT NULL DEFAULT TRUE);'),
+          Input('a', 'CREATE TABLE a (b INTEGER NOT NULL DEFAULT (1));'),
+        );
+
+        expect(result, hasNoChanges);
+      });
+
+      test('with a boolean default and a check (as reported in #3738)', () {
+        final result = compare(
+          Input(
+            'a',
+            'CREATE TABLE a (is_first_login INTEGER NOT NULL DEFAULT TRUE '
+                'CHECK (is_first_login IN (0, 1)));',
+          ),
+          Input(
+            'a',
+            'CREATE TABLE a (is_first_login INTEGER NOT NULL DEFAULT (1) '
+                'CHECK ("is_first_login" IN (0, 1)));',
+          ),
+        );
+
+        expect(result, hasNoChanges);
+      });
+
+      test('with a genuinely different default', () {
+        final result = compare(
+          Input('a', 'CREATE TABLE a (b INTEGER NOT NULL DEFAULT TRUE);'),
+          Input('a', 'CREATE TABLE a (b INTEGER NOT NULL DEFAULT (0));'),
+        );
+
+        expect(result, hasChanges);
+      });
+
+      test('with a boolean default under a different constraint name', () {
+        // The default values are equivalent, but a named constraint differs,
+        // so this is a real schema difference and must still be reported.
+        final result = compare(
+          Input(
+            'a',
+            'CREATE TABLE a (b INTEGER NOT NULL CONSTRAINT x DEFAULT TRUE);',
+          ),
+          Input(
+            'a',
+            'CREATE TABLE a (b INTEGER NOT NULL CONSTRAINT y DEFAULT (1));',
+          ),
+        );
+
+        expect(result, hasChanges);
+      });
+
       test('ignored column constraints diff', () {
         final result = compare(
           Input('a', 'CREATE TABLE a (id INTEGER PRIMARY KEY NOT NULL);'),
