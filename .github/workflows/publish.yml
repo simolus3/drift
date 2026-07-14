@@ -40,6 +40,7 @@ jobs:
             dart-dependencies-
       # Prepare assets attached to releases. Because the drift worker needs a sqlite3.wasm from
       # a matching package:sqlite3 version, we attach it to releases as well.
+      - run: dart pub get
       - name: Download WebAssembly assets
         run: dart tool/download_sqlite_wasm.dart
       - name: Compile drift worker
