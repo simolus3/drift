@@ -134,7 +134,7 @@ class WasmDatabase extends DelegatedDatabase {
   ///
   /// Using this API requires two additional file that you need to copy into the
   /// `web/` folder of your Flutter or Dart application: A `sqlite3.wasm` file,
-  /// which you can [get here](https://github.com/simolus3/sqlite3.dart/releases),
+  /// which you can [get here](https://github.com/simolus3/drift/releases),
   /// and a drift worker, which you can [get here](https://drift.simonbinder.eu/web/#worker).
   ///
   /// [localSetup] will be called to initialize the database only if the

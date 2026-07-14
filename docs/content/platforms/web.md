@@ -59,9 +59,8 @@ most operating systems.
 
 Web browsers don't have builtin access to the sqlite3 library, so it needs to be included with your app.
 The `sqlite3` Dart package (used by drift internally) contains a toolchain to compile sqlite3 to WebAssembly
-so that it can be used in browsers. You can grab a prebuilt `sqlite3.wasm` file from [its releases page](https://github.com/simolus3/sqlite3.dart/releases),
-or [compile it yourself](#compilation).
-This file needs to be put into the `web/` directory of your app.
+so that it can be used in browsers. You can grab a prebuilt `sqlite3.wasm` file from [drift releases](https://github.com/simolus3/drift/releases)
+on GitHub, or [compile it yourself](#compilation). This file needs to be put into the `web/` directory of your app.
 
 Drift on the web also requires you to include a portion of drift as a web worker. This worker will be used to
 host your database in a background thread, improving performance of your website. In some [storage implementations](#supported-storage-implementations),
@@ -70,10 +69,11 @@ Again, you can [compile this worker yourself](#compilation) or [grab one from dr
 
 !!! danger "Download the correct versions"
 
-    You should download the version of `sqlite3.wasm` that matches with the version of `sqlite3` you have installed
-    and download the version of `drift_worker.dart.js` that matches with the version of `drift` you have installed.
+    You should download compatible versions of `sqlite3.wasm` and `drift_worker.js` from the same drift release.
+    To find out which exact version of `drift` you're currently using, check your `pubspec.lock` file.
 
-    To find out which versions of `sqlite3` and `drift` you're currently using, check your `pubspec.lock` file!
+    Upgrading drift without upgrading the worker will work outside of major version bumps, but updating the worker
+    and `sqlite3.wasm` is recommended as it new releases can improve performance.
 
 In the end, your `web/` directory may look like this:
 
@@ -379,9 +379,9 @@ the file like this:
 
 ```
 git clone https://github.com/simolus3/sqlite3.dart.git
-cd sqlite3.dart/sqlite3
+cd sqlite3.dart/sqlite3_wasm_build
 
-cmake -S assets/wasm -B .dart_tool/sqlite3_build --toolchain toolchain.cmake
+cmake -S src -B .dart_tool/sqlite3_build 
 cmake --build .dart_tool/sqlite3_build/ -t output -j
 ```
 
