@@ -283,6 +283,10 @@ class DriftOptions {
   factory DriftOptions.fromJson(Map json) => _$DriftOptionsFromJson(json);
 
   SqliteAnalysisOptions? get sqliteOptions {
+    if (drift3Preview) {
+      return drift3Dialects.whereType<Drift3SqliteDialect>().firstOrNull;
+    }
+
     return dialect?.options ?? sqliteAnalysisOptions;
   }
 
@@ -301,6 +305,10 @@ class DriftOptions {
   }
 
   List<SqlDialect> get supportedDialects {
+    if (drift3Preview) {
+      return [for (final dialect in drift3Dialects) dialect.dialect];
+    }
+
     final dialects = dialect?.dialects;
     final singleDialect = dialect?.dialect;
 

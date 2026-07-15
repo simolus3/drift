@@ -12,7 +12,19 @@ base class ResolvedDialect {
 
   const ResolvedDialect(this.dialect);
 
-  factory ResolvedDialect.fromJson(Map json) {}
+  factory ResolvedDialect.fromJson(Map json) {
+    return switch (json['dialect']) {
+      'sqlite' => _$Drift3SqliteDialectFromJson(json),
+      'mysql' || 'mariadb' => ResolvedDialect(SqlDialect.mariadb),
+      'postgres' => ResolvedDialect(SqlDialect.postgres),
+      'duckdb' => ResolvedDialect(SqlDialect.duckdb),
+      _ => throw ArgumentError.value(
+        json['dialect'],
+        'dialect',
+        'Unknown dialect, use one of ${SqlDialect.values.map((e) => e.name).join(', ')}',
+      ),
+    };
+  }
 
   Map<String, Object?> toJson() {
     return {'dialect': dialect.name};
@@ -21,16 +33,21 @@ base class ResolvedDialect {
 
 /// A resolved drift3 SQLite dialect with associated options.
 @JsonSerializable()
-final class Drift3SqliteDialect extends ResolvedDialect {
+final class Drift3SqliteDialect extends ResolvedDialect
+    implements SqliteAnalysisOptions {
   @JsonKey(name: 'modules')
+  @override
   final List<SqlModule> modules;
 
   @SqliteVersionConverter()
+  @override
   final SqliteVersion? version;
 
+  @override
   final Map<String, KnownSqliteFunction> knownFunctions;
 
   @TableFromSql()
+  @override
   final List<Table> knownTables;
 
   final bool strictTablesByDefault;

@@ -11,11 +11,11 @@ targets:
           raw_result_set_data: true
           named_parameters: true
           fatal_warnings: true
-          sql:
-            dialects: [sqlite, postgres]
-            options:
+          dialects:
+            - dialect: sqlite
               version: "3.37"
               modules:
                 - json1
                 - fts5
                 - geopoly
+            - dialect: postgres
