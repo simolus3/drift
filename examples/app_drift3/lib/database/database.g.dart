@@ -4,79 +4,77 @@ part of 'database.dart';
 
 // ignore_for_file: type=lint
 class $CategoriesTable extends Categories
-    with TableInfo<$CategoriesTable, Category> {
+    with ResultSet<Category, $CategoriesTable>
+    implements GeneratedTable<Category, $CategoriesTable> {
   @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $CategoriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  final String? alias;
+  $CategoriesTable([this.alias]);
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
+  late final TableColumn<int> id = TableColumn<int>(
+      name: 'id',
+      sqlType: BuiltinDriftType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+      constraints: () => [
+            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
+            const ColumnNotNullConstraint()
+          ])
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final TableColumn<String> name = TableColumn<String>(
+      name: 'name',
+      sqlType: BuiltinDriftType.text,
+      requiredDuringInsert: true,
+      constraints: () => [const ColumnNotNullConstraint()])
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumnWithTypeConverter<Color, int> color =
-      GeneratedColumn<int>('color', aliasedName, false,
-              type: DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<Color>($CategoriesTable.$convertercolor);
+  late final TableColumnWithTypeConverter<Color, int> color = TableColumn<int>(
+          name: 'color',
+          sqlType: BuiltinDriftType.int,
+          requiredDuringInsert: true,
+          constraints: () => [const ColumnNotNullConstraint()])
+      .withConverter<Color>($CategoriesTable.$convertercolor)
+    ..owningResultSet = this;
   @override
-  List<GeneratedColumn> get $columns => [id, name, color];
+  List<TableColumn> get columns => [id, name, color];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'categories';
   @override
-  VerificationContext validateIntegrity(Insertable<Category> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    return context;
+  $CategoriesTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {id};
+  @override
+  Category? Function(RawRow) createMapperFromPositions(
+      DriftDialect dialect, List<ColumnPosition> positions) {
+    final pos$id = positions[0].index;
+    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final pos$name = positions[1].index;
+    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final pos$color = positions[2].index;
+    return (RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return Category(
+        id: type$0.dartValue(row[pos$id]!),
+        name: type$1.dartValue(row[pos$name]!),
+        color: $CategoriesTable.$convertercolor
+            .fromSql(type$0.dartValue(row[pos$color]!)),
+      );
+    };
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Category map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Category(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      color: $CategoriesTable.$convertercolor.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}color'])!),
-    );
-  }
-
-  @override
-  $CategoriesTable createAlias(String alias) {
-    return $CategoriesTable(attachedDatabase, alias);
+  $CategoriesTable withAlias(String alias) {
+    return $CategoriesTable(alias);
   }
 
   static TypeConverter<Color, int> $convertercolor = const ColorConverter();
 }
 
-class Category extends DataClass implements Insertable<Category> {
+class Category extends LegacyDataClass implements Insertable<Category> {
   final int id;
   final String name;
   final Color color;
@@ -84,11 +82,11 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
+    map['id'] = Variable<int>(id, BuiltinDriftType.int);
+    map['name'] = Variable<String>(name, BuiltinDriftType.text);
     {
-      map['color'] =
-          Variable<int>($CategoriesTable.$convertercolor.toSql(color));
+      map['color'] = Variable<int>(
+          $CategoriesTable.$convertercolor.toSql(color), BuiltinDriftType.int);
     }
     return map;
   }
@@ -194,14 +192,15 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['name'] = Variable<String>(name.value, BuiltinDriftType.text);
     }
     if (color.present) {
-      map['color'] =
-          Variable<int>($CategoriesTable.$convertercolor.toSql(color.value));
+      map['color'] = Variable<int>(
+          $CategoriesTable.$convertercolor.toSql(color.value),
+          BuiltinDriftType.int);
     }
     return map;
   }
@@ -218,99 +217,87 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
 }
 
 class $TodoEntriesTable extends TodoEntries
-    with TableInfo<$TodoEntriesTable, TodoEntry> {
+    with ResultSet<TodoEntry, $TodoEntriesTable>
+    implements GeneratedTable<TodoEntry, $TodoEntriesTable> {
   @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TodoEntriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  final String? alias;
+  $TodoEntriesTable([this.alias]);
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
+  late final TableColumn<int> id = TableColumn<int>(
+      name: 'id',
+      sqlType: BuiltinDriftType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _descriptionMeta =
-      const VerificationMeta('description');
+      constraints: () => [
+            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
+            const ColumnNotNullConstraint()
+          ])
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-      'description', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _categoryMeta =
-      const VerificationMeta('category');
+  late final TableColumn<String> description = TableColumn<String>(
+      name: 'description',
+      sqlType: BuiltinDriftType.text,
+      requiredDuringInsert: true,
+      constraints: () => [const ColumnNotNullConstraint()])
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<int> category = GeneratedColumn<int>(
-      'category', aliasedName, true,
-      type: DriftSqlType.int,
+  late final TableColumn<int> category = TableColumn<int>(
+      name: 'category',
+      sqlType: BuiltinDriftType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES categories (id)'));
-  static const VerificationMeta _dueDateMeta =
-      const VerificationMeta('dueDate');
+      constraints: () => [
+            const ColumnForeignKeyConstraint(
+              otherTableName: 'categories',
+              otherColumnName: 'id',
+            )
+          ])
+    ..owningResultSet = this;
   @override
-  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
-      'due_date', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  late final TableColumn<DateTime> dueDate = TableColumn<DateTime>(
+      name: 'due_date',
+      sqlType: BuiltinDriftType.dateTime,
+      requiredDuringInsert: false)
+    ..owningResultSet = this;
   @override
-  List<GeneratedColumn> get $columns => [id, description, category, dueDate];
+  List<TableColumn> get columns => [id, description, category, dueDate];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'todo_entries';
   @override
-  VerificationContext validateIntegrity(Insertable<TodoEntry> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('description')) {
-      context.handle(
-          _descriptionMeta,
-          description.isAcceptableOrUnknown(
-              data['description']!, _descriptionMeta));
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
-    }
-    if (data.containsKey('category')) {
-      context.handle(_categoryMeta,
-          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
-    }
-    if (data.containsKey('due_date')) {
-      context.handle(_dueDateMeta,
-          dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta));
-    }
-    return context;
+  $TodoEntriesTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {id};
+  @override
+  TodoEntry? Function(RawRow) createMapperFromPositions(
+      DriftDialect dialect, List<ColumnPosition> positions) {
+    final pos$id = positions[0].index;
+    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final pos$description = positions[1].index;
+    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final pos$category = positions[2].index;
+    final pos$dueDate = positions[3].index;
+    final type$2 = BuiltinDriftType.dateTime.resolveIn(dialect);
+    return (RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return TodoEntry(
+        id: type$0.dartValue(row[pos$id]!),
+        description: type$1.dartValue(row[pos$description]!),
+        category: type$0.nullableDartValue(row[pos$category]),
+        dueDate: type$2.nullableDartValue(row[pos$dueDate]),
+      );
+    };
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  TodoEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TodoEntry(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      description: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
-      category: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category']),
-      dueDate: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}due_date']),
-    );
-  }
-
-  @override
-  $TodoEntriesTable createAlias(String alias) {
-    return $TodoEntriesTable(attachedDatabase, alias);
+  $TodoEntriesTable withAlias(String alias) {
+    return $TodoEntriesTable(alias);
   }
 }
 
-class TodoEntry extends DataClass implements Insertable<TodoEntry> {
+class TodoEntry extends LegacyDataClass implements Insertable<TodoEntry> {
   final int id;
   final String description;
   final int? category;
@@ -323,13 +310,13 @@ class TodoEntry extends DataClass implements Insertable<TodoEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['description'] = Variable<String>(description);
+    map['id'] = Variable<int>(id, BuiltinDriftType.int);
+    map['description'] = Variable<String>(description, BuiltinDriftType.text);
     if (!nullToAbsent || category != null) {
-      map['category'] = Variable<int>(category);
+      map['category'] = Variable<int>(category, BuiltinDriftType.int);
     }
     if (!nullToAbsent || dueDate != null) {
-      map['due_date'] = Variable<DateTime>(dueDate);
+      map['due_date'] = Variable<DateTime>(dueDate, BuiltinDriftType.dateTime);
     }
     return map;
   }
@@ -460,16 +447,18 @@ class TodoEntriesCompanion extends UpdateCompanion<TodoEntry> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
     }
     if (description.present) {
-      map['description'] = Variable<String>(description.value);
+      map['description'] =
+          Variable<String>(description.value, BuiltinDriftType.text);
     }
     if (category.present) {
-      map['category'] = Variable<int>(category.value);
+      map['category'] = Variable<int>(category.value, BuiltinDriftType.int);
     }
     if (dueDate.present) {
-      map['due_date'] = Variable<DateTime>(dueDate.value);
+      map['due_date'] =
+          Variable<DateTime>(dueDate.value, BuiltinDriftType.dateTime);
     }
     return map;
   }
@@ -487,57 +476,48 @@ class TodoEntriesCompanion extends UpdateCompanion<TodoEntry> {
 }
 
 class TextEntries extends Table
-    with
-        TableInfo<TextEntries, TextEntry>,
-        VirtualTableInfo<TextEntries, TextEntry> {
+    with ResultSet<TextEntry, TextEntries>
+    implements
+        GeneratedTable<TextEntry, TextEntries>,
+        VirtualTableInfo<TextEntry, TextEntries> {
   @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  TextEntries(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _descriptionMeta =
-      const VerificationMeta('description');
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-      'description', aliasedName, false,
-      type: DriftSqlType.string,
+  final String? alias;
+  TextEntries([this.alias]);
+  late final TableColumn<String> description = TableColumn<String>(
+      name: 'description',
+      sqlType: BuiltinDriftType.text,
       requiredDuringInsert: true,
-      $customConstraints: '');
+      constraints: () => [const ColumnNotNullConstraint()])
+    ..owningResultSet = this;
   @override
-  List<GeneratedColumn> get $columns => [description];
+  List<TableColumn> get columns => [description];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'text_entries';
   @override
-  VerificationContext validateIntegrity(Insertable<TextEntry> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('description')) {
-      context.handle(
-          _descriptionMeta,
-          description.isAcceptableOrUnknown(
-              data['description']!, _descriptionMeta));
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
-    }
-    return context;
+  TextEntries asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => const {};
+  @override
+  TextEntry? Function(RawRow) createMapperFromPositions(
+      DriftDialect dialect, List<ColumnPosition> positions) {
+    final pos$description = positions[0].index;
+    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    return (RawRow row) {
+      // Not part of row if non-nullable column "description" is missing
+      if (row[pos$description] == null) {
+        return null;
+      }
+      return TextEntry(
+        description: type$0.dartValue(row[pos$description]!),
+      );
+    };
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => const {};
-  @override
-  TextEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TextEntry(
-      description: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}description'])!,
-    );
-  }
-
-  @override
-  TextEntries createAlias(String alias) {
-    return TextEntries(attachedDatabase, alias);
+  TextEntries withAlias(String alias) {
+    return TextEntries(alias);
   }
 
   @override
@@ -547,13 +527,13 @@ class TextEntries extends Table
       'fts5(description, content=todo_entries, content_rowid=id)';
 }
 
-class TextEntry extends DataClass implements Insertable<TextEntry> {
+class TextEntry extends LegacyDataClass implements Insertable<TextEntry> {
   final String description;
   const TextEntry({required this.description});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['description'] = Variable<String>(description);
+    map['description'] = Variable<String>(description, BuiltinDriftType.text);
     return map;
   }
 
@@ -637,10 +617,11 @@ class TextEntriesCompanion extends UpdateCompanion<TextEntry> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (description.present) {
-      map['description'] = Variable<String>(description.value);
+      map['description'] =
+          Variable<String>(description.value, BuiltinDriftType.text);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
+      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
     }
     return map;
   }
@@ -655,65 +636,71 @@ class TextEntriesCompanion extends UpdateCompanion<TextEntry> {
   }
 }
 
-abstract class _$AppDatabase extends GeneratedDatabase {
-  _$AppDatabase(QueryExecutor e) : super(e);
+abstract base class _$AppDatabase extends GeneratedDatabase {
+  _$AppDatabase(super.implementation);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $CategoriesTable categories = $CategoriesTable(this);
-  late final $TodoEntriesTable todoEntries = $TodoEntriesTable(this);
-  late final TextEntries textEntries = TextEntries(this);
-  late final Trigger todosInsert = Trigger(
-      'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END',
-      'todos_insert');
-  late final Trigger todosDelete = Trigger(
-      'CREATE TRIGGER todos_delete AFTER DELETE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', old.id, old.description);END',
-      'todos_delete');
-  late final Trigger todosUpdate = Trigger(
-      'CREATE TRIGGER todos_update AFTER UPDATE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', new.id, new.description);INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END',
-      'todos_update');
+  $CategoriesTable get categories => $CategoriesTable();
+  $TodoEntriesTable get todoEntries => $TodoEntriesTable();
+  TextEntries get textEntries => TextEntries();
+  Trigger get todosInsert => _$todosInsert;
+  Trigger get todosDelete => _$todosDelete;
+  Trigger get todosUpdate => _$todosUpdate;
   Selectable<CategoriesWithCountResult> _categoriesWithCount() {
-    return customSelect(
-        'SELECT c.*, (SELECT COUNT(*) FROM todo_entries WHERE category = c.id) AS amount FROM categories AS c UNION ALL SELECT NULL, NULL, NULL, (SELECT COUNT(*) FROM todo_entries WHERE category IS NULL)',
+    return customSelectMapped<CategoriesWithCountResult>(
+        query:
+            'SELECT c.*, (SELECT COUNT(*) FROM todo_entries WHERE category = c.id) AS amount FROM categories AS c UNION ALL SELECT NULL, NULL, NULL, (SELECT COUNT(*) FROM todo_entries WHERE category IS NULL)',
         variables: [],
         readsFrom: {
           todoEntries,
           categories,
-        }).map((QueryRow row) => CategoriesWithCountResult(
-          id: row.readNullable<int>('id'),
-          name: row.readNullable<String>('name'),
-          color: NullAwareTypeConverter.wrapFromSql(
-              $CategoriesTable.$convertercolor, row.readNullable<int>('color')),
-          amount: row.read<int>('amount'),
-        ));
+        },
+        createMapper: (RawResultSet _) {
+          final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+          final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+
+          return (RawRow row) => CategoriesWithCountResult(
+                id: type$0.nullableDartValue(row[0]),
+                name: type$1.nullableDartValue(row[1]),
+                color: NullAwareTypeConverter.wrapFromSql(
+                    $CategoriesTable.$convertercolor,
+                    type$0.nullableDartValue(row[2])),
+                amount: type$0.dartValue(row[3]!),
+              );
+        });
   }
 
   Selectable<SearchResult> _search(String query) {
-    return customSelect(
-        'SELECT"todos"."id" AS "nested_0.id", "todos"."description" AS "nested_0.description", "todos"."category" AS "nested_0.category", "todos"."due_date" AS "nested_0.due_date","cat"."id" AS "nested_1.id", "cat"."name" AS "nested_1.name", "cat"."color" AS "nested_1.color" FROM text_entries INNER JOIN todo_entries AS todos ON todos.id = text_entries."rowid" LEFT OUTER JOIN categories AS cat ON cat.id = todos.category WHERE text_entries MATCH ?1 ORDER BY rank',
-        variables: [
-          Variable<String>(query)
-        ],
+    return customSelectMapped<SearchResult>(
+        query:
+            'SELECT"todos"."id", "todos"."description", "todos"."category", "todos"."due_date","cat"."id", "cat"."name", "cat"."color" FROM text_entries INNER JOIN todo_entries AS todos ON todos.id = text_entries."rowid" LEFT OUTER JOIN categories AS cat ON cat.id = todos.category WHERE text_entries MATCH ?1 ORDER BY rank',
+        variables: [mapValue(BuiltinDriftType.text, query)],
         readsFrom: {
           textEntries,
           todoEntries,
           categories,
-        }).asyncMap((QueryRow row) async => SearchResult(
-          todos: await todoEntries.mapFromRow(row, tablePrefix: 'nested_0'),
-          cat: await categories.mapFromRowOrNull(row, tablePrefix: 'nested_1'),
-        ));
+        },
+        createMapper: (RawResultSet _) {
+          final map_0 = todoEntries.createMapperFromPositions(dialect, const [
+            ColumnPosition(0),
+            ColumnPosition(1),
+            ColumnPosition(2),
+            ColumnPosition(3),
+          ]);
+          final map_1 = categories.createMapperFromPositions(dialect, const [
+            ColumnPosition(4),
+            ColumnPosition(5),
+            ColumnPosition(6),
+          ]);
+
+          return (RawRow row) => SearchResult(
+                todos: map_0(row)!,
+                cat: map_1(row),
+              );
+        });
   }
 
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
-  @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-        categories,
-        todoEntries,
-        textEntries,
-        todosInsert,
-        todosDelete,
-        todosUpdate
-      ];
+  DatabaseSchema get schema => _$schema;
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
@@ -740,6 +727,26 @@ abstract class _$AppDatabase extends GeneratedDatabase {
           ),
         ],
       );
+  static final _$todosInsert = Trigger(
+      'todos_insert',
+      CustomComponent(
+          'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END'));
+  static final _$todosDelete = Trigger(
+      'todos_delete',
+      CustomComponent(
+          'CREATE TRIGGER todos_delete AFTER DELETE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', old.id, old.description);END'));
+  static final _$todosUpdate = Trigger(
+      'todos_update',
+      CustomComponent(
+          'CREATE TRIGGER todos_update AFTER UPDATE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', new.id, new.description);INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END'));
+  static final DatabaseSchema _$schema = DatabaseSchema([
+    $CategoriesTable(),
+    $TodoEntriesTable(),
+    TextEntries(),
+    _$todosInsert,
+    _$todosDelete,
+    _$todosUpdate,
+  ]);
 }
 
 typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
@@ -757,13 +764,13 @@ final class $$CategoriesTableReferences
     extends BaseReferences<_$AppDatabase, $CategoriesTable, Category> {
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$TodoEntriesTable, List<TodoEntry>>
-      _todoEntriesRefsTable(_$AppDatabase db) =>
-          MultiTypedResultKey.fromTable(db.todoEntries,
-              aliasName: 'categories__id__todo_entries__category');
+  static MultiTypedResultKey<List<TodoEntry>> _todoEntriesRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable($TodoEntriesTable(),
+          aliasName: 'categories__id__todo_entries__category');
 
   $$TodoEntriesTableProcessedTableManager get todoEntriesRefs {
-    final manager = $$TodoEntriesTableTableManager($_db, $_db.todoEntries)
+    final manager = $$TodoEntriesTableTableManager($_db, $TodoEntriesTable())
         .filter((f) => f.category.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_todoEntriesRefsTable($_db));
@@ -797,14 +804,14 @@ class $$CategoriesTableFilterComposer
     final $$TodoEntriesTableFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.id,
-        referencedTable: $db.todoEntries,
+        referencedTable: $TodoEntriesTable(),
         getReferencedColumn: (t) => t.category,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
             $$TodoEntriesTableFilterComposer(
               $db: $db,
-              $table: $db.todoEntries,
+              $table: $TodoEntriesTable(),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -842,13 +849,13 @@ class $$CategoriesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  TableColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
+  TableColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<Color, int> get color =>
+  TableColumnWithTypeConverter<Color, int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
 
   Expression<T> todoEntriesRefs<T extends Object>(
@@ -856,14 +863,14 @@ class $$CategoriesTableAnnotationComposer
     final $$TodoEntriesTableAnnotationComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.id,
-        referencedTable: $db.todoEntries,
+        referencedTable: $TodoEntriesTable(),
         getReferencedColumn: (t) => t.category,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
             $$TodoEntriesTableAnnotationComposer(
               $db: $db,
-              $table: $db.todoEntries,
+              $table: $TodoEntriesTable(),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -924,7 +931,9 @@ class $$CategoriesTableTableManager extends RootTableManager<
           prefetchHooksCallback: ({todoEntriesRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (todoEntriesRefs) db.todoEntries],
+              explicitlyWatchedTables: [
+                if (todoEntriesRefs) $TodoEntriesTable()
+              ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -980,12 +989,12 @@ final class $$TodoEntriesTableReferences
   $$TodoEntriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _categoryTable(_$AppDatabase db) =>
-      db.categories.createAlias('todo_entries__category__categories__id');
+      $CategoriesTable().withAlias('todo_entries__category__categories__id');
 
   $$CategoriesTableProcessedTableManager? get category {
     final $_column = $_itemColumn<int>('category');
     if ($_column == null) return null;
-    final manager = $$CategoriesTableTableManager($_db, $_db.categories)
+    final manager = $$CategoriesTableTableManager($_db, $CategoriesTable())
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryTable($_db));
     if (item == null) return manager;
@@ -1016,14 +1025,14 @@ class $$TodoEntriesTableFilterComposer
     final $$CategoriesTableFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.category,
-        referencedTable: $db.categories,
+        referencedTable: $CategoriesTable(),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
             $$CategoriesTableFilterComposer(
               $db: $db,
-              $table: $db.categories,
+              $table: $CategoriesTable(),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -1055,14 +1064,14 @@ class $$TodoEntriesTableOrderingComposer
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.category,
-        referencedTable: $db.categories,
+        referencedTable: $CategoriesTable(),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
             $$CategoriesTableOrderingComposer(
               $db: $db,
-              $table: $db.categories,
+              $table: $CategoriesTable(),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -1081,27 +1090,27 @@ class $$TodoEntriesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  TableColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get description => $composableBuilder(
+  TableColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get dueDate =>
+  TableColumn<DateTime> get dueDate =>
       $composableBuilder(column: $table.dueDate, builder: (column) => column);
 
   $$CategoriesTableAnnotationComposer get category {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.category,
-        referencedTable: $db.categories,
+        referencedTable: $CategoriesTable(),
         getReferencedColumn: (t) => t.id,
         builder: (joinBuilder,
                 {$addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer}) =>
             $$CategoriesTableAnnotationComposer(
               $db: $db,
-              $table: $db.categories,
+              $table: $CategoriesTable(),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -1256,7 +1265,7 @@ class $TextEntriesAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get description => $composableBuilder(
+  TableColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
 }
 
@@ -1329,7 +1338,7 @@ class $AppDatabaseManager {
       $TextEntriesTableManager(_db, _db.textEntries);
 }
 
-class CategoriesWithCountResult {
+final class CategoriesWithCountResult {
   final int? id;
   final String? name;
   final Color? color;
@@ -1342,7 +1351,7 @@ class CategoriesWithCountResult {
   });
 }
 
-class SearchResult {
+final class SearchResult {
   final TodoEntry todos;
   final Category? cat;
   SearchResult({

@@ -26,6 +26,7 @@ targets:
             options:
               version: "3.38"
               modules: [fts5]
+          drift3_preview: true
 
       # Configuring this builder isn't required for most apps. In our case, we
       # want to compile the web worker in `web/worker.dart` to JS and we use the
