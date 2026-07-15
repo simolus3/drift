@@ -1,5 +1,6 @@
 import 'package:charcode/ascii.dart';
 import 'package:drift/drift.dart' show SqlDialect;
+import 'package:drift_dev/src/analysis/dialect.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:recase/recase.dart';
@@ -28,7 +29,7 @@ class DriftOptions {
   @JsonKey(name: 'drift3_preview', defaultValue: false)
   final bool drift3Preview;
 
-  /// Whether moor should generate a `fromJsonString` factory for data classes.
+  /// Whether drift should generate a `fromJsonString` factory for data classes.
   /// It basically wraps the regular `fromJson` constructor in a `json.decode`
   /// call.
   @JsonKey(name: 'write_from_json_string_constructor', defaultValue: false)
@@ -94,6 +95,11 @@ class DriftOptions {
 
   @JsonKey(name: 'sql')
   final DialectOptions? dialect;
+
+  /// This option is only available with drift3 preview, where it replaces the
+  /// sqlite, sql, dialect and storeDateTimeValuesAsText options.
+  @JsonKey(name: 'dialects', defaultValue: [])
+  final List<ResolvedDialect> drift3Dialects;
 
   @JsonKey(name: 'data_class_to_companions', defaultValue: true)
   final bool dataClassToCompanions;
@@ -189,6 +195,7 @@ class DriftOptions {
     this.schemaDir = "drift_schemas",
     this.testDir = "test/drift",
     this.databases = const {},
+    this.drift3Dialects = const [],
   });
 
   DriftOptions({
@@ -224,6 +231,7 @@ class DriftOptions {
     required this.schemaDir,
     required this.testDir,
     required this.databases,
+    required this.drift3Dialects,
   }) {
     // ignore: deprecated_member_use_from_same_package
     if (sqliteAnalysisOptions != null && modules.isNotEmpty) {
@@ -256,6 +264,19 @@ class DriftOptions {
         generateFromJsonStringConstructor,
         'write_from_json_string_constructor',
       );
+      checkRemovedOption(dialect != null, 'sql');
+      checkRemovedOption(modules.isNotEmpty, 'sqlite_modules');
+      checkRemovedOption(sqliteAnalysisOptions != null, 'sqlite');
+      checkRemovedOption(
+        storeDateTimeValuesAsText,
+        'store_date_time_values_as_text',
+      );
+    } else {
+      if (drift3Dialects.isNotEmpty) {
+        throw ArgumentError(
+          'The dialects option is not available, did you mean dialect?',
+        );
+      }
     }
   }
 
@@ -267,12 +288,17 @@ class DriftOptions {
 
   /// All enabled sqlite modules from these options.
   List<SqlModule> get effectiveModules {
+    if (drift3Preview) {
+      return drift3Dialects
+              .whereType<Drift3SqliteDialect>()
+              .firstOrNull
+              ?.modules ??
+          [];
+    }
+
     // ignore: deprecated_member_use_from_same_package
     return sqliteOptions?.modules ?? modules;
   }
-
-  /// Whether the [module] has been enabled in this configuration.
-  bool hasModule(SqlModule module) => effectiveModules.contains(module);
 
   List<SqlDialect> get supportedDialects {
     final dialects = dialect?.dialects;
@@ -313,12 +339,12 @@ class SqliteAnalysisOptions {
   @JsonKey(name: 'modules')
   final List<SqlModule> modules;
 
-  @_SqliteVersionConverter()
+  @SqliteVersionConverter()
   final SqliteVersion? version;
 
   final Map<String, KnownSqliteFunction> knownFunctions;
 
-  @_TableFromSql()
+  @TableFromSql()
   final List<Table> knownTables;
 
   const SqliteAnalysisOptions({
@@ -335,8 +361,8 @@ class SqliteAnalysisOptions {
   Map<String, Object?> toJson() => _$SqliteAnalysisOptionsToJson(this);
 }
 
-final class _TableFromSql extends JsonConverter<Table, String> {
-  const _TableFromSql();
+final class TableFromSql extends JsonConverter<Table, String> {
+  const TableFromSql();
 
   @override
   Table fromJson(String json) {
@@ -432,10 +458,10 @@ class KnownSqliteFunction {
   static final _whitespace = RegExp(r'\s*');
 }
 
-class _SqliteVersionConverter extends JsonConverter<SqliteVersion, String> {
+class SqliteVersionConverter extends JsonConverter<SqliteVersion, String> {
   static final _versionRegex = RegExp(r'(\d+)\.(\d+)');
 
-  const _SqliteVersionConverter();
+  const SqliteVersionConverter();
 
   @override
   SqliteVersion fromJson(String json) {

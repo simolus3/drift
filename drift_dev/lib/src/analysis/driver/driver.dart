@@ -65,6 +65,8 @@ class DriftAnalysisDriver {
   DriftAnalysisDriver(this.backend, this.options, {this.isTesting = false});
 
   SqlEngine newSqlEngine() {
+    final modules = options.effectiveModules;
+
     return SqlEngine(
       EngineOptions(
         driftOptions: DriftSqlOptions(
@@ -72,17 +74,16 @@ class DriftAnalysisDriver {
         ),
         enabledExtensions: [
           DriftOptionsExtension(options),
-          if (options.hasModule(SqlModule.dbstat)) const DbStatExtension(),
-          if (options.hasModule(SqlModule.fts5)) const Fts5Extension(),
-          if (options.hasModule(SqlModule.json1)) const Json1Extension(),
-          if (options.hasModule(SqlModule.moor_ffi))
+          if (modules.contains(SqlModule.dbstat)) const DbStatExtension(),
+          if (modules.contains(SqlModule.fts5)) const Fts5Extension(),
+          if (modules.contains(SqlModule.json1)) const Json1Extension(),
+          if (modules.contains(SqlModule.moor_ffi))
             const DriftNativeExtension(),
-          if (options.hasModule(SqlModule.math)) const BuiltInMathExtension(),
-          if (options.hasModule(SqlModule.rtree)) const RTreeExtension(),
-          if (options.hasModule(SqlModule.spellfix1))
-            const Spellfix1Extension(),
-          if (options.hasModule(SqlModule.geopoly)) const GeopolyExtension(),
-          if (options.hasModule(SqlModule.powersync))
+          if (modules.contains(SqlModule.math)) const BuiltInMathExtension(),
+          if (modules.contains(SqlModule.rtree)) const RTreeExtension(),
+          if (modules.contains(SqlModule.spellfix1)) const Spellfix1Extension(),
+          if (modules.contains(SqlModule.geopoly)) const GeopolyExtension(),
+          if (modules.contains(SqlModule.powersync))
             const PowerSyncSqliteExtension(),
         ],
         version: options.sqliteVersion,

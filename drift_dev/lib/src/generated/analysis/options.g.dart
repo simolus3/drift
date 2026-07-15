@@ -26,6 +26,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'sqlite_modules',
         'sqlite',
         'sql',
+        'dialects',
         'data_class_to_companions',
         'mutable_classes',
         'row_class_constructor_all_required',
@@ -178,6 +179,14 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             (v as Map?)?.map((k, e) => MapEntry(k as String, e as String)) ??
             {},
       ),
+      drift3Dialects: $checkedConvert(
+        'dialects',
+        (v) =>
+            (v as List<dynamic>?)
+                ?.map((e) => ResolvedDialect.fromJson(e as Map))
+                .toList() ??
+            [],
+      ),
     );
     return val;
   },
@@ -214,6 +223,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
     'dialect': 'sql',
     'schemaDir': 'schema_dir',
     'testDir': 'test_dir',
+    'drift3Dialects': 'dialects',
   },
 );
 
@@ -238,6 +248,7 @@ Map<String, dynamic> _$DriftOptionsToJson(
       .toList(),
   'sqlite': instance.sqliteAnalysisOptions?.toJson(),
   'sql': instance.dialect?.toJson(),
+  'dialects': instance.drift3Dialects.map((e) => e.toJson()).toList(),
   'data_class_to_companions': instance.dataClassToCompanions,
   'mutable_classes': instance.generateMutableClasses,
   'row_class_constructor_all_required': instance.rowClassConstructorAllRequired,
@@ -347,7 +358,7 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
             'version',
             (v) => _$JsonConverterFromJson<String, SqliteVersion>(
               v,
-              const _SqliteVersionConverter().fromJson,
+              const SqliteVersionConverter().fromJson,
             ),
           ),
           knownFunctions: $checkedConvert(
@@ -365,7 +376,7 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
             'known_tables',
             (v) =>
                 (v as List<dynamic>?)
-                    ?.map((e) => const _TableFromSql().fromJson(e as String))
+                    ?.map((e) => const TableFromSql().fromJson(e as String))
                     .toList() ??
                 const [],
           ),
@@ -384,13 +395,13 @@ Map<String, dynamic> _$SqliteAnalysisOptionsToJson(
   'modules': instance.modules.map((e) => _$SqlModuleEnumMap[e]!).toList(),
   'version': _$JsonConverterToJson<String, SqliteVersion>(
     instance.version,
-    const _SqliteVersionConverter().toJson,
+    const SqliteVersionConverter().toJson,
   ),
   'known_functions': instance.knownFunctions.map(
     (k, e) => MapEntry(k, e.toJson()),
   ),
   'known_tables': instance.knownTables
-      .map(const _TableFromSql().toJson)
+      .map(const TableFromSql().toJson)
       .toList(),
 };
 
