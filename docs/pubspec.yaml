@@ -7,7 +7,7 @@ environment:
   flutter: ^3.35.0
 
 dependencies:
-  jaspr: ^0.23.0
+  jaspr: ^0.23.2
   jaspr_content: ^0.5.0
   jaspr_router: ^0.8.1
 
@@ -83,5 +83,6 @@ dependency_overrides:
       url: https://github.com/kevmoo/jaspr.git
       ref: b398ec76279b74c82f551cec99f22b25fc429a12
       path: packages/jaspr_cli
+  jaspr: ^0.23.2
   # https://github.com/google/dart_cli_pkg/pull/202
   cli_util: ^0.5.0
