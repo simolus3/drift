@@ -30,7 +30,7 @@ Finally, we can use that converter in a table declaration:
 The generated `User` class will then have a `preferences` column of type
 `Preferences`. Drift will automatically take care of storing and loading
 the object in `select`, `update` and `insert` statements. This feature
-also works with [compiled custom queries]("/queries/custom").
+also works with [compiled custom queries](sql_api/custom_queries.md).
 
 !!! warning "Common type converter issues"
 
@@ -244,16 +244,16 @@ and pass it to the serialization methods.
 
 In database rows, columns to which a type converter has been applied are storing the result of
 `toSql()`. Drift will apply the type converter automatically when reading or writing rows, but they
-are not applied automatically when creating your own [expressions]('dart_api/expressions.md').
+are not applied automatically when creating your own [expressions](dart_api/expressions.md).
 For example, filtering for values with [`column.equals`](https://drift.simonbinder.eu/api/drift/expression/equals)
-will compare not apply the type converter, you'd be comparing the underlying database values.
+will not apply the type converter, you'd be comparing the underlying database values.
 
 On columns with type converters, [`equalsValue`](https://drift.simonbinder.eu/api/drift/generatedcolumnwithtypeconverter/equalsvalue)
-can be used instead - unlike `equals`, `equasValue` will apply the converter before emitting a comparison in SQL.
+can be used instead - unlike `equals`, `equalsValue` will apply the converter before emitting a comparison in SQL.
 If you need to apply the converter for other comparisons as well, you can do that manually with `column.converter.toSql`.
 
-For variables used in queries that are part of a [drift file]('sql_api/drift_files.md'), type converters will be
-applied by default if the `apply_converters_on_variables` [builder option]('generation_options/index.md') is enabled (which it is by default).
+For variables used in queries that are part of a [drift file](sql_api/drift_files.md), type converters will be
+applied by default if the `apply_converters_on_variables` [builder option](generation_options/index.md) is enabled (which it is by default).
 
 When reading custom expressions that should have a type converter attached to them, you'd have to first read the underlying
 SQL value and then apply your type converter manually.

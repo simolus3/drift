@@ -69,7 +69,7 @@ The generated file (`schema.json` in this case) contains information about all
 - dependencies thereof
 
 Exporting a schema can be used to generate test code for your schema migrations. For details,
-see [the guide]("../Migrations/tests.md").
+see [the guide](../migrations/tests.md).
 
 ### Exporting
 
