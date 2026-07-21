@@ -11,6 +11,7 @@ import '../../driver/state.dart';
 import '../../results/results.dart';
 import '../intermediate_state.dart';
 import '../resolver.dart';
+import '../shared/column_name.dart';
 import '../shared/dart_types.dart';
 import '../shared/data_class.dart';
 import 'element_resolver.dart';
@@ -190,7 +191,7 @@ final class DriftTableResolver
           sqlType: type,
           nullable: nullable,
           nameInSql: column.name,
-          nameInDart: overriddenDartName ?? ReCase(column.name).camelCase,
+          nameInDart: overriddenDartName ?? dartNameForSqlColumn(column.name),
           overriddenJsonName: overriddenJsonName,
           constraints: constraints,
           typeConverter: converter,

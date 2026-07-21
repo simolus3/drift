@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/ast/token.dart';
 import 'package:recase/recase.dart';
 
 final _illegalChars = RegExp(r'[^0-9a-zA-Z_]');
@@ -10,6 +11,8 @@ final _leadingDigits = RegExp(r'^\d*');
 ///    identifier.
 ///  - defaulting to `empty` if a column only consists of invalid names.
 ///  - changing the case of the identifier to `camelCase`.
+///  - appending a `$` if the name is a reserved Dart keyword (e.g. `class`),
+///    which cannot be used as an identifier on its own.
 ///
 /// This transformation may map distinct SQL identifiers to the same Dart name
 /// (e.g. `dartNameForSqlColumn('1a') == dartNameForSqlColumn('2a')`). To
@@ -31,6 +34,13 @@ String dartNameForSqlColumn(
   }
 
   escapedName = ReCase(escapedName).camelCase;
+
+  // A reserved keyword like `class` is not a valid Dart identifier, so it can't
+  // be used as a getter, field or parameter name. Append a `$` to make it one.
+  if (Keyword.keywords[escapedName]?.isReservedWord ?? false) {
+    escapedName = '$escapedName\$';
+  }
+
   final potentialAmbiguousName = escapedName;
   var counter = 1;
   while (existingNames.contains(escapedName)) {
