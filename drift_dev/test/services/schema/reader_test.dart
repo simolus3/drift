@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:test/test.dart';
@@ -8,7 +9,7 @@ import '../../analysis/test_utils.dart';
 
 void main() {
   test('keeps data class name for views', () async {
-    final elements = await _analyzeAndSerialize('''
+    final elements = await _serializationRoundtrip('''
 CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
 CREATE VIEW user_ids AS SELECT id FROM users;
 ''');
@@ -32,7 +33,7 @@ CREATE VIEW user_ids AS SELECT id FROM users;
   });
 
   test('keeps information about generatedAs', () async {
-    final [table as DriftTable] = await _analyzeAndSerialize('''
+    final [table as DriftTable] = await _serializationRoundtrip('''
 CREATE TABLE users (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
@@ -120,17 +121,40 @@ CREATE TABLE users (
     expect(index.unique, isTrue);
     expect(index.indexedColumns, hasLength(2));
   });
+
+  test('can read drift3 option format', () async {
+    final serialized = await _analyzeAndSerialize('''
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+''', const DriftOptions.defaults(drift3Preview: true));
+
+    final deserialized = await SchemaReader.readJson(serialized);
+    expect(deserialized.options, containsPair('dialects', isNotNull));
+  });
 }
 
-Future<List<DriftElement>> _analyzeAndSerialize(String source) async {
-  final state = await TestBackend.inTest({'a|lib/a.drift': source});
+Future<Map<String, Object?>> _analyzeAndSerialize(
+  String source, [
+  DriftOptions options = const DriftOptions.defaults(),
+]) async {
+  final state = await TestBackend.inTest({
+    'a|lib/a.drift': source,
+  }, options: options);
   final file = await state.analyze('package:a/a.drift');
 
-  final writer = SchemaWriter(file.analyzedElements.toList());
-  final schemaJson = json.decode(json.encode(await writer.createSchemaJson()));
+  final writer = SchemaWriter(file.analyzedElements.toList(), options: options);
+  return json.decode(json.encode(await writer.createSchemaJson()))
+      as Map<String, Object?>;
+}
 
-  final deserialized = await SchemaReader.readJson(
-    schemaJson as Map<String, Object?>,
-  );
+Future<List<DriftElement>> _serializationRoundtrip(
+  String source, [
+  DriftOptions options = const DriftOptions.defaults(),
+]) async {
+  final schemaJson = await _analyzeAndSerialize(source, options);
+
+  final deserialized = await SchemaReader.readJson(schemaJson);
   return deserialized.entities.toList();
 }

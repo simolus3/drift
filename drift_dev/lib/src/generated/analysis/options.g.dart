@@ -185,7 +185,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
             (v as List<dynamic>?)
                 ?.map((e) => ResolvedDialect.fromJson(e as Map))
                 .toList() ??
-            [],
+            DriftOptions._resolveDefaultDialects(),
       ),
     );
     return val;

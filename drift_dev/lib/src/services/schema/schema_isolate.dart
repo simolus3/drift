@@ -36,12 +36,13 @@ class SchemaIsolate {
         'generate_manager': false,
         'skip_verification_code': true,
         'data_class_to_companions': false,
-        'sql': {
-          'dialects': switch (options.dialect) {
-            null => SqlDialect.values.map((e) => e.name).toList(),
-            var dialect => [dialect.name],
+        if (!options.options.drift3Preview)
+          'sql': {
+            'dialects': switch (options.dialect) {
+              null => SqlDialect.values.map((e) => e.name).toList(),
+              var dialect => [dialect.name],
+            },
           },
-        },
       }),
       generationOptions: GenerationOptions(
         forSchema: 1,

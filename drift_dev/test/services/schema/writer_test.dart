@@ -469,6 +469,101 @@ CREATE TABLE uuid_of_contacts (
     );
     expect(generated, allOf(contains('uuidOfContacts'), contains('contacts')));
   });
+
+  test('can write options for drift3', () async {
+    final options = DriftOptions.defaults(drift3Preview: true);
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift3/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get title => text();
+}
+
+@DriftDatabase(tables: [Users])
+class Database {}
+''',
+    }, options: options);
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
+
+    final schemaJson = await SchemaWriter(
+      db.availableElements,
+      options: options,
+    ).createSchemaJson();
+
+    expect(schemaJson['options'], [
+      allOf(
+        containsPair('dialect', 'sqlite'),
+        containsPair('strict_tables_by_default', true),
+        containsPair('store_date_times_as_text', true),
+      ),
+    ]);
+  });
+
+  group('can generate for drift3 from old schemas', () {
+    for (final dateTimeAsText in [false, true]) {
+      test('with dateTimeAsText: $dateTimeAsText', () async {
+        final backend = await TestBackend.inTest({
+          'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()();
+}
+
+@DriftDatabase(tables: [Users])
+class Database {}
+''',
+        });
+
+        final file = await backend.analyze('package:a/main.dart');
+        backend.expectNoErrors();
+        final db = file.fileAnalysis!.resolvedDatabases.values.single;
+
+        final schemaJson = await SchemaWriter(
+          db.availableElements,
+          options: DriftOptions.defaults(
+            storeDateTimeValuesAsText: dateTimeAsText,
+          ),
+        ).createSchemaJson();
+
+        final reader = await SchemaReader.readJson(schemaJson);
+        final fakeBuildConfig = runInBuildConfigZone(
+          () {
+            return BuildConfig(
+              buildTargets: {
+                r'$default': BuildTarget(
+                  builders: {
+                    'drift_dev': TargetBuilderConfig(
+                      options: {'drift3_preview': true},
+                    ),
+                  },
+                ),
+              },
+            );
+          },
+          'drift_dev',
+          [],
+        );
+        final generated = await GenerateUtils.generateSchemaCode(
+          DriftDevCli()
+            ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
+          1,
+          ExportedSchema(reader.entities.toList(), reader.options),
+          false,
+          false,
+        );
+
+        expect(generated, contains('storeDateTimesAsText: $dateTimeAsText'));
+        expect(generated, contains('strictTablesByDefault: false'));
+      });
+    }
+  });
 }
 
 const expected = r'''

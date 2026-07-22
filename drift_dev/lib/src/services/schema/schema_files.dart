@@ -103,12 +103,16 @@ class SchemaWriter {
     };
   }
 
-  Map<String, Object?> _serializeOptions() {
-    const relevantKeys = {'store_date_time_values_as_text'};
-    final asJson = options.toJson()
-      ..removeWhere((key, _) => !relevantKeys.contains(key));
+  Object _serializeOptions() {
+    if (options.drift3Preview) {
+      return [for (final dialect in options.drift3Dialects) dialect.toJson()];
+    } else {
+      const relevantKeys = {'store_date_time_values_as_text'};
+      final asJson = options.toJson()
+        ..removeWhere((key, _) => !relevantKeys.contains(key));
 
-    return asJson;
+      return asJson;
+    }
   }
 
   Map<String, Object?>? _entityToJson(
@@ -370,10 +374,12 @@ class SchemaReader {
     _version = _ExportedSchemaVersion(Version.parse(meta['version'] as String));
 
     // Read drift options if they are part of the schema file.
-    final optionsInJson = json['options'] as Map<String, Object?>?;
+    final optionsInJson = json['options'];
     options = switch (optionsInJson) {
       null => {'store_date_time_values_as_text': false},
-      final options => Map.from(options),
+      // In drift3 mode, serialized options encode all dialects
+      final List dialectOptions => {'dialects': dialectOptions},
+      final options => Map.from(options as Map<String, Object?>),
     };
 
     // elementUri is a .drift file, but we want the behavior for Dart files for

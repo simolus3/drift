@@ -97,8 +97,8 @@ class DriftOptions {
   final DialectOptions? dialect;
 
   /// This option is only available with drift3 preview, where it replaces the
-  /// sqlite, sql, dialect and storeDateTimeValuesAsText options.
-  @JsonKey(name: 'dialects', defaultValue: [])
+  /// sqlite, sql, dialect, modules and storeDateTimeValuesAsText options.
+  @JsonKey(name: 'dialects', defaultValue: _resolveDefaultDialects)
   final List<ResolvedDialect> drift3Dialects;
 
   @JsonKey(name: 'data_class_to_companions', defaultValue: true)
@@ -195,7 +195,7 @@ class DriftOptions {
     this.schemaDir = "drift_schemas",
     this.testDir = "test/drift",
     this.databases = const {},
-    this.drift3Dialects = const [],
+    this.drift3Dialects = _defaultDialects,
   });
 
   DriftOptions({
@@ -272,7 +272,7 @@ class DriftOptions {
         'store_date_time_values_as_text',
       );
     } else {
-      if (drift3Dialects.isNotEmpty) {
+      if (drift3Dialects.isNotEmpty && drift3Dialects != _defaultDialects) {
         throw ArgumentError(
           'The dialects option is not available, did you mean dialect?',
         );
@@ -326,7 +326,26 @@ class DriftOptions {
     return sqliteOptions?.version ?? _defaultSqliteVersion;
   }
 
-  Map<String, Object?> toJson() => _$DriftOptionsToJson(this);
+  Map<String, Object?> toJson() {
+    final toJson = _$DriftOptionsToJson(this);
+    if (drift3Preview) {
+      // These values have defaults, but no meaning in drift3 mode.
+      toJson.remove('sql');
+      toJson.remove('sqlite');
+      toJson.remove('sqlite_modules');
+      toJson.remove('store_date_time_values_as_text');
+    } else {
+      toJson.remove('dialects');
+    }
+
+    return toJson;
+  }
+
+  static const _defaultDialects = [Drift3SqliteDialect.withOptions()];
+
+  static List<ResolvedDialect> _resolveDefaultDialects() {
+    return _defaultDialects;
+  }
 }
 
 @JsonSerializable()

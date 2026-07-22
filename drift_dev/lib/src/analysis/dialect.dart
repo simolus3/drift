@@ -37,7 +37,7 @@ base class ResolvedDialect {
 }
 
 /// A resolved drift3 SQLite dialect with associated options.
-@JsonSerializable()
+@JsonSerializable(constructor: 'withOptions')
 final class Drift3SqliteDialect extends ResolvedDialect
     implements SqliteAnalysisOptions {
   @JsonKey(name: 'modules')

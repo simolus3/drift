@@ -106,11 +106,7 @@ class GenerateUtils {
   ) async {
     // let serialized options take precedence, otherwise use current options
     // from project.
-    final options = DriftOptions.fromJson({
-      ...cli.project.options.toJson(),
-      ...schema.options,
-      'generate_manager': false,
-    });
+    final options = _mergeDriftOptions(cli, schema);
 
     final imports = LibraryImportManager()
       ..enforceAlias(AnnotatedDartCode.drift, null)
@@ -169,6 +165,40 @@ class GenerateUtils {
     DatabaseWriter(input, writer.child()).write();
 
     return await cli.project.formatSource(writer.writeGenerated());
+  }
+
+  static DriftOptions _mergeDriftOptions(
+    DriftDevCli cli,
+    ExportedSchema schema,
+  ) {
+    // let serialized options take precedence, otherwise use current options
+    // from project.
+    final targetIsDrift3 = cli.project.options.drift3Preview;
+    final schemaIsDrift3 = schema.options.containsKey('dialects');
+    var schemaOptions = schema.options;
+
+    if (targetIsDrift3 && !schemaIsDrift3) {
+      // Interpret old options as drift3 options.
+      schemaOptions = {
+        'dialects': [
+          {
+            'dialect': 'sqlite',
+            'store_date_times_as_text':
+                schema.options['store_date_time_values_as_text'] ?? false,
+
+            // These options didn't exist before
+            'strict_tables_by_default': false,
+            'use_binary_json_representation': false,
+          },
+        ],
+      };
+    }
+
+    return DriftOptions.fromJson({
+      ...cli.project.options.toJson(),
+      ...schemaOptions,
+      'generate_manager': false,
+    });
   }
 
   /// Generates the Dart code for a library file that instantiates the schema
