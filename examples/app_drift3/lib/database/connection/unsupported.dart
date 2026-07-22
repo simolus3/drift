@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift3/drift.dart';
 
 Never _unsupported() {
   throw UnsupportedError(

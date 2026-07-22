@@ -1,5 +1,7 @@
-import 'package:app_drift3/database/database.steps.dart';
+//import 'package:app_drift3/database/database.steps.dart';
 import 'package:drift3/drift.dart';
+import 'package:drift3_flutter_preview/drift_flutter.dart';
+import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:path_provider/path_provider.dart';
@@ -15,23 +17,23 @@ import 'tables.dart';
 part 'database.g.dart';
 
 @DriftDatabase(tables: [TodoEntries, Categories], include: {'sql.drift'})
-class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? e])
+final class AppDatabase extends _$AppDatabase {
+  AppDatabase([DriftConnection? connection])
       : super(
-          e ??
+          connection ??
               driftDatabase(
                 name: 'todo-app',
                 native: const DriftNativeOptions(
                   databaseDirectory: getApplicationSupportDirectory,
                 ),
                 web: DriftWebOptions(
-                  sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-                  driftWorker: Uri.parse('drift_worker.js'),
+                  sqlite3Wasm: 'sqlite3.wasm',
+                  driftWorker: 'drift_worker.js',
                   onResult: (result) {
-                    if (result.missingFeatures.isNotEmpty) {
+                    if (result.features.missingFeatures.isNotEmpty) {
                       debugPrint(
-                        'Using ${result.chosenImplementation} due to unsupported '
-                        'browser features: ${result.missingFeatures}',
+                        'Using ${result.databaseImplementation} due to unsupported '
+                        'browser features: ${result.features.missingFeatures}',
                       );
                     }
                   },
@@ -39,14 +41,13 @@ class AppDatabase extends _$AppDatabase {
               ),
         );
 
-  AppDatabase.forTesting(DatabaseConnection super.connection);
-
   @override
   int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
+      /*
       onUpgrade: stepByStep(
         from1To2: (m, schema) async {
           // The todoEntries.dueDate column was added in version 2.
@@ -63,6 +64,7 @@ class AppDatabase extends _$AppDatabase {
           await m.alterTable(TableMigration(schema.todoEntries));
         },
       ),
+      */
       beforeOpen: (details) async {
         // Make sure that foreign keys are enabled
         await customStatement('PRAGMA foreign_keys = ON');
@@ -118,7 +120,8 @@ class AppDatabase extends _$AppDatabase {
   /// id.
   Stream<List<TodoEntryWithCategory>> entriesInCategory(int? categoryId) {
     final query = select(todoEntries).join([
-      leftOuterJoin(categories, categories.id.equalsExp(todoEntries.category))
+      Join.leftOuter(categories,
+          on: categories.id.equalsExp(todoEntries.category))
     ]);
 
     if (categoryId != null) {
@@ -138,12 +141,12 @@ class AppDatabase extends _$AppDatabase {
   Future<void> deleteCategory(Category category) {
     return transaction(() async {
       // First, move todo entries that might remain into the default category
-      await (todoEntries.update()
-            ..where((todo) => todo.category.equals(category.id)))
-          .write(const TodoEntriesCompanion(category: Value(null)));
+      final stmt = update(todoEntries)
+        ..where((todo) => todo.category.equals(category.id));
+      await stmt.write(const TodoEntriesCompanion(category: Value(null)));
 
       // Then, delete the category
-      await categories.deleteOne(category);
+      await delete(categories).delete(category);
     });
   }
 

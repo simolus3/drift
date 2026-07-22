@@ -21,12 +21,16 @@ targets:
           # Drift analyzes SQL queries at compile-time. For this purpose, it needs to know which sqlite3
           # features will be available. The sqlite3 package enables fts5 by default, so we can depend
           # on that.
-          sql:
-            dialect: sqlite
-            options:
+          dialects:
+            - dialect: sqlite
               version: "3.38"
               modules: [fts5]
+              # These options are set for backwards-compatibility with drift2. Changing them requires a migration.
+              strict_tables_by_default: false
+              store_date_times_as_text: false
+              use_binary_json_representation: false
           drift3_preview: true
+          generate_manager: false
 
       # Configuring this builder isn't required for most apps. In our case, we
       # want to compile the web worker in `web/worker.dart` to JS and we use the

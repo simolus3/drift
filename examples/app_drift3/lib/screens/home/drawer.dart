@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' hide Column;
+import 'package:drift3/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -71,12 +71,11 @@ class _CategoryDrawerEntry extends ConsumerWidget {
             onTap: () async {
               final newColor = await _selectColor(context, category.color);
               if (newColor != null) {
-                final update = ref
-                    .read(AppDatabase.provider)
-                    .categories
-                    .update()
-                  ..whereSamePrimaryKey(category);
-                await update.write(CategoriesCompanion(color: Value(newColor)));
+                final db = ref.read(AppDatabase.provider);
+                await db
+                    .update(db.categories)
+                    .whereSamePrimaryKey(category)
+                    .write(CategoriesCompanion(color: Value(newColor)));
               }
             },
             child: DecoratedBox(

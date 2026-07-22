@@ -1,10 +1,12 @@
 import 'dart:io';
 
-import 'package:drift/drift.dart';
-import 'package:drift_dev/api/migrations_native.dart';
+import 'package:drift3/drift.dart';
+import 'package:drift_sqlite/drift_sqlite.dart';
+import 'package:drift_sqlite/schema_verifier.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqlite3/sqlite3.dart';
 
 Future<File> get databaseFile async {
   // We use `path_provider` to find a suitable path to store our data in.
@@ -23,6 +25,13 @@ Future<void> validateDatabaseSchema(GeneratedDatabase database) async {
   //
   // For details, see: https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-a-database-schema-at-runtime
   if (kDebugMode) {
-    await VerifySelf(database).validateDatabaseSchema();
+    database.validateDatabaseSchema(
+      connection: DriftConnection(
+        dialect: SqliteDialect.new,
+        openConnection: () async {
+          return SqliteConnection(sqlite3.openInMemory());
+        },
+      ),
+    );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' hide Column;
+import 'package:drift3/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -96,7 +96,8 @@ class _TodoEditDialogState extends ConsumerState<TodoEditDialog> {
               dueDate: Value(_dueDate),
             );
 
-            ref.read(AppDatabase.provider).todoEntries.replaceOne(entry);
+            final database = ref.read(AppDatabase.provider);
+            database.update(database.todoEntries).replace(entry);
             Navigator.pop(context);
           },
         ),

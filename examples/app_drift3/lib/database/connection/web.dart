@@ -1,5 +1,6 @@
-import 'package:drift/drift.dart';
-import 'package:drift_dev/api/migrations_web.dart';
+import 'package:drift3/drift.dart';
+import 'package:drift_sqlite/drift_sqlite.dart';
+import 'package:drift_sqlite/schema_verifier.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqlite3/wasm.dart';
 
@@ -13,9 +14,18 @@ Future<void> validateDatabaseSchema(GeneratedDatabase database) async {
   //
   // For details, see: https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-a-database-schema-at-runtime
   if (kDebugMode) {
-    final sqlite = await WasmSqlite3.loadFromUrl(Uri.parse('/sqlite3.wasm'));
-    sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
+    database.validateDatabaseSchema(
+      connection: DriftConnection(
+        dialect: SqliteDialect.new,
+        openConnection: () async {
+          final sqlite =
+              await WasmSqlite3.loadFromUrl(Uri.parse('/sqlite3.wasm'));
+          sqlite.registerVirtualFileSystem(InMemoryFileSystem(),
+              makeDefault: true);
 
-    await VerifySelf(database).validateDatabaseSchema(sqlite3: sqlite);
+          return SqliteConnection(sqlite.openInMemory());
+        },
+      ),
+    );
   }
 }

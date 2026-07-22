@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' hide Column;
+import 'package:drift3/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,10 +32,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       final database = ref.read(AppDatabase.provider);
       final currentCategory = ref.read(activeCategory);
 
-      database.todoEntries.insertOne(TodoEntriesCompanion.insert(
-        description: _controller.text,
-        category: Value(currentCategory?.id),
-      ));
+      database.todoEntries
+          .statements(database)
+          .insertOne(TodoEntriesCompanion.insert(
+            description: _controller.text,
+            category: Value(currentCategory?.id),
+          ));
 
       _controller.clear();
     }
