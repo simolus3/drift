@@ -1,8 +1,7 @@
 ## 2.34.5
 
 - Escape SQL column names that are reserved Dart keywords (e.g. `class`) when
-  deriving the Dart getter name, fixing invalid generated code for tables read
-  from SQL (such as the schema snapshots emitted by `make-migrations`).
+  deriving the Dart getter name.
 
 ## 2.34.4
 
