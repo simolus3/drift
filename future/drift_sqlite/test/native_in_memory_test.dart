@@ -10,7 +10,7 @@ import 'connection_testcases.dart';
 
 void main() {
   declareConnectionTests(
-    () async => DriftDatabaseImplementation(
+    () async => OpenedDriftConnection(
       SqliteConnection(sqlite3.openInMemory()),
       InMemoryStreamQueryStore(),
     ),

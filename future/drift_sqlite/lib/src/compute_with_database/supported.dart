@@ -54,7 +54,7 @@ Future<T> _runWithDatabase<T, DB extends GeneratedDatabase>({
             ),
           );
 
-          return DriftDatabaseImplementation(
+          return OpenedDriftConnection(
             SqlitePoolSession(
               pool,
               // Don't try to re-run migrations here, the database is already

@@ -8,9 +8,9 @@ import 'package:sqlite3/common.dart';
 import 'package:test/test.dart';
 
 void declareConnectionTests(
-  Future<DriftDatabaseImplementation> Function() openConnection,
+  Future<OpenedDriftConnection> Function() openConnection,
 ) {
-  Future<DriftDatabaseImplementation> open() async {
+  Future<OpenedDriftConnection> open() async {
     final impl = await openConnection();
     addTearDown(impl.session.close);
     return impl;

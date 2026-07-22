@@ -51,7 +51,7 @@ DriftConnection sqliteConnectionPool({
   );
 }
 
-Future<DriftDatabaseImplementation> _sqliteConnectionPool({
+Future<OpenedDriftConnection> _sqliteConnectionPool({
   required File file,
   required int amountOfReaders,
   required int preparedStatementCacheSize,
@@ -99,7 +99,7 @@ Future<DriftDatabaseImplementation> _sqliteConnectionPool({
     },
   );
 
-  return DriftDatabaseImplementation(
+  return OpenedDriftConnection(
     SqlitePoolSession(pool),
     SqlitePoolUpdates(pool, enableCustomUpdates: updates == .drift),
   );
