@@ -2764,6 +2764,14 @@ abstract base class _$TodoDb extends GeneratedDatabase {
   $TodoWithCategoryViewView get todoWithCategoryView =>
       $TodoWithCategoryViewView();
   Index get categoriesDesc => _$categoriesDesc;
+  @override
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.sqlite: const SqliteOptions(
+      strictTablesByDefault: true,
+      storeDateTimesAsText: true,
+      useBinaryJsonRepresentation: true,
+    ),
+  };
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<TodoEntry> withIn(String? var1, String? var2, List<RowId> var3) {
     var $arrayStartIndex = 2;

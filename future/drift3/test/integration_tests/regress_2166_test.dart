@@ -43,7 +43,7 @@ void _defineTest(
     final db = usePool
         ? _SomeDb(
             DriftConnection(
-              dialect: const SqliteDialect(),
+              dialect: SqliteDialect.new,
               openConnection: () async =>
                   SqliteConnection(sqlite3.openInMemory()),
             ),

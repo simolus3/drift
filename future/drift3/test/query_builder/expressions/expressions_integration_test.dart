@@ -15,11 +15,9 @@ void main() {
 
   group('storing date times as timestamps', () {
     _testDateTimes(
-      () => TodoDb(
-        testInMemoryDatabase(
-          SqliteDialect(options: SqliteOptions(storeDateTimesAsText: false)),
-        ),
-      ),
+      () =>
+          TodoDb(testInMemoryDatabase())
+            ..sqliteOptions = SqliteOptions(storeDateTimesAsText: false),
       dateTimeAsText: false,
     );
   });

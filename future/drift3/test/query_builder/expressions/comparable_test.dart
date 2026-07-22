@@ -74,7 +74,7 @@ void main() {
     final c = Expression<DateTime>.custom('c', precedence: Precedence.primary);
 
     test('disabled for datetimes as timestamps', () {
-      const asTimestamps = SqliteDialect(
+      const asTimestamps = SqliteDialect.withOptions(
         options: SqliteOptions(storeDateTimesAsText: false),
       );
 

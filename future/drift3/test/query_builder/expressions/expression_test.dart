@@ -217,10 +217,16 @@ void main() {
       ),
     );
 
-    expect(expr, generatesWithDialect('pg', dialect: const PostgresDialect()));
     expect(
       expr,
-      generatesWithDialect('fallback', dialect: const SqliteDialect()),
+      generatesWithDialect('pg', dialect: const PostgresDialect.withOptions()),
+    );
+    expect(
+      expr,
+      generatesWithDialect(
+        'fallback',
+        dialect: const SqliteDialect.withOptions(),
+      ),
     );
   });
 }

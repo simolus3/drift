@@ -9,10 +9,10 @@ export 'test_utils/matchers.dart';
 DriftConnection createConnection(
   DriftSession session, {
   StreamQueryStore? streams,
-  DriftDialect? dialect,
+  DriftDialectFactory? dialect,
 }) {
   return DriftConnection(
-    dialect: dialect ?? const SqliteDialect(),
+    dialect: dialect ?? SqliteDialect.new,
     openConnection: () async => session,
     streamQueries: streams,
   );

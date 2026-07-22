@@ -33,14 +33,13 @@ export 'src/options.dart';
 /// implicitly use the same connection pool without conflict.
 DriftConnection sqliteConnectionPool({
   required File file,
-  SqliteOptions dialectOptions = const SqliteOptions(),
   UpdateNotificationMode updates = .native,
   int amountOfReaders = 4,
   int preparedStatementCacheSize = 16,
   void Function(Database, {required bool isWriter})? configureDatabase,
 }) {
   return DriftConnection.withImplementation(
-    dialect: SqliteDialect(options: dialectOptions),
+    dialect: SqliteDialect.new,
     implementation: () => _sqliteConnectionPool(
       file: file,
       amountOfReaders: amountOfReaders,
@@ -51,7 +50,7 @@ DriftConnection sqliteConnectionPool({
   );
 }
 
-Future<DriftDatabaseImplementation> _sqliteConnectionPool({
+Future<OpenedDriftConnection> _sqliteConnectionPool({
   required File file,
   required int amountOfReaders,
   required int preparedStatementCacheSize,
@@ -99,7 +98,7 @@ Future<DriftDatabaseImplementation> _sqliteConnectionPool({
     },
   );
 
-  return DriftDatabaseImplementation(
+  return OpenedDriftConnection(
     SqlitePoolSession(pool),
     SqlitePoolUpdates(pool, enableCustomUpdates: updates == .drift),
   );

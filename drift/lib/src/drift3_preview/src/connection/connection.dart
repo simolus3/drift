@@ -8,8 +8,9 @@ import 'streams/in_memory_store.dart';
 import 'streams/store.dart';
 import 'streams/update_rules.dart';
 
-/// The underlying database connection implementation used for drift databases.
-final class DriftDatabaseImplementation {
+/// The underlying opened database connection implementation used for drift
+/// databases.
+final class OpenedDriftConnection {
   /// The outermost [DriftSession] representing the opened connection or
   /// connection pool.
   final DriftSession session;
@@ -19,21 +20,21 @@ final class DriftDatabaseImplementation {
   final StreamQueryStore streamQueries;
 
   /// @nodoc
-  DriftDatabaseImplementation(this.session, this.streamQueries);
+  OpenedDriftConnection(this.session, this.streamQueries);
 }
 
 /// A pending connection that can be opened into a
-/// [DriftDatabaseImplementation].
+/// [OpenedDriftConnection].
 ///
 /// [DriftConnection] instances don't hold any resources before [open] is
 /// called.
 final class DriftConnection {
   /// The dialect to use when generating SQL statements.
   ///
-  /// This should always correspond to the [DriftDatabaseImplementation] opened
+  /// This should always correspond to the [OpenedDriftConnection] opened
   /// by this session. SQLite connections would use a SQLite dialect.
-  final DriftDialect dialect;
-  final Future<DriftDatabaseImplementation> Function() _openConnection;
+  final DriftDialectFactory dialect;
+  final Future<OpenedDriftConnection> Function() _openConnection;
 
   /// @nodoc
   DriftConnection({
@@ -50,14 +51,14 @@ final class DriftConnection {
   /// A drift connection resolving to the [implementation] when [open]ed.
   DriftConnection.withImplementation({
     required this.dialect,
-    required Future<DriftDatabaseImplementation> Function() implementation,
+    required Future<OpenedDriftConnection> Function() implementation,
   }) : _openConnection = implementation;
 
   /// A drift connection referring to another [DriftConnection] lazily when
   /// opening.
   static DriftConnection delayed(
     Future<DriftConnection> Function() open, {
-    required DriftDialect dialect,
+    required DriftDialectFactory dialect,
   }) {
     final session = Completer<DriftSession>();
     final streamQueries = Completer<StreamQueryStore>();
@@ -92,7 +93,7 @@ final class DriftConnection {
   ///
   /// The returned implementation should eventually be closed to avoid leaking
   /// resources.
-  Future<DriftDatabaseImplementation> open() async {
+  Future<OpenedDriftConnection> open() async {
     return await _openConnection();
   }
 
@@ -105,7 +106,7 @@ final class DriftConnection {
       dialect: dialect,
       implementation: () async {
         final implementation = await open();
-        return DriftDatabaseImplementation(
+        return OpenedDriftConnection(
           await change(implementation.session),
           implementation.streamQueries,
         );
@@ -113,13 +114,13 @@ final class DriftConnection {
     );
   }
 
-  static Future<DriftDatabaseImplementation> Function() _wrapOpenSession(
+  static Future<OpenedDriftConnection> Function() _wrapOpenSession(
     Future<DriftSession> Function() session,
     StreamQueryStore? store,
     bool closeStreamsSynchronously,
   ) {
     return () async {
-      return DriftDatabaseImplementation(
+      return OpenedDriftConnection(
         await session(),
         store ??
             InMemoryStreamQueryStore(

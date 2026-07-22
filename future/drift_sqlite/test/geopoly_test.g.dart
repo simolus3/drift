@@ -210,6 +210,14 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
 abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
   _$_GeopolyTestDatabase(super.implementation);
   GeopolyTest get geopolyTest => GeopolyTest();
+  @override
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.sqlite: const SqliteOptions(
+      strictTablesByDefault: true,
+      storeDateTimesAsText: true,
+      useBinaryJsonRepresentation: true,
+    ),
+  };
   Selectable<double?> area(int var1) {
     return customSelectMapped<double?>(
       query: 'SELECT geopoly_area(_shape) FROM geopoly_test WHERE "rowid" = ?1',

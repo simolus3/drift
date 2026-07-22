@@ -292,12 +292,19 @@ final uuidType = SqlType<UuidValue>.dialectSpecific(
   },
 )
 final class TodoDb extends _$TodoDb {
+  SqliteOptions sqliteOptions = const SqliteOptions();
+
   TodoDb([DriftConnection? e]) : super(e ?? _nullConnection) {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   }
 
   @override
   MigrationStrategy migration = MigrationStrategy();
+
+  @override
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.sqlite: sqliteOptions,
+  };
 
   @override
   int schemaVersion = 1;
@@ -319,6 +326,6 @@ final class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
 }
 
 DriftConnection get _nullConnection => DriftConnection(
-  dialect: SqliteDialect(),
+  dialect: SqliteDialect.new,
   openConnection: () => throw UnsupportedError('stub'),
 );

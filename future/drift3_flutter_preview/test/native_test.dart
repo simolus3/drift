@@ -141,7 +141,7 @@ void main() {
     setUp(() async {
       db = SimpleDatabase(
         DriftConnection(
-          dialect: const SqliteDialect(),
+          dialect: SqliteDialect.new,
           openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
           closeStreamsSynchronously: true,
         ),

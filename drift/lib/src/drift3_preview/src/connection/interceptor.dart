@@ -1,3 +1,4 @@
+import '../query_builder/dialect.dart';
 import 'connection.dart';
 import 'connection_compat.dart';
 import 'result_set.dart';
@@ -81,7 +82,10 @@ extension ApplyInterceptorConnection on DriftConnection {
   /// `this`, but replaces its executor by wrapping it with the [interceptor].
   ///
   /// See also: [ApplyInterceptor.interceptWith].
-  DriftConnection interceptWith(QueryInterceptor interceptor) {
+  DriftConnection interceptWith(
+    QueryInterceptor interceptor,
+    DriftDialect dialect,
+  ) {
     return changeSession((old) {
       // When intercepting an entire connection, prefer to wrap the inner
       // session in a compat session so that e.g. calls to create transactions

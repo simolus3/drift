@@ -8,7 +8,6 @@ import 'package:sqlparser/sqlparser.dart';
 // ignore: implementation_imports
 import 'package:sqlparser/src/utils/ast_equality.dart';
 
-import '../dialect/dialect.dart';
 import 'common.dart';
 
 /// An SQL element as part of the database schema.
@@ -58,14 +57,13 @@ extension type SyntacticSchema(List<SyntacticSchemaElement> elements)
   /// Extracts a schema from values declared in a drift database.
   static SyntacticSchema fromDeclaredDriftSchema(
     drift.DatabaseSchema schema, {
-    drift.DriftDialect? dialect,
+    required drift.DriftDialect dialect,
   }) {
-    final resolvedDialect = dialect ?? const SqliteDialect();
     final found = <SyntacticSchemaElement>[];
 
     for (final element in schema) {
       final stmt = drift.CreateStatement.creatingElement(element);
-      final sql = resolvedDialect.compile(stmt);
+      final sql = dialect.compile(stmt);
 
       assert(sql.variables.isEmpty);
       found.add(

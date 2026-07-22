@@ -122,10 +122,9 @@ final class SqliteConnection implements DriftSession {
   /// Closing this [SqliteConnection] will close the database.
   static DriftConnection synchronous({
     required sqlite.CommonDatabase Function() open,
-    SqliteDialect dialect = const SqliteDialect(),
   }) {
     return DriftConnection(
-      dialect: dialect,
+      dialect: SqliteDialect.new,
       openConnection: () async => SqliteConnection(open()),
     );
   }

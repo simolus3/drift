@@ -11,7 +11,7 @@ void main() {
   setUp(() {
     db = _EmptyDatabase(
       DriftConnection(
-        dialect: const SqliteDialect(),
+        dialect: SqliteDialect.new,
         openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
         closeStreamsSynchronously: true,
       ),

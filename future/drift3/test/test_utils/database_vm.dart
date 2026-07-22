@@ -10,8 +10,8 @@ Version get sqlite3Version {
   return sqlite3.version;
 }
 
-DriftConnection testInMemoryDatabase([DriftDialect? dialect]) {
-  final resolvedDialect = dialect ?? const SqliteDialect();
+DriftConnection testInMemoryDatabase([DriftDialectFactory? dialect]) {
+  final resolvedDialect = dialect ?? SqliteDialect.new;
 
   return DriftConnection(
     dialect: resolvedDialect,

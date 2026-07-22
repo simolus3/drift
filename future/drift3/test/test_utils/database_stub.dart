@@ -14,7 +14,7 @@ Object? transportRoundtrip(Object? source) {
   throw UnsupportedError('Stub, should resolve to web or vm');
 }
 
-DriftConnection testInMemoryDatabase([DriftDialect? dialect]) {
+DriftConnection testInMemoryDatabase([DriftDialectFactory? dialect]) {
   throw UnsupportedError('Stub, should resolve to web or vm');
 }
 

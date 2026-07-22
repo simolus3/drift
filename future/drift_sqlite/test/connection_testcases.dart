@@ -8,9 +8,9 @@ import 'package:sqlite3/common.dart';
 import 'package:test/test.dart';
 
 void declareConnectionTests(
-  Future<DriftDatabaseImplementation> Function() openConnection,
+  Future<OpenedDriftConnection> Function() openConnection,
 ) {
-  Future<DriftDatabaseImplementation> open() async {
+  Future<OpenedDriftConnection> open() async {
     final impl = await openConnection();
     addTearDown(impl.session.close);
     return impl;
@@ -19,7 +19,7 @@ void declareConnectionTests(
   EmptyDb openDrift() {
     final db = EmptyDb(
       DriftConnection.withImplementation(
-        dialect: const SqliteDialect(),
+        dialect: SqliteDialect.new,
         implementation: openConnection,
       ),
     );
@@ -72,14 +72,18 @@ void declareConnectionTests(
     await db.execute(
       StatementInfo(
         "explain query plan select * from test where description = ?",
-        variables: [MappedValue.raw(const SqliteDialect().textType, 't')],
+        variables: [
+          MappedValue.raw(const SqliteDialect.withOptions().textType, 't'),
+        ],
       ),
     );
     await db.execute(StatementInfo('drop index i1'));
     await db.execute(
       StatementInfo(
         "explain query plan select * from test where description = ?",
-        variables: [MappedValue.raw(const SqliteDialect().textType, 't')],
+        variables: [
+          MappedValue.raw(const SqliteDialect.withOptions().textType, 't'),
+        ],
       ),
     );
   });

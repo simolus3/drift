@@ -33,8 +33,8 @@ Future<WasmSqlite3> get sqlite3 {
   });
 }
 
-DriftConnection testInMemoryDatabase([DriftDialect? dialect]) {
-  final resolvedDialect = dialect ?? const SqliteDialect();
+DriftConnection testInMemoryDatabase([DriftDialectFactory? dialect]) {
+  final resolvedDialect = dialect ?? SqliteDialect.new;
 
   return DriftConnection(
     dialect: resolvedDialect,

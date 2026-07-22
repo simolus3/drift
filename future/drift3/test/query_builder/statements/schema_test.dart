@@ -183,7 +183,9 @@ void main() {
       });
 
       test('postgres', () async {
-        db = TodoDb(createConnection(mockExecutor, dialect: PostgresDialect()));
+        db = TodoDb(
+          createConnection(mockExecutor, dialect: PostgresDialect.new),
+        );
 
         await db.createMigrator().createTable(db.withCustomType);
         verify(
@@ -338,10 +340,7 @@ void main() {
       await defaultMigrator.createAll();
       verifyNever(executor.execute(any));
 
-      final fixedMigrator = Migrator(
-        db,
-        _FakeSchemaVersion(database: db, version: 2),
-      );
+      final fixedMigrator = Migrator(db, _FakeSchemaVersion(version: 2));
       await fixedMigrator.createAll();
       verify(
         executor.executeSql(
@@ -357,10 +356,7 @@ void main() {
       await defaultMigrator.recreateAllViews();
       verifyNever(executor.execute(any));
 
-      final fixedMigrator = Migrator(
-        db,
-        _FakeSchemaVersion(database: db, version: 2),
-      );
+      final fixedMigrator = Migrator(db, _FakeSchemaVersion(version: 2));
       await fixedMigrator.recreateAllViews();
 
       verify(executor.executeSql('CREATE VIEW my_view AS SELECT 2', []));
@@ -369,8 +365,8 @@ void main() {
 
   group('dialect-specific', () {
     final dialects = [
-      ('sqlite', SqliteDialect()),
-      ('postgres', PostgresDialect()),
+      ('sqlite', SqliteDialect.new),
+      ('postgres', PostgresDialect.new),
     ];
 
     CustomComponent statements(String base) {
@@ -386,22 +382,23 @@ void main() {
     for (final (name, dialect) in dialects) {
       test('with dialect $name', () async {
         final db = TodoDb(createConnection(mockExecutor, dialect: dialect));
+        final resolvedDialect = db.dialect;
         final migrator = db.createMigrator();
 
         await migrator.create(Trigger('a', statements('trigger')));
         await migrator.create(Index('a', statements('index')));
         await migrator.create(OnCreateQuery(statements('@')));
 
-        verify(mockExecutor.executeSql('trigger ${dialect.known}', []));
-        verify(mockExecutor.executeSql('index ${dialect.known}', []));
-        verify(mockExecutor.executeSql('@ ${dialect.known}', []));
+        verify(mockExecutor.executeSql('trigger ${resolvedDialect.known}', []));
+        verify(mockExecutor.executeSql('index ${resolvedDialect.known}', []));
+        verify(mockExecutor.executeSql('@ ${resolvedDialect.known}', []));
       });
     }
   });
 }
 
 final class _FakeSchemaVersion extends VersionedSchema {
-  _FakeSchemaVersion({required super.database, required super.version});
+  _FakeSchemaVersion({required super.version});
 
   @override
   Iterable<DatabaseSchemaEntity> get entities => [

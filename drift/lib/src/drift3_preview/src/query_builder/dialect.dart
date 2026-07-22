@@ -46,3 +46,8 @@ abstract base class DriftDialect implements TypeProvider {
     return compiler.statement.toStatementInfo();
   }
 }
+
+/// A factory to create [DriftDialect] implementations based on available
+/// options.
+typedef DriftDialectFactory =
+    DriftDialect Function(Map<KnownSqlDialect, Object> dialectOptions);

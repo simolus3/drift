@@ -157,7 +157,7 @@ void main() {
   }
 }
 
-Future<DriftDatabaseImplementation> _openPool() async {
+Future<OpenedDriftConnection> _openPool() async {
   final file = File(d.path('test.db'));
   return sqliteConnectionPool(file: file).open();
 }

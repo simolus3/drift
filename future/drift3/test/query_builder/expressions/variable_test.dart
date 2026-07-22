@@ -15,7 +15,7 @@ void main() {
       variable,
       generatesWithDialect(
         '?1',
-        dialect: SqliteDialect(
+        dialect: SqliteDialect.withOptions(
           options: SqliteOptions(storeDateTimesAsText: false),
         ),
         variables: [1551297563],
@@ -54,7 +54,7 @@ void main() {
         Variable(dateTime),
         generatesWithDialect(
           '?1',
-          dialect: SqliteDialect(
+          dialect: SqliteDialect.withOptions(
             options: SqliteOptions(storeDateTimesAsText: false),
           ),
           variables: [stamp],
@@ -74,7 +74,7 @@ void main() {
 
   test('writes constants when variables are not supported', () {
     const variable = Variable("hello world'");
-    final stmt = const SqliteDialect().createCompiler();
+    final stmt = const SqliteDialect.withOptions().createCompiler();
     stmt.statement.supportsVariables = false;
 
     variable.compileWith(stmt);

@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import '../../test_utils.dart';
 
 void main() {
-  const dialect = SqliteDialect();
+  const dialect = SqliteDialect.withOptions();
   final type = SqliteDialect.anyType().resolveIn(dialect);
 
   test('keeps `DriftAny` values unchanged', () {

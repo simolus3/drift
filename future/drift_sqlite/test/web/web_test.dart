@@ -24,7 +24,7 @@ void main() {
       wasmModule: sqliteWasmUri.toString(),
     );
     final db = await sqlite.connect('db-${dbCounter++}', .inMemoryLocal);
-    return DriftDatabaseImplementation(
+    return OpenedDriftConnection(
       WasmDatabase.wrapDatabase(db),
       InMemoryStreamQueryStore(),
     );

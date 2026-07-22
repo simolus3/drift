@@ -18,7 +18,7 @@ void main() {
   test('change column types', () async {
     // Create todos table with category as text (it's an int? in Dart).
     final executor = DriftConnection(
-      dialect: const SqliteDialect(),
+      dialect: SqliteDialect.new,
       openConnection: () async {
         final db = sqlite3.openInMemory();
         db
@@ -86,7 +86,7 @@ void main() {
   test('rename columns', () async {
     // Create todos table with category as category_old
     final executor = DriftConnection(
-      dialect: const SqliteDialect(),
+      dialect: SqliteDialect.new,
       openConnection: () async {
         final db = sqlite3.openInMemory();
         db.execute('''
@@ -139,7 +139,7 @@ void main() {
   test('delete column', () async {
     // Create todos table with an additional column
     final executor = DriftConnection(
-      dialect: const SqliteDialect(),
+      dialect: SqliteDialect.new,
       openConnection: () async {
         final db = sqlite3.openInMemory();
         db.execute('''
@@ -183,7 +183,7 @@ void main() {
   test('delete column with dropColumn', () async {
     // Create todos table with an additional column
     final executor = DriftConnection(
-      dialect: const SqliteDialect(),
+      dialect: SqliteDialect.new,
       openConnection: () async {
         final db = sqlite3.openInMemory();
         db.execute('''
@@ -227,10 +227,10 @@ void main() {
   test('rename tables', () async {
     // Create todos table with old name
     final executor = DriftConnection(
-      dialect: const SqliteDialect(),
+      dialect: SqliteDialect.new,
       openConnection: () async {
         final db = sqlite3.openInMemory();
-        final compiler = const SqliteDialect().createCompiler();
+        final compiler = SqliteDialect.withOptions().createCompiler();
         CreateTableStatement(
           $TodosTableTable('todos_old_name'),
         ).compileWith(compiler);
@@ -260,7 +260,7 @@ void main() {
 
   test('add columns with default value', () async {
     final executor = DriftConnection(
-      dialect: const SqliteDialect(),
+      dialect: SqliteDialect.new,
       openConnection: () async {
         final db = sqlite3.openInMemory();
         // Create todos table without content column
@@ -309,7 +309,7 @@ void main() {
 
   test('alter table without rowid', () async {
     final executor = DriftConnection(
-      dialect: const SqliteDialect(),
+      dialect: SqliteDialect.new,
       openConnection: () async {
         final db = sqlite3.openInMemory();
         db.execute(
@@ -397,7 +397,7 @@ void main() {
       late Database nativeDb;
       final db = _TestDatabase(
         DriftConnection(
-          dialect: const SqliteDialect(),
+          dialect: SqliteDialect.new,
           openConnection: () async =>
               SqliteConnection(nativeDb = sqlite3.openInMemory()),
         ),
@@ -416,7 +416,7 @@ void main() {
         final nativeDb = sqlite3.openInMemory();
         var db = _TestDatabase(
           DriftConnection(
-            dialect: const SqliteDialect(),
+            dialect: SqliteDialect.new,
             openConnection: () async =>
                 SqliteConnection(nativeDb, closeUnderlyingWhenClosed: false),
           ),
@@ -428,7 +428,7 @@ void main() {
 
         db = _TestDatabase(
           DriftConnection(
-            dialect: const SqliteDialect(),
+            dialect: SqliteDialect.new,
             openConnection: () async => SqliteConnection(nativeDb),
           ),
           2,
@@ -453,7 +453,7 @@ void main() {
       final nativeDb = sqlite3.openInMemory();
       var db = _TestDatabase(
         DriftConnection(
-          dialect: const SqliteDialect(),
+          dialect: SqliteDialect.new,
           openConnection: () async =>
               SqliteConnection(nativeDb, closeUnderlyingWhenClosed: false),
         ),
@@ -464,7 +464,7 @@ void main() {
 
       db = _TestDatabase(
         DriftConnection(
-          dialect: const SqliteDialect(),
+          dialect: SqliteDialect.new,
           openConnection: () async => SqliteConnection(nativeDb),
         ),
         10,
@@ -552,7 +552,7 @@ void main() {
     for (var currentSchema = 1; currentSchema < maxSchema; currentSchema++) {
       final db = TodoDb(
         DriftConnection(
-          dialect: const SqliteDialect(),
+          dialect: SqliteDialect.new,
           openConnection: () async =>
               SqliteConnection(underlying, closeUnderlyingWhenClosed: false),
         ),
@@ -598,7 +598,7 @@ void main() {
     final db =
         TodoDb(
             DriftConnection(
-              dialect: const SqliteDialect(),
+              dialect: SqliteDialect.new,
               openConnection: () async => SqliteConnection(underlying),
             ),
           )
@@ -634,7 +634,7 @@ void main() {
     final db =
         TodoDb(
             DriftConnection(
-              dialect: const SqliteDialect(),
+              dialect: SqliteDialect.new,
               openConnection: () async => SqliteConnection(
                 underlying,
                 closeUnderlyingWhenClosed: false,
@@ -658,7 +658,12 @@ void main() {
     "alterTable works for databases that can't set legacy alter table",
     () async {
       final interceptor = _NoLegacyAlterTable();
-      final db = TodoDb(testInMemoryDatabase().interceptWith(interceptor));
+      final db = TodoDb(
+        testInMemoryDatabase().interceptWith(
+          interceptor,
+          SqliteDialect.withOptions(),
+        ),
+      );
       addTearDown(db.close);
 
       final user = await db.users

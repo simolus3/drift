@@ -31,7 +31,7 @@ final class SchemaVerifier {
   SchemaVerifier({
     required this.helper,
     required this.openDatabase,
-    this.dialect = const SqliteDialect(),
+    this.dialect = const SqliteDialect.withOptions(),
   });
 
   /// Creates a [DriftConnection] that contains empty tables created for the
@@ -224,7 +224,7 @@ final class InitializedSchema {
   /// ```
   DriftConnection newConnection() {
     return DriftConnection(
-      dialect: _dialect,
+      dialect: (_) => _dialect,
       openConnection: () async =>
           SqliteConnection(rawDatabase, closeUnderlyingWhenClosed: false),
     );

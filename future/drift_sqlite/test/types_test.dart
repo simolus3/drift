@@ -4,7 +4,9 @@ import 'package:test/test.dart';
 
 void main() {
   group('bool type', () {
-    final sqliteType = BuiltinDriftType.bool.resolveIn(const SqliteDialect());
+    final sqliteType = BuiltinDriftType.bool.resolveIn(
+      const SqliteDialect.withOptions(),
+    );
 
     test('Can read booleans from sqlite', () {
       expect(sqliteType.dartValue(1), true);
@@ -23,7 +25,9 @@ void main() {
   });
 
   group('real type', () {
-    final sqliteType = BuiltinDriftType.double.resolveIn(const SqliteDialect());
+    final sqliteType = BuiltinDriftType.double.resolveIn(
+      const SqliteDialect.withOptions(),
+    );
 
     test('can be read from floating point values returned by sql', () {
       expect(sqliteType.dartValue(3.1234), 3.1234);

@@ -23,14 +23,13 @@ typedef MigrationStepWithVersion =
 ///
 /// This class is meant to be extended by generated code.
 abstract base class VersionedSchema {
-  /// The generated database instance, used to create [TableInfo] instances.
-  final DatabaseConnectionUser database;
-
   /// The [GeneratedDatabase.schemaVersion] at the time this schema was active.
   final int version;
 
-  /// Default constructor taking the database and the schema version.
-  VersionedSchema({required this.database, required this.version});
+  // TODO: Add dialect options related to this schema version?
+
+  /// Default constructor taking the schema version.
+  VersionedSchema({required this.version});
 
   /// All drift schema entities at the time of the set [version].
   Iterable<DatabaseSchemaEntity> get entities;

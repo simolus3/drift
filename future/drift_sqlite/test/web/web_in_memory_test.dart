@@ -18,7 +18,7 @@ void main() {
   });
 
   declareConnectionTests(() async {
-    return DriftDatabaseImplementation(
+    return OpenedDriftConnection(
       SqliteConnection(sqlite.openInMemory()),
       InMemoryStreamQueryStore(),
     );

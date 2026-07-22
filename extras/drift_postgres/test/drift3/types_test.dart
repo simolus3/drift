@@ -6,7 +6,7 @@ import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 
 void main() {
-  const dialect = PostgresDialect();
+  const dialect = PostgresDialect.withOptions();
 
   group('boolean', () {
     final type = BuiltinDriftType.bool.resolveIn(dialect);

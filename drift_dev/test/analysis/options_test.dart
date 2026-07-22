@@ -1,4 +1,6 @@
 import 'package:checked_yaml/checked_yaml.dart';
+import 'package:drift/drift.dart' show SqlDialect;
+import 'package:drift_dev/src/analysis/dialect.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:test/test.dart';
@@ -125,6 +127,35 @@ sqlite:
         contains('Unknown module "spellfix1", did you register it?'),
       ).withSpan('place_spellfix'),
     ]);
+  });
+
+  test('can parse drift3 dialect options', () async {
+    final options = parse('''
+drift3_preview: true
+dialects:
+  - dialect: sqlite
+    version: "3.37"
+    modules:
+      - json1
+      - fts5
+      - geopoly
+  - dialect: postgres
+''');
+
+    expect(options.drift3Preview, isTrue);
+    expect(options.drift3Dialects, [
+      isA<Drift3SqliteDialect>().having(
+        (e) => e.modules,
+        'modules',
+        hasLength(3),
+      ),
+      isA<ResolvedDialect>().having(
+        (e) => e.dialect,
+        'dialect',
+        SqlDialect.postgres,
+      ),
+    ]);
+    expect(options.sqliteOptions, isNotNull);
   });
 
   group('parses functions', () {

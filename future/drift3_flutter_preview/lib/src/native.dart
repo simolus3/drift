@@ -18,7 +18,6 @@ bool hasConfiguredSqlite = false;
 /// `sqlite3_connection_pool`.
 DriftConnection driftDatabase({
   required String name,
-  required SqliteOptions dialectOptions,
   DriftWebOptions? web,
   DriftNativeOptions? native,
 }) {
@@ -45,7 +44,6 @@ DriftConnection driftDatabase({
     }
   }
 
-  final dialect = SqliteDialect(options: dialectOptions);
   return DriftConnection.delayed(() async {
     final file = await lookupDatabaseFile();
     final parent = file.parent;
@@ -75,5 +73,5 @@ DriftConnection driftDatabase({
     );
 
     return pool;
-  }, dialect: dialect);
+  }, dialect: SqliteDialect.new);
 }

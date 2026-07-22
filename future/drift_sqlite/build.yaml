@@ -5,8 +5,8 @@ targets:
         options:
           drift3_preview: true
           generate_manager: false
-          sql:
-            options:
+          dialects:
+            - dialect: sqlite
               version: "3.37"
               modules:
                 - json1

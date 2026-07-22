@@ -15,7 +15,7 @@ void main() {
     () async {
       final database = _GeopolyTestDatabase(
         DriftConnection(
-          dialect: const SqliteDialect(),
+          dialect: SqliteDialect.new,
           openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
         ),
       );
