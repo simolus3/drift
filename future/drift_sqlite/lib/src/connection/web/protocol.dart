@@ -41,7 +41,7 @@ extension type ExecuteRequest._(JSObject _) implements BaseRequest {
     @JS('t') required String type,
   });
 
-  List<Object?> get decodedParameters =>
+  utils.DecodedTypedValues get decodedParameters =>
       utils.deserializeParameters(parameters, parameterTypes);
 }
 
@@ -86,7 +86,7 @@ extension type ExecuteBatchEntry._(JSObject _) implements JSObject {
     @JS('d') required bool needsResultSet,
   });
 
-  List<Object?> get decodedParameters =>
+  utils.DecodedTypedValues get decodedParameters =>
       utils.deserializeParameters(parameters, parameterTypes);
 }
 

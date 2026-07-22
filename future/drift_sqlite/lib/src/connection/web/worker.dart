@@ -64,7 +64,7 @@ final class DriftWorkerDatabase extends WorkerDatabase {
   }
 
   SerializedQueryResult _handleExecuteRequest(ExecuteRequest data) {
-    ResultSet? resultSet;
+    JSObject? resultSet;
 
     if (!data.needsResultSet && data.parameters.length == 0) {
       database.execute(data.sql);
@@ -74,9 +74,9 @@ final class DriftWorkerDatabase extends WorkerDatabase {
         final params = data.decodedParameters;
 
         if (data.needsResultSet) {
-          resultSet = stmt.select(params);
+          resultSet = utils.runStatementAndEncodeResults(stmt, params);
         } else {
-          stmt.execute(params);
+          stmt.executeWith(params.asParameters);
         }
       } finally {
         stmt.close();
@@ -103,12 +103,12 @@ final class DriftWorkerDatabase extends WorkerDatabase {
         final entry = request.entries[i];
         final stmt = statements[entry.sqlIndex];
         final params = entry.decodedParameters;
-        ResultSet? resultSet;
+        JSObject? resultSet;
 
         if (entry.needsResultSet) {
-          resultSet = stmt.select(params);
+          resultSet = utils.runStatementAndEncodeResults(stmt, params);
         } else {
-          stmt.execute(params);
+          stmt.executeWith(params.asParameters);
         }
 
         results[i] = _serializeResult(resultSet);
@@ -122,13 +122,11 @@ final class DriftWorkerDatabase extends WorkerDatabase {
     }
   }
 
-  SerializedQueryResult _serializeResult(ResultSet? resultSet) {
+  SerializedQueryResult _serializeResult(JSObject? resultSet) {
     return SerializedQueryResult(
       affectedRows: database.updatedRows.toJS,
       lastInsertRowId: database.lastInsertRowId.toJS,
-      serializedResultSet: resultSet == null
-          ? null
-          : utils.serializeResultSet(resultSet),
+      serializedResultSet: resultSet,
     );
   }
 }
