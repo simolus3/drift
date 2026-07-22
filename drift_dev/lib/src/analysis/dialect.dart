@@ -54,7 +54,7 @@ final class Drift3SqliteDialect extends ResolvedDialect
   final bool storeDateTimesAsText;
   final bool useBinaryJsonRepresentation;
 
-  const Drift3SqliteDialect({
+  const Drift3SqliteDialect.withOptions({
     this.modules = const [],
     this.version,
     this.knownFunctions = const {},

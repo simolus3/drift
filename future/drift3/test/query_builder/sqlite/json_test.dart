@@ -9,10 +9,10 @@ void main() {
   final column = Expression<String>.custom('col');
   final jsonColumn = Expression<DatabaseJson>.custom('json');
 
-  const dialectWithText = SqliteDialect(
+  const dialectWithText = SqliteDialect.withOptions(
     options: SqliteOptions(useBinaryJsonRepresentation: false),
   );
-  const dialectWithJsonb = SqliteDialect(
+  const dialectWithJsonb = SqliteDialect.withOptions(
     options: SqliteOptions(useBinaryJsonRepresentation: true),
   );
 

@@ -23,7 +23,7 @@ void main() {
         generatesWithDialect(
           r'$1',
           variables: [uuid.toString()],
-          dialect: const PostgresDialect(),
+          dialect: const PostgresDialect.withOptions(),
         ),
       );
     });
@@ -43,7 +43,7 @@ void main() {
         generatesWithDialect(
           r'CAST($1 AS uuid)',
           variables: [TypedValue(Type.text, 'foo')],
-          dialect: const PostgresDialect(),
+          dialect: const PostgresDialect.withOptions(),
         ),
       );
     });
@@ -70,7 +70,7 @@ void main() {
 
     database.close();
     database = TodoDb(
-      createConnection(postgresExecutor, dialect: const PostgresDialect()),
+      createConnection(postgresExecutor, dialect: PostgresDialect.new),
     );
 
     await database
@@ -110,7 +110,7 @@ void main() {
 
     await database.close();
     database = TodoDb(
-      createConnection(postgresExecutor, dialect: const PostgresDialect()),
+      createConnection(postgresExecutor, dialect: PostgresDialect.new),
     );
 
     final pgRow = await database.select(database.withCustomType).getSingle();

@@ -183,7 +183,9 @@ void main() {
       });
 
       test('postgres', () async {
-        db = TodoDb(createConnection(mockExecutor, dialect: PostgresDialect()));
+        db = TodoDb(
+          createConnection(mockExecutor, dialect: PostgresDialect.new),
+        );
 
         await db.createMigrator().createTable(db.withCustomType);
         verify(
@@ -369,8 +371,8 @@ void main() {
 
   group('dialect-specific', () {
     final dialects = [
-      ('sqlite', SqliteDialect()),
-      ('postgres', PostgresDialect()),
+      ('sqlite', SqliteDialect.new),
+      ('postgres', PostgresDialect.new),
     ];
 
     CustomComponent statements(String base) {
@@ -386,15 +388,16 @@ void main() {
     for (final (name, dialect) in dialects) {
       test('with dialect $name', () async {
         final db = TodoDb(createConnection(mockExecutor, dialect: dialect));
+        final resolvedDialect = db.dialect;
         final migrator = db.createMigrator();
 
         await migrator.create(Trigger('a', statements('trigger')));
         await migrator.create(Index('a', statements('index')));
         await migrator.create(OnCreateQuery(statements('@')));
 
-        verify(mockExecutor.executeSql('trigger ${dialect.known}', []));
-        verify(mockExecutor.executeSql('index ${dialect.known}', []));
-        verify(mockExecutor.executeSql('@ ${dialect.known}', []));
+        verify(mockExecutor.executeSql('trigger ${resolvedDialect.known}', []));
+        verify(mockExecutor.executeSql('index ${resolvedDialect.known}', []));
+        verify(mockExecutor.executeSql('@ ${resolvedDialect.known}', []));
       });
     }
   });

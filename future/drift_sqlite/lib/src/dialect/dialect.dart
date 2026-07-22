@@ -50,7 +50,13 @@ final class SqliteDialect extends DriftDialect {
   final SqliteOptions options;
 
   /// @nodoc
-  const SqliteDialect({this.options = const SqliteOptions()});
+  const SqliteDialect.withOptions({this.options = const SqliteOptions()});
+
+  /// A [DriftDialectFactory] opening [SqliteDialect]s.
+  factory SqliteDialect(Map<KnownSqlDialect, Object> dialectOptions) {
+    final options = dialectOptions[KnownSqlDialect.sqlite] as SqliteOptions?;
+    return SqliteDialect.withOptions(options: options ?? const SqliteOptions());
+  }
 
   @override
   KnownSqlDialect? get known => KnownSqlDialect.sqlite;

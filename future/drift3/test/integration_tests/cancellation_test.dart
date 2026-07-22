@@ -18,7 +18,7 @@ void main() {
       () async {
         final database = TodoDb(
           DriftConnection(
-            dialect: const SqliteDialect(),
+            dialect: SqliteDialect.new,
             openConnection: openInMemoryDatabase,
             closeStreamsSynchronously: true,
           ),

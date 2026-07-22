@@ -44,7 +44,7 @@ void main() {
     final desc = useText ? 'text' : 'timestamp';
 
     group('storing datetime values as $desc', () {
-      final dialect = SqliteDialect(
+      final dialect = SqliteDialect.withOptions(
         options: SqliteOptions(storeDateTimesAsText: useText),
       );
 

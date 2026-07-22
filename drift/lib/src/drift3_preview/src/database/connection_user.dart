@@ -35,7 +35,7 @@ abstract base class DatabaseConnectionUser {
   GeneratedDatabase get attachedDatabase;
 
   /// The [DriftDialect] implementation for this opened database.
-  DriftDialect get dialect => attachedDatabase.implementation.dialect;
+  DriftDialect get dialect => attachedDatabase.dialect;
 
   /// The current [DriftSession] that this database will use to run statements.
   Future<DriftSession> currentSession() {

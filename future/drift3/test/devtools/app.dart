@@ -7,7 +7,7 @@ import '../generated/todos.dart';
 void main() {
   TodoDb(
     DriftConnection(
-      dialect: const SqliteDialect(),
+      dialect: SqliteDialect.new,
       openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
     ),
   );

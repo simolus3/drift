@@ -3,7 +3,7 @@ import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:test/test.dart';
 
 void main() {
-  const dialect = SqliteDialect();
+  const dialect = SqliteDialect.withOptions();
 
   test('int column writes AUTOINCREMENT constraint', () {
     final column = TableColumn<int>(

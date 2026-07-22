@@ -5,7 +5,6 @@ library;
 export 'src/connect.dart';
 
 import 'package:drift3/drift.dart';
-import 'package:drift_sqlite/drift_sqlite.dart';
 import 'src/connect.dart' as connect;
 
 /// Obtain a [DriftConnection] to use for drift databases on the current
@@ -29,14 +28,8 @@ import 'src/connect.dart' as connect;
 /// Typically, names only consist of alphanumerical characters and underscores.
 DriftConnection driftDatabase({
   required String name,
-  SqliteOptions dialectOptions = const SqliteOptions(),
   connect.DriftWebOptions? web,
   connect.DriftNativeOptions? native,
 }) {
-  return connect.driftDatabase(
-    name: name,
-    dialectOptions: dialectOptions,
-    web: web,
-    native: native,
-  );
+  return connect.driftDatabase(name: name, web: web, native: native);
 }

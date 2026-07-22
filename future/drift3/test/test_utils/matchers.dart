@@ -2,7 +2,7 @@ import 'package:drift3/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:test/test.dart';
 
-const defaultDialect = SqliteDialect();
+const defaultDialect = SqliteDialect.withOptions();
 
 void expectEquals(Object? actual, Object? expected) {
   expect(actual, equals(expected));

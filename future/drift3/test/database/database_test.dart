@@ -160,7 +160,7 @@ void main() {
 
     final postgresDb = TodoDb(
       DriftConnection(
-        dialect: PostgresDialect(),
+        dialect: PostgresDialect.new,
         openConnection: () => throw UnsupportedError('stub'),
       ),
     );

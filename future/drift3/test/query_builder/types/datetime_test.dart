@@ -16,13 +16,13 @@ void main() {
   );
 
   test('should write column definition', () {
-    final generatedAsText = SqliteDialect().createCompiler()
+    final generatedAsText = SqliteDialect.withOptions().createCompiler()
       ..addTableColumnDefinition(nonNull)
       ..statement.comma()
       ..addTableColumnDefinition(nullable);
 
     final generatedAsTimestamp =
-        SqliteDialect(
+        SqliteDialect.withOptions(
             options: SqliteOptions(storeDateTimesAsText: false),
           ).createCompiler()
           ..addTableColumnDefinition(nonNull)
@@ -45,7 +45,7 @@ void main() {
       final utc = DateTime.utc(2022, 07, 21, 22, 53, 12, 888, 999);
 
       test('as unix timestamp', () {
-        const dialect = SqliteDialect(
+        const dialect = SqliteDialect.withOptions(
           options: SqliteOptions(storeDateTimesAsText: false),
         );
 
@@ -78,7 +78,7 @@ void main() {
       test(
         'as text',
         () {
-          const dialect = SqliteDialect(
+          const dialect = SqliteDialect.withOptions(
             options: SqliteOptions(storeDateTimesAsText: true),
           );
 
@@ -143,7 +143,7 @@ void main() {
       test('as text throws if UTC offset is not in minutes', () {
         // Writing date times with an UTC offset that isn't a whole minute
         // is not supported and should throw.
-        const dialect = SqliteDialect();
+        const dialect = SqliteDialect.withOptions();
 
         expect(() {
           dialect.dateTimeType.sqlParameter(
@@ -161,7 +161,7 @@ void main() {
 
     group('from sql to dart', () {
       test('as unix timestamp', () {
-        const dialect = SqliteDialect(
+        const dialect = SqliteDialect.withOptions(
           options: SqliteOptions(storeDateTimesAsText: false),
         );
 
@@ -172,7 +172,7 @@ void main() {
       });
 
       test('as text', () {
-        const dialect = SqliteDialect(
+        const dialect = SqliteDialect.withOptions(
           options: SqliteOptions(storeDateTimesAsText: true),
         );
 

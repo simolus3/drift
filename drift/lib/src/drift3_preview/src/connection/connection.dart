@@ -33,7 +33,7 @@ final class DriftConnection {
   ///
   /// This should always correspond to the [OpenedDriftConnection] opened
   /// by this session. SQLite connections would use a SQLite dialect.
-  final DriftDialect dialect;
+  final DriftDialectFactory dialect;
   final Future<OpenedDriftConnection> Function() _openConnection;
 
   /// @nodoc
@@ -58,7 +58,7 @@ final class DriftConnection {
   /// opening.
   static DriftConnection delayed(
     Future<DriftConnection> Function() open, {
-    required DriftDialect dialect,
+    required DriftDialectFactory dialect,
   }) {
     final session = Completer<DriftSession>();
     final streamQueries = Completer<StreamQueryStore>();

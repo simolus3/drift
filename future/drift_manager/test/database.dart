@@ -159,7 +159,7 @@ final class TestDatabase extends _$TestDatabase {
   factory TestDatabase.inMemory() {
     return TestDatabase(
       DriftConnection(
-        dialect: const SqliteDialect(),
+        dialect: SqliteDialect.new,
         openConnection: () async {
           return SqliteConnection(sqlite3.openInMemory());
         },

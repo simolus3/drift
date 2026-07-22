@@ -8,7 +8,6 @@ import 'connect.dart';
 /// A web drift database implementation based on the `sqlite3_web` package.
 DriftConnection driftDatabase({
   required String name,
-  required SqliteOptions dialectOptions,
   DriftWebOptions? web,
   DriftNativeOptions? native,
 }) {
@@ -19,7 +18,7 @@ DriftConnection driftDatabase({
   }
 
   return DriftConnection(
-    dialect: SqliteDialect(options: dialectOptions),
+    dialect: SqliteDialect.new,
     openConnection: () async {
       final sqlite = WebSqlite.open(
         workers: .defaultWorkers(web.driftWorker.toString()),

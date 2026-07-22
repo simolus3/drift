@@ -8,13 +8,31 @@ import 'package:drift/src/drift3_preview/drift.dart';
 import 'array_access_expression.dart';
 import 'type.dart';
 
-/// A [DriftDialect] using postgres-compatible type mappings and SQL.
-final class PostgresDialect extends DriftDialect {
+/// Dialect configuration for [PostgresDialect].
+final class PostgresDialectOptions {
   /// Whether to use `JSONB` by default for drift JSON columns.
   final bool useJsonb;
 
+  const PostgresDialectOptions({this.useJsonb = true});
+}
+
+/// A [DriftDialect] using postgres-compatible type mappings and SQL.
+final class PostgresDialect extends DriftDialect {
+  final PostgresDialectOptions _options;
+
+  factory PostgresDialect(Map<KnownSqlDialect, Object> options) {
+    final postgresOptions =
+        options[KnownSqlDialect.postgres] as PostgresDialectOptions?;
+
+    return PostgresDialect.withOptions(
+      postgresOptions ?? const PostgresDialectOptions(),
+    );
+  }
+
   /// @nodoc
-  const PostgresDialect({this.useJsonb = true});
+  const PostgresDialect.withOptions([
+    this._options = const PostgresDialectOptions(),
+  ]);
 
   @override
   PhysicalSqlType<bool> get boolType =>
@@ -40,7 +58,7 @@ final class PostgresDialect extends DriftDialect {
       const PhysicalPostgresType(Type.bigInteger, 'bigint');
 
   @override
-  PhysicalSqlType<DatabaseJson> get jsonType => useJsonb
+  PhysicalSqlType<DatabaseJson> get jsonType => _options.useJsonb
       ? const PhysicalPostgresType(Type.jsonb, 'jsonb')
       : const PhysicalPostgresType(Type.json, 'json');
 

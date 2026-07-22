@@ -20,6 +20,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   Future<DriftSession>? _openingSession;
   DriftSession? _openedSession;
   Future<void>? _closing;
+  DriftDialect? _resolvedDialect;
 
   Completer<StreamQueryStore>? _underlyingStreamQueries;
   StreamQueryStore? _streamQueryStore;
@@ -29,6 +30,10 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   /// This is enabled by default, but can be disabled in case migrations are not
   /// desired for this database instance.
   bool enableMigrations = true;
+
+  @override
+  DriftDialect get dialect =>
+      _resolvedDialect ??= implementation.dialect(dialectOptions);
 
   /// Opens a drift database backed by a given [implementation].
   GeneratedDatabase(this.implementation) {
@@ -66,6 +71,11 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   @override
   GeneratedDatabase get attachedDatabase => this;
 
+  /// Dialect-specific options passed to a [DriftDialectFactory] to construct
+  /// the SQL dialect used on this database.
+  @visibleForOverriding
+  Map<KnownSqlDialect, Object> get dialectOptions => const {};
+
   /// The root [DriftSession] used as a connection for this database.
   ///
   /// This should never be used directly, use [currentSession] instead. Drift
@@ -87,7 +97,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
         // to complete.
         final compat = DriftCompatibilitySession(
           inner: opened.session,
-          dialect: implementation.dialect,
+          dialect: dialect,
         );
 
         if (opened.session.persistentSchemaVersion case final root?) {

@@ -75,7 +75,7 @@ void main() {
       generatesWithDialect(
         'b = \$1',
         variables: [anything],
-        dialect: PostgresDialect(),
+        dialect: PostgresDialect.withOptions(),
       ),
     );
   });

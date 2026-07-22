@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS todo_categories (
     test('sync client', () async {
       await testWith(
         DriftConnection(
-          dialect: const SqliteDialect(),
+          dialect: SqliteDialect.new,
           openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
         ),
       );

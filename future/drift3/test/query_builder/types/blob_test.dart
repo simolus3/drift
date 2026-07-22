@@ -6,7 +6,9 @@ import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final type = BuiltinDriftType.byteArray.resolveIn(const SqliteDialect());
+  final type = BuiltinDriftType.byteArray.resolveIn(
+    const SqliteDialect.withOptions(),
+  );
 
   test('maps without transformation', () {
     final data = Uint8List.fromList(List.generate(256, (i) => i));

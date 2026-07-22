@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:drift3/drift.dart';
+import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
@@ -13,7 +14,12 @@ void main() {
     final events = <String>[];
     interceptor.events.stream.listen(events.add);
 
-    final database = TodoDb(testInMemoryDatabase().interceptWith(interceptor));
+    final database = TodoDb(
+      testInMemoryDatabase().interceptWith(
+        interceptor,
+        SqliteDialect.withOptions(),
+      ),
+    );
     await database.initialize();
     events.clear();
 

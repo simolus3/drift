@@ -20,13 +20,11 @@ void main() {
       setUp(() {
         db = _TestDatabase(
           DriftConnection(
-            dialect: SqliteDialect(
-              options: SqliteOptions(useBinaryJsonRepresentation: binary),
-            ),
+            dialect: SqliteDialect.new,
             openConnection: () async =>
                 SqliteConnection(sqlite3.openInMemory()),
           ),
-        );
+        )..binaryJson = binary;
       });
       tearDown(() => db.close());
 
@@ -155,6 +153,8 @@ void main() {
 }
 
 final class _TestDatabase extends GeneratedDatabase {
+  var binaryJson = false;
+
   _TestDatabase(super.implementation);
 
   @override
@@ -162,6 +162,13 @@ final class _TestDatabase extends GeneratedDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  @override
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.sqlite: SqliteOptions(
+      useBinaryJsonRepresentation: binaryJson,
+    ),
+  };
 
   late final categories = VersionedTable(
     entityName: 'categories',
