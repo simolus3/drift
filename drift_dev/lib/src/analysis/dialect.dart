@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' hide JsonKey;
 
+import '../writer/writer.dart';
 import 'options.dart';
 
 part '../generated/analysis/dialect.g.dart';
@@ -25,6 +26,10 @@ base class ResolvedDialect {
       ),
     };
   }
+
+  bool get canInstantiateOptions => false;
+
+  void writeOptions(TextEmitter scope) {}
 
   Map<String, Object?> toJson() {
     return {'dialect': dialect.name};
@@ -69,4 +74,23 @@ final class Drift3SqliteDialect extends ResolvedDialect
     ...super.toJson(),
     ..._$Drift3SqliteDialectToJson(this),
   };
+
+  @override
+  bool get canInstantiateOptions => true;
+
+  @override
+  void writeOptions(TextEmitter scope) {
+    scope
+      ..write('const ')
+      ..writeUriRef(_driftSqlite, 'SqliteOptions')
+      ..write('(')
+      ..write('strictTablesByDefault: $strictTablesByDefault,')
+      ..write('storeDateTimesAsText: $storeDateTimesAsText,')
+      ..write('useBinaryJsonRepresentation: $useBinaryJsonRepresentation,')
+      ..write(')');
+  }
+
+  static final _driftSqlite = Uri.parse(
+    'package:drift_sqlite/drift_sqlite.dart',
+  );
 }

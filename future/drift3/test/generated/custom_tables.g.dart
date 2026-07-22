@@ -1690,6 +1690,14 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   WeirdTable get weirdTable => WeirdTable();
   Trigger get myTrigger => _$myTrigger;
   MyView get myView => MyView();
+  @override
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.sqlite: const SqliteOptions(
+      strictTablesByDefault: true,
+      storeDateTimesAsText: true,
+      useBinaryJsonRepresentation: true,
+    ),
+  };
   Future<int> writeConfig({required String key, DriftAny? value}) {
     return customInsert(
       switch (dialect.known) {

@@ -175,6 +175,14 @@ abstract base class _$Database extends GeneratedDatabase {
   _$Database(super.implementation);
   $TodoCategoriesTable get todoCategories => $TodoCategoriesTable();
   @override
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.sqlite: const SqliteOptions(
+      strictTablesByDefault: true,
+      storeDateTimesAsText: true,
+      useBinaryJsonRepresentation: true,
+    ),
+  };
+  @override
   DatabaseSchema get schema => _$schema;
   static final DatabaseSchema _$schema = DatabaseSchema([
     $TodoCategoriesTable(),

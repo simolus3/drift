@@ -340,10 +340,7 @@ void main() {
       await defaultMigrator.createAll();
       verifyNever(executor.execute(any));
 
-      final fixedMigrator = Migrator(
-        db,
-        _FakeSchemaVersion(database: db, version: 2),
-      );
+      final fixedMigrator = Migrator(db, _FakeSchemaVersion(version: 2));
       await fixedMigrator.createAll();
       verify(
         executor.executeSql(
@@ -359,10 +356,7 @@ void main() {
       await defaultMigrator.recreateAllViews();
       verifyNever(executor.execute(any));
 
-      final fixedMigrator = Migrator(
-        db,
-        _FakeSchemaVersion(database: db, version: 2),
-      );
+      final fixedMigrator = Migrator(db, _FakeSchemaVersion(version: 2));
       await fixedMigrator.recreateAllViews();
 
       verify(executor.executeSql('CREATE VIEW my_view AS SELECT 2', []));
@@ -404,7 +398,7 @@ void main() {
 }
 
 final class _FakeSchemaVersion extends VersionedSchema {
-  _FakeSchemaVersion({required super.database, required super.version});
+  _FakeSchemaVersion({required super.version});
 
   @override
   Iterable<DatabaseSchemaEntity> get entities => [

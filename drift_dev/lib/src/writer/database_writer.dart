@@ -80,6 +80,7 @@ class DatabaseWriter {
     final entityGetters = <DriftElement, String>{};
     if (scope.drift3) {
       _defineDrift3SchemaEntities(dbScope, entityGetters);
+      _writeDialectOptions(dbScope);
     } else {
       _defineDrift2SchemaEntities(dbScope, entityGetters);
     }
@@ -344,6 +345,28 @@ class DatabaseWriter {
         final viewClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
         define(viewClassName, '$viewClassName()');
       }
+    }
+  }
+
+  void _writeDialectOptions(Scope dbScope) {
+    final dialectsWithOptions = dbScope.options.drift3Dialects
+        .where((e) => e.canInstantiateOptions)
+        .toList();
+
+    if (dialectsWithOptions.isNotEmpty) {
+      final writer = dbScope.leaf();
+      writer
+        ..write('@override Map<')
+        ..writeDriftRef('KnownSqlDialect')
+        ..writeln(', Object> get dialectOptions => {');
+      for (final dialect in dialectsWithOptions) {
+        writer
+          ..writeDriftRef('KnownSqlDialect')
+          ..write('.${dialect.dialect.name}: ');
+        dialect.writeOptions(writer);
+        writer.write(', ');
+      }
+      writer.writeln('};');
     }
   }
 
