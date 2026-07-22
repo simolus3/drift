@@ -352,4 +352,29 @@ CREATE TABLE foo (
     final column = table.columns.single;
     expect(column.sqlType.builtin, DriftSqlType.bigInt);
   });
+
+  test('escapes reserved Dart keywords in column names', () async {
+    final state = await TestBackend.inTest({
+      'a|lib/a.drift': '''
+CREATE TABLE foo (
+  class INTEGER,
+  mixin INTEGER,
+  regular INTEGER
+);
+''',
+    });
+
+    final file = await state.analyze('package:a/a.drift');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    final byName = {for (final c in table.columns) c.nameInSql: c};
+
+    // A reserved word can't be used as a Dart identifier, so it's escaped while
+    // the SQL name is preserved.
+    expect(byName['class']!.nameInDart, 'class\$');
+    // Built-in identifiers (like `mixin`) are valid identifiers and left alone.
+    expect(byName['mixin']!.nameInDart, 'mixin');
+    expect(byName['regular']!.nameInDart, 'regular');
+  });
 }

@@ -1,3 +1,9 @@
+## 2.34.5
+
+- Escape SQL column names that are reserved Dart keywords (e.g. `class`) when
+  deriving the Dart getter name, fixing invalid generated code for tables read
+  from SQL (such as the schema snapshots emitted by `make-migrations`).
+
 ## 2.34.4
 
 - Schema verifier: Treat `TRUE`/`FALSE` as equal to `1`/`0`, respectively.
