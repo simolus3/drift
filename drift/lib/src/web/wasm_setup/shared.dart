@@ -9,6 +9,7 @@ import 'package:web/web.dart'
     show
         Worker,
         Navigator,
+        LockManager,
         StorageManager,
         IDBFactory,
         IDBRequest,
@@ -44,6 +45,9 @@ StorageManager? get storageManager {
 
   return null;
 }
+
+/// The web [LockManager], if navigator locks are available.
+LockManager? get locks => _navigator.locks;
 
 /// Checks whether the OPFS API is likely to be correctly implemented in the
 /// current browser.

@@ -25,6 +25,7 @@ import 'package:web/web.dart' as web;
 import 'broadcast_stream_queries.dart';
 import 'channel_new.dart';
 import 'wasm_setup/indexeddb_to_opfs.dart';
+import 'wasm_setup/navigator_locks_interceptor.dart';
 import 'wasm_setup/shared.dart';
 import 'wasm_setup/protocol.dart';
 
@@ -331,6 +332,8 @@ final class _ProbeResult implements WasmProbeResult {
       serialize: !message.newSerialization,
     );
     if (implementation == WasmStorageImplementation.opfsLocks) {
+      var executor = NavigatorLocksExecutor(connection.executor, name);
+
       // We want stream queries to update for writes in other tabs. For the
       // implementations backed by a shared worker, the worker takes care of
       // that.
@@ -338,13 +341,16 @@ final class _ProbeResult implements WasmProbeResult {
       // generally doesn't support a database being accessed concurrently.
       // With the in-memory implementation, we have a tab-local database and
       // can't share anything.
+      var streamQueries = connection.streamQueries;
       if (BroadcastStreamQueryStore.supported) {
-        connection = DatabaseConnection(
-          connection.executor,
-          connectionData: connection.connectionData,
-          streamQueries: BroadcastStreamQueryStore(name),
-        );
+        streamQueries = BroadcastStreamQueryStore(name);
       }
+
+      connection = DatabaseConnection(
+        executor,
+        connectionData: connection.connectionData,
+        streamQueries: streamQueries,
+      );
     }
 
     return connection;
