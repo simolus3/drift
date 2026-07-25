@@ -1,3 +1,7 @@
+## 2.34.3-wip
+
+- Web: Use navigator locks around OPFS access to avoid file locking issues.
+
 ## 2.34.2
 
 - Web: Flush IndexedDB writes after statements, making writes more reliable.
