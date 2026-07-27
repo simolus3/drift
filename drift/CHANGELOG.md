@@ -1,4 +1,4 @@
-## 2.34.3-wip
+## 2.34.3
 
 - Web: Use navigator locks around OPFS access to avoid file locking issues.
 
