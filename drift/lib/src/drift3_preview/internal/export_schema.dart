@@ -1,11 +1,13 @@
+import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import '../drift.dart';
 
-/// Generates `CREATE` statements for the given database [schema] for all
-/// [dialects] and sends generated statements through the send [port].
+/// Generates `CREATE` statements for the given [database] for all [dialects]
+/// and sends generated statements through the send [port].
 ///
 /// Each statement will be encoded as a `[index, name, sql]` list, where `index`
 /// is the index in [dialects], `name` is the [DatabaseSchemaEntity.entityName]
@@ -21,14 +23,24 @@ import '../drift.dart';
 /// of that.
 @internal
 void sendCreateStatements(
+  List<String> args,
   SendPort port,
-  DatabaseSchema schema,
-  List<DriftDialect> dialects,
+  GeneratedDatabase Function(DriftConnection) database,
+  List<DriftDialectFactory> dialects,
 ) {
-  final statements = <List<Object>>[];
+  final statements = <DriftDialect, List<_CollectedStatement>>{};
 
-  for (final (index, dialect) in dialects.indexed) {
-    for (final entity in schema) {
+  for (final dialectFactory in dialects) {
+    final opened = database(
+      DriftConnection(
+        dialect: dialectFactory,
+        openConnection: () => Future.error(UnsupportedError('Stub connection')),
+      ),
+    );
+    final dialect = opened.dialect;
+    final statementsForDialect = <_CollectedStatement>[];
+
+    for (final entity in opened.schema) {
       StatementInfo compiled;
 
       switch (entity) {
@@ -40,7 +52,51 @@ void sendCreateStatements(
           compiled = dialect.compile(definition);
       }
 
-      statements.add([index, entity.entityName, compiled.sql]);
+      statementsForDialect.add(
+        _CollectedStatement(entity.entityName, compiled.sql),
+      );
     }
+
+    statements[dialect] = statementsForDialect;
   }
+
+  List<_CollectedStatement> statementsForDialect(String dialectName) {
+    final dialect = KnownSqlDialect.values.byName(dialectName);
+    final entry = statements.entries.firstWhereOrNull(
+      (e) => e.key.known == dialect,
+    );
+
+    if (entry == null) {
+      throw ArgumentError(
+        'Dialect ${dialect.name} is not registered on this database',
+      );
+    }
+
+    return entry.value;
+  }
+
+  if (args case ['v2', final options]) {
+    final parsedOptions = json.decode(options);
+    final dialectNames = (parsedOptions['dialects'] as List).cast<String>();
+    final encodedStatements = <List>[];
+
+    for (final name in dialectNames) {
+      encodedStatements.addAll(
+        statementsForDialect(name).map((e) => [e.element, name, e.stmt]),
+      );
+    }
+
+    port.send(encodedStatements);
+  } else {
+    port.send([
+      for (final stmt in statementsForDialect(args.single)) stmt.stmt,
+    ]);
+  }
+}
+
+final class _CollectedStatement {
+  final String element;
+  final String stmt;
+
+  _CollectedStatement(this.element, this.stmt);
 }

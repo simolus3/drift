@@ -564,6 +564,50 @@ class Database {}
       });
     }
   });
+
+  test('can run schema isolate for drift3 code', () async {
+    const options = DriftOptions.defaults(drift3Preview: true);
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift3/drift.dart';
+
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get title => text();
+}
+
+@DriftDatabase(tables: [Users])
+class Database {}
+''',
+    }, options: options);
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
+
+    final json = await SchemaWriter(
+      db.availableElements,
+      options: options,
+    ).createSchemaJson(throwOnSchemaIsolateFailure: true);
+
+    expect(
+      json,
+      containsPair('fixed_sql', [
+        {
+          'name': 'users',
+          'sql': [
+            {
+              'dialect': 'sqlite',
+              'sql':
+                  'CREATE TABLE "users" ('
+                  '"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
+                  '"title" TEXT NOT NULL);',
+            },
+          ],
+        },
+      ]),
+    );
+  });
 }
 
 const expected = r'''

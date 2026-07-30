@@ -19,6 +19,7 @@ base class ResolvedDialect {
       'mysql' || 'mariadb' => ResolvedDialect(SqlDialect.mariadb),
       'postgres' => ResolvedDialect(SqlDialect.postgres),
       'duckdb' => ResolvedDialect(SqlDialect.duckdb),
+      // TODO: Support custom dialects?
       _ => throw ArgumentError.value(
         json['dialect'],
         'dialect',
@@ -30,6 +31,28 @@ base class ResolvedDialect {
   bool get canInstantiateOptions => false;
 
   void writeOptions(TextEmitter scope) {}
+
+  void writeDialectFactory(TextEmitter scope) {
+    final dialectClass = switch (dialect) {
+      SqlDialect.sqlite => scope.refUri(
+        Uri.parse('package:drift_sqlite/drift_sqlite.dart'),
+        'SqliteDialect',
+      ),
+      SqlDialect.postgres => scope.refUri(
+        Uri.parse(
+          'package:drift_postgres/src/drift3_preview/drift_postgres.dart',
+        ),
+        'PostgresDialect',
+      ),
+      _ => throw UnsupportedError(
+        'Drift3 does not support ${dialect.name} yet',
+      ),
+    };
+
+    scope
+      ..write(dialectClass)
+      ..write('.new');
+  }
 
   Map<String, Object?> toJson() {
     return {'dialect': dialect.name};

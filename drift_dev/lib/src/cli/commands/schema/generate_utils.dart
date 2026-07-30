@@ -128,7 +128,7 @@ class GenerateUtils {
     // can be referenced in snippets that are part of the schema files.
     writer.leaf()
       ..writeln(generatedHeader)
-      ..writeln("import 'package:drift/drift.dart';");
+      ..writeln("import '${imports.driftUri}';");
 
     final database = DriftDatabase(
       id: DriftElementId(SchemaReader.elementUri, 'database'),

@@ -92,6 +92,11 @@ class LibraryImportManager implements ImportManager {
 
   LibraryImportManager([this._outputUri]);
 
+  bool get _isDrift3 => emitter?.writer.options.drift3Preview ?? false;
+
+  String get driftUri =>
+      _isDrift3 ? 'package:drift3/drift.dart' : 'package:drift/drift.dart';
+
   void enforceAlias(Uri uri, String? alias) {
     _importAliases[uri] ??= alias;
   }
@@ -120,6 +125,14 @@ class LibraryImportManager implements ImportManager {
           definitionUri.path,
           from: url.dirname(_outputUri!.path),
         );
+      } else if (_isDrift3 &&
+          importedScheme == 'package' &&
+          definitionUri.path.startsWith('drift/')) {
+        final originalLibrary = url.relative(
+          definitionUri.path,
+          from: 'drift/',
+        );
+        importLiteral = 'package:drift3/$originalLibrary';
       } else {
         importLiteral = definitionUri.toString();
       }

@@ -641,15 +641,17 @@ class TableWriter extends TableOrViewWriter {
   void writeTableInfoClass() {
     if (!scope.generationOptions.writeDataClasses) {
       // Write a small table header without data class
+      final infoName = table.entityInfoName;
       buffer
-        ..write('class ${table.entityInfoName} extends ')
+        ..write('class $infoName extends ')
         ..write(emitter.drift('Table'))
         ..write(' with ');
       if (scope.drift3) {
         buffer
           ..write(emitter.drift('ResultSet'))
-          ..write(' implements ')
-          ..write(emitter.drift('GeneratedTable'));
+          ..write('<Never, $infoName> implements ')
+          ..write(emitter.drift('GeneratedTable'))
+          ..write('<Never, $infoName>');
       } else {
         buffer.write(emitter.drift('TableInfo'));
       }

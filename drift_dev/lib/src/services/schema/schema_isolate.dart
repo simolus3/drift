@@ -29,14 +29,15 @@ class SchemaIsolate {
   static Future<String> generateStartupCode(
     SchemaIsolateOptions options,
   ) async {
+    final driftOptions = options.options;
     final imports = LibraryImportManager();
     final writer = Writer(
       DriftOptions.fromJson({
-        ...options.options.toJson(),
+        ...driftOptions.toJson(),
         'generate_manager': false,
         'skip_verification_code': true,
         'data_class_to_companions': false,
-        if (!options.options.drift3Preview)
+        if (!driftOptions.drift3Preview)
           'sql': {
             'dialects': switch (options.dialect) {
               null => SqlDialect.values.map((e) => e.name).toList(),
@@ -67,17 +68,31 @@ class SchemaIsolate {
     final isolate = Uri.parse('dart:isolate');
     final schemaTools = Uri.parse('package:drift/internal/export_schema.dart');
 
-    writer.leaf()
-      ..writeln(
-        'void main('
-        '${prefixed(core, 'List')}<${prefixed(core, 'String')}> args, '
-        '${prefixed(isolate, 'SendPort')} port) {',
-      )
-      ..writeln(
+    final main = writer.leaf();
+    main.writeln(
+      'void main('
+      '${prefixed(core, 'List')}<${prefixed(core, 'String')}> args, '
+      '${prefixed(isolate, 'SendPort')} port) {',
+    );
+
+    if (driftOptions.drift3Preview) {
+      main.write(
+        '${prefixed(schemaTools, 'sendCreateStatements')}'
+        '(args, port, DatabaseAtV1.new, [',
+      );
+      for (final dialect in driftOptions.drift3Dialects) {
+        dialect.writeDialectFactory(main);
+        main.writeln(',');
+      }
+      main.writeln(']);');
+    } else {
+      main.writeln(
         '${prefixed(schemaTools, 'SchemaExporter')}'
         '.run(args, port, DatabaseAtV1.new);',
-      )
-      ..writeln('}');
+      );
+    }
+
+    main.writeln('}');
 
     final database = DriftDatabase(
       id: DriftElementId(SchemaReader.elementUri, 'database'),
@@ -134,6 +149,7 @@ class SchemaIsolate {
         errorsAreFatal: true,
         onError: receiveErrors.sendPort,
         packageConfig: await Isolate.packageConfig,
+        debugName: 'drift schema export',
       );
     } catch (e) {
       throw SchemaIsolateException(e, entrypointFile);

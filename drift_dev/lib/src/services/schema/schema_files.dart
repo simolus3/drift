@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show DriftSqlType, SqlDialect, UpdateKind;
 import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
@@ -53,7 +54,10 @@ class SchemaWriter {
   /// For this reason, we prefer to only export the `CREATE TABLE` statements
   /// that drift actually generated as a reference. We still support the older
   /// model, but the newer is much simpler while also being more reliable.
-  Future<Map<String, Object?>> createSchemaJson({File? dumpStartupCode}) async {
+  Future<Map<String, Object?>> createSchemaJson({
+    File? dumpStartupCode,
+    @visibleForTesting bool throwOnSchemaIsolateFailure = false,
+  }) async {
     final knownStatements = <String, List<(SqlDialect, String)>>{};
     try {
       final statements = await SchemaIsolate.collectStatements(
@@ -69,6 +73,7 @@ class SchemaWriter {
         ));
       }
     } on SchemaIsolateException catch (e) {
+      if (throwOnSchemaIsolateFailure) rethrow;
       _logger.warning(e.description(isFatal: false));
     }
 
