@@ -321,6 +321,7 @@ abstract class TableOrViewWriter {
     TextEmitter emitter, {
     bool isForTable = false,
     bool? isRequiredForInsert,
+    bool isForVersionedSchema = false,
   }) {
     if (emitter.parent!.drift3) {
       return _instantiateColumnDrift3(
@@ -328,6 +329,7 @@ abstract class TableOrViewWriter {
         emitter,
         isRequiredForInsert: isRequiredForInsert,
         isForTable: isForTable,
+        isForVersionedSchema: isForVersionedSchema,
       );
     }
 
@@ -486,6 +488,7 @@ abstract class TableOrViewWriter {
     TextEmitter emitter, {
     bool isForTable = false,
     bool? isRequiredForInsert,
+    bool isForVersionedSchema = false,
   }) {
     AnnotatedDartCode? viewExpression;
 
@@ -582,7 +585,11 @@ abstract class TableOrViewWriter {
         ..write(')');
     }
 
-    expressionBuffer.write('..owningResultSet = this');
+    if (!isForVersionedSchema) {
+      // This needs to be set on columns. For versioned table instances,
+      // VersionedTable sets it.
+      expressionBuffer.write('..owningResultSet = this');
+    }
     return (type, expressionBuffer.toString());
   }
 }
@@ -652,12 +659,17 @@ class TableWriter extends TableOrViewWriter {
           ..write('<Never, $infoName> implements ')
           ..write(emitter.drift('GeneratedTable'))
           ..write('<Never, $infoName>');
+        if (table.isVirtual) {
+          buffer
+            ..write(', ${emitter.drift('VirtualTableInfo')}')
+            ..write('<Never, $infoName>');
+        }
       } else {
         buffer.write(emitter.drift('TableInfo'));
-      }
 
-      if (table.isVirtual) {
-        buffer.write(', ${emitter.drift('VirtualTableInfo')}');
+        if (table.isVirtual) {
+          buffer.write(', ${emitter.drift('VirtualTableInfo')}');
+        }
       }
     } else {
       // Regular generation, write full table class
@@ -839,6 +851,13 @@ class TableWriter extends TableOrViewWriter {
 
   void _writePrimaryKeyOverride() {
     if (scope.drift3) {
+      if (!table.tableConstraints.any((e) => e is PrimaryKeyColumns)) {
+        // Don't write the implicit primary key from column constraints, in
+        // drift3 overriding the primaryKey getter always adds a table
+        // constraint.
+        return;
+      }
+
       buffer.write(
         '@override\nSet<${emitter.drift('TableColumn')}> get primaryKey => ',
       );

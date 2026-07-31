@@ -78,6 +78,8 @@ class SchemaVersionWriter {
     return 'Schema$version';
   }
 
+  bool get _drift3 => libraryScope.options.drift3Preview;
+
   /// Since not every column changes in every schema version, we prefer to re-use
   /// columns with an identical definition across tables and schema versions.
   ///
@@ -116,7 +118,12 @@ class SchemaVersionWriter {
         }
       },
     );
-    final (type, code) = TableOrViewWriter.instantiateColumn(column, text);
+    final (type, code) = TableOrViewWriter.instantiateColumn(
+      column,
+      text,
+      isForTable: column.owner is DriftTable,
+      isForVersionedSchema: true,
+    );
 
     return _columnCodeToFactory.putIfAbsent(code, () {
       final methodName = '_column_${_columnCodeToFactory.length}';
@@ -163,25 +170,38 @@ class SchemaVersionWriter {
       final className = 'Shape${_shapes.length}';
       final classWriter = libraryScope.leaf();
 
-      classWriter
-        ..write('class $className extends ')
-        ..writeUriRef(_schemaLibrary, superclass)
-        ..writeln('{')
-        ..writeln(
-          '$className({required super.source, required super.alias}) : super.aliased();',
-        );
+      if (_drift3) {
+        classWriter
+          ..write('extension type $className(')
+          ..writeUriRef(_schemaLibrary, superclass)
+          ..write(' _) implements ')
+          ..writeUriRef(_schemaLibrary, superclass)
+          ..writeln('{');
+      } else {
+        classWriter
+          ..write('class $className extends ')
+          ..writeUriRef(_schemaLibrary, superclass)
+          ..writeln('{')
+          ..writeln(
+            '$className({required super.source, required super.alias}) : super.aliased();',
+          );
+      }
+
+      final columnClass = _drift3
+          ? (kind == _ResultSetKind.table ? 'TableColumn' : 'SchemaColumn')
+          : 'GeneratedColumn';
 
       for (final MapEntry(key: getterName, value: (sqlName, type))
           in shape.columnTypes.entries) {
         final columnType = AnnotatedDartCode([dartTypeNames[type]!]);
 
         classWriter
-          ..writeDriftRef('GeneratedColumn<')
+          ..writeDriftRef('$columnClass<')
           ..writeDart(columnType)
           ..write('> get ')
           ..write(getterName)
           ..write(' => columnsByName[${asDartLiteral(sqlName)}]! as ')
-          ..writeDriftRef('GeneratedColumn<')
+          ..writeDriftRef('$columnClass<')
           ..writeDart(columnType)
           ..writeln('>;');
       }
@@ -208,7 +228,7 @@ class SchemaVersionWriter {
     final shape = _shapeClass(entity);
     writer
       ..write('late final $shape $getterName = ')
-      ..write('$shape(source: ');
+      ..write(_drift3 ? '$shape(' : '$shape(source: ');
 
     switch (entity) {
       case DriftTable():
@@ -304,8 +324,12 @@ class SchemaVersionWriter {
     }
 
     _writeColumnsArgument(entity.columns, writer);
-    writer.write('attachedDatabase: database,');
-    writer.write('), alias: null)');
+    if (!_drift3) {
+      writer.write('attachedDatabase: database,');
+      writer.write('), alias: null)');
+    } else {
+      writer.write('))');
+    }
 
     return getterName;
   }
@@ -384,10 +408,9 @@ class SchemaVersionWriter {
         ..write('final class $versionClass extends ')
         ..writeUriRef(_schemaLibrary, 'VersionedSchema')
         ..writeln('{')
-        ..writeln(
-          '$versionClass({required super.database}): '
-          'super(version: $versionNo);',
-        );
+        ..write('$versionClass(')
+        ..write(_drift3 ? '' : '{required super.database}')
+        ..writeln('): super(version: $versionNo);');
 
       // Override the allEntities getters by VersionedSchema
       final allEntitiesWriter = versionScope.leaf()
@@ -443,11 +466,12 @@ class SchemaVersionWriter {
       ..writeln('switch (currentVersion) {');
 
     for (final (current, next) in versions.withNext) {
+      final nameForSchema = _nameForSchemaClass(next.version);
+
       steps
         ..writeln('case ${current.version}:')
-        ..write(
-          'final schema = ${_nameForSchemaClass(next.version)}(database: database);',
-        )
+        ..write('final schema = $nameForSchema')
+        ..writeln(_drift3 ? '();' : '(database: database);')
         ..write('final migrator = ')
         ..writeDriftRef('Migrator')
         ..writeln('(database, schema);')

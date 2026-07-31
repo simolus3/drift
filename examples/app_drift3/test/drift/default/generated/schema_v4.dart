@@ -15,22 +15,20 @@ class Categories extends Table
       name: 'id',
       sqlType: BuiltinDriftType.int,
       requiredDuringInsert: false,
-      constraints: () => [
-            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
-            const ColumnNotNullConstraint()
-          ])
+      constraints: () =>
+          [ColumnConstraint.customSql('PRIMARY KEY AUTOINCREMENT NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<String> name = TableColumn<String>(
       name: 'name',
       sqlType: BuiltinDriftType.text,
       requiredDuringInsert: true,
-      constraints: () => [const ColumnNotNullConstraint()])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<int> color = TableColumn<int>(
       name: 'color',
       sqlType: BuiltinDriftType.int,
       requiredDuringInsert: true,
-      constraints: () => [const ColumnNotNullConstraint()])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [id, name, color];
@@ -65,6 +63,9 @@ class Categories extends Table
   Categories withAlias(String alias) {
     return Categories(alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class CategoriesData extends LegacyDataClass
@@ -217,24 +218,30 @@ class TodoEntries extends Table
       name: 'id',
       sqlType: BuiltinDriftType.int,
       requiredDuringInsert: false,
-      constraints: () => [
-            const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
-            const ColumnNotNullConstraint()
-          ])
+      constraints: () =>
+          [ColumnConstraint.customSql('PRIMARY KEY AUTOINCREMENT NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<String> description = TableColumn<String>(
       name: 'description',
       sqlType: BuiltinDriftType.text,
       requiredDuringInsert: true,
-      constraints: () => [const ColumnNotNullConstraint()])
+      constraints: () => [ColumnConstraint.customSql('NOT NULL')])
     ..owningResultSet = this;
   late final TableColumn<int> category = TableColumn<int>(
       name: 'category',
       sqlType: BuiltinDriftType.int,
-      requiredDuringInsert: false)
+      requiredDuringInsert: false,
+      constraints: () =>
+          [ColumnConstraint.customSql('REFERENCES categories(id)')])
+    ..owningResultSet = this;
+  late final TableColumn<int> dueDate = TableColumn<int>(
+      name: 'due_date',
+      sqlType: BuiltinDriftType.int,
+      requiredDuringInsert: false,
+      constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
-  List<TableColumn> get columns => [id, description, category];
+  List<TableColumn> get columns => [id, description, category, dueDate];
   @override
   String get entityName => $name;
   static const String $name = 'todo_entries';
@@ -249,6 +256,7 @@ class TodoEntries extends Table
     final pos$description = positions[1].index;
     final type$1 = BuiltinDriftType.text.resolveIn(dialect);
     final pos$category = positions[2].index;
+    final pos$dueDate = positions[3].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -258,6 +266,7 @@ class TodoEntries extends Table
         id: type$0.dartValue(row[pos$id]!),
         description: type$1.dartValue(row[pos$description]!),
         category: type$0.nullableDartValue(row[pos$category]),
+        dueDate: type$0.nullableDartValue(row[pos$dueDate]),
       );
     };
   }
@@ -266,6 +275,9 @@ class TodoEntries extends Table
   TodoEntries withAlias(String alias) {
     return TodoEntries(alias);
   }
+
+  @override
+  bool get dontWriteConstraints => true;
 }
 
 class TodoEntriesData extends LegacyDataClass
@@ -273,8 +285,12 @@ class TodoEntriesData extends LegacyDataClass
   final int id;
   final String description;
   final int? category;
+  final int? dueDate;
   const TodoEntriesData(
-      {required this.id, required this.description, this.category});
+      {required this.id,
+      required this.description,
+      this.category,
+      this.dueDate});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -282,6 +298,9 @@ class TodoEntriesData extends LegacyDataClass
     map['description'] = Variable<String>(description, BuiltinDriftType.text);
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<int>(category, BuiltinDriftType.int);
+    }
+    if (!nullToAbsent || dueDate != null) {
+      map['due_date'] = Variable<int>(dueDate, BuiltinDriftType.int);
     }
     return map;
   }
@@ -293,6 +312,9 @@ class TodoEntriesData extends LegacyDataClass
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
+      dueDate: dueDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDate),
     );
   }
 
@@ -303,6 +325,7 @@ class TodoEntriesData extends LegacyDataClass
       id: serializer.fromJson<int>(json['id']),
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<int?>(json['category']),
+      dueDate: serializer.fromJson<int?>(json['dueDate']),
     );
   }
   @override
@@ -312,17 +335,20 @@ class TodoEntriesData extends LegacyDataClass
       'id': serializer.toJson<int>(id),
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<int?>(category),
+      'dueDate': serializer.toJson<int?>(dueDate),
     };
   }
 
   TodoEntriesData copyWith(
           {int? id,
           String? description,
-          Value<int?> category = const Value.absent()}) =>
+          Value<int?> category = const Value.absent(),
+          Value<int?> dueDate = const Value.absent()}) =>
       TodoEntriesData(
         id: id ?? this.id,
         description: description ?? this.description,
         category: category.present ? category.value : this.category,
+        dueDate: dueDate.present ? dueDate.value : this.dueDate,
       );
   TodoEntriesData copyWithCompanion(TodoEntriesCompanion data) {
     return TodoEntriesData(
@@ -330,6 +356,7 @@ class TodoEntriesData extends LegacyDataClass
       description:
           data.description.present ? data.description.value : this.description,
       category: data.category.present ? data.category.value : this.category,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
     );
   }
 
@@ -338,54 +365,65 @@ class TodoEntriesData extends LegacyDataClass
     return (StringBuffer('TodoEntriesData(')
           ..write('id: $id, ')
           ..write('description: $description, ')
-          ..write('category: $category')
+          ..write('category: $category, ')
+          ..write('dueDate: $dueDate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, description, category);
+  int get hashCode => Object.hash(id, description, category, dueDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TodoEntriesData &&
           other.id == this.id &&
           other.description == this.description &&
-          other.category == this.category);
+          other.category == this.category &&
+          other.dueDate == this.dueDate);
 }
 
 class TodoEntriesCompanion extends UpdateCompanion<TodoEntriesData> {
   final Value<int> id;
   final Value<String> description;
   final Value<int?> category;
+  final Value<int?> dueDate;
   const TodoEntriesCompanion({
     this.id = const Value.absent(),
     this.description = const Value.absent(),
     this.category = const Value.absent(),
+    this.dueDate = const Value.absent(),
   });
   TodoEntriesCompanion.insert({
     this.id = const Value.absent(),
     required String description,
     this.category = const Value.absent(),
+    this.dueDate = const Value.absent(),
   }) : description = Value(description);
   static Insertable<TodoEntriesData> custom({
     Expression<int>? id,
     Expression<String>? description,
     Expression<int>? category,
+    Expression<int>? dueDate,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (description != null) 'description': description,
       if (category != null) 'category': category,
+      if (dueDate != null) 'due_date': dueDate,
     });
   }
 
   TodoEntriesCompanion copyWith(
-      {Value<int>? id, Value<String>? description, Value<int?>? category}) {
+      {Value<int>? id,
+      Value<String>? description,
+      Value<int?>? category,
+      Value<int?>? dueDate}) {
     return TodoEntriesCompanion(
       id: id ?? this.id,
       description: description ?? this.description,
       category: category ?? this.category,
+      dueDate: dueDate ?? this.dueDate,
     );
   }
 
@@ -402,6 +440,9 @@ class TodoEntriesCompanion extends UpdateCompanion<TodoEntriesData> {
     if (category.present) {
       map['category'] = Variable<int>(category.value, BuiltinDriftType.int);
     }
+    if (dueDate.present) {
+      map['due_date'] = Variable<int>(dueDate.value, BuiltinDriftType.int);
+    }
     return map;
   }
 
@@ -410,7 +451,8 @@ class TodoEntriesCompanion extends UpdateCompanion<TodoEntriesData> {
     return (StringBuffer('TodoEntriesCompanion(')
           ..write('id: $id, ')
           ..write('description: $description, ')
-          ..write('category: $category')
+          ..write('category: $category, ')
+          ..write('dueDate: $dueDate')
           ..write(')'))
         .toString();
   }
@@ -427,7 +469,7 @@ class TextEntries extends Table
   late final TableColumn<String> description = TableColumn<String>(
       name: 'description',
       sqlType: BuiltinDriftType.text,
-      requiredDuringInsert: true,
+      requiredDuringInsert: false,
       constraints: () => [ColumnConstraint.customSql('')])
     ..owningResultSet = this;
   @override
@@ -444,12 +486,8 @@ class TextEntries extends Table
     final pos$description = positions[0].index;
     final type$0 = BuiltinDriftType.text.resolveIn(dialect);
     return (RawRow row) {
-      // Not part of row if non-nullable column "description" is missing
-      if (row[pos$description] == null) {
-        return null;
-      }
       return TextEntriesData(
-        description: type$0.dartValue(row[pos$description]!),
+        description: type$0.nullableDartValue(row[pos$description]),
       );
     };
   }
@@ -460,24 +498,30 @@ class TextEntries extends Table
   }
 
   @override
+  bool get dontWriteConstraints => true;
+  @override
   String get moduleAndArgs =>
       'fts5(description, content=todo_entries, content_rowid=id)';
 }
 
 class TextEntriesData extends LegacyDataClass
     implements Insertable<TextEntriesData> {
-  final String description;
-  const TextEntriesData({required this.description});
+  final String? description;
+  const TextEntriesData({this.description});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['description'] = Variable<String>(description, BuiltinDriftType.text);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description, BuiltinDriftType.text);
+    }
     return map;
   }
 
   TextEntriesCompanion toCompanion(bool nullToAbsent) {
     return TextEntriesCompanion(
-      description: Value(description),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
     );
   }
 
@@ -485,19 +529,21 @@ class TextEntriesData extends LegacyDataClass
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TextEntriesData(
-      description: serializer.fromJson<String>(json['description']),
+      description: serializer.fromJson<String?>(json['description']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'description': serializer.toJson<String>(description),
+      'description': serializer.toJson<String?>(description),
     };
   }
 
-  TextEntriesData copyWith({String? description}) => TextEntriesData(
-        description: description ?? this.description,
+  TextEntriesData copyWith(
+          {Value<String?> description = const Value.absent()}) =>
+      TextEntriesData(
+        description: description.present ? description.value : this.description,
       );
   TextEntriesData copyWithCompanion(TextEntriesCompanion data) {
     return TextEntriesData(
@@ -523,16 +569,16 @@ class TextEntriesData extends LegacyDataClass
 }
 
 class TextEntriesCompanion extends UpdateCompanion<TextEntriesData> {
-  final Value<String> description;
+  final Value<String?> description;
   final Value<int> rowid;
   const TextEntriesCompanion({
     this.description = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TextEntriesCompanion.insert({
-    required String description,
+    this.description = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : description = Value(description);
+  });
   static Insertable<TextEntriesData> custom({
     Expression<String>? description,
     Expression<int>? rowid,
@@ -544,7 +590,7 @@ class TextEntriesCompanion extends UpdateCompanion<TextEntriesData> {
   }
 
   TextEntriesCompanion copyWith(
-      {Value<String>? description, Value<int>? rowid}) {
+      {Value<String?>? description, Value<int>? rowid}) {
     return TextEntriesCompanion(
       description: description ?? this.description,
       rowid: rowid ?? this.rowid,
@@ -574,12 +620,14 @@ class TextEntriesCompanion extends UpdateCompanion<TextEntriesData> {
   }
 }
 
-base class DatabaseAtV1 extends GeneratedDatabase {
-  DatabaseAtV1(super.implementation);
+base class DatabaseAtV4 extends GeneratedDatabase {
+  DatabaseAtV4(super.implementation);
   Categories get categories => Categories();
   TodoEntries get todoEntries => TodoEntries();
   TextEntries get textEntries => TextEntries();
   Trigger get todosInsert => _$todosInsert;
+  Trigger get todosDelete => _$todosDelete;
+  Trigger get todosUpdate => _$todosUpdate;
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
         KnownSqlDialect.sqlite: const i2.SqliteOptions(
@@ -595,21 +643,47 @@ base class DatabaseAtV1 extends GeneratedDatabase {
         [
           WritePropagation(
             on: TableUpdateQuery.onTableName('todo_entries',
+                limitUpdateKind: UpdateKind.insert),
+            result: [
+              TableUpdate('text_entries', kind: UpdateKind.insert),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('todo_entries',
                 limitUpdateKind: UpdateKind.delete),
-            result: [],
+            result: [
+              TableUpdate('text_entries', kind: UpdateKind.insert),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('todo_entries',
+                limitUpdateKind: UpdateKind.update),
+            result: [
+              TableUpdate('text_entries', kind: UpdateKind.insert),
+            ],
           ),
         ],
       );
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 4;
   static final _$todosInsert = Trigger(
       'todos_insert',
       CustomComponent(
           'CREATE TRIGGER todos_insert AFTER INSERT ON todo_entries BEGIN INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END'));
+  static final _$todosDelete = Trigger(
+      'todos_delete',
+      CustomComponent(
+          'CREATE TRIGGER todos_delete AFTER DELETE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', old.id, old.description);END'));
+  static final _$todosUpdate = Trigger(
+      'todos_update',
+      CustomComponent(
+          'CREATE TRIGGER todos_update AFTER UPDATE ON todo_entries BEGIN INSERT INTO text_entries (text_entries, "rowid", description) VALUES (\'delete\', new.id, new.description);INSERT INTO text_entries ("rowid", description) VALUES (new.id, new.description);END'));
   static final DatabaseSchema _$schema = DatabaseSchema([
     Categories(),
     TodoEntries(),
     TextEntries(),
     _$todosInsert,
+    _$todosDelete,
+    _$todosUpdate,
   ]);
 }

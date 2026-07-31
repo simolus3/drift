@@ -25,7 +25,7 @@ Future<void> validateDatabaseSchema(GeneratedDatabase database) async {
   //
   // For details, see: https://drift.simonbinder.eu/docs/advanced-features/migrations/#verifying-a-database-schema-at-runtime
   if (kDebugMode) {
-    database.validateDatabaseSchema(
+    await database.validateDatabaseSchema(
       connection: DriftConnection(
         dialect: SqliteDialect.new,
         openConnection: () async {

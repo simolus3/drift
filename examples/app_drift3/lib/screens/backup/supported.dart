@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:app/database/connection/native.dart';
-import 'package:app/database/database.dart';
-import 'package:drift/drift.dart';
+import 'package:app_drift3/database/connection/native.dart';
+import 'package:app_drift3/database/database.dart';
+import 'package:drift3/drift.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,5 +90,6 @@ Future<void> createDatabaseBackup(DatabaseConnectionUser database) async {
     await file.delete();
   }
 
-  await database.customStatement('VACUUM INTO ?', [file.absolute.path]);
+  await database.customStatement('VACUUM INTO ?',
+      [database.mapValue(database.dialect.textType, file.absolute.path)]);
 }

@@ -71,7 +71,10 @@ class StepsGenerationUtil {
     ];
     byVersion.sortBy<num>((s) => s.version);
 
-    writer.leaf().write("import 'package:drift/drift.dart';");
+    if (!cli.project.options.drift3Preview) {
+      writer.leaf().write("import 'package:drift/drift.dart';");
+    }
+
     SchemaVersionWriter(byVersion, writer.child()).write();
 
     var code = writer.writeGenerated();

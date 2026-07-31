@@ -17,7 +17,7 @@ final class SchemaVerifier {
   /// The dialect to use when opening new connections.
   ///
   /// Defaults to the default [SqliteDialect].
-  final DriftDialect dialect;
+  final DriftDialectFactory dialect;
 
   /// Helper responsible for instantiating reference schemas as a starting point
   /// for migrations (and a final comparison).
@@ -31,7 +31,7 @@ final class SchemaVerifier {
   SchemaVerifier({
     required this.helper,
     required this.openDatabase,
-    this.dialect = const SqliteDialect.withOptions(),
+    this.dialect = SqliteDialect.new,
   });
 
   /// Creates a [DriftConnection] that contains empty tables created for the
@@ -176,7 +176,7 @@ final class InitializedSchema {
   /// if you're attaching a database later.
   final CommonDatabase rawDatabase;
 
-  final DriftDialect _dialect;
+  final DriftDialectFactory _dialect;
 
   InitializedSchema._(this.rawDatabase, this._dialect);
 
@@ -224,7 +224,7 @@ final class InitializedSchema {
   /// ```
   DriftConnection newConnection() {
     return DriftConnection(
-      dialect: (_) => _dialect,
+      dialect: _dialect,
       openConnection: () async =>
           SqliteConnection(rawDatabase, closeUnderlyingWhenClosed: false),
     );

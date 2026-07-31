@@ -202,41 +202,33 @@ final class VersionedTable extends Table
   }
 }
 
-/*
 /// The version of [VersionedTable] for virtual tables.
-class VersionedVirtualTable extends VersionedTable
-    with VirtualTableInfo<Table, QueryRow> {
+final class VersionedVirtualTable extends VersionedTable
+    with VirtualTableInfo<RawRow, VersionedTable> {
   @override
   final String moduleAndArgs;
 
   /// Create a small virtual table from the individual fields.
   VersionedVirtualTable({
     required super.entityName,
-    required super.attachedDatabase,
     required super.columns,
     required this.moduleAndArgs,
     super.alias,
-  }) : super(
-          isStrict: false,
-          withoutRowId: false,
-          tableConstraints: [],
-        );
+  }) : super(isStrict: false, withoutRowId: false, tableConstraints: []);
 
   /// Create a virtual table by copying fields from [source] and applying a
   /// [alias] to columns.
-  VersionedVirtualTable.aliased(
-      {required VersionedVirtualTable super.source, required super.alias})
-      : moduleAndArgs = source.moduleAndArgs,
-        super.aliased();
+  VersionedVirtualTable.aliased({
+    required VersionedVirtualTable super.source,
+    required super.alias,
+  }) : moduleAndArgs = source.moduleAndArgs,
+       super.aliased();
 
   @override
-  VersionedVirtualTable createAlias(String alias) {
-    return VersionedVirtualTable.aliased(
-      source: this,
-      alias: alias,
-    );
+  VersionedVirtualTable withAlias(String alias) {
+    return VersionedVirtualTable.aliased(source: this, alias: alias);
   }
-}*/
+}
 
 /// A constructed from individual fields instead of being generated with a
 /// dedicated class.

@@ -207,20 +207,30 @@ class GenerateUtils {
     DriftDevCli cli,
     Iterable<int> versions,
   ) async {
-    final buffer = StringBuffer()
-      ..writeln(generatedHeader)
-      ..writeln("import 'package:drift/drift.dart';")
-      ..writeln("import 'package:drift/internal/migrations.dart';");
+    final isDrift3 = cli.project.options.drift3Preview;
+
+    final buffer = StringBuffer()..writeln(generatedHeader);
+    if (isDrift3) {
+      buffer
+        ..writeln("import 'package:drift3/drift.dart';")
+        ..writeln("import 'package:drift_sqlite/schema_verifier.dart';");
+    } else {
+      buffer
+        ..writeln("import 'package:drift/drift.dart';")
+        ..writeln("import 'package:drift/internal/migrations.dart';");
+    }
 
     for (final version in versions) {
       buffer.writeln("import '${_filenameForVersion(version)}' as v$version;");
     }
 
+    final connectionType = isDrift3 ? 'DriftConnection' : 'QueryExecutor';
+
     buffer
       ..writeln('class GeneratedHelper implements SchemaInstantiationHelper {')
       ..writeln('@override')
       ..writeln(
-        'GeneratedDatabase databaseForVersion(QueryExecutor db, '
+        'GeneratedDatabase databaseForVersion($connectionType db, '
         'int version) {',
       )
       ..writeln('switch (version) {');

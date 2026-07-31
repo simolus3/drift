@@ -77,12 +77,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   Map<KnownSqlDialect, Object> get dialectOptions => const {};
 
   /// The root [DriftSession] used as a connection for this database.
-  ///
-  /// This should never be used directly, use [currentSession] instead. Drift
-  /// manages transactions with zones, and manually using the [rootConnection]
-  /// in the transaction of a transaction can cause deadlocks.
-  @internal
-  Future<DriftSession> rootConnection() {
+  Future<DriftSession> _rootConnection({bool runMigrations = true}) {
     if (_openingSession case final opening?) {
       return opening;
     } else {
@@ -101,11 +96,13 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
         );
 
         if (opened.session.persistentSchemaVersion case final root?) {
-          await runConnectionZoned(
-            compat,
-            opened.streamQueries,
-            () => _runMigrations(root),
-          );
+          if (runMigrations) {
+            await runConnectionZoned(
+              compat,
+              opened.streamQueries,
+              () => _runMigrations(root),
+            );
+          }
         }
 
         return compat;
@@ -133,11 +130,11 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
 
       if (oldVersion == 0) {
         await strategy.onCreate(migrator);
-        await session.writeSchemaVersion(schemaVersion);
       } else if (oldVersion != schemaVersion) {
         await strategy.onUpgrade(migrator, oldVersion, schemaVersion);
-        await session.writeSchemaVersion(schemaVersion);
       }
+
+      await session.writeSchemaVersion(schemaVersion);
     }
 
     await strategy.beforeOpen?.call(
@@ -173,6 +170,8 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
 
 @internal
 extension InternalGeneratedDatabase on GeneratedDatabase {
+  Future<DriftSession> rootConnection() => _rootConnection();
+
   StreamQueryStore resolveRootStreamQueries() {
     if (_streamQueryStore case final existing?) {
       return existing;
@@ -182,7 +181,7 @@ extension InternalGeneratedDatabase on GeneratedDatabase {
 
       return _streamQueryStore = DelayedStreamQueryStore(
         completer.future,
-        rootConnection,
+        _rootConnection,
       );
     }
   }
@@ -192,7 +191,7 @@ extension InternalGeneratedDatabase on GeneratedDatabase {
     int? targetVersion,
   ]) async {
     if (session == null) {
-      final root = await rootConnection();
+      final root = await _rootConnection(runMigrations: false);
       session = root.persistentSchemaVersion;
     }
 

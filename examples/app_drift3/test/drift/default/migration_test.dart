@@ -1,9 +1,10 @@
 // dart format width=80
 // ignore_for_file: unused_local_variable, unused_import
-import 'package:drift/drift.dart';
-import 'package:drift_dev/api/migrations_native.dart';
-import 'package:app/database/database.dart';
+import 'package:drift3/drift.dart';
+import 'package:app_drift3/database/database.dart';
+import 'package:drift_sqlite/schema_verifier.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'generated/schema.dart';
 
 import 'generated/schema_v1.dart' as v1;
@@ -14,7 +15,10 @@ void main() {
   late SchemaVerifier verifier;
 
   setUpAll(() {
-    verifier = SchemaVerifier(GeneratedHelper());
+    verifier = SchemaVerifier(
+      helper: GeneratedHelper(),
+      openDatabase: sqlite3.openInMemory,
+    );
   });
 
   group('simple database migrations', () {

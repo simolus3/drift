@@ -149,7 +149,9 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
     }
   }
 
-  if (!column.nullable && column.owner is DriftTable) {
+  final needsNonNullConstraint = !column.nullable && column.owner is DriftTable;
+
+  if (needsNonNullConstraint) {
     entries.add('const ${emitter.drift('ColumnNotNullConstraint')}()');
   }
 
@@ -214,15 +216,31 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
       }
 
       final result = StringBuffer(
-        '${emitter.drift('ColumnConstraint')}.custom({',
+        '${emitter.drift('ColumnConstraint')}.custom(',
       );
+      result.write(emitter.drift('CustomComponent('));
+      var isFirst = true;
 
       for (final dialect in emitter.writer.options.supportedDialects) {
-        result.writeln('$dialect: ${asDartLiteral(buildFor(dialect))},');
+        if (isFirst) {
+          isFirst = false;
+          result.writeln(
+            '${asDartLiteral(buildFor(dialect))}, dialectSpecificSql: {',
+          );
+        } else {
+          result.writeln('$dialect: ${asDartLiteral(buildFor(dialect))},');
+        }
       }
 
-      result.write('})');
-      return [result.toString()];
+      result.write('}))');
+      return [
+        result.toString(),
+        // For historical reasons, these constraints contain everything except
+        // the NOT NULL constraint. Add that back, as it's not implicit in
+        // drift3.
+        if (needsNonNullConstraint)
+          'const ${emitter.drift('ColumnNotNullConstraint')}()',
+      ];
     }
   }
 
