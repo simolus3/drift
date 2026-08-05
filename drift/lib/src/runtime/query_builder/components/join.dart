@@ -83,6 +83,7 @@ class Join<T extends HasResultSet, D> extends Component {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-inner-join/
+@pragma('drift:v3-rename', 'Join.inner')
 Join innerJoin(HasResultSet other, Expression<bool> on, {bool? useColumns}) {
   return Join._(_JoinType.inner, other, on, includeInResult: useColumns);
 }
@@ -95,6 +96,7 @@ Join innerJoin(HasResultSet other, Expression<bool> on, {bool? useColumns}) {
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-left-join/
+@pragma('drift:v3-rename', 'Join.leftOuter')
 Join leftOuterJoin(
   HasResultSet other,
   Expression<bool> on, {
@@ -107,6 +109,7 @@ Join leftOuterJoin(
 /// [SimpleSelectStatement.join].
 ///
 /// {@macro drift_join_include_results}
+@pragma('drift:v3-rename', 'Join.rightOuter')
 Join rightOuterJoin(
   HasResultSet other,
   Expression<bool> on, {
@@ -119,6 +122,7 @@ Join rightOuterJoin(
 /// [SimpleSelectStatement.join].
 ///
 /// {@macro drift_join_include_results}
+@pragma('drift:v3-rename', 'Join.fullOuter')
 Join fullOuterJoin(
   HasResultSet other,
   Expression<bool> on, {
@@ -135,6 +139,7 @@ Join fullOuterJoin(
 /// See also:
 ///  - https://drift.simonbinder.eu/docs/advanced-features/joins/#joins
 ///  - http://www.sqlitetutorial.net/sqlite-cross-join/
+@pragma('drift:v3-rename', 'Join.cross')
 Join crossJoin(HasResultSet other, {bool? useColumns}) {
   return Join._(_JoinType.cross, other, null, includeInResult: useColumns);
 }

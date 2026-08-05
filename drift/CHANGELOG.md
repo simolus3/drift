@@ -1,3 +1,7 @@
+## 2.24.4-wip
+
+- Allow using `rowid` extension on virtual tables, as they usually provide rowids as well.
+
 ## 2.34.3
 
 - Web: Use navigator locks around OPFS access to avoid file locking issues.

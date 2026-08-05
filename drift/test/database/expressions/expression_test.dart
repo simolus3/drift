@@ -97,11 +97,6 @@ void main() {
   });
 
   group('rowId', () {
-    test('cannot be used on virtual tables', () {
-      final custom = CustomTablesDb(MockExecutor());
-      expect(() => custom.email.rowId, throwsArgumentError);
-    });
-
     test('cannot be used on tables WITHOUT ROWID', () {
       final custom = CustomTablesDb(MockExecutor());
       expect(() => custom.noIds.rowId, throwsArgumentError);
@@ -109,6 +104,13 @@ void main() {
 
     test('generates a rowid expression', () {
       expect(TodoDb().categories.rowId, generates('"_rowid_"'));
+    });
+
+    test('can be used on virtual tables', () {
+      expect(
+        CustomTablesDb(MockExecutor()).email.rowId,
+        generates('"_rowid_"'),
+      );
     });
 
     test('generates an aliased rowid expression when needed', () async {

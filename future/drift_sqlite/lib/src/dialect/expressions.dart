@@ -300,7 +300,7 @@ extension RowIdExtension on GeneratedTable {
   /// case, the [rowId] getter can be used to refer to a table's row id in a
   /// query.
   Expression<int> get rowId {
-    if (withoutRowId || this is VirtualTableInfo) {
+    if (withoutRowId) {
       throw ArgumentError('Cannot use rowId on a table without a rowid!');
     }
 
