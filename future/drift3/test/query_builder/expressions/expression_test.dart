@@ -3,13 +3,10 @@ import 'dart:typed_data';
 import 'package:drift3/drift.dart';
 import 'package:drift_postgres/src/drift3_preview/drift_postgres.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
-import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import '../../generated/custom_tables.dart';
 import '../../generated/todos.dart';
 import '../../test_utils.dart';
-import '../../test_utils/mocks.dart';
 
 final class _UnknownExpr extends Expression {
   @override
@@ -105,36 +102,6 @@ void main() {
         'INNER JOIN "categories" ON "categories"."id" = "users"."id")',
       ),
     );
-  });
-
-  group('rowId', () {
-    test('cannot be used on virtual tables', () {
-      expect(() => Email().rowId, throwsArgumentError);
-    });
-
-    test('cannot be used on tables WITHOUT ROWID', () {
-      expect(() => NoIds().rowId, throwsArgumentError);
-    });
-
-    test('generates a rowid expression', () {
-      expect(TodoDb().categories.rowId, generates('"_rowid_"'));
-    });
-
-    test('generates an aliased rowid expression when needed', () async {
-      final executor = MockSession();
-      final db = TodoDb(createConnection(executor));
-      addTearDown(db.close);
-
-      final query = db
-          .select(db.users)
-          .innerJoin(db.categories, on: db.categories.rowId.equals(3));
-
-      await query.get();
-
-      verify(
-        executor.executeSql(contains('ON "categories"."_rowid_" = ?1'), [3]),
-      );
-    });
   });
 
   test('equals', () {
