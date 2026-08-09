@@ -9,12 +9,19 @@ import 'schema/table.dart';
 import 'statements/insert.dart';
 import 'statements/select.dart';
 
-/// Easily-accessible methods to compose common operations or statements on
-/// tables or views.
-extension type TableOrViewStatements<
+/// Methods to compose common queries and statements on tables or views.
+///
+/// To obtain an instance of this, use [GetTableOrViewStatements.statements] on
+/// a generated table or view instance.
+final class TableOrViewStatements<
   Row extends Object,
   RS extends ResultSet<Row, RS>
->._((RS, DatabaseConnectionUser) _resultSetWithDatabase) {
+> {
+  final RS _resultSet;
+  final DatabaseConnectionUser _database;
+
+  TableOrViewStatements._(this._resultSet, this._database);
+
   /// Selects all rows that are in this table.
   ///
   /// The returned [Selectable] can be run once as a future with [Selectable.get]
@@ -34,7 +41,7 @@ extension type TableOrViewStatements<
     final count = countAll();
     final stmt = selectOnly()..addColumns([count]);
     if (where != null) {
-      stmt.where(where(_resultSetWithDatabase.$1));
+      stmt.where(where(_resultSet));
     }
 
     return stmt.map((row) => row.read(count)!);
@@ -44,30 +51,26 @@ extension type TableOrViewStatements<
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.select].
   SingleTableSelectStatement<Row, RS> select({bool distinct = false}) {
-    final (rs, db) = _resultSetWithDatabase;
-    return db.select(rs, distinct: distinct);
+    return _database.select(_resultSet, distinct: distinct);
   }
 
   /// Composes a `SELECT` statement only selecting a subset of columns.
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
   SelectStatement selectOnly({bool distinct = false}) {
-    final (rs, db) = _resultSetWithDatabase;
-    return db.selectOnly(rs, distinct: distinct);
+    return _database.selectOnly(_resultSet, distinct: distinct);
   }
 }
 
-/// Easily-accessible methods to compose common operations or statements on
-/// tables.
-extension type TableStatements<
+/// Utility to compose common statements for tables.
+extension TableStatements<
   Row extends Object,
   RS extends GeneratedTable<Row, RS>
->._(TableOrViewStatements<Row, RS> _super)
-    implements TableOrViewStatements<Row, RS> {
+>
+    on TableOrViewStatements<Row, RS> {
   /// Creates an insert statment to be used to compose an insert on the table.
   InsertStatement<Row, RS> insert() {
-    final (rs, db) = _resultSetWithDatabase;
-    return InsertStatement(db, rs);
+    return InsertStatement(_database, _resultSet);
   }
 
   /// Inserts one row into this table.
@@ -90,13 +93,11 @@ extension type TableStatements<
     Iterable<Insertable<Row>> rows, {
     UpsertClause<Row, RS>? onConflict,
   }) {
-    final (rs, db) = _resultSetWithDatabase;
-
-    return db.transaction(
+    return _database.transaction(
       options: const TransactionOptions(deferForeignKeys: true),
       () async {
-        await db.batch((b) {
-          b.insertAll(rs, rows, onConflict: onConflict);
+        await _database.batch((b) {
+          b.insertAll(_resultSet, rows, onConflict: onConflict);
         });
       },
     );
@@ -142,7 +143,7 @@ extension type TableStatements<
   }
 }
 
-/// Extension providing the [statements] method for tables and views.
+/// Extension providing the [statements] method for tables specifically.
 extension GetTableOrViewStatements<
   Row extends Object,
   RS extends ResultSet<Row, RS>
@@ -151,21 +152,6 @@ extension GetTableOrViewStatements<
   /// Creates a [TableOrViewStatements] instance that can be used to create
   /// common select statements on this table or view.
   TableOrViewStatements<Row, RS> statements(DatabaseConnectionUser db) {
-    return TableOrViewStatements._((asSelfType(), db));
-  }
-}
-
-/// Extension providing the [statements] method for tables specifically.
-extension GetTabletatements<
-  Row extends Object,
-  RS extends GeneratedTable<Row, RS>
->
-    on GeneratedTable<Row, RS> {
-  /// Returns a [TableStatements] instance that can be used to create common
-  /// select, update, insert and delete statements.
-  TableStatements<Row, RS> statements(DatabaseConnectionUser db) {
-    return TableStatements._(
-      GetTableOrViewStatements<Row, RS>(this).statements(db),
-    );
+    return TableOrViewStatements._(asSelfType(), db);
   }
 }
