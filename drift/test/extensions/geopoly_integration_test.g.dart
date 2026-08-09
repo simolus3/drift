@@ -252,7 +252,7 @@ abstract class _$_GeopolyTestDatabase extends GeneratedDatabase {
           'SELECT geopoly_area(_shape) AS _c0 FROM geopoly_test WHERE "rowid" = \$1',
       },
       variables: [Variable<int>(var1)],
-      readsFrom: {geopolyTest},
+      readsFrom: {this.geopolyTest},
     ).map((QueryRow row) => row.readNullable<double>('_c0'));
   }
 

@@ -3895,7 +3895,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
     return customSelect(
       'SELECT t.*, c.id AS catId, c."desc" AS catDesc FROM todos AS t INNER JOIN categories AS c ON c.id = t.category',
       variables: [],
-      readsFrom: {categories, todosTable},
+      readsFrom: {this.categories, this.todosTable},
     ).map(
       (QueryRow row) => AllTodosWithCategoryResult(
         row: row,
@@ -3924,7 +3924,7 @@ abstract class _$TodoDb extends GeneratedDatabase {
         SqlDialect.postgres || _ => 'DELETE FROM todos WHERE id = \$1',
       },
       variables: [Variable<int>($TodosTableTable.$converterid.toSql(var1))],
-      updates: {todosTable},
+      updates: {this.todosTable},
       updateKind: UpdateKind.delete,
     );
   }
@@ -3946,8 +3946,8 @@ abstract class _$TodoDb extends GeneratedDatabase {
         for (var $ in var3)
           Variable<int>($TodosTableTable.$converterid.toSql($)),
       ],
-      readsFrom: {todosTable},
-    ).asyncMap(todosTable.mapFromRow);
+      readsFrom: {this.todosTable},
+    ).asyncMap(this.todosTable.mapFromRow);
   }
 
   Selectable<TodoEntry> search({required RowId id}) {
@@ -3959,15 +3959,15 @@ abstract class _$TodoDb extends GeneratedDatabase {
           'SELECT * FROM todos WHERE CASE WHEN -1 = \$1 THEN 1 ELSE id = \$1 END',
       },
       variables: [Variable<int>($TodosTableTable.$converterid.toSql(id))],
-      readsFrom: {todosTable},
-    ).asyncMap(todosTable.mapFromRow);
+      readsFrom: {this.todosTable},
+    ).asyncMap(this.todosTable.mapFromRow);
   }
 
   Selectable<MyCustomObject> findCustom() {
     return customSelect(
       'SELECT custom FROM table_without_p_k WHERE some_float < 10',
       variables: [],
-      readsFrom: {tableWithoutPK},
+      readsFrom: {this.tableWithoutPK},
     ).map(
       (QueryRow row) => $TableWithoutPKTable.$convertercustom.fromSql(
         row.read<String>('custom'),
@@ -6951,8 +6951,8 @@ mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
           'SELECT t.* FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st."user" WHERE u.id = \$1',
       },
       variables: [Variable<int>($UsersTable.$converterid.toSql(user))],
-      readsFrom: {todosTable, sharedTodos, users},
-    ).asyncMap(todosTable.mapFromRow);
+      readsFrom: {this.todosTable, this.sharedTodos, this.users},
+    ).asyncMap(this.todosTable.mapFromRow);
   }
 
   SomeDaoManager get managers => SomeDaoManager(this);

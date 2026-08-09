@@ -127,8 +127,9 @@ abstract class _NodeOrWriter {
   /// otherwise.
   AnnotatedDartCode referenceElement(
     DriftElementWithResultSet element,
-    String database,
-  ) {
+    String database, {
+    bool useDatabaseContainerOnModularBuilds = true,
+  }) {
     if (writer.options.drift3Preview) {
       final infoType = entityInfoType(element);
       return AnnotatedDartCode.build(
@@ -136,7 +137,8 @@ abstract class _NodeOrWriter {
           ..addCode(infoType)
           ..addText('()'),
       );
-    } else if (writer.generationOptions.isModular) {
+    } else if (useDatabaseContainerOnModularBuilds &&
+        writer.generationOptions.isModular) {
       final infoType = entityInfoType(element);
 
       return AnnotatedDartCode.build(
@@ -147,8 +149,10 @@ abstract class _NodeOrWriter {
           ..addText('>(${asDartLiteral(element.schemaName)})'),
       );
     } else {
-      final getterName = element.computeDbGetterName(writer.options);
-      return AnnotatedDartCode.text('$database.$getterName');
+      final getterName = element.computeDbGetterName(writer.options)!;
+      return AnnotatedDartCode.text(
+        database == 'this' ? getterName : '$database.$getterName',
+      );
     }
   }
 

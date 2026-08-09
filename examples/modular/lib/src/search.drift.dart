@@ -360,9 +360,9 @@ class SearchDrift extends i2.ModularAccessor {
           i0.Variable<String>(var1)
         ],
         readsFrom: {
-          searchInPosts,
-          posts,
-        }).asyncMap(posts.mapFromRow);
+          this.searchInPosts,
+          this.posts,
+        }).asyncMap(this.posts.mapFromRow);
   }
 
   i1.SearchInPosts get searchInPosts =>

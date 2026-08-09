@@ -675,8 +675,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         'SELECT c.*, (SELECT COUNT(*) FROM todo_entries WHERE category = c.id) AS amount FROM categories AS c UNION ALL SELECT NULL, NULL, NULL, (SELECT COUNT(*) FROM todo_entries WHERE category IS NULL)',
         variables: [],
         readsFrom: {
-          todoEntries,
-          categories,
+          this.todoEntries,
+          this.categories,
         }).map((QueryRow row) => CategoriesWithCountResult(
           id: row.readNullable<int>('id'),
           name: row.readNullable<String>('name'),
@@ -693,12 +693,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
           Variable<String>(query)
         ],
         readsFrom: {
-          textEntries,
-          todoEntries,
-          categories,
+          this.textEntries,
+          this.todoEntries,
+          this.categories,
         }).asyncMap((QueryRow row) async => SearchResult(
-          todos: await todoEntries.mapFromRow(row, tablePrefix: 'nested_0'),
-          cat: await categories.mapFromRowOrNull(row, tablePrefix: 'nested_1'),
+          todos:
+              await this.todoEntries.mapFromRow(row, tablePrefix: 'nested_0'),
+          cat: await this
+              .categories
+              .mapFromRowOrNull(row, tablePrefix: 'nested_1'),
         ));
   }
 

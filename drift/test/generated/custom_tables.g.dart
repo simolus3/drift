@@ -1954,7 +1954,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customInsert(
       'REPLACE INTO config (config_key, config_value) VALUES (?1, ?2)',
       variables: [Variable<String>(key), Variable<DriftAny>(value)],
-      updates: {config},
+      updates: {this.config},
     );
   }
 
@@ -1962,9 +1962,9 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = ?1',
       variables: [Variable<String>(var1)],
-      readsFrom: {config},
+      readsFrom: {this.config},
     ).asyncMap(
-      (QueryRow row) async => config.mapFromRowWithAlias(row, const {
+      (QueryRow row) async => this.config.mapFromRowWithAlias(row, const {
         'ck': 'config_key',
         'cf': 'config_value',
         'cs1': 'sync_state',
@@ -1991,8 +1991,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         for (var $ in var1) Variable<String>($),
         ...generatedclause.introducedVariables,
       ],
-      readsFrom: {config, ...generatedclause.watchedTables},
-    ).asyncMap(config.mapFromRow);
+      readsFrom: {this.config, ...generatedclause.watchedTables},
+    ).asyncMap(this.config.mapFromRow);
   }
 
   Selectable<Config> readDynamic({ReadDynamic$predicate? predicate}) {
@@ -2005,8 +2005,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT * FROM config WHERE ${generatedpredicate.sql}',
       variables: [...generatedpredicate.introducedVariables],
-      readsFrom: {config, ...generatedpredicate.watchedTables},
-    ).asyncMap(config.mapFromRow);
+      readsFrom: {this.config, ...generatedpredicate.watchedTables},
+    ).asyncMap(this.config.mapFromRow);
   }
 
   Selectable<String> typeConverterVar(
@@ -2030,7 +2030,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         for (var $ in var2)
           Variable<int>(ConfigTable.$convertersyncStateImplicitn.toSql($)),
       ],
-      readsFrom: {config, ...generatedpred.watchedTables},
+      readsFrom: {this.config, ...generatedpred.watchedTables},
     ).map((QueryRow row) => row.read<String>('config_key'));
   }
 
@@ -2038,7 +2038,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
       variables: [],
-      readsFrom: {config},
+      readsFrom: {this.config},
     ).map(
       (QueryRow row) => JsonResult(
         row: row,
@@ -2077,8 +2077,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
       'SELECT d.*,"c"."a" AS "nested_0.a", "c"."b" AS "nested_0.b", "c"."c" AS "nested_0.c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.sql}',
       variables: [...generatedpredicate.introducedVariables],
       readsFrom: {
-        withDefaults,
-        withConstraints,
+        this.withDefaults,
+        this.withConstraints,
         ...generatedpredicate.watchedTables,
       },
     ).asyncMap(
@@ -2086,7 +2086,10 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         row: row,
         a: row.readNullableWithType<String>(const CustomTextType(), 'a'),
         b: row.readNullable<int>('b'),
-        c: await withConstraints.mapFromRowOrNull(row, tablePrefix: 'nested_0'),
+        c: await this.withConstraints.mapFromRowOrNull(
+          row,
+          tablePrefix: 'nested_0',
+        ),
       ),
     );
   }
@@ -2095,8 +2098,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT * FROM email WHERE email MATCH ?1 ORDER BY rank',
       variables: [Variable<String>(term)],
-      readsFrom: {email},
-    ).asyncMap(email.mapFromRow);
+      readsFrom: {this.email},
+    ).asyncMap(this.email.mapFromRow);
   }
 
   Selectable<ReadRowIdResult> readRowId({required ReadRowId$expr expr}) {
@@ -2109,7 +2112,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT oid, * FROM config WHERE _rowid_ = ${generatedexpr.sql}',
       variables: [...generatedexpr.introducedVariables],
-      readsFrom: {config, ...generatedexpr.watchedTables},
+      readsFrom: {this.config, ...generatedexpr.watchedTables},
     ).map(
       (QueryRow row) => ReadRowIdResult(
         row: row,
@@ -2138,8 +2141,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT * FROM my_view WHERE ${generatedwhere.sql}',
       variables: [...generatedwhere.introducedVariables],
-      readsFrom: {config, ...generatedwhere.watchedTables},
-    ).asyncMap(myView.mapFromRow);
+      readsFrom: {this.config, ...generatedwhere.watchedTables},
+    ).asyncMap(this.myView.mapFromRow);
   }
 
   Selectable<int> cfeTest() {
@@ -2154,7 +2157,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT MAX(oid) AS _c0 FROM config',
       variables: [],
-      readsFrom: {config},
+      readsFrom: {this.config},
     ).map((QueryRow row) => row.readNullable<int>('_c0'));
   }
 
@@ -2169,8 +2172,8 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customWriteReturning(
       'INSERT INTO config ${generatedvalue.sql} RETURNING *',
       variables: [...generatedvalue.introducedVariables],
-      updates: {config},
-    ).then((rows) => Future.wait(rows.map(config.mapFromRow)));
+      updates: {this.config},
+    ).then((rows) => Future.wait(rows.map(this.config.mapFromRow)));
   }
 
   Future<int> updateAll({
@@ -2192,7 +2195,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
         ...generatedall.introducedVariables,
         ...generatedkey.introducedVariables,
       ],
-      updates: {config},
+      updates: {this.config},
       updateKind: UpdateKind.update,
     );
   }
@@ -2201,16 +2204,19 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT"defaults"."a" AS "nested_0.a", "defaults"."b" AS "nested_0.b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = ?1',
       variables: [Variable<String>(var1, const CustomTextType())],
-      readsFrom: {withConstraints, withDefaults},
+      readsFrom: {this.withConstraints, this.withDefaults},
     ).asyncMap(
       (QueryRow row) async => NestedResult(
         row: row,
-        defaults: await withDefaults.mapFromRow(row, tablePrefix: 'nested_0'),
+        defaults: await this.withDefaults.mapFromRow(
+          row,
+          tablePrefix: 'nested_0',
+        ),
         nestedQuery1: await customSelect(
           'SELECT * FROM with_constraints AS c WHERE c.b = ?1',
           variables: [Variable<int>(row.read('\$n_0'))],
-          readsFrom: {withConstraints, withDefaults},
-        ).asyncMap(withConstraints.mapFromRow).get(),
+          readsFrom: {this.withConstraints, this.withDefaults},
+        ).asyncMap(this.withConstraints.mapFromRow).get(),
       ),
     );
   }
@@ -2219,7 +2225,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     return customSelect(
       'SELECT with_constraints.b, config.sync_state,"config"."config_key" AS "nested_0.config_key", "config"."config_value" AS "nested_0.config_value", "config"."sync_state" AS "nested_0.sync_state", "config"."sync_state_implicit" AS "nested_0.sync_state_implicit","no_ids"."payload" AS "nested_1.payload" FROM with_constraints INNER JOIN config ON config_key = with_constraints.a CROSS JOIN no_ids',
       variables: [],
-      readsFrom: {withConstraints, config, noIds},
+      readsFrom: {this.withConstraints, this.config, this.noIds},
     ).asyncMap(
       (QueryRow row) async => MyCustomResultClass(
         row.read<int>('b'),
@@ -2227,12 +2233,12 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
           ConfigTable.$convertersyncState,
           row.readNullable<int>('sync_state'),
         ),
-        config: await config.mapFromRow(row, tablePrefix: 'nested_0'),
-        noIds: await noIds.mapFromRow(row, tablePrefix: 'nested_1'),
+        config: await this.config.mapFromRow(row, tablePrefix: 'nested_0'),
+        noIds: await this.noIds.mapFromRow(row, tablePrefix: 'nested_1'),
         nested: await customSelect(
           'SELECT * FROM no_ids',
           variables: [],
-          readsFrom: {noIds},
+          readsFrom: {this.noIds},
         ).map((QueryRow row) => Buffer(row.read<Uint8List>('payload'))).get(),
       ),
     );

@@ -20,25 +20,25 @@ class UserQueriesDrift extends i1.ModularAccessor {
           ...generatedpredicate.introducedVariables
         ],
         readsFrom: {
-          users,
+          this.users,
           ...generatedpredicate.watchedTables,
-        }).asyncMap(users.mapFromRow);
+        }).asyncMap(this.users.mapFromRow);
   }
 
   i0.Selectable<i2.PopularUser> findPopularUsers() {
     return customSelect('SELECT * FROM popular_users',
         variables: [],
         readsFrom: {
-          users,
-          follows,
-        }).asyncMap(popularUsers.mapFromRow);
+          this.users,
+          this.follows,
+        }).asyncMap(this.popularUsers.mapFromRow);
   }
 
   Future<int> follow(int var1, int var2) {
     return customInsert(
       'INSERT INTO follows VALUES (?1, ?2)',
       variables: [i0.Variable<int>(var1), i0.Variable<int>(var2)],
-      updates: {follows},
+      updates: {this.follows},
     );
   }
 

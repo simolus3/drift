@@ -21,7 +21,7 @@ mixin $MyAccessorMixin on i0.DatabaseAccessor<i1.Database> {
     return customInsert(
       'INSERT INTO users ${generateduser.sql}',
       variables: [...generateduser.introducedVariables],
-      updates: {users},
+      updates: {this.users},
     );
   }
 

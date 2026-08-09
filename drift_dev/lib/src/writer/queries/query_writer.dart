@@ -116,8 +116,8 @@ class QueryWriter {
     final singleValue = rowClass.singleValue;
     if (singleValue is MatchingDriftTable && singleValue.effectivelyNoAlias) {
       // Tear-off mapFromRow method on table
-      final getterName = singleValue.table.computeDbGetterName(options);
-      _emitter.write('$getterName.mapFromRow');
+      final tableInstance = _emitter.referenceTable(singleValue.table);
+      _emitter.write('$tableInstance.mapFromRow');
     } else {
       // In all other cases, we're off to write the expression.
       _emitter.write('($queryRow row) $asyncModifier => ');
@@ -262,8 +262,7 @@ class QueryWriter {
     // note that, even if the result set has a matching table, we can't just
     // use the mapFromRow() function of that table - the column names might
     // be different!
-    final table = match.table;
-    final getterName = table.computeDbGetterName(options);
+    final tableInstance = _emitter.referenceTable(match.table);
 
     if (match.effectivelyNoAlias) {
       final mappingMethod = context.isNullable
@@ -271,7 +270,7 @@ class QueryWriter {
           : 'mapFromRow';
       final sqlPrefix = context.sqlPrefix;
 
-      _emitter.write('await $getterName.$mappingMethod(row');
+      _emitter.write('await $tableInstance.$mappingMethod(row');
       if (sqlPrefix != null) {
         _emitter.write(', tablePrefix: ${asDartLiteral(sqlPrefix)}');
       }
@@ -292,7 +291,7 @@ class QueryWriter {
         });
       }
 
-      _emitter.write('$getterName.mapFromRowWithAlias(row, const {');
+      _emitter.write('$tableInstance.mapFromRowWithAlias(row, const {');
 
       for (final columnSource in match.columnToSource.entries) {
         _emitter
@@ -571,9 +570,8 @@ class QueryWriter {
   void _writeExpandedDeclarations(SqlQuery query) {
     _ExpandedDeclarationWriter(
       query,
-      options,
       scope,
-      _buffer,
+      _emitter,
     ).writeExpandedDeclarations();
   }
 
@@ -638,7 +636,7 @@ class QueryWriter {
     _buffer.write('readsFrom: {');
 
     for (final table in select.readsFromTables) {
-      _buffer.write('${table.computeDbGetterName(options)},');
+      _buffer.write('${_emitter.referenceTable(table)},');
     }
 
     for (final element
@@ -653,7 +651,7 @@ class QueryWriter {
 
   void _writeUpdates(UpdatingQuery update) {
     final from = update.updates
-        .map((t) => t.table.computeDbGetterName(options))
+        .map((t) => _emitter.referenceTable(t.table))
         .join(', ');
     _buffer
       ..write('updates: {')
@@ -879,9 +877,9 @@ class _Drift3MappingCodeWriter {
   void _readMatchingTable(MatchingDriftTable match, _ArgumentContext context) {
     final table = match.table;
     final mappingFunctionName = 'map_${_mappingFunctionCounter++}';
-    final getterName = table.computeDbGetterName(_writer.options);
+    final tableInstance = _emitter.referenceTable(table);
     _outerSetup.write(
-      'final $mappingFunctionName = $getterName.createMapperFromPositions(dialect, const [',
+      'final $mappingFunctionName = $tableInstance.createMapperFromPositions(dialect, const [',
     );
 
     for (final column in table.columns) {
@@ -906,20 +904,17 @@ class _Drift3MappingCodeWriter {
 
 class _ExpandedDeclarationWriter {
   final SqlQuery query;
-  final DriftOptions options;
   final Scope _scope;
-  final StringBuffer _buffer;
+  final TextEmitter _emitter;
+
+  DriftOptions get options => _emitter.writer.options;
+  StringBuffer get _buffer => _emitter.buffer;
 
   bool indexCounterWasDeclared = false;
   bool needsIndexCounter = false;
   int highestIndexBeforeArray = 0;
 
-  _ExpandedDeclarationWriter(
-    this.query,
-    this.options,
-    this._scope,
-    this._buffer,
-  );
+  _ExpandedDeclarationWriter(this.query, this._scope, this._emitter);
 
   void writeExpandedDeclarations() {
     // When the SQL query is written to a Dart string, we give each variable an
@@ -995,7 +990,7 @@ class _ExpandedDeclarationWriter {
         // The parameter is a function type that needs to be evaluated first
         final args = element.availableResultSets
             .map((e) {
-              final table = 'this.${e.entity.computeDbGetterName(options)}';
+              final table = _emitter.referenceTable(e.entity);
               final needsAlias = e.name != e.entity.schemaName;
 
               if (needsAlias) {
@@ -1280,5 +1275,19 @@ extension on _ArgumentContext {
       null => originalName,
       var s => '$s.$originalName',
     };
+  }
+}
+
+extension on TextEmitter {
+  String referenceTable(DriftElementWithResultSet table) {
+    return dartCode(
+      referenceElement(
+        table,
+        'this',
+        // We generate a local getter for all referenced tables that we want to
+        // use here.
+        useDatabaseContainerOnModularBuilds: false,
+      ),
+    );
   }
 }
