@@ -853,7 +853,7 @@ class MyDatabase extends _\$MyDatabase {}
               contains('FooView fooView = FooView(this)'),
               stringContainsInOrder([
                 'Future<List<FooViewData>> createFoo()',
-                'then((rows) => Future.wait(rows.map(fooView.mapFromRow)))',
+                'then((rows) => Future.wait(rows.map(this.fooView.mapFromRow)))',
               ]),
               contains('Trigger fooCreate'),
             ]),
@@ -904,7 +904,7 @@ class MyDatabase extends \$MyDatabase {}
               contains('i0.Trigger get fooCreate'),
               stringContainsInOrder([
                 'Future<List<i1.FooViewData>> createFoo()',
-                'then((rows) => Future.wait(rows.map(fooView.mapFromRow)))',
+                'then((rows) => Future.wait(rows.map(this.fooView.mapFromRow)))',
               ]),
             ]),
           ),
@@ -950,7 +950,7 @@ class MyDatabase extends _\$MyDatabase {}
               contains('FooView fooView = FooView(this)'),
               stringContainsInOrder([
                 'Future<List<FooViewData>> updateFoo(int id)',
-                'then((rows) => Future.wait(rows.map(fooView.mapFromRow)))',
+                'then((rows) => Future.wait(rows.map(this.fooView.mapFromRow)))',
               ]),
               contains('Trigger fooUpdate'),
             ]),
@@ -1001,7 +1001,7 @@ class MyDatabase extends \$MyDatabase {}
               contains('i0.Trigger get fooUpdate'),
               stringContainsInOrder([
                 'Future<List<i1.FooViewData>> updateFoo(int id)',
-                'then((rows) => Future.wait(rows.map(fooView.mapFromRow)))',
+                'then((rows) => Future.wait(rows.map(this.fooView.mapFromRow)))',
               ]),
             ]),
           ),

@@ -110,7 +110,7 @@ void main() {
         generated,
         allOf(
           contains(
-            "tbl: await tbl.mapFromRowOrNull(row, tablePrefix: 'nested_0')",
+            "tbl: await this.tbl.mapFromRowOrNull(row, tablePrefix: 'nested_0')",
           ),
           contains('final TblData? tbl;'),
         ),
@@ -132,7 +132,7 @@ void main() {
         allOf(
           contains(
             "tbl: row.data['nested_0.b'] == null ? null : "
-            'tbl.mapFromRowWithAlias(row',
+            'this.tbl.mapFromRowWithAlias(row',
           ),
           contains('final TblData? tbl;'),
         ),
@@ -198,7 +198,7 @@ query: SELECT * FROM tbl WHERE a = :a AND b IN :b AND c = :c;
         ),
         contains(
           r'variables: [Variable<String>(a), Variable<String>(c), '
-          r'for (var $ in b) Variable<String>($)], readsFrom: {tbl',
+          r'for (var $ in b) Variable<String>($)], readsFrom: {this.tbl',
         ),
       ),
     );
@@ -328,14 +328,14 @@ class MyRow {
         'SELECT name,"otherUser"."id" AS "nested_0.id", "otherUser"."name" AS "nested_0.name" FROM users INNER JOIN users AS otherUser ON otherUser.id = users.id + 1',
         variables: [],
         readsFrom: {
-          users,
+          this.users,
         }).asyncMap((i0.QueryRow row) async => i1.MyRow(
           row.read<String>('name'),
-          otherUser: await users.mapFromRow(row, tablePrefix: 'nested_0'),
+          otherUser: await this.users.mapFromRow(row, tablePrefix: 'nested_0'),
           nested: await customSelect('SELECT id FROM users',
               variables: [],
               readsFrom: {
-                users,
+                this.users,
               }).map((i0.QueryRow row) => row.read<int>('id')).get(),
         ));
   }
@@ -397,8 +397,8 @@ getTest WITH TestCustom:
             '        \'SELECT one.*, two.test_two_text FROM TestOne AS one INNER JOIN TestTwo AS two ON one.test_id = two.test_id\',\n'
             '        variables: [],\n'
             '        readsFrom: {\n'
-            '          testTwo,\n'
-            '          testOne,\n'
+            '          this.testTwo,\n'
+            '          this.testOne,\n'
             '        }).map((i0.QueryRow row) => i3.TestCustom(\n'
             '          testId: row.read<int>(\'test_id\'),\n'
             '          testOneText: row.read<String>(\'test_one_text\'),\n'
@@ -445,7 +445,7 @@ failQuery:
           i0.Variable<int>(inB)
         ],
         readsFrom: {
-          t,
+          this.t,
         }).asyncMap((i0.QueryRow row) async => FailQueryResult(
           a: row.readNullable<double>('a'),
           b: row.readNullable<int>('b'),
@@ -455,8 +455,8 @@ failQuery:
                 i0.Variable<int>(inB)
               ],
               readsFrom: {
-                t,
-              }).asyncMap(t.mapFromRow).get(),
+                this.t,
+              }).asyncMap(this.t.mapFromRow).get(),
         ));
   }
 '''),
