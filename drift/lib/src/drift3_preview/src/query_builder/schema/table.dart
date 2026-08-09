@@ -20,6 +20,22 @@ abstract interface class GeneratedTable<
 
 /// Default methods for all generated tables.
 extension GeneratedTableExtension on GeneratedTable {
+  /// The resolved primary key of this table.
+  ///
+  /// This is the [Table.primaryKey] when set on the table, but can also be a
+  /// column with a primary key constraint on it.
+  Iterable<TableColumn> get resolvedPrimaryKey {
+    if (primaryKey case final fromTableConstraint?) {
+      return fromTableConstraint.cast();
+    }
+
+    return <TableColumn>{
+      for (final column in columns)
+        if (column.constraints.any((e) => e is ColumnPrimaryKeyConstraint))
+          column,
+    };
+  }
+
   /// All table constraints that have been added to this table.
   ///
   /// This typically includes the primary key (if it hasn't been set as a

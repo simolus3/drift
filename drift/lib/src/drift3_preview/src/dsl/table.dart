@@ -1,3 +1,6 @@
+/// @docImport '../query_builder.dart';
+library;
+
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
@@ -75,23 +78,29 @@ abstract class Table extends ResultSetDsl {
   bool get isStrict => false;
 
   /// Override this to specify custom primary keys:
+  ///
   /// ```dart
   /// class IngredientInRecipes extends Table {
-  ///  @override
-  ///  Set<Column> get primaryKey => {recipe, ingredient};
+  ///   @override
+  ///   Set<Column> get primaryKey => {recipe, ingredient};
   ///
-  ///  IntColumn get recipe => integer()();
-  ///  IntColumn get ingredient => integer()();
+  ///   IntColumn get recipe => integer();
+  ///   IntColumn get ingredient => integer();
   ///
-  ///  IntColumn get amountInGrams => integer().named('amount')();
-  ///}
+  ///   IntColumn get amountInGrams => integer().named('amount');
+  /// }
   /// ```
-  /// The getter must return a set literal using the `=>` syntax so that the
-  /// drift generator can understand the code.
+  ///
+  /// The getter must return a set literal using the `=>` syntax so that drift's
+  /// generator can understand the code.
   /// Also, please note that it's an error to have an
   /// [BuildIntColumn.autoIncrement] column and a custom primary key.
   /// As an auto-incremented `IntColumn` is recognized by drift to be the
   /// primary key, doing so will result in an exception thrown at runtime.
+  ///
+  /// This getter always describes primary key configured as a table constraint.
+  /// To inspect the resolved primary key of tables, use
+  /// [GeneratedTableExtension.resolvedPrimaryKey] instead.
   Set<Column>? get primaryKey => null;
 
   /// Unique constraints in this table.

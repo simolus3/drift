@@ -65,8 +65,6 @@ class $CategoriesTable extends Categories
   $CategoriesTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   Category? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -359,8 +357,6 @@ class $TodosTableTable extends TodosTable
   @override
   $TodosTableTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => {id};
   @override
   List<Set<TableColumn>> get uniqueKeys => [
     {title, category},
@@ -759,8 +755,6 @@ class $UsersTable extends Users
   @override
   $UsersTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => {id};
   @override
   User? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -1321,8 +1315,6 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   $TableWithEveryColumnTypeTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   TableWithEveryColumnTypeData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1850,8 +1842,6 @@ class $TableWithoutPKTable extends TableWithoutPK
   $TableWithoutPKTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => const {};
-  @override
   CustomRowClass? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -2200,8 +2190,6 @@ class $WithCustomTypeTable extends WithCustomType
   $WithCustomTypeTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => const {};
-  @override
   WithCustomTypeData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -2353,8 +2341,6 @@ class $DepartmentTable extends Department
   @override
   $DepartmentTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => {id};
   @override
   DepartmentData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -2793,16 +2779,17 @@ abstract base class _$TodoDb extends GeneratedDatabase {
             $TodosTableTable.$converterid.toSql($),
           ),
       ],
-      readsFrom: {todosTable},
+      readsFrom: {$TodosTableTable()},
       createMapper: (RawResultSet _) {
-        final map_0 = todosTable.createMapperFromPositions(dialect, const [
-          ColumnPosition(0),
-          ColumnPosition(1),
-          ColumnPosition(2),
-          ColumnPosition(3),
-          ColumnPosition(4),
-          ColumnPosition(5),
-        ]);
+        final map_0 = $TodosTableTable()
+            .createMapperFromPositions(dialect, const [
+              ColumnPosition(0),
+              ColumnPosition(1),
+              ColumnPosition(2),
+              ColumnPosition(3),
+              ColumnPosition(4),
+              ColumnPosition(5),
+            ]);
 
         return (RawRow row) => map_0(row)!;
       },
@@ -2852,16 +2839,17 @@ base mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
       variables: [
         mapValue(BuiltinDriftType.int, $UsersTable.$converterid.toSql(user)),
       ],
-      readsFrom: {todosTable, sharedTodos, users},
+      readsFrom: {$TodosTableTable(), $SharedTodosTable(), $UsersTable()},
       createMapper: (RawResultSet _) {
-        final map_0 = todosTable.createMapperFromPositions(dialect, const [
-          ColumnPosition(0),
-          ColumnPosition(1),
-          ColumnPosition(2),
-          ColumnPosition(3),
-          ColumnPosition(4),
-          ColumnPosition(5),
-        ]);
+        final map_0 = $TodosTableTable()
+            .createMapperFromPositions(dialect, const [
+              ColumnPosition(0),
+              ColumnPosition(1),
+              ColumnPosition(2),
+              ColumnPosition(3),
+              ColumnPosition(4),
+              ColumnPosition(5),
+            ]);
 
         return (RawRow row) => map_0(row)!;
       },

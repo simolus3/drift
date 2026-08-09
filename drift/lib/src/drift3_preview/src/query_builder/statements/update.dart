@@ -174,7 +174,7 @@ final class UpdateStatement<
 
     whereSamePrimaryKey(entity);
 
-    final primaryKeys = resultSet.primaryKey?.map((c) => c.name) ?? const [];
+    final primaryKeys = resultSet.resolvedPrimaryKey.map((c) => c.name);
 
     // entityToSql doesn't include absent values, so we might have to apply the
     // default value here

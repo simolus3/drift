@@ -1113,7 +1113,7 @@ abstract base class StatementCompiler {
 
     statement.buffer.write('(');
     final conflictTarget =
-        target ?? _currentInsertStatement!.table.primaryKey!.toList();
+        target ?? _currentInsertStatement!.table.resolvedPrimaryKey;
 
     if (conflictTarget.isEmpty) {
       throw ArgumentError(

@@ -65,8 +65,6 @@ class $CategoriesTable extends Categories
   $CategoriesTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   Category? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -373,8 +371,6 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   @override
   $TableWithEveryColumnTypeTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => {id};
   @override
   TableWithEveryColumnTypeData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -910,8 +906,6 @@ class $TodosTableTable extends TodosTable
   $TodosTableTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   List<Set<TableColumn>> get uniqueKeys => [
     {title, category},
     {title, targetDate},
@@ -1280,8 +1274,6 @@ class $UsersTable extends Users
   $UsersTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   User? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1570,8 +1562,6 @@ class $DepartmentTable extends Department
   $DepartmentTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   DepartmentData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1758,8 +1748,6 @@ class $ProductTable extends Product
   @override
   $ProductTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => const {};
   @override
   ProductData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -1984,8 +1972,6 @@ class $StoreTable extends Store
   $StoreTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   StoreData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -2180,8 +2166,6 @@ class $ListingTable extends Listing
   @override
   $ListingTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => {id};
   @override
   ListingData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -2405,6 +2389,14 @@ abstract base class _$TestDatabase extends GeneratedDatabase {
   $ProductTable get product => $ProductTable();
   $StoreTable get store => $StoreTable();
   $ListingTable get listing => $ListingTable();
+  @override
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.sqlite: const SqliteOptions(
+      strictTablesByDefault: true,
+      storeDateTimesAsText: true,
+      useBinaryJsonRepresentation: true,
+    ),
+  };
   @override
   DatabaseSchema get schema => _$schema;
   static final DatabaseSchema _$schema = DatabaseSchema([

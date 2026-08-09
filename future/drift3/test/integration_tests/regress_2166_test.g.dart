@@ -34,8 +34,6 @@ class $SomeTableTable extends SomeTable
   $SomeTableTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   SomeTableData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,

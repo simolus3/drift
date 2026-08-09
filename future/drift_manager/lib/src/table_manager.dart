@@ -369,7 +369,7 @@ class TableManagerState<
     // other wise add the filter to the select directly
     if (addedColumns.isNotEmpty) {
       // ignore: invalid_use_of_visible_for_overriding_member
-      joinedStatement.groupBy(table.primaryKey!, having: filter);
+      joinedStatement.groupBy(table.resolvedPrimaryKey, having: filter);
     } else if (filter != null) {
       joinedStatement.where(filter!);
     }
@@ -395,11 +395,10 @@ class TableManagerState<
       }
     } else {
       updateStatement = db.update(table);
-      if (table.primaryKey case final pk?) {
-        for (var col in pk) {
-          final subquery = buildSelectStatement(targetColumns: [col]);
-          updateStatement.where((tbl) => col.isInQuery(subquery));
-        }
+
+      for (var col in table.resolvedPrimaryKey) {
+        final subquery = buildSelectStatement(targetColumns: [col]);
+        updateStatement.where((tbl) => col.isInQuery(subquery));
       }
     }
     return updateStatement;
@@ -443,11 +442,10 @@ class TableManagerState<
       }
     } else {
       deleteStatement = db.delete(table);
-      if (table.primaryKey case final pk?) {
-        for (var col in pk) {
-          final subquery = buildSelectStatement(targetColumns: [col]);
-          deleteStatement.where((tbl) => col.isInQuery(subquery));
-        }
+
+      for (var col in table.resolvedPrimaryKey) {
+        final subquery = buildSelectStatement(targetColumns: [col]);
+        deleteStatement.where((tbl) => col.isInQuery(subquery));
       }
     }
     return deleteStatement;

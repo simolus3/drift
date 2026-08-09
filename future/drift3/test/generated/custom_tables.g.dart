@@ -24,8 +24,6 @@ class NoIds extends Table
   NoIds asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {payload};
-  @override
   NoIdRow? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -114,8 +112,6 @@ class WithDefaults extends Table
   @override
   WithDefaults asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => const {};
   @override
   WithDefault? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -309,8 +305,6 @@ class WithConstraints extends Table
   @override
   WithConstraints asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => const {};
   @override
   WithConstraint? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -553,8 +547,6 @@ class ConfigTable extends Table
   @override
   ConfigTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => {configKey};
   @override
   Config? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -1137,8 +1129,6 @@ class Email extends Table
   Email asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => const {};
-  @override
   EMail? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1351,8 +1341,6 @@ class WeirdTable extends Table
   @override
   WeirdTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => const {};
   @override
   WeirdData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -1710,7 +1698,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         mapValue(BuiltinDriftType.text, key),
         mapValue(const AnyType(), value),
       ],
-      updates: {config},
+      updates: {ConfigTable()},
     );
   }
 
@@ -1723,9 +1711,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = \$1',
       },
       variables: [mapValue(BuiltinDriftType.text, var1)],
-      readsFrom: {config},
+      readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
-        final map_0 = config.createMapperFromPositions(dialect, const [
+        final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
           ColumnPosition(0),
           ColumnPosition(1),
           ColumnPosition(2),
@@ -1745,7 +1733,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
     final generatedclause = $write(
-      clause?.call(this.config) ?? const OrderBy.nothing(),
+      clause?.call(ConfigTable()) ?? const OrderBy.nothing(),
       startIndex: $arrayStartIndex,
     );
     $arrayStartIndex += generatedclause.variables.length;
@@ -1756,9 +1744,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         for (var $ in var1) mapValue(BuiltinDriftType.text, $),
         ...generatedclause.variables,
       ],
-      readsFrom: {config, ...generatedclause.watchedTables},
+      readsFrom: {ConfigTable(), ...generatedclause.watchedTables},
       createMapper: (RawResultSet _) {
-        final map_0 = config.createMapperFromPositions(dialect, const [
+        final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
           ColumnPosition(0),
           ColumnPosition(1),
           ColumnPosition(2),
@@ -1773,7 +1761,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<Config> readDynamic({ReadDynamic$predicate? predicate}) {
     var $arrayStartIndex = 0;
     final generatedpredicate = $write(
-      predicate?.call(this.config) ??
+      predicate?.call(ConfigTable()) ??
           const Expression.customComponent(
             CustomComponent('(TRUE)', dialectSpecificSql: {}),
           ),
@@ -1784,9 +1772,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       query:
           'SELECT "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM config AS "_s:0" WHERE ${generatedpredicate.buffer}',
       variables: [...generatedpredicate.variables],
-      readsFrom: {config, ...generatedpredicate.watchedTables},
+      readsFrom: {ConfigTable(), ...generatedpredicate.watchedTables},
       createMapper: (RawResultSet _) {
-        final map_0 = config.createMapperFromPositions(dialect, const [
+        final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
           ColumnPosition(0),
           ColumnPosition(1),
           ColumnPosition(2),
@@ -1805,7 +1793,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   }) {
     var $arrayStartIndex = 1;
     final generatedpred = $write(
-      pred?.call(this.config) ??
+      pred?.call(ConfigTable()) ??
           const Expression.customComponent(
             CustomComponent('(TRUE)', dialectSpecificSql: {}),
           ),
@@ -1833,7 +1821,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
             ConfigTable.$convertersyncStateImplicitn.toSql($),
           ),
       ],
-      readsFrom: {config, ...generatedpred.watchedTables},
+      readsFrom: {ConfigTable(), ...generatedpred.watchedTables},
       createMapper: (RawResultSet _) {
         final type$0 = BuiltinDriftType.text.resolveIn(dialect);
 
@@ -1847,7 +1835,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       query:
           'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
       variables: [],
-      readsFrom: {config},
+      readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
         final type$0 = BuiltinDriftType.text.resolveIn(dialect);
 
@@ -1880,10 +1868,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MultipleResult> multiple({required Multiple$predicate predicate}) {
     var $arrayStartIndex = 0;
     final generatedpredicate = $write(
-      predicate(
-        alias(this.withDefaults, 'd'),
-        alias(this.withConstraints, 'c'),
-      ),
+      predicate(alias(WithDefaults(), 'd'), alias(WithConstraints(), 'c')),
       hasMultipleTables: true,
       startIndex: $arrayStartIndex,
     );
@@ -1893,18 +1878,17 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           'SELECT d.a, d.b,"c"."a", "c"."b", "c"."c" FROM with_defaults AS d LEFT OUTER JOIN with_constraints AS c ON d.a = c.a AND d.b = c.b WHERE ${generatedpredicate.buffer}',
       variables: [...generatedpredicate.variables],
       readsFrom: {
-        withDefaults,
-        withConstraints,
+        WithDefaults(),
+        WithConstraints(),
         ...generatedpredicate.watchedTables,
       },
       createMapper: (RawResultSet _) {
         final type$0 = const CustomTextType().resolveIn(dialect);
         final type$1 = BuiltinDriftType.int.resolveIn(dialect);
-        final map_0 = withConstraints.createMapperFromPositions(dialect, const [
-          ColumnPosition(2),
-          ColumnPosition(3),
-          ColumnPosition(4),
-        ]);
+        final map_0 = WithConstraints().createMapperFromPositions(
+          dialect,
+          const [ColumnPosition(2), ColumnPosition(3), ColumnPosition(4)],
+        );
 
         return (RawRow row) => MultipleResult(
           row: row,
@@ -1925,9 +1909,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           'SELECT "_s:0".sender, "_s:0".title, "_s:0".body FROM email AS "_s:0" WHERE "_s:0".email MATCH \$1 ORDER BY "_s:0".rank',
       },
       variables: [mapValue(BuiltinDriftType.text, term)],
-      readsFrom: {email},
+      readsFrom: {Email()},
       createMapper: (RawResultSet _) {
-        final map_0 = email.createMapperFromPositions(dialect, const [
+        final map_0 = Email().createMapperFromPositions(dialect, const [
           ColumnPosition(0),
           ColumnPosition(1),
           ColumnPosition(2),
@@ -1941,7 +1925,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<ReadRowIdResult> readRowId({required ReadRowId$expr expr}) {
     var $arrayStartIndex = 0;
     final generatedexpr = $write(
-      expr(this.config),
+      expr(ConfigTable()),
       startIndex: $arrayStartIndex,
     );
     $arrayStartIndex += generatedexpr.variables.length;
@@ -1949,7 +1933,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       query:
           'SELECT oid, "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM config AS "_s:0" WHERE _rowid_ = ${generatedexpr.buffer}',
       variables: [...generatedexpr.variables],
-      readsFrom: {config, ...generatedexpr.watchedTables},
+      readsFrom: {ConfigTable(), ...generatedexpr.watchedTables},
       createMapper: (RawResultSet _) {
         final type$0 = BuiltinDriftType.int.resolveIn(dialect);
         final type$1 = BuiltinDriftType.text.resolveIn(dialect);
@@ -1976,7 +1960,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<MyViewData> readView({ReadView$where? where}) {
     var $arrayStartIndex = 0;
     final generatedwhere = $write(
-      where?.call(this.myView) ??
+      where?.call(MyView()) ??
           const Expression.customComponent(
             CustomComponent('(TRUE)', dialectSpecificSql: {}),
           ),
@@ -1987,9 +1971,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       query:
           'SELECT "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM my_view AS "_s:0" WHERE ${generatedwhere.buffer}',
       variables: [...generatedwhere.variables],
-      readsFrom: {config, ...generatedwhere.watchedTables},
+      readsFrom: {ConfigTable(), ...generatedwhere.watchedTables},
       createMapper: (RawResultSet _) {
-        final map_0 = myView.createMapperFromPositions(dialect, const [
+        final map_0 = MyView().createMapperFromPositions(dialect, const [
           ColumnPosition(0),
           ColumnPosition(1),
           ColumnPosition(2),
@@ -2019,7 +2003,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customSelectMapped<int?>(
       query: 'SELECT MAX(oid) FROM config',
       variables: [],
-      readsFrom: {config},
+      readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
         final type$0 = BuiltinDriftType.int.resolveIn(dialect);
 
@@ -2039,9 +2023,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customWriteReturning(
       'INSERT INTO config ${generatedvalue.buffer} RETURNING *',
       variables: [...generatedvalue.variables],
-      updates: {config},
+      updates: {ConfigTable()},
     ).then((rows) {
-      final map_0 = config.createMapperFromPositions(dialect, const [
+      final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
         ColumnPosition(0),
         ColumnPosition(1),
         ColumnPosition(2),
@@ -2063,12 +2047,15 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       startIndex: $arrayStartIndex,
     );
     $arrayStartIndex += generatedall.variables.length;
-    final generatedkey = $write(key(this.config), startIndex: $arrayStartIndex);
+    final generatedkey = $write(
+      key(ConfigTable()),
+      startIndex: $arrayStartIndex,
+    );
     $arrayStartIndex += generatedkey.variables.length;
     return customUpdate(
       'UPDATE config SET ${generatedall.buffer} WHERE ${generatedkey.buffer}',
       variables: [...generatedall.variables, ...generatedkey.variables],
-      updates: {config},
+      updates: {ConfigTable()},
       updateKind: UpdateKind.update,
     );
   }
@@ -2082,9 +2069,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           'SELECT"defaults"."a", "defaults"."b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = \$1',
       },
       variables: [mapValue(const CustomTextType(), var1)],
-      readsFrom: {withConstraints, withDefaults},
+      readsFrom: {WithConstraints(), WithDefaults()},
       createMapper: (RawResultSet _) {
-        final map_0 = withDefaults.createMapperFromPositions(dialect, const [
+        final map_0 = WithDefaults().createMapperFromPositions(dialect, const [
           ColumnPosition(0),
           ColumnPosition(1),
         ]);
@@ -2101,9 +2088,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
               _ => 'SELECT * FROM with_constraints AS c WHERE c.b = \$1',
             },
             variables: [MappedValue.raw(type$0, row[2])],
-            readsFrom: {withConstraints, withDefaults},
+            readsFrom: {WithConstraints(), WithDefaults()},
             createMapper: (RawResultSet _) {
-              final map_0 = withConstraints.createMapperFromPositions(
+              final map_0 = WithConstraints().createMapperFromPositions(
                 dialect,
                 const [ColumnPosition(0), ColumnPosition(1), ColumnPosition(2)],
               );
@@ -2121,16 +2108,16 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       query:
           'SELECT with_constraints.b, config.sync_state,"config"."config_key", "config"."config_value", "config"."sync_state", "config"."sync_state_implicit","no_ids"."payload" FROM with_constraints INNER JOIN config ON config_key = with_constraints.a CROSS JOIN no_ids',
       variables: [],
-      readsFrom: {withConstraints, config, noIds},
+      readsFrom: {WithConstraints(), ConfigTable(), NoIds()},
       createMapper: (RawResultSet _) {
         final type$0 = BuiltinDriftType.int.resolveIn(dialect);
-        final map_0 = config.createMapperFromPositions(dialect, const [
+        final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
           ColumnPosition(2),
           ColumnPosition(3),
           ColumnPosition(4),
           ColumnPosition(5),
         ]);
-        final map_1 = noIds.createMapperFromPositions(dialect, const [
+        final map_1 = NoIds().createMapperFromPositions(dialect, const [
           ColumnPosition(6),
         ]);
 
@@ -2145,7 +2132,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           nested: await customSelectMapped<Buffer>(
             query: 'SELECT * FROM no_ids',
             variables: [],
-            readsFrom: {noIds},
+            readsFrom: {NoIds()},
             createMapper: (RawResultSet _) {
               final type$0 = BuiltinDriftType.byteArray.resolveIn(dialect);
 

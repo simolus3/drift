@@ -35,8 +35,6 @@ class $TodoCategoriesTable extends TodoCategories
   $TodoCategoriesTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   TodoCategory? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,

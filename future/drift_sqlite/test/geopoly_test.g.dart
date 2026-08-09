@@ -30,8 +30,6 @@ class GeopolyTest extends Table
   GeopolyTest asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => const {};
-  @override
   GeopolyTestData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -222,7 +220,7 @@ abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
     return customSelectMapped<double?>(
       query: 'SELECT geopoly_area(_shape) FROM geopoly_test WHERE "rowid" = ?1',
       variables: [mapValue(BuiltinDriftType.int, var1)],
-      readsFrom: {geopolyTest},
+      readsFrom: {GeopolyTest()},
       createMapper: (RawResultSet _) {
         final type$0 = BuiltinDriftType.double.resolveIn(dialect);
 

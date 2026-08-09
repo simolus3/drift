@@ -149,10 +149,8 @@ abstract class _NodeOrWriter {
           ..addText('>(${asDartLiteral(element.schemaName)})'),
       );
     } else {
-      final getterName = element.computeDbGetterName(writer.options)!;
-      return AnnotatedDartCode.text(
-        database == 'this' ? getterName : '$database.$getterName',
-      );
+      final getterName = element.computeDbGetterName(writer.options);
+      return AnnotatedDartCode.text('$database.$getterName');
     }
   }
 

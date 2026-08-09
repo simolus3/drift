@@ -82,10 +82,10 @@ extension QueryTableExtensions<
   /// used.
   Self whereSamePrimaryKey(Insertable<Row> d) {
     final source = resultSet as GeneratedTable;
-    final primaryKey = source.primaryKey;
+    final primaryKey = source.resolvedPrimaryKey;
 
     assert(
-      primaryKey?.isNotEmpty == true,
+      primaryKey.isNotEmpty,
       'When using Query.whereSamePrimaryKey, which is also called from '
       'DeleteStatement.delete and UpdateStatement.replace, the affected table'
       'must have a primary key. You can either specify a primary implicitly '
@@ -99,7 +99,7 @@ extension QueryTableExtensions<
     );
 
     final primaryKeyColumns = Map.fromEntries(
-      primaryKey!.map((column) {
+      primaryKey.map((column) {
         return MapEntry(column.name, column);
       }),
     );
