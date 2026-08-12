@@ -28,11 +28,9 @@ void main() {
     final categoryDescription = 'category description';
     expect(await _getCategoryIdByDescription(db, categoryDescription), isNull);
 
-    await db.categories
-        .statements(db)
-        .insertOne(
-          CategoriesCompanion.insert(description: categoryDescription),
-        );
+    await db.categoriesQueries.insertOne(
+      CategoriesCompanion.insert(description: categoryDescription),
+    );
 
     // This worked in drift 2, but we'd have to mark read() as nullable to fix
     // this which is also annoying. At least we have a decent error message for

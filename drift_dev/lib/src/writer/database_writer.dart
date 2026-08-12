@@ -315,11 +315,9 @@ class DatabaseWriter {
       final getterName = entity.computeDbGetterName(dbScope.options);
 
       if (getterName != null) {
-        // In the modular generation mode, table and view instances are still
-        // created in the database instance. However, triggers and indices are
-        // generated as a top-level field which is simply imported.
-        if (scope.generationOptions.isModular &&
-            (entity is! DriftElementWithResultSet)) {
+        // In the modular generation mode, entities are generated as top-level
+        // getters instead of on the database class itself.
+        if (scope.generationOptions.isModular) {
           final import = dbScope.generatedElement(entity, getterName);
 
           entityGetters[entity] = dbScope.dartCode(import);
@@ -345,6 +343,13 @@ class DatabaseWriter {
         final viewClassName = dbScope.dartCode(dbScope.entityInfoType(entity));
         define(viewClassName, '$viewClassName()');
       }
+    }
+
+    // For tables and views, also generate a shorthand getter to run queries on
+    // them.
+    late final leaf = dbScope.leaf();
+    for (final tableOrView in elements.whereType<DriftElementWithResultSet>()) {
+      tableOrView.writeTableOrViewStatementsGetter(leaf);
     }
   }
 
@@ -557,5 +562,19 @@ extension on drift.UpdateKind {
     emitter
       ..writeDriftRef('UpdateKind')
       ..write('.$name');
+  }
+}
+
+extension WriteDrift3Statements on DriftElementWithResultSet {
+  void writeTableOrViewStatementsGetter(TextEmitter text) {
+    assert(text.writer.options.drift3Preview);
+    final getterName = computeDbGetterName(text.writer.options);
+
+    text
+      ..writeDriftRef('TableOrViewStatements')
+      ..write('<${text.rowType(this)}, ${text.entityInfoType(this)}>')
+      ..write(
+        ' get ${getterName}Queries => this.$getterName.statements(this);',
+      );
   }
 }

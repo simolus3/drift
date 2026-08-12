@@ -2389,6 +2389,26 @@ abstract base class _$TestDatabase extends GeneratedDatabase {
   $ProductTable get product => $ProductTable();
   $StoreTable get store => $StoreTable();
   $ListingTable get listing => $ListingTable();
+  TableOrViewStatements<Category, $CategoriesTable> get categoriesQueries =>
+      this.categories.statements(this);
+  TableOrViewStatements<
+    TableWithEveryColumnTypeData,
+    $TableWithEveryColumnTypeTable
+  >
+  get tableWithEveryColumnTypeQueries =>
+      this.tableWithEveryColumnType.statements(this);
+  TableOrViewStatements<TodoEntry, $TodosTableTable> get todosTableQueries =>
+      this.todosTable.statements(this);
+  TableOrViewStatements<User, $UsersTable> get usersQueries =>
+      this.users.statements(this);
+  TableOrViewStatements<DepartmentData, $DepartmentTable>
+  get departmentQueries => this.department.statements(this);
+  TableOrViewStatements<ProductData, $ProductTable> get productQueries =>
+      this.product.statements(this);
+  TableOrViewStatements<StoreData, $StoreTable> get storeQueries =>
+      this.store.statements(this);
+  TableOrViewStatements<ListingData, $ListingTable> get listingQueries =>
+      this.listing.statements(this);
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
     KnownSqlDialect.sqlite: const SqliteOptions(

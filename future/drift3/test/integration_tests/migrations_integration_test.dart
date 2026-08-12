@@ -344,11 +344,9 @@ void main() {
     final db = TodoDb(testInMemoryDatabase());
     addTearDown(db.close);
 
-    await db.categories
-        .statements(db)
-        .insertOne(
-          CategoriesCompanion.insert(description: 'My Initial Description'),
-        );
+    await db.categoriesQueries.insertOne(
+      CategoriesCompanion.insert(description: 'My Initial Description'),
+    );
 
     final migrator = db.createMigrator();
     await migrator.drop(db.categoryTodoCountView);
@@ -371,9 +369,9 @@ void main() {
     final db = TodoDb(testInMemoryDatabase());
     addTearDown(db.close);
 
-    await db.todosTable
-        .statements(db)
-        .insertOne(TodosTableCompanion.insert(content: 'my content'));
+    await db.todosTableQueries.insertOne(
+      TodosTableCompanion.insert(content: 'my content'),
+    );
 
     final migrator = db.createMigrator();
     await migrator.drop(db.categoryTodoCountView);
@@ -666,14 +664,9 @@ void main() {
       );
       addTearDown(db.close);
 
-      final user = await db.users
-          .statements(db)
-          .insertReturning(
-            UsersCompanion.insert(
-              name: 'test user',
-              profilePicture: Uint8List(0),
-            ),
-          );
+      final user = await db.usersQueries.insertReturning(
+        UsersCompanion.insert(name: 'test user', profilePicture: Uint8List(0)),
+      );
       await Migrator(db).alterTable(TableMigration(db.users));
       expect(await db.select(db.users).get(), [user]);
       expect(interceptor.didPreventLegacyAlterTable, isTrue);

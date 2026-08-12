@@ -151,6 +151,10 @@ extension GetTableOrViewStatements<
     on ResultSet<Row, RS> {
   /// Creates a [TableOrViewStatements] instance that can be used to create
   /// common select statements on this table or view.
+  ///
+  /// In most cases, it is not necessary to call this directly. On database
+  /// classes, a `queries` getter for each table makes [TableOrViewStatements]
+  /// available too.
   TableOrViewStatements<Row, RS> statements(DatabaseConnectionUser db) {
     return TableOrViewStatements._(asSelfType(), db);
   }

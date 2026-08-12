@@ -1678,6 +1678,22 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   WeirdTable get weirdTable => WeirdTable();
   Trigger get myTrigger => _$myTrigger;
   MyView get myView => MyView();
+  TableOrViewStatements<NoIdRow, NoIds> get noIdsQueries =>
+      this.noIds.statements(this);
+  TableOrViewStatements<WithDefault, WithDefaults> get withDefaultsQueries =>
+      this.withDefaults.statements(this);
+  TableOrViewStatements<WithConstraint, WithConstraints>
+  get withConstraintsQueries => this.withConstraints.statements(this);
+  TableOrViewStatements<Config, ConfigTable> get configQueries =>
+      this.config.statements(this);
+  TableOrViewStatements<MytableData, Mytable> get mytableQueries =>
+      this.mytable.statements(this);
+  TableOrViewStatements<EMail, Email> get emailQueries =>
+      this.email.statements(this);
+  TableOrViewStatements<WeirdData, WeirdTable> get weirdTableQueries =>
+      this.weirdTable.statements(this);
+  TableOrViewStatements<MyViewData, MyView> get myViewQueries =>
+      this.myView.statements(this);
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
     KnownSqlDialect.sqlite: const SqliteOptions(

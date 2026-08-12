@@ -208,6 +208,8 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
 abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
   _$_GeopolyTestDatabase(super.implementation);
   GeopolyTest get geopolyTest => GeopolyTest();
+  TableOrViewStatements<GeopolyTestData, GeopolyTest> get geopolyTestQueries =>
+      this.geopolyTest.statements(this);
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
     KnownSqlDialect.sqlite: const SqliteOptions(

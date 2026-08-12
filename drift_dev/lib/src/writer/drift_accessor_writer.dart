@@ -13,6 +13,7 @@ class AccessorWriter {
 
   void write() {
     final classScope = scope.child();
+    final drift3 = scope.drift3;
     final isModular = scope.generationOptions.isModular;
     final elements = input.resolvedAccessor.availableElements;
 
@@ -37,12 +38,16 @@ class AccessorWriter {
         ..writeDart(infoType)
         ..writeln(' get $getterName =>');
 
-      if (isModular) {
+      if (isModular || drift3) {
         getterText
           ..writeDart(getterText.referenceElement(entity, 'attachedDatabase'))
           ..writeln(';');
       } else {
         getterText.writeln('attachedDatabase.$getterName;');
+      }
+
+      if (drift3) {
+        entity.writeTableOrViewStatementsGetter(getterText);
       }
     }
 

@@ -313,9 +313,9 @@ void main() {
 
   group('insert from select', () {
     test('simple', () async {
-      await db.todosTable
-          .statements(db)
-          .insertOne(TodosTableCompanion.insert(content: 'my content'));
+      await db.todosTableQueries.insertOne(
+        TodosTableCompanion.insert(content: 'my content'),
+      );
 
       final query = db.select(db.todosTable);
       await db
@@ -325,25 +325,23 @@ void main() {
             columns: {db.todosTable.content: db.todosTable.content},
           );
 
-      final entries = await db.todosTable.statements(db).all().get();
+      final entries = await db.todosTableQueries.all().get();
       expect(entries, hasLength(2));
     });
 
     test('join', () async {
-      await db.categories
-          .statements(db)
-          .insertOne(CategoriesCompanion.insert(description: 'without entry'));
-      final id = await db.categories
-          .statements(db)
-          .insertOne(CategoriesCompanion.insert(description: 'with entry'));
-      await db.todosTable
-          .statements(db)
-          .insertOne(
-            TodosTableCompanion.insert(
-              content: 'my content',
-              category: Value(RowId(id)),
-            ),
-          );
+      await db.categoriesQueries.insertOne(
+        CategoriesCompanion.insert(description: 'without entry'),
+      );
+      final id = await db.categoriesQueries.insertOne(
+        CategoriesCompanion.insert(description: 'with entry'),
+      );
+      await db.todosTableQueries.insertOne(
+        TodosTableCompanion.insert(
+          content: 'my content',
+          category: Value(RowId(id)),
+        ),
+      );
 
       final amountOfTodos = db.todosTable.id.count(
         filter: db.todosTable.id.isNotNull(),
@@ -369,7 +367,7 @@ void main() {
             },
           );
 
-      final categeories = await db.categories.statements(db).all().get();
+      final categeories = await db.categoriesQueries.all().get();
       expect(categeories.map((e) => e.description), [
         'without entry',
         'with entry',
@@ -379,14 +377,14 @@ void main() {
     });
 
     test('upsert', () async {
-      final originalCategory = await db.categories
-          .statements(db)
-          .insertReturning(CategoriesCompanion.insert(description: 'original'));
+      final originalCategory = await db.categoriesQueries.insertReturning(
+        CategoriesCompanion.insert(description: 'original'),
+      );
 
       await db
           .into(db.categories)
           .insertFromSelect(
-            db.categories.statements(db).select(),
+            db.categoriesQueries.select(),
             columns: {
               db.categories.id: db.categories.id,
               db.categories.description: db.categories.description,
@@ -396,7 +394,7 @@ void main() {
             ),
           );
 
-      final category = await db.categories.statements(db).all().get();
+      final category = await db.categoriesQueries.all().get();
       expect(category, [
         originalCategory.copyWith(
           description: 'updated',

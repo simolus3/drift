@@ -32,12 +32,10 @@ class _HomePageState extends ConsumerState<HomePage> {
       final database = ref.read(AppDatabase.provider);
       final currentCategory = ref.read(activeCategory);
 
-      database.todoEntries
-          .statements(database)
-          .insertOne(TodoEntriesCompanion.insert(
-            description: _controller.text,
-            category: Value(currentCategory?.id),
-          ));
+      database.todoEntriesQueries.insertOne(TodoEntriesCompanion.insert(
+        description: _controller.text,
+        category: Value(currentCategory?.id),
+      ));
 
       _controller.clear();
     }

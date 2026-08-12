@@ -9,23 +9,19 @@ void main() {
     final db = TodoDb(testInMemoryDatabase());
     addTearDown(db.close);
 
-    final nonEmptyId = await db.categories
-        .statements(db)
-        .insertOne(CategoriesCompanion.insert(description: 'category'));
-    await db.todosTable
-        .statements(db)
-        .insertOne(
-          TodosTableCompanion.insert(
-            content: 'entry',
-            category: Value(RowId(nonEmptyId)),
-          ),
-        );
+    final nonEmptyId = await db.categoriesQueries.insertOne(
+      CategoriesCompanion.insert(description: 'category'),
+    );
+    await db.todosTableQueries.insertOne(
+      TodosTableCompanion.insert(
+        content: 'entry',
+        category: Value(RowId(nonEmptyId)),
+      ),
+    );
 
-    final emptyId = await db.categories
-        .statements(db)
-        .insertOne(
-          CategoriesCompanion.insert(description: 'this category empty YEET'),
-        );
+    final emptyId = await db.categoriesQueries.insertOne(
+      CategoriesCompanion.insert(description: 'this category empty YEET'),
+    );
 
     final emptyCategories = await db.emptyCategories();
 

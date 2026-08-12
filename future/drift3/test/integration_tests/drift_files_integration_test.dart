@@ -130,32 +130,22 @@ void main() {
   });
 
   test('LIST queries integration test', () async {
-    final first = await db.withDefaults
-        .statements(db)
-        .insertReturning(
-          WithDefaultsCompanion.insert(
-            a: const Value('foo'),
-            b: const Value(1),
-          ),
-        );
-    final second = await db.withDefaults
-        .statements(db)
-        .insertReturning(
-          WithDefaultsCompanion.insert(
-            a: const Value('foo'),
-            b: const Value(2),
-          ),
-        );
+    final first = await db.withDefaultsQueries.insertReturning(
+      WithDefaultsCompanion.insert(a: const Value('foo'), b: const Value(1)),
+    );
+    final second = await db.withDefaultsQueries.insertReturning(
+      WithDefaultsCompanion.insert(a: const Value('foo'), b: const Value(2)),
+    );
 
-    await db.withConstraints
-        .statements(db)
-        .insertOne(WithConstraintsCompanion.insert(b: 1));
-    await db.withConstraints
-        .statements(db)
-        .insertOne(WithConstraintsCompanion.insert(b: 1));
-    await db.withConstraints
-        .statements(db)
-        .insertOne(WithConstraintsCompanion.insert(b: 2));
+    await db.withConstraintsQueries.insertOne(
+      WithConstraintsCompanion.insert(b: 1),
+    );
+    await db.withConstraintsQueries.insertOne(
+      WithConstraintsCompanion.insert(b: 1),
+    );
+    await db.withConstraintsQueries.insertOne(
+      WithConstraintsCompanion.insert(b: 2),
+    );
 
     final nested = await db.nested('foo').get();
     expect(nested, hasLength(2));
@@ -180,9 +170,9 @@ void main() {
   });
 
   test('insert with explicit rowid', () async {
-    await db.withConstraints
-        .statements(db)
-        .insertOne(WithConstraintsCompanion.insert(b: 1, rowid: Value(12)));
+    await db.withConstraintsQueries.insertOne(
+      WithConstraintsCompanion.insert(b: 1, rowid: Value(12)),
+    );
     final row = await db.select(db.withConstraints).addColumns([
       db.withConstraints.rowId,
     ]).getSingle();
@@ -216,12 +206,12 @@ void main() {
   });
 
   test('can run query with custom result set', () async {
-    await db.withConstraints
-        .statements(db)
-        .insertOne(WithConstraintsCompanion.insert(b: 1, a: Value('key')));
-    await db.noIds
-        .statements(db)
-        .insertOne(NoIdsCompanion.insert(payload: Uint8List(512)));
+    await db.withConstraintsQueries.insertOne(
+      WithConstraintsCompanion.insert(b: 1, a: Value('key')),
+    );
+    await db.noIdsQueries.insertOne(
+      NoIdsCompanion.insert(payload: Uint8List(512)),
+    );
 
     final result = await db.customResult().get();
     expect(result, hasLength(1));

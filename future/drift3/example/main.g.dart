@@ -172,6 +172,8 @@ class TodoCategoriesCompanion extends UpdateCompanion<TodoCategory> {
 abstract base class _$Database extends GeneratedDatabase {
   _$Database(super.implementation);
   $TodoCategoriesTable get todoCategories => $TodoCategoriesTable();
+  TableOrViewStatements<TodoCategory, $TodoCategoriesTable>
+  get todoCategoriesQueries => this.todoCategories.statements(this);
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
     KnownSqlDialect.sqlite: const SqliteOptions(

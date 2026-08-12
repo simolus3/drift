@@ -30,9 +30,7 @@ class ViewWriter extends TableOrViewWriter {
   void _writeViewInfoClass() {
     emitter = scope.leaf();
     final viewClassName = emitter.dartCode(emitter.entityInfoType(view));
-    final dataClass = scope.generationOptions.writeDataClasses
-        ? emitter.dartCode(emitter.rowType(view))
-        : 'Never';
+    final dataClass = emitter.dartCode(emitter.rowType(view));
 
     if (scope.drift3) {
       final typeArgs = '<$dataClass, $viewClassName>';

@@ -21,13 +21,11 @@ void main() {
       );
       expect(database.geopolyTest.shape.sqlType, isA<GeopolyPolygonType>());
 
-      final id = await database.geopolyTest
-          .statements(database)
-          .insertOne(
-            GeopolyTestCompanion.insert(
-              shape: Value(GeopolyPolygon.text('[[0,0],[1,0],[0.5,1],[0,0]]')),
-            ),
-          );
+      final id = await database.geopolyTestQueries.insertOne(
+        GeopolyTestCompanion.insert(
+          shape: Value(GeopolyPolygon.text('[[0,0],[1,0],[0.5,1],[0,0]]')),
+        ),
+      );
 
       final area = await database.area(id).getSingle();
       expect(area, 0.5);

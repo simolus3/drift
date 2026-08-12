@@ -24,7 +24,7 @@ void main() {
           ),
         );
 
-        await database.todosTable.statements(database).all().watch().first;
+        await database.todosTableQueries.all().watch().first;
         // This cancels a stream subscription - drift would usually set up a
         // timer to wait for that.
       },

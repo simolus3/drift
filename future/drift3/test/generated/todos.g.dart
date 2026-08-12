@@ -2750,6 +2750,33 @@ abstract base class _$TodoDb extends GeneratedDatabase {
   $TodoWithCategoryViewView get todoWithCategoryView =>
       $TodoWithCategoryViewView();
   Index get categoriesDesc => _$categoriesDesc;
+  TableOrViewStatements<Category, $CategoriesTable> get categoriesQueries =>
+      this.categories.statements(this);
+  TableOrViewStatements<TodoEntry, $TodosTableTable> get todosTableQueries =>
+      this.todosTable.statements(this);
+  TableOrViewStatements<User, $UsersTable> get usersQueries =>
+      this.users.statements(this);
+  TableOrViewStatements<SharedTodo, $SharedTodosTable> get sharedTodosQueries =>
+      this.sharedTodos.statements(this);
+  TableOrViewStatements<
+    TableWithEveryColumnTypeData,
+    $TableWithEveryColumnTypeTable
+  >
+  get tableWithEveryColumnTypeQueries =>
+      this.tableWithEveryColumnType.statements(this);
+  TableOrViewStatements<CustomRowClass, $TableWithoutPKTable>
+  get tableWithoutPKQueries => this.tableWithoutPK.statements(this);
+  TableOrViewStatements<PureDefault, $PureDefaultsTable>
+  get pureDefaultsQueries => this.pureDefaults.statements(this);
+  TableOrViewStatements<WithCustomTypeData, $WithCustomTypeTable>
+  get withCustomTypeQueries => this.withCustomType.statements(this);
+  TableOrViewStatements<DepartmentData, $DepartmentTable>
+  get departmentQueries => this.department.statements(this);
+  TableOrViewStatements<CategoryTodoCountViewData, $CategoryTodoCountViewView>
+  get categoryTodoCountViewQueries =>
+      this.categoryTodoCountView.statements(this);
+  TableOrViewStatements<TodoWithCategoryViewData, $TodoWithCategoryViewView>
+  get todoWithCategoryViewQueries => this.todoWithCategoryView.statements(this);
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
     KnownSqlDialect.sqlite: const SqliteOptions(
@@ -2822,12 +2849,22 @@ abstract base class _$TodoDb extends GeneratedDatabase {
 }
 
 base mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
-  $UsersTable get users => attachedDatabase.users;
-  $CategoriesTable get categories => attachedDatabase.categories;
-  $TodosTableTable get todosTable => attachedDatabase.todosTable;
-  $SharedTodosTable get sharedTodos => attachedDatabase.sharedTodos;
+  $UsersTable get users => $UsersTable();
+  TableOrViewStatements<User, $UsersTable> get usersQueries =>
+      this.users.statements(this);
+  $CategoriesTable get categories => $CategoriesTable();
+  TableOrViewStatements<Category, $CategoriesTable> get categoriesQueries =>
+      this.categories.statements(this);
+  $TodosTableTable get todosTable => $TodosTableTable();
+  TableOrViewStatements<TodoEntry, $TodosTableTable> get todosTableQueries =>
+      this.todosTable.statements(this);
+  $SharedTodosTable get sharedTodos => $SharedTodosTable();
+  TableOrViewStatements<SharedTodo, $SharedTodosTable> get sharedTodosQueries =>
+      this.sharedTodos.statements(this);
   $TodoWithCategoryViewView get todoWithCategoryView =>
-      attachedDatabase.todoWithCategoryView;
+      $TodoWithCategoryViewView();
+  TableOrViewStatements<TodoWithCategoryViewData, $TodoWithCategoryViewView>
+  get todoWithCategoryViewQueries => this.todoWithCategoryView.statements(this);
   Selectable<TodoEntry> todosForUser({required RowId user}) {
     return customSelectMapped<TodoEntry>(
       query: switch (dialect.known) {

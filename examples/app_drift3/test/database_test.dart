@@ -21,10 +21,8 @@ void main() {
   tearDown(() => database.close());
 
   test('can search for todo entries', () async {
-    final entry = await database.todoEntries
-        .statements(database)
-        .insertReturning(
-            TodoEntriesCompanion.insert(description: 'test todo entry'));
+    final entry = await database.todoEntriesQueries.insertReturning(
+        TodoEntriesCompanion.insert(description: 'test todo entry'));
 
     final result = await database.search('test');
     expect(result.map((e) => e.entry), contains(entry));

@@ -184,6 +184,8 @@ class SomeTableCompanion extends UpdateCompanion<SomeTableData> {
 abstract base class _$_SomeDb extends GeneratedDatabase {
   _$_SomeDb(super.implementation);
   $SomeTableTable get someTable => $SomeTableTable();
+  TableOrViewStatements<SomeTableData, $SomeTableTable> get someTableQueries =>
+      this.someTable.statements(this);
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
     KnownSqlDialect.sqlite: const SqliteOptions(

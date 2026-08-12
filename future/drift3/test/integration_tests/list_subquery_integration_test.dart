@@ -17,16 +17,12 @@ void main() {
     var results = await db.nested('a').get();
     expect(results, isEmpty);
 
-    final defaults = await db.withDefaults
-        .statements(db)
-        .insertReturning(
-          WithDefaultsCompanion.insert(a: const Value('a'), b: const Value(1)),
-        );
-    final constraints = await db.withConstraints
-        .statements(db)
-        .insertReturning(
-          WithConstraintsCompanion.insert(a: const Value('one'), b: 1),
-        );
+    final defaults = await db.withDefaultsQueries.insertReturning(
+      WithDefaultsCompanion.insert(a: const Value('a'), b: const Value(1)),
+    );
+    final constraints = await db.withConstraintsQueries.insertReturning(
+      WithConstraintsCompanion.insert(a: const Value('one'), b: 1),
+    );
 
     results = await db.nested('a').get();
     expect(results, hasLength(1));

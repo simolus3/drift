@@ -540,11 +540,9 @@ void main() {
   });
 
   test('can use shorthand filter for nulls', () async {
-    final row = await db.todosTable
-        .statements(db)
-        .insertReturning(
-          TodosTableCompanion.insert(content: 'my test content'),
-        );
+    final row = await db.todosTableQueries.insertReturning(
+      TodosTableCompanion.insert(content: 'my test content'),
+    );
 
     final query = await db.managers.todosTable
         .filter((f) => f.targetDate(null))

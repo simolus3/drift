@@ -31,25 +31,18 @@ void main() {
   });
 
   test('can select view', () async {
-    final category = await db.categories
-        .statements(db)
-        .insertReturning(
-          CategoriesCompanion.insert(description: 'category description'),
-        );
-    await db.todosTable
-        .statements(db)
-        .insertOne(
-          TodosTableCompanion.insert(
-            content: 'some content',
-            title: const Value('title'),
-            category: Value(category.id),
-          ),
-        );
+    final category = await db.categoriesQueries.insertReturning(
+      CategoriesCompanion.insert(description: 'category description'),
+    );
+    await db.todosTableQueries.insertOne(
+      TodosTableCompanion.insert(
+        content: 'some content',
+        title: const Value('title'),
+        category: Value(category.id),
+      ),
+    );
 
-    final result = await db.todoWithCategoryView
-        .statements(db)
-        .select()
-        .getSingle();
+    final result = await db.todoWithCategoryViewQueries.select().getSingle();
     expect(
       result,
       const TodoWithCategoryViewData(
@@ -60,16 +53,11 @@ void main() {
   });
 
   test('all()', () async {
-    final user = await db.users
-        .statements(db)
-        .insertReturning(
-          UsersCompanion.insert(
-            name: 'Test user',
-            profilePicture: Uint8List(0),
-          ),
-        );
+    final user = await db.usersQueries.insertReturning(
+      UsersCompanion.insert(name: 'Test user', profilePicture: Uint8List(0)),
+    );
 
-    expect(await db.users.statements(db).all().get(), [user]);
+    expect(await db.usersQueries.all().get(), [user]);
   });
 
   test('subqueries', () async {
@@ -162,9 +150,9 @@ void main() {
   });
 
   test('right outer join', () async {
-    await db.categories
-        .statements(db)
-        .insertOne(CategoriesCompanion.insert(description: 'test'));
+    await db.categoriesQueries.insertOne(
+      CategoriesCompanion.insert(description: 'test'),
+    );
 
     final query = db
         .select(db.todosTable)
@@ -179,12 +167,12 @@ void main() {
   });
 
   test('full outer join', () async {
-    await db.todosTable
-        .statements(db)
-        .insertOne(TodosTableCompanion.insert(content: 'todo'));
-    await db.categories
-        .statements(db)
-        .insertOne(CategoriesCompanion.insert(description: 'category'));
+    await db.todosTableQueries.insertOne(
+      TodosTableCompanion.insert(content: 'todo'),
+    );
+    await db.categoriesQueries.insertOne(
+      CategoriesCompanion.insert(description: 'category'),
+    );
 
     final query =
         db

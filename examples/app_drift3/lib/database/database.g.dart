@@ -43,8 +43,6 @@ class $CategoriesTable extends Categories
   $CategoriesTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   Category? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
@@ -265,8 +263,6 @@ class $TodoEntriesTable extends TodoEntries
   @override
   $TodoEntriesTable asSelfType() => this;
 
-  @override
-  Set<TableColumn> get primaryKey => {id};
   @override
   TodoEntry? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
@@ -498,8 +494,6 @@ class TextEntries extends Table
   TextEntries asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => const {};
-  @override
   TextEntry? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$description = positions[0].index;
@@ -644,6 +638,12 @@ abstract base class _$AppDatabase extends GeneratedDatabase {
   Trigger get todosInsert => _$todosInsert;
   Trigger get todosDelete => _$todosDelete;
   Trigger get todosUpdate => _$todosUpdate;
+  TableOrViewStatements<Category, $CategoriesTable> get categoriesQueries =>
+      this.categories.statements(this);
+  TableOrViewStatements<TodoEntry, $TodoEntriesTable> get todoEntriesQueries =>
+      this.todoEntries.statements(this);
+  TableOrViewStatements<TextEntry, TextEntries> get textEntriesQueries =>
+      this.textEntries.statements(this);
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
         KnownSqlDialect.sqlite: const SqliteOptions(
@@ -658,8 +658,8 @@ abstract base class _$AppDatabase extends GeneratedDatabase {
             'SELECT c.*, (SELECT COUNT(*) FROM todo_entries WHERE category = c.id) AS amount FROM categories AS c UNION ALL SELECT NULL, NULL, NULL, (SELECT COUNT(*) FROM todo_entries WHERE category IS NULL)',
         variables: [],
         readsFrom: {
-          todoEntries,
-          categories,
+          $TodoEntriesTable(),
+          $CategoriesTable(),
         },
         createMapper: (RawResultSet _) {
           final type$0 = BuiltinDriftType.int.resolveIn(dialect);
@@ -682,18 +682,20 @@ abstract base class _$AppDatabase extends GeneratedDatabase {
             'SELECT"todos"."id", "todos"."description", "todos"."category", "todos"."due_date","cat"."id", "cat"."name", "cat"."color" FROM text_entries INNER JOIN todo_entries AS todos ON todos.id = text_entries."rowid" LEFT OUTER JOIN categories AS cat ON cat.id = todos.category WHERE text_entries MATCH ?1 ORDER BY rank',
         variables: [mapValue(BuiltinDriftType.text, query)],
         readsFrom: {
-          textEntries,
-          todoEntries,
-          categories,
+          TextEntries(),
+          $TodoEntriesTable(),
+          $CategoriesTable(),
         },
         createMapper: (RawResultSet _) {
-          final map_0 = todoEntries.createMapperFromPositions(dialect, const [
+          final map_0 =
+              $TodoEntriesTable().createMapperFromPositions(dialect, const [
             ColumnPosition(0),
             ColumnPosition(1),
             ColumnPosition(2),
             ColumnPosition(3),
           ]);
-          final map_1 = categories.createMapperFromPositions(dialect, const [
+          final map_1 =
+              $CategoriesTable().createMapperFromPositions(dialect, const [
             ColumnPosition(4),
             ColumnPosition(5),
             ColumnPosition(6),

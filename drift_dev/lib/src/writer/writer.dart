@@ -107,6 +107,11 @@ abstract class _NodeOrWriter {
   }
 
   AnnotatedDartCode rowType(DriftElementWithResultSet element) {
+    if (!writer.generationOptions.writeDataClasses) {
+      // Skip mapping from SQL to Dart, generate as never instead.
+      return AnnotatedDartCode.text('Never');
+    }
+
     return AnnotatedDartCode.build((b) => b.addElementRowType(element));
   }
 
