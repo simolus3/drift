@@ -171,31 +171,27 @@ void main() {
     await db.close();
   }, tags: 'background_isolate');
 
-  test(
-    'can close isolate when using DatabaseConnection.delayed',
-    () async {
-      final spawned = ReceivePort();
-      final done = ReceivePort();
+  test('can close isolate when using DatabaseConnection.delayed', () async {
+    final spawned = ReceivePort();
+    final done = ReceivePort();
 
-      await Isolate.spawn(
-        _createBackground,
-        spawned.sendPort,
-        onExit: done.sendPort,
-      );
-      // The isolate should eventually exit!
-      expect(done.first, completion(anything));
+    await Isolate.spawn(
+      _createBackground,
+      spawned.sendPort,
+      onExit: done.sendPort,
+    );
+    // The isolate should eventually exit!
+    expect(done.first, completion(anything));
 
-      final connection = DatabaseConnection.delayed(
-        Future(() async {
-          final drift = await spawned.first as DriftIsolate;
-          return drift.connect(singleClientMode: true);
-        }),
-      );
-      final db = TodoDb(connection);
-      await db.close();
-    },
-    tags: 'background_isolate',
-  );
+    final connection = DatabaseConnection.delayed(
+      Future(() async {
+        final drift = await spawned.first as DriftIsolate;
+        return drift.connect(singleClientMode: true);
+      }),
+    );
+    final db = TodoDb(connection);
+    await db.close();
+  }, tags: 'background_isolate');
 
   test('can close server when client isolate exits', () async {
     final shutdownCalled = Completer<void>();

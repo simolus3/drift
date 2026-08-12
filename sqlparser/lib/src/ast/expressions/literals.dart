@@ -1,4 +1,5 @@
 part of '../ast.dart';
+
 // https://www.sqlite.org/syntax/literal-value.html
 
 @optionalTypeArgs

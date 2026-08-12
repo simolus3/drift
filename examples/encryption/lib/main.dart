@@ -23,10 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Encrypted drift application',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const HomePage(),
     );
   }
@@ -45,9 +42,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Encrypted drift example'),
-      ),
+      appBar: AppBar(title: const Text('Encrypted drift example')),
       body: StreamBuilder<List<Note>>(
         stream: _database.notes.select().watch(),
         builder: (context, state) {
@@ -59,9 +54,7 @@ class _HomePageState extends State<HomePage> {
           }
 
           if (!state.hasData) {
-            return const Align(
-              child: CircularProgressIndicator(),
-            );
+            return const Align(child: CircularProgressIndicator());
           }
 
           return ListView(
@@ -116,8 +109,9 @@ class _AddEntryDialogState extends State<_AddEntryDialog> {
       actions: [
         TextButton(
           onPressed: () {
-            widget.database.notes
-                .insertOne(NotesCompanion.insert(content: _controller.text));
+            widget.database.notes.insertOne(
+              NotesCompanion.insert(content: _controller.text),
+            );
             Navigator.of(context).pop();
           },
           child: const Text('Add'),

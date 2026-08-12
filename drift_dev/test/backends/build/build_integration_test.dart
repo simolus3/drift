@@ -1154,12 +1154,10 @@ class MyDatabase extends \$MyDatabase {}
     }
   });
 
-  test(
-    'warns about missing imports',
-    () async {
-      await emulateDriftBuild(
-        inputs: {
-          'a|lib/main.drift': '''
+  test('warns about missing imports', () async {
+    await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.drift': '''
 import 'package:b/b.drift';
 import 'package:a/missing.drift';
 
@@ -1167,33 +1165,31 @@ CREATE TABLE users (
   another INTEGER REFERENCES b(foo)
 );
 ''',
-          'b|lib/b.drift': '''
+        'b|lib/b.drift': '''
 CREATE TABLE b (foo INTEGER);
 ''',
-        },
-        logger: loggerThat(
-          emitsInAnyOrder([
-            record(
-              allOf(
-                contains(
-                  "The imported file, `package:b/b.drift`, does not exist or can't be imported",
-                ),
-                contains('Note: When importing drift files across packages'),
+      },
+      logger: loggerThat(
+        emitsInAnyOrder([
+          record(
+            allOf(
+              contains(
+                "The imported file, `package:b/b.drift`, does not exist or can't be imported",
               ),
+              contains('Note: When importing drift files across packages'),
             ),
-            record(
-              allOf(
-                contains('package:a/missing.drift'),
-                isNot(contains('Note: When')),
-              ),
+          ),
+          record(
+            allOf(
+              contains('package:a/missing.drift'),
+              isNot(contains('Note: When')),
             ),
-            record(contains('`b` could not be found in any import.')),
-          ]),
-        ),
-      );
-    },
-    skip: 'Detailed logs not available through testBuilders',
-  );
+          ),
+          record(contains('`b` could not be found in any import.')),
+        ]),
+      ),
+    );
+  }, skip: 'Detailed logs not available through testBuilders');
 
   test('generates generic type converters correctly', () async {
     // Regression test for https://github.com/simolus3/drift/issues/3300

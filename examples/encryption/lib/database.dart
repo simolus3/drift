@@ -24,9 +24,7 @@ class MyEncryptedDatabase extends _$MyEncryptedDatabase {
 
   @override
   MigrationStrategy get migration {
-    return MigrationStrategy(
-      beforeOpen: (details) async {},
-    );
+    return MigrationStrategy(beforeOpen: (details) async {});
   }
 }
 

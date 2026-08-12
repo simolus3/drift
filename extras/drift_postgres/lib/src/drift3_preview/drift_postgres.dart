@@ -3,6 +3,7 @@
 /// For more information on how to use this package, see
 /// https://drift.simonbinder.eu/docs/platforms/postgres/.
 library;
+
 // ignore_for_file: experimental_member_use
 
 // ignore: implementation_imports

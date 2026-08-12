@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 // import the migrations tooling
 import 'package:drift_dev/api/migrations_web.dart';
 import 'package:sqlite3/wasm.dart';
+
 // #enddocregion web
 
 const kDebugMode = true;

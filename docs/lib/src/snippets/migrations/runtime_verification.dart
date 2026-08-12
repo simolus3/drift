@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 // #docregion native
 // import the migrations tooling
 import 'package:drift_dev/api/migrations_native.dart';
+
 // #enddocregion native
 
 const kDebugMode = true;

@@ -7,6 +7,7 @@ import 'generated_migrations/schema.dart';
 // #docregion imports
 import 'generated_migrations/schema_v1.dart' as v1;
 import 'generated_migrations/schema_v2.dart' as v2;
+
 // #enddocregion imports
 
 // #docregion main

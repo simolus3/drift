@@ -13,55 +13,51 @@ import 'package:test/test.dart';
 import '../generated/todos.dart';
 
 void main() {
-  test(
-    'transaction handles BEGIN throwing',
-    () async {
-      final rawDb = sqlite3.open(
-        'file:transaction_test?mode=memory&cache=shared',
-        uri: true,
-      );
-      final driftDb = TodoDb(
-        NativeDatabase.opened(
-          sqlite3.open(
-            'file:transaction_test?mode=memory&cache=shared',
-            uri: true,
-          ),
+  test('transaction handles BEGIN throwing', () async {
+    final rawDb = sqlite3.open(
+      'file:transaction_test?mode=memory&cache=shared',
+      uri: true,
+    );
+    final driftDb = TodoDb(
+      NativeDatabase.opened(
+        sqlite3.open(
+          'file:transaction_test?mode=memory&cache=shared',
+          uri: true,
         ),
-      );
-      addTearDown(driftDb.close);
-      addTearDown(rawDb.close);
+      ),
+    );
+    addTearDown(driftDb.close);
+    addTearDown(rawDb.close);
 
-      await driftDb
-          .into(driftDb.categories)
-          .insert(CategoriesCompanion.insert(description: 'description'));
+    await driftDb
+        .into(driftDb.categories)
+        .insert(CategoriesCompanion.insert(description: 'description'));
 
-      rawDb.execute('BEGIN EXCLUSIVE');
+    rawDb.execute('BEGIN EXCLUSIVE');
 
-      await expectLater(
-        driftDb.transaction(() {
-          return driftDb.select(driftDb.categories).get();
-        }),
-        throwsA(
-          isA<SqliteException>()
-              .having(
-                (e) => e.causingStatement,
-                'causingStatement',
-                'BEGIN TRANSACTION',
-              )
-              .having((e) => e.extendedResultCode, 'resultCode', 262),
-        ),
-      );
+    await expectLater(
+      driftDb.transaction(() {
+        return driftDb.select(driftDb.categories).get();
+      }),
+      throwsA(
+        isA<SqliteException>()
+            .having(
+              (e) => e.causingStatement,
+              'causingStatement',
+              'BEGIN TRANSACTION',
+            )
+            .having((e) => e.extendedResultCode, 'resultCode', 262),
+      ),
+    );
 
-      rawDb.execute('ROLLBACK');
+    rawDb.execute('ROLLBACK');
 
-      // Make sure this doesn't block the database
-      await expectLater(
-        driftDb.select(driftDb.categories).get(),
-        completion(hasLength(1)),
-      );
-    },
-    skip: 'Relies on deprecated shared cache',
-  );
+    // Make sure this doesn't block the database
+    await expectLater(
+      driftDb.select(driftDb.categories).get(),
+      completion(hasLength(1)),
+    );
+  }, skip: 'Relies on deprecated shared cache');
 
   test('DatabaseConnection constructor can wrap inner', () async {
     final raw = NativeDatabase.memory();

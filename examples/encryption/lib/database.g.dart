@@ -11,18 +11,27 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, content];
   @override
@@ -31,16 +40,20 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   String get actualTableName => $name;
   static const String $name = 'notes';
   @override
-  VerificationContext validateIntegrity(Insertable<Note> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<Note> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
@@ -53,10 +66,14 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   Note map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Note(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
     );
   }
 
@@ -79,14 +96,13 @@ class Note extends DataClass implements Insertable<Note> {
   }
 
   NotesCompanion toCompanion(bool nullToAbsent) {
-    return NotesCompanion(
-      id: Value(id),
-      content: Value(content),
-    );
+    return NotesCompanion(id: Value(id), content: Value(content));
   }
 
-  factory Note.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory Note.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Note(
       id: serializer.fromJson<int>(json['id']),
@@ -102,10 +118,8 @@ class Note extends DataClass implements Insertable<Note> {
     };
   }
 
-  Note copyWith({int? id, String? content}) => Note(
-        id: id ?? this.id,
-        content: content ?? this.content,
-      );
+  Note copyWith({int? id, String? content}) =>
+      Note(id: id ?? this.id, content: content ?? this.content);
   Note copyWithCompanion(NotesCompanion data) {
     return Note(
       id: data.id.present ? data.id.value : this.id,
@@ -152,10 +166,7 @@ class NotesCompanion extends UpdateCompanion<Note> {
   }
 
   NotesCompanion copyWith({Value<int>? id, Value<String>? content}) {
-    return NotesCompanion(
-      id: id ?? this.id,
-      content: content ?? this.content,
-    );
+    return NotesCompanion(id: id ?? this.id, content: content ?? this.content);
   }
 
   @override
@@ -191,14 +202,10 @@ abstract class _$MyEncryptedDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [notes];
 }
 
-typedef $$NotesTableCreateCompanionBuilder = NotesCompanion Function({
-  Value<int> id,
-  required String content,
-});
-typedef $$NotesTableUpdateCompanionBuilder = NotesCompanion Function({
-  Value<int> id,
-  Value<String> content,
-});
+typedef $$NotesTableCreateCompanionBuilder =
+    NotesCompanion Function({Value<int> id, required String content});
+typedef $$NotesTableUpdateCompanionBuilder =
+    NotesCompanion Function({Value<int> id, Value<String> content});
 
 class $$NotesTableFilterComposer
     extends Composer<_$MyEncryptedDatabase, $NotesTable> {
@@ -210,10 +217,14 @@ class $$NotesTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => ColumnFilters(column));
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$NotesTableOrderingComposer
@@ -226,10 +237,14 @@ class $$NotesTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => ColumnOrderings(column));
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$NotesTableAnnotationComposer
@@ -248,20 +263,24 @@ class $$NotesTableAnnotationComposer
       $composableBuilder(column: $table.content, builder: (column) => column);
 }
 
-class $$NotesTableTableManager extends RootTableManager<
-    _$MyEncryptedDatabase,
-    $NotesTable,
-    Note,
-    $$NotesTableFilterComposer,
-    $$NotesTableOrderingComposer,
-    $$NotesTableAnnotationComposer,
-    $$NotesTableCreateCompanionBuilder,
-    $$NotesTableUpdateCompanionBuilder,
-    (Note, BaseReferences<_$MyEncryptedDatabase, $NotesTable, Note>),
-    Note,
-    PrefetchHooks Function()> {
+class $$NotesTableTableManager
+    extends
+        RootTableManager<
+          _$MyEncryptedDatabase,
+          $NotesTable,
+          Note,
+          $$NotesTableFilterComposer,
+          $$NotesTableOrderingComposer,
+          $$NotesTableAnnotationComposer,
+          $$NotesTableCreateCompanionBuilder,
+          $$NotesTableUpdateCompanionBuilder,
+          (Note, BaseReferences<_$MyEncryptedDatabase, $NotesTable, Note>),
+          Note,
+          PrefetchHooks Function()
+        > {
   $$NotesTableTableManager(_$MyEncryptedDatabase db, $NotesTable table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -270,41 +289,38 @@ class $$NotesTableTableManager extends RootTableManager<
               $$NotesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$NotesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> content = const Value.absent(),
-          }) =>
-              NotesCompanion(
-            id: id,
-            content: content,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String content,
-          }) =>
-              NotesCompanion.insert(
-            id: id,
-            content: content,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> content = const Value.absent(),
+              }) => NotesCompanion(id: id, content: content),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String content,
+              }) => NotesCompanion.insert(id: id, content: content),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $$NotesTableProcessedTableManager = ProcessedTableManager<
-    _$MyEncryptedDatabase,
-    $NotesTable,
-    Note,
-    $$NotesTableFilterComposer,
-    $$NotesTableOrderingComposer,
-    $$NotesTableAnnotationComposer,
-    $$NotesTableCreateCompanionBuilder,
-    $$NotesTableUpdateCompanionBuilder,
-    (Note, BaseReferences<_$MyEncryptedDatabase, $NotesTable, Note>),
-    Note,
-    PrefetchHooks Function()>;
+typedef $$NotesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$MyEncryptedDatabase,
+      $NotesTable,
+      Note,
+      $$NotesTableFilterComposer,
+      $$NotesTableOrderingComposer,
+      $$NotesTableAnnotationComposer,
+      $$NotesTableCreateCompanionBuilder,
+      $$NotesTableUpdateCompanionBuilder,
+      (Note, BaseReferences<_$MyEncryptedDatabase, $NotesTable, Note>),
+      Note,
+      PrefetchHooks Function()
+    >;
 
 class $MyEncryptedDatabaseManager {
   final _$MyEncryptedDatabase _db;

@@ -44,19 +44,15 @@ void main() {
     expect(amountOfSlowQueries, isNot(4));
   }
 
-  group(
-    'stream queries are aborted on cancellations',
-    () {
-      test('on a background isolate', () async {
-        final isolate = await DriftIsolate.spawn(createConnection);
-        addTearDown(isolate.shutdownAll);
+  group('stream queries are aborted on cancellations', () {
+    test('on a background isolate', () async {
+      final isolate = await DriftIsolate.spawn(createConnection);
+      addTearDown(isolate.shutdownAll);
 
-        final db = EmptyDb(await isolate.connect());
-        await runTest(db);
-      });
-    },
-    skip: 'todo: Cancellations are currently broken on Dart 2.15',
-  );
+      final db = EmptyDb(await isolate.connect());
+      await runTest(db);
+    });
+  }, skip: 'todo: Cancellations are currently broken on Dart 2.15');
 
   test('can cancel streams synchronously', () async {
     final createdTimers = <Timer>[];

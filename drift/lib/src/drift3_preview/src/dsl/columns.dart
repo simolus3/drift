@@ -371,7 +371,8 @@ extension type ColumnBuilder<T extends Object>._(BaseColumnBuilder<T> _dslOnly)
 /// This is a different class so that some methods are not available
 extension type VirtualColumnBuilder<T extends Object>._(
   BaseColumnBuilder<T> _dslOnly
-) implements BaseColumnBuilder<T> {}
+)
+    implements BaseColumnBuilder<T> {}
 
 /// Tells the generator to build an [IntColumn]. See the docs at [ColumnBuilder]
 /// for details.

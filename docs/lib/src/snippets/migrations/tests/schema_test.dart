@@ -7,6 +7,7 @@ import 'generated_migrations/schema.dart';
 
 // #enddocregion setup
 import '../migrations.dart';
+
 // #docregion setup
 
 void main() {
