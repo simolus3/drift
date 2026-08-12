@@ -17,12 +17,10 @@ import 'package:sqlparser/sqlparser.dart'
     hide AnalysisContext, StringLiteral, SyntacticEntity, AstNode;
 import 'package:yaml/yaml.dart';
 
+import '../../services/upgrade/shared.dart';
 import '../cli.dart';
 
 class MigrateCommand extends DriftCommand {
-  static final RegExp _buildYamlPattern = RegExp(
-    '(?:\\w+\\.)?build(?:\\.\\w+)?',
-  );
   static final RegExp _builderKeyPattern = RegExp('(?:(\\w+)[:|])?(\\w+)');
 
   late final AnalysisContext context;
@@ -79,7 +77,7 @@ class MigrateCommand extends DriftCommand {
         final name = p.basenameWithoutExtension(file.path);
         if (name == 'pubspec') {
           await _transformPubspec(file);
-        } else if (_buildYamlPattern.hasMatch(name)) {
+        } else if (buildYamlPattern.hasMatch(name)) {
           await _transformBuildYaml(file);
         } else if (name == 'analysis_options') {
           await _transformAnalysisOptions(file);
@@ -151,7 +149,7 @@ class MigrateCommand extends DriftCommand {
   Future<void> _transformBuildYaml(File file) async {
     dynamic originalBuildConfig;
     final originalContent = await file.readAsString();
-    final writer = _StringRewriter(originalContent);
+    final writer = StringRewriter(originalContent);
 
     try {
       originalBuildConfig = loadYaml(originalContent, sourceUrl: file.uri);
@@ -189,7 +187,7 @@ class MigrateCommand extends DriftCommand {
 
   Future<void> _transformPubspec(File file) async {
     final content = await file.readAsString();
-    final writer = _StringRewriter(content);
+    final writer = StringRewriter(content);
     dynamic originalPubspec;
 
     try {
@@ -303,28 +301,12 @@ class MigrateCommand extends DriftCommand {
   }
 }
 
-class _StringRewriter {
-  String content;
-  var _skew = 0;
-
-  _StringRewriter(this.content);
-
-  void replace(int start, int originalLength, String newContent) {
-    content = content.replaceRange(
-      _skew + start,
-      _skew + start + originalLength,
-      newContent,
-    );
-    _skew += newContent.length - originalLength;
-  }
-}
-
 class _Moor2DriftDartRewriter extends GeneralizingAstVisitor<void> {
-  final _StringRewriter _writer;
+  final StringRewriter _writer;
 
   String get content => _writer.content;
 
-  _Moor2DriftDartRewriter(String content) : _writer = _StringRewriter(content);
+  _Moor2DriftDartRewriter(String content) : _writer = StringRewriter(content);
 
   void _rewriteImportString(StringLiteral l) {
     // Don't do anything if this is not a 'package:moor/` uri

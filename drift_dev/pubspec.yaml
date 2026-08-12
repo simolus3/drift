@@ -32,6 +32,7 @@ dependencies:
   logging: ^1.2.0
   cli_util: '>=0.4.0 <0.6.0'
   yaml: ^3.1.0
+  yaml_edit: ^2.2.4
   io: ^1.0.3
 
   # Drift-specific analysis and apis
