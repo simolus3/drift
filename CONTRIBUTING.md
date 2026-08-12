@@ -73,11 +73,55 @@ used to construct common queries.
 
 ### Debugging the builder
 
-To debug the builder, run `pub run build_runner generate-build-script` in the `drift`
+To debug the builder, run `dart run build_runner build` in the `drift`
 subdirectory (or any other directory you want to use as an input). This will generate
 a `.dart_tool/build/entrypoint/build.dart`. That file can be run and debugged as a
 regular Dart VM app. Be sure to pass something like `build -v` as program arguments
 and use the input package as a working directory.
+
+### Running tests via Melos
+**Run all tests**
+```sh
+./tool/test_all.sh
+```
+
+**Run all tests for a specific package:**
+```sh
+melos test:dart --scope sqlparser
+```
+
+**Run tests for a single file:**
+```sh
+melos exec --scope sqlparser -- dart test test/analysis/reference_resolver_test.dart
+```
+
+### Running tests inside docker
+For an interactive unit-testing environment, spin up the required containers
+and open a shell by running:
+```sh
+./tool/docker_test.sh
+```
+Once inside the shell, you can run commands as described above to test your
+code changes.
+
+:warning: Note: This environment only supports unit tests. Integration tests will not work.
+
+**Real-time file changes in Docker**
+By default, the Docker container won't reflect local file changes. To avoid
+rebuilding the container after every edit, mount your working directories
+directly when opening the shell:
+```sh
+docker-compose run --rm \
+  -v "./sqlparser/test:/app/sqlparser/test" \
+  -v "./sqlparser/lib/src/analysis:/app/sqlparser/lib/src/analysis" \
+  app /bin/bash
+```
+
+**Stopping the dev containers
+To tear down the development setup again, run:
+```sh
+docker-compose down
+```
 
 ### Releasing to pub
 Minor changes will be published directly, no special steps are necessary. For major
