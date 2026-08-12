@@ -127,18 +127,18 @@ class EncryptedExecutor extends DelegatedDatabase {
   EncryptedExecutor(
       {required String path,
       required String password,
-      bool? logStatements,
+      super.logStatements,
       bool singleInstance = true,
       DatabaseCreator? creator})
       : super(
-            _SqfliteDelegate(
-              false,
-              path,
-              singleInstance: singleInstance,
-              creator: creator,
-              password: password,
-            ),
-            logStatements: logStatements);
+          _SqfliteDelegate(
+            false,
+            path,
+            singleInstance: singleInstance,
+            creator: creator,
+            password: password,
+          ),
+        );
 
   /// A query executor that will store the database in the file declared by
   /// [path], which will be resolved relative to [s.getDatabasesPath()].
@@ -154,18 +154,18 @@ class EncryptedExecutor extends DelegatedDatabase {
   EncryptedExecutor.inDatabaseFolder(
       {required String path,
       required String password,
-      bool? logStatements,
+      super.logStatements,
       bool singleInstance = true,
       DatabaseCreator? creator})
       : super(
-            _SqfliteDelegate(
-              true,
-              path,
-              singleInstance: singleInstance,
-              creator: creator,
-              password: password,
-            ),
-            logStatements: logStatements);
+          _SqfliteDelegate(
+            true,
+            path,
+            singleInstance: singleInstance,
+            creator: creator,
+            password: password,
+          ),
+        );
 
   /// The underlying sqflite [s.Database] object used by drift to send queries.
   ///

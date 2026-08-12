@@ -7,12 +7,11 @@ import 'package:mysql_client/mysql_client.dart';
 class MariaDBDatabase extends DelegatedDatabase {
   MariaDBDatabase({
     required MySQLConnectionPool pool,
-    bool isSequential = true,
+    super.isSequential = true,
     bool logStatements = false,
     bool enableMigrations = true,
   }) : super(
          _MariaDelegate(() => pool, true, enableMigrations),
-         isSequential: isSequential,
          logStatements: logStatements,
        );
 

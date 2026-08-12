@@ -88,7 +88,7 @@ final class NavigatorLocksExecutor implements QueryExecutor {
     final completeLock = Completer<void>();
     try {
       await _acquireLock(completeLock);
-      return block();
+      return await block();
     } finally {
       completeLock.complete();
     }

@@ -131,7 +131,7 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
   /// drift.
   SqfliteQueryExecutor({
     required String path,
-    bool? logStatements,
+    super.logStatements,
     bool singleInstance = true,
     DatabaseCreator? creator,
   }) : super(
@@ -141,7 +141,6 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
            singleInstance: singleInstance,
            creator: creator,
          ),
-         logStatements: logStatements,
        );
 
   /// A query executor that will store the database in the file declared by
@@ -157,7 +156,7 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
   /// drift.
   SqfliteQueryExecutor.inDatabaseFolder({
     required String path,
-    bool? logStatements,
+    super.logStatements,
     bool singleInstance = true,
     DatabaseCreator? creator,
   }) : super(
@@ -167,7 +166,6 @@ class SqfliteQueryExecutor extends DelegatedDatabase {
            singleInstance: singleInstance,
            creator: creator,
          ),
-         logStatements: logStatements,
        );
 
   /// The underlying sqflite [s.Database] object used by drift to send queries.
