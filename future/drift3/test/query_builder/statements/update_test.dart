@@ -208,6 +208,32 @@ void main() {
     });
   });
 
+  group('update on table instances', () {
+    test('update()', () async {
+      await db.usersQueries.update().write(
+        const UsersCompanion(id: Value(RowId(3))),
+      );
+
+      verify(executor.executeSql('UPDATE "users" SET "id" = ?1;', [3]));
+    });
+
+    test('replace', () async {
+      await db.categoriesQueries.replaceOne(
+        const CategoriesCompanion(
+          id: Value(RowId(3)),
+          description: Value('new name'),
+        ),
+      );
+
+      verify(
+        executor.executeSql(
+          'UPDATE "categories" SET "desc" = ?1,"priority" = 0 WHERE "id" = ?2;',
+          ['new name', 3],
+        ),
+      );
+    });
+  });
+
   group('RETURNING', () {
     test('in query builder', () {
       final stmt = db.update(db.categories)

@@ -1,3 +1,4 @@
+import 'package:drift3/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -60,8 +61,10 @@ class TodoCard extends ConsumerWidget {
                 // We delete the entry here. Again, notice how we don't have to
                 // call setState() or inform the parent widget. Drift will take
                 // care of updating the underlying data automatically
-                final db = ref.read(AppDatabase.provider);
-                db.delete(db.todoEntries).delete(entry);
+                ref
+                    .read(AppDatabase.provider)
+                    .todoEntriesQueries
+                    .deleteOne(entry);
               },
             )
           ],

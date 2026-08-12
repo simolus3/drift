@@ -1,3 +1,6 @@
+/// @docImport 'statements/query.dart';
+library;
+
 import '../connection/connection.dart';
 import '../database/connection_user.dart';
 import '../database/data_class.dart';
@@ -6,8 +9,10 @@ import 'expressions/aggregate.dart';
 import 'expressions/expression.dart';
 import 'schema/result_set.dart';
 import 'schema/table.dart';
+import 'statements/delete.dart';
 import 'statements/insert.dart';
 import 'statements/select.dart';
+import 'statements/update.dart';
 
 /// Methods to compose common queries and statements on tables or views.
 ///
@@ -140,6 +145,44 @@ extension TableStatements<
     UpsertClause<Row, RS>? onConflict,
   }) {
     return insert().insertReturningOrNull(row, onConflict: onConflict);
+  }
+
+  /// Creates a statement to compose an `UPDATE` into the database.
+  ///
+  /// This is equivalent to calling [DatabaseConnectionUser.update] with the
+  /// captured table.
+  UpdateStatement<Row, RS> update() => _database.update(_resultSet);
+
+  /// Replaces a single row with an update statement.
+  ///
+  /// See also [UpdateStatement.replace].
+  Future<void> replaceOne(Insertable<Row> row) {
+    return update().replace(row);
+  }
+
+  /// Creates a statement to compose a `DELETE` from the database.
+  ///
+  /// This is equivalent to calling [DatabaseConnectionUser.delete] with the
+  /// captured table.
+  DeleteStatement<Row, RS> delete() => _database.delete(_resultSet);
+
+  /// Deletes the [row] from the captured table.
+  Future<bool> deleteOne(Insertable<Row> row) async {
+    return await delete().delete(row) != 0;
+  }
+
+  /// Deletes all rows matching the [filter] from the table.
+  ///
+  /// See also [SingleTableStatementMixin.where].
+  Future<int> deleteWhere(Expression<bool> Function(RS tbl) filter) {
+    return (delete()..where(filter)).go();
+  }
+
+  /// Deletes ALL rows from the table.
+  ///
+  /// See also [SingleTableStatementMixin.where].
+  Future<int> deleteAll() {
+    return delete().go();
   }
 }
 

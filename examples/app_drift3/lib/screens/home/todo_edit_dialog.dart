@@ -96,8 +96,7 @@ class _TodoEditDialogState extends ConsumerState<TodoEditDialog> {
               dueDate: Value(_dueDate),
             );
 
-            final database = ref.read(AppDatabase.provider);
-            database.update(database.todoEntries).replace(entry);
+            ref.read(AppDatabase.provider).todoEntriesQueries.replaceOne(entry);
             Navigator.pop(context);
           },
         ),

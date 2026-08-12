@@ -71,9 +71,10 @@ class _CategoryDrawerEntry extends ConsumerWidget {
             onTap: () async {
               final newColor = await _selectColor(context, category.color);
               if (newColor != null) {
-                final db = ref.read(AppDatabase.provider);
-                await db
-                    .update(db.categories)
+                await ref
+                    .read(AppDatabase.provider)
+                    .categoriesQueries
+                    .update()
                     .whereSamePrimaryKey(category)
                     .write(CategoriesCompanion(color: Value(newColor)));
               }

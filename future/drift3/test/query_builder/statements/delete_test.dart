@@ -169,4 +169,36 @@ void main() {
       expect(streamQueries.recordedUpdates, isEmpty);
     });
   });
+
+  group('delete on table statements', () {
+    test('delete()', () async {
+      await db.usersQueries.delete().go();
+
+      verify(session.executeSql('DELETE FROM "users";', const []));
+    });
+
+    test('deleteOne()', () async {
+      await db.usersQueries.deleteOne(
+        const UsersCompanion(id: Value(RowId(3))),
+      );
+
+      verify(
+        session.executeSql('DELETE FROM "users" WHERE "id" = ?1;', const [3]),
+      );
+    });
+
+    test('deleteWhere', () async {
+      await db.usersQueries.deleteWhere((tbl) => tbl.id.isLessThanValue(3));
+
+      verify(
+        session.executeSql('DELETE FROM "users" WHERE "id" < ?1;', const [3]),
+      );
+    });
+
+    test('deleteAll', () async {
+      await db.usersQueries.deleteAll();
+
+      verify(session.executeSql('DELETE FROM "users";', const []));
+    });
+  });
 }
