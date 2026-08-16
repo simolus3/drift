@@ -534,8 +534,7 @@ abstract class BaseTableManager<
     $CreatePrefetchHooksCallback
   >
   withReferences([
-    final PrefetchHooks Function($CreatePrefetchHooksCallback prefetch)?
-    prefetch,
+    PrefetchHooks Function($CreatePrefetchHooksCallback prefetch)? prefetch,
   ]) {
     // Build the prefetch hooks based on the user's input
     final prefetchHooks = ($state._prefetchHooksCallback != null)
