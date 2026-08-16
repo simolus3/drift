@@ -35,6 +35,40 @@ import 'package:drift_sqlite/web.dart';
 import 'package:drift_sqlite/schema_verifier.dart';
 ''').validate();
     });
+
+    test('migrates tabe query extensions', () async {
+      final original = await _drift2Project([
+        d.file('database.dart', '''
+import 'package:drift/drift.dart';
+
+class FakeGeneratedDatabase extends GeneratedDatabase {
+  TableInfo get users => throw 'stub';
+}
+
+void foo(FakeGeneratedDatabase db) {
+  db.users.insertOne('stub');
+  db.users.actualTableName; // not a query extension
+  final x = db.users;
+  x.insertOne('stub'); // indirect, cannot be migrated
+}
+'''),
+      ]);
+      await original.migrateToDrift3();
+      await d.file('app/lib/database.dart', '''
+import 'package:drift/drift.dart';
+
+class FakeGeneratedDatabase extends GeneratedDatabase {
+  TableInfo get users => throw 'stub';
+}
+
+void foo(FakeGeneratedDatabase db) {
+  db.usersQueries.insertOne('stub');
+  db.users.actualTableName; // not a query extension
+  final x = db.users;
+  x.insertOne('stub'); // indirect, cannot be migrated
+}
+''').validate();
+    });
   });
 
   group('migrates build.yaml', () {

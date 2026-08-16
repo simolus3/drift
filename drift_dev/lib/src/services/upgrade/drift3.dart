@@ -1,11 +1,14 @@
 import 'dart:io';
 
-import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/dart/element/type_system.dart';
 import 'package:drift/drift.dart' show SqlDialect;
+import 'package:drift_dev/src/backends/analyzer_context_backend.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -21,12 +24,13 @@ final class UpgradeToDrift3 {
   final DriftProject project;
   final Logger logger;
 
-  final AnalysisContext context;
+  final AnalysisContextBackend backend;
+  _KnownDriftImports? _knownImports;
 
   final Map<String, String> _updatedFiles = {};
   var _didTransformBuildYaml = false;
 
-  UpgradeToDrift3._(this.project, this.context, this.logger);
+  UpgradeToDrift3._(this.project, this.backend, this.logger);
 
   factory UpgradeToDrift3(DriftProject project, [Logger? logger]) {
     final collection = AnalysisContextCollection(
@@ -36,7 +40,7 @@ final class UpgradeToDrift3 {
 
     return UpgradeToDrift3._(
       project,
-      context,
+      AnalysisContextBackend.withoutExpressionSupport(context),
       logger ?? Logger.detached('upgrade-to-drift3'),
     );
   }
@@ -84,14 +88,35 @@ final class UpgradeToDrift3 {
     }
   }
 
+  Future<_KnownDriftImports> _resolveKnownImports() async {
+    if (_knownImports case final resolved?) return resolved;
+
+    final library = await backend.readDart(
+      Uri.parse('package:drift/drift.dart'),
+    );
+    return _knownImports = _KnownDriftImports(library);
+  }
+
   Future<void> _transformDartFile(File file) async {
-    final unitResult = await context.currentSession.getResolvedUnit(file.path);
+    final contents = await file.readAsString();
+    if (contents.contains('// GENERATED CODE - DO NOT MODIFY BY HAND')) {
+      return;
+    }
+
+    final imports = await _resolveKnownImports();
+    final unitResult = await backend.context.currentSession.getResolvedUnit(
+      file.path,
+    );
     if (unitResult is! ResolvedUnitResult) {
       logger.warning('Could not analyze ${file.path}, skipping...');
       return;
     }
 
-    final writer = _DartToDrift3Rewriter(unitResult.content);
+    final writer = _DartToDrift3Rewriter(
+      contents,
+      unitResult.libraryElement.typeSystem,
+      imports,
+    );
     unitResult.unit.accept(writer);
 
     _updatedFiles[file.path] = writer.content;
@@ -198,10 +223,13 @@ final class UpgradeToDrift3 {
 
 final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   final StringRewriter _writer;
+  final TypeSystem _typeSystem;
+  final _KnownDriftImports _types;
 
   String get content => _writer.content;
 
-  _DartToDrift3Rewriter(String content) : _writer = StringRewriter(content);
+  _DartToDrift3Rewriter(String content, this._typeSystem, this._types)
+    : _writer = StringRewriter(content);
 
   void _rewriteImportString(StringLiteral l) {
     const changedImports = {
@@ -246,6 +274,37 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   void visitExportDirective(ExportDirective node) {
     _rewriteImportString(node.uri);
   }
+
+  @override
+  void visitMethodInvocation(MethodInvocation node) {
+    // Transform usages of the pattern db.table.insertOne (and other extensions
+    // defined in on_table.dart) into db.tableQueries.insertOne.
+    if (node.function case SimpleIdentifier(:final element?)) {
+      if (element.enclosingElement case ExtensionElement(
+        name: 'TableOrViewStatements' || 'TableStatements',
+      )) {
+        // This needs a rewrite, which can be automated if the receiver is a
+        // getter invocation from a database.
+        if (node.target
+            case PrefixedIdentifier(
+              prefix: SimpleIdentifier(:final staticType?),
+              identifier: final databaseGetter,
+            )
+            when _typeSystem.isSubtypeOf(
+              staticType,
+              _types.databaseConnectionUser,
+            )) {
+          _writer.replace(
+            databaseGetter.offset,
+            databaseGetter.length,
+            '${databaseGetter.name}Queries',
+          );
+        }
+      }
+    }
+
+    super.visitMethodInvocation(node);
+  }
 }
 
 extension on DriftOptions {
@@ -264,4 +323,14 @@ extension on DriftOptions {
         },
     ];
   }
+}
+
+final class _KnownDriftImports {
+  final InterfaceType databaseConnectionUser;
+
+  _KnownDriftImports(LibraryElement drift)
+    : databaseConnectionUser =
+          (drift.exportNamespace.definedNames2['DatabaseConnectionUser']
+                  as ClassElement)
+              .thisType;
 }

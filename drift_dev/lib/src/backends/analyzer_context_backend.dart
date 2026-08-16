@@ -20,10 +20,14 @@ class PhysicalDriftDriver {
   PhysicalDriftDriver(this.driver, this._backend);
 
   Uri uriFromPath(String path) {
-    final pathUri = _backend.provider.pathContext.toUri(path);
+    if (_backend.provider case final provider?) {
+      final pathUri = provider.pathContext.toUri(path);
 
-    // Normalize to package URI if necessary.
-    return _backend.resolveUri(pathUri, '');
+      // Normalize to package URI if necessary.
+      return _backend.resolveUri(pathUri, '');
+    } else {
+      return _backend.context.currentSession.uriConverter.pathToUri(path)!;
+    }
   }
 
   Future<FileState> analyzeElementsForPath(String path) {
@@ -42,9 +46,20 @@ class AnalysisContextBackend extends DriftBackend {
   ///
   /// This will be used to create artificial files used to resolve the type of
   /// Dart expressions.
-  final OverlayResourceProvider provider;
+  final OverlayResourceProvider? provider;
 
-  AnalysisContextBackend(this.context, this.provider);
+  AnalysisContextBackend(this.context, OverlayResourceProvider this.provider);
+
+  AnalysisContextBackend.withoutExpressionSupport(this.context)
+    : provider = null;
+
+  OverlayResourceProvider _requireProvider() {
+    if (provider case final existing?) return existing;
+
+    throw StateError(
+      'This analysis context backend does not support loading expressions',
+    );
+  }
 
   static Future<PhysicalDriftDriver> createDriver({
     DriftOptions options = const DriftOptions.defaults(),
@@ -118,6 +133,7 @@ class AnalysisContextBackend extends DriftBackend {
   ) async {
     // Create a fake file next to the content
     final path = _pathOfUri(context)!;
+    final provider = _requireProvider();
     final pathContext = provider.pathContext;
     final pathForTemp = pathContext.join(
       pathContext.dirname(path),
@@ -171,6 +187,7 @@ class AnalysisContextBackend extends DriftBackend {
   ) async {
     // Create a fake file next to the content
     final path = _pathOfUri(context)!;
+    final provider = _requireProvider();
     final pathContext = provider.pathContext;
     final pathForTemp = pathContext.join(
       pathContext.dirname(path),
