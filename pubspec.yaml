@@ -42,7 +42,7 @@ workspace:
   - future/drift3_flutter_preview
 
 dev_dependencies:
-  melos: ^7.0.0
+  melos: ^8.3.0
 
 # Flutter's bundled `flutter_test` pins `test_api` to an exact version, which
 # caps `package:test` (and transitively `analyzer`) below 13. Overriding it lets
@@ -56,26 +56,25 @@ melos:
   repository: https://github.com/simolus3/drift
 
   scripts:
-    downgrade:
-      run: dart pub downgrade
-      exec: { concurrency: 1 }
-
     check_format:
       run: dart format -o none --set-exit-if-changed .
 
     analyze:
-      run: dart analyze --fatal-infos
-      exec: { concurrency: 1 }
+      exec:
+        command: dart analyze --fatal-infos
+        concurrency: 1
 
     build:
-      run: dart run build_runner build --delete-conflicting-outputs
-      exec: { concurrency: 1 }
+      exec:
+        command: dart run build_runner build --delete-conflicting-outputs
+        concurrency: 1
       packageFilters:
         dependsOn: build_runner
 
     test:
-      run: dart test
-      exec: { concurrency: 1 }
+      exec:
+        command: dart test
+        concurrency: 1
       packageFilters:
         dependsOn: test
         ignore: drift_postgres # this is an integration test
