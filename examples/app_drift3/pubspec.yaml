@@ -16,7 +16,7 @@ dependencies:
   drift3_flutter_preview:
   sqlite3_web: ^0.9.3
 
-  file_picker: ^10.3.10
+  file_picker: ^12.0.0
   flutter_colorpicker: ^1.0.3
   flutter_riverpod: ^3.0.0
   go_router: ^17.3.0

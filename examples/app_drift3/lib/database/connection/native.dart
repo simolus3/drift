@@ -10,7 +10,7 @@ import 'package:sqlite3/sqlite3.dart';
 
 Future<File> get databaseFile async {
   // We use `path_provider` to find a suitable path to store our data in.
-  final appDir = await getApplicationDocumentsDirectory();
+  final appDir = await getApplicationSupportDirectory();
   final dbPath = p.join(appDir.path, 'todo-app.sqlite');
   return File(dbPath);
 }
