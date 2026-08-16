@@ -2,7 +2,11 @@ import 'dart:io';
 
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
+import 'package:analyzer/dart/analysis/results.dart';
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:drift/drift.dart' show SqlDialect;
+import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
@@ -70,12 +74,27 @@ final class UpgradeToDrift3 {
 
   Future<void> _transformFile(File file) async {
     switch (p.extension(file.path)) {
+      case '.dart':
+        await _transformDartFile(file);
       case '.yaml':
         final name = p.basenameWithoutExtension(file.path);
         if (buildYamlPattern.hasMatch(name)) {
           await _transformBuildYaml(file);
         }
     }
+  }
+
+  Future<void> _transformDartFile(File file) async {
+    final unitResult = await context.currentSession.getResolvedUnit(file.path);
+    if (unitResult is! ResolvedUnitResult) {
+      logger.warning('Could not analyze ${file.path}, skipping...');
+      return;
+    }
+
+    final writer = _DartToDrift3Rewriter(unitResult.content);
+    unitResult.unit.accept(writer);
+
+    _updatedFiles[file.path] = writer.content;
   }
 
   Future<void> _transformBuildYaml(File file) async {
@@ -174,6 +193,58 @@ final class UpgradeToDrift3 {
     }
 
     _updatedFiles[file.path] = editor.toString();
+  }
+}
+
+final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
+  final StringRewriter _writer;
+
+  String get content => _writer.content;
+
+  _DartToDrift3Rewriter(String content) : _writer = StringRewriter(content);
+
+  void _rewriteImportString(StringLiteral l) {
+    const changedImports = {
+      'drift': {
+        'extensions/geopoly.dart':
+            'package:drift_sqlite/extensions/geopoly.dart',
+        'backends.dart': 'package:drift/drift.dart',
+        'isolate.dart': 'package:drift_sqlite/native.dart',
+        'wasm.dart': 'package:drift_sqlite/web.dart',
+      },
+      'drift_dev': {
+        'api/migrations_common.dart':
+            'package:drift_sqlite/schema_verifier.dart',
+        'api/migrations_native.dart':
+            'package:drift_sqlite/schema_verifier.dart',
+        'api/migrations_web.dart': 'package:drift_sqlite/schema_verifier.dart',
+        'api/migrations.dart': 'package:drift_sqlite/schema_verifier.dart',
+      },
+    };
+
+    final value = l.stringValue;
+    if (value == null) return;
+
+    final uri = Uri.tryParse(value);
+    if (uri == null || uri.scheme != 'package') return;
+    final segments = uri.pathSegments;
+    if (segments.length <= 1) return;
+    final [package, ...path] = segments;
+
+    final replacement = changedImports[package]?[p.url.joinAll(path)];
+    if (replacement != null) {
+      _writer.replace(l.offset, l.length, asDartLiteral(replacement));
+    }
+  }
+
+  @override
+  void visitImportDirective(ImportDirective node) {
+    _rewriteImportString(node.uri);
+  }
+
+  @override
+  void visitExportDirective(ExportDirective node) {
+    _rewriteImportString(node.uri);
   }
 }
 

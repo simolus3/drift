@@ -18,6 +18,25 @@ Future<TestDriftProject> _drift2Project(
 }
 
 void main() {
+  group('migrates Dart sources', () {
+    test('migrates imports', () async {
+      final original = await _drift2Project([
+        d.file('database.dart', '''
+import 'package:drift/drift.dart';
+import 'package:drift/wasm.dart';
+import 'package:drift_dev/api/migrations_native.dart';
+'''),
+      ]);
+      await original.migrateToDrift3();
+
+      await d.file('app/lib/database.dart', '''
+import 'package:drift/drift.dart';
+import 'package:drift_sqlite/web.dart';
+import 'package:drift_sqlite/schema_verifier.dart';
+''').validate();
+    });
+  });
+
   group('migrates build.yaml', () {
     test('migrates dialect options', () async {
       // Drift3 has different defaults, so a project without any configuration
