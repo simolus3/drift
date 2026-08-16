@@ -292,9 +292,7 @@ jobs:
     needs: [setup]
     strategy:
       matrix:
-        # We want to support the two latest Flutter releases, but we can't support 3.41.0 and
-        # the latest version of package:analyzer.
-        flutter: ["3.44.0"]
+        flutter: ["3.44.9", "3.47.0"]
 
     steps:
       - uses: actions/checkout@v4
