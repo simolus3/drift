@@ -10,7 +10,6 @@ import 'package:path/path.dart' as p;
 import '../backends/analyzer_context_backend.dart';
 import 'commands/analyze.dart';
 import 'commands/identify_databases.dart';
-import 'commands/migrate.dart';
 import 'commands/schema.dart';
 import 'logging.dart';
 
@@ -41,7 +40,6 @@ class DriftDevCli {
           ..addCommand(AnalyzeCommand(this))
           ..addCommand(IdentifyDatabases(this))
           ..addCommand(SchemaCommand(this))
-          ..addCommand(MigrateCommand(this))
           ..addCommand(MakeMigrationCommand(this));
 
     _runner.argParser.addFlag(

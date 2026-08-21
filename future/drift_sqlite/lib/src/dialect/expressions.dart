@@ -11,7 +11,7 @@ extension SqliteSpecificStringOperators on Expression<String> {
   /// correspond to the parameters on [RegExp].
   ///
   /// Note that this function is only available when using a `NativeDatabase`.
-  /// If you need to support the web or `moor_flutter`, consider using [like]
+  /// If you need to support the web or `drift_sqflite`, consider using [like]
   /// instead.
   Expression<bool> regexp(
     String regex, {

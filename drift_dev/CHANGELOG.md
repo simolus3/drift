@@ -1,3 +1,7 @@
+## 2.35.0 (unreleased)
+
+- Remove legacy command used to migrate from `moor` from `drift`.
+
 ## 2.34.5
 
 - Escape SQL column names that are reserved Dart keywords (e.g. `class`) when

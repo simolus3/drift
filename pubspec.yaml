@@ -13,8 +13,6 @@ workspace:
 
 #  - docs
 
-  - extras/assets/old_moor_flutter_package
-  - extras/assets/old_moor_package
   - extras/benchmarks
   - extras/drift_devtools_extension
   - extras/drift_mariadb
