@@ -30,7 +30,7 @@ import 'package:drift_dev/api/migrations_native.dart';
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
-import 'package:drift/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/web.dart';
 import 'package:drift_sqlite/schema_verifier.dart';
 ''').validate();
@@ -54,7 +54,7 @@ class TodoEntries extends Table with AutoIncrementingPrimaryKey {
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
-import 'package:drift/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 @DataClassName('TodoEntry')
 class TodoEntries extends Table with AutoIncrementingPrimaryKey {
@@ -80,7 +80,7 @@ Expression<bool> m(Expression<int> a, Expression<int> b) {
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
-import 'package:drift/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 Expression<bool> m(Expression<int> a, Expression<int> b) {
   return a.isGreaterOrEqual(b);
@@ -107,7 +107,7 @@ void foo(FakeGeneratedDatabase db) {
       ]);
       await original.migrateToDrift3();
       await d.file('app/lib/database.dart', '''
-import 'package:drift/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 class FakeGeneratedDatabase extends GeneratedDatabase {
   TableInfo get users => throw 'stub';
@@ -156,6 +156,8 @@ targets:
           named_parameters: true
           dialects:
             - dialect: sqlite
+              modules:
+                - fts5
               strict_tables_by_default: false
               use_binary_json_representation: false
               store_date_times_as_text: true

@@ -427,12 +427,38 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
 
 extension on DriftOptions {
   List<Object?> drift3DialectOptions() {
+    final serializedSqliteOptions = <String, Object?>{};
+    if (sqliteOptions case final options?) {
+      if (options.modules.isNotEmpty) {
+        serializedSqliteOptions['modules'] = options.modules
+            .map((e) => e.name)
+            .toList();
+      }
+
+      if (options.version case final version?) {
+        serializedSqliteOptions['version'] = const SqliteVersionConverter()
+            .toJson(version);
+      }
+      if (options.knownFunctions.isNotEmpty) {
+        serializedSqliteOptions['known_functions'] = {
+          for (final MapEntry(:key, :value) in options.knownFunctions.entries)
+            key: value.toJson(),
+        };
+      }
+      if (options.knownTables.isNotEmpty) {
+        serializedSqliteOptions['known_tables'] = [
+          for (final table in options.knownTables)
+            const TableFromSql().toJson(table),
+        ];
+      }
+    }
+
     return [
       for (final dialect in supportedDialects)
         switch (dialect) {
           SqlDialect.sqlite => {
             'dialect': 'sqlite',
-            ...?sqliteAnalysisOptions?.toJson(),
+            ...serializedSqliteOptions,
             'strict_tables_by_default': false,
             'use_binary_json_representation': false,
             'store_date_times_as_text': storeDateTimeValuesAsText,
