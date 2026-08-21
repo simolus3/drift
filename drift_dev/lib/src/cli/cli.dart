@@ -11,6 +11,7 @@ import '../backends/analyzer_context_backend.dart';
 import 'commands/analyze.dart';
 import 'commands/identify_databases.dart';
 import 'commands/schema.dart';
+import 'commands/upgrade.dart';
 import 'logging.dart';
 
 Future<void> run(List<String> args) async {
@@ -40,7 +41,8 @@ class DriftDevCli {
           ..addCommand(AnalyzeCommand(this))
           ..addCommand(IdentifyDatabases(this))
           ..addCommand(SchemaCommand(this))
-          ..addCommand(MakeMigrationCommand(this));
+          ..addCommand(MakeMigrationCommand(this))
+          ..addCommand(UpgradeCommand(this));
 
     _runner.argParser.addFlag(
       'verbose',

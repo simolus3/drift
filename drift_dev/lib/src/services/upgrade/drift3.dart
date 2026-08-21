@@ -239,9 +239,11 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
       'drift': {
         'extensions/geopoly.dart':
             'package:drift_sqlite/extensions/geopoly.dart',
-        'backends.dart': 'package:drift/drift.dart',
+        'backends.dart': 'package:drift3_preview/drift.dart',
+        'drift.dart': 'package:drift3_preview/drift.dart',
         'isolate.dart': 'package:drift_sqlite/native.dart',
         'wasm.dart': 'package:drift_sqlite/web.dart',
+        'web/worker.dart': 'package:drift_sqlite/web.dart',
       },
       'drift_dev': {
         'api/migrations_common.dart':
