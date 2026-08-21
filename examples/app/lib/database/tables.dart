@@ -8,8 +8,6 @@ import 'package:drift/drift.dart';
 class TodoEntries extends Table with AutoIncrementingPrimaryKey {
   TextColumn get description => text()();
 
-  late final otherSyntax = text()();
-
   // Todo entries can optionally be in a category.
   IntColumn get category => integer().nullable().references(Categories, #id)();
 
