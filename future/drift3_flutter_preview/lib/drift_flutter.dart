@@ -4,7 +4,7 @@ library;
 
 export 'src/connect.dart';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'src/connect.dart' as connect;
 
 /// Obtain a [DriftConnection] to use for drift databases on the current

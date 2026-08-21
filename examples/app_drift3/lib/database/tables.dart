@@ -2,7 +2,7 @@ import 'dart:ui';
 
 export 'dart:ui' show Color;
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 @DataClassName('TodoEntry')
 class TodoEntries extends Table with AutoIncrementingPrimaryKey {

@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  drift3:
+  drift3_preview:
   drift_sqlite:
   drift3_flutter_preview:
   sqlite3_web: ^0.9.3

@@ -1,4 +1,4 @@
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 // ignore: implementation_imports
 import 'package:drift/src/drift3_preview/src/database/db_base.dart';
 import 'package:sqlite3/common.dart';

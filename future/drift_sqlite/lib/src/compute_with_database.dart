@@ -4,7 +4,7 @@ library;
 
 import 'dart:async';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 import 'compute_with_database/unsupported.dart'
     if (dart.library.ffi) 'compute_with_database/supported.dart';

@@ -1,5 +1,5 @@
 //import 'package:app_drift3/database/database.steps.dart';
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift3_flutter_preview/drift_flutter.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:flutter/foundation.dart';

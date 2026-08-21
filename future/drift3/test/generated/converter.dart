@@ -1,4 +1,4 @@
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 final class CustomTextType extends PhysicalSqlType<String> {
   const CustomTextType();

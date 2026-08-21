@@ -6,7 +6,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:async/async.dart';
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/native.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;

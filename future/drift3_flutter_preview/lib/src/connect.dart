@@ -8,7 +8,7 @@ export 'unsupported.dart'
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:sqlite3/common.dart';
 import 'package:sqlite3_web/types.dart';
 

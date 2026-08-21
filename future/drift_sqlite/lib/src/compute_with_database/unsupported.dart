@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 /// This will directly execute the passed computation as a future with the
 /// current Database.

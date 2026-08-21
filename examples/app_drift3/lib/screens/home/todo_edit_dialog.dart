@@ -1,4 +1,4 @@
-import 'package:drift3/drift.dart' hide Column;
+import 'package:drift3_preview/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';

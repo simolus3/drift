@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';

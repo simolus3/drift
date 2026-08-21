@@ -1,4 +1,4 @@
-name: drift3
+name: drift3_preview
 description: In-development preview of breaking changes planned for drift version 3.
 version: 3.0.0-wip
 repository: https://github.com/simolus3/drift

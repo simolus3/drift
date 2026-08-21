@@ -568,6 +568,10 @@ extension on drift.UpdateKind {
 extension WriteDrift3Statements on DriftElementWithResultSet {
   void writeTableOrViewStatementsGetter(TextEmitter text) {
     assert(text.writer.options.drift3Preview);
+    if (text.writer.generationOptions.isGeneratingForSchema) {
+      return;
+    }
+
     final getterName = computeDbGetterName(text.writer.options);
 
     text

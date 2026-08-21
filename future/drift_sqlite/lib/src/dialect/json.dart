@@ -5,7 +5,7 @@
 /// or older SQLite versions.
 library;
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 import 'dialect.dart';
 import 'table_valued_function.dart';

@@ -474,7 +474,7 @@ CREATE TABLE uuid_of_contacts (
     final options = DriftOptions.defaults(drift3Preview: true);
     final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement();
@@ -569,7 +569,7 @@ class Database {}
     const options = DriftOptions.defaults(drift3Preview: true);
     final backend = await TestBackend.inTest({
       'a|lib/main.dart': '''
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 class Users extends Table {
   IntColumn get id => integer().autoIncrement();

@@ -1,4 +1,4 @@
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 /// Base class for all column filters
 abstract class _BaseColumnFilters<T extends Object> {

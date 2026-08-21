@@ -11,7 +11,7 @@ environment:
 
 dependencies:
   collection: ^1.19.1
-  drift3:
+  drift3_preview:
   drift_sqlite:
   meta: ^1.17.0
   sqlite3: ^3.0.0

@@ -2,7 +2,7 @@
 
 import 'dart:typed_data';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_manager/drift_manager.dart';
 import 'package:test/test.dart';
 

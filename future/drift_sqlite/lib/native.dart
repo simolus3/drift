@@ -5,7 +5,7 @@ library;
 
 import 'dart:io';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
 

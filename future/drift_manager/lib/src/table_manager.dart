@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 // ignore: depend_on_referenced_packages, implementation_imports
 import 'package:drift/src/drift3_preview/src/utils/single_transformer.dart';

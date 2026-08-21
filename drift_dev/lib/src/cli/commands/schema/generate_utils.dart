@@ -212,7 +212,7 @@ class GenerateUtils {
     final buffer = StringBuffer()..writeln(generatedHeader);
     if (isDrift3) {
       buffer
-        ..writeln("import 'package:drift3/drift.dart';")
+        ..writeln("import 'package:drift3_preview/drift.dart';")
         ..writeln("import 'package:drift_sqlite/schema_verifier.dart';");
     } else {
       buffer

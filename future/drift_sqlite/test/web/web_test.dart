@@ -1,7 +1,7 @@
 @TestOn('browser')
 library;
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/web.dart';
 import 'package:sqlite3_web/sqlite3_web.dart';
 import 'package:test/test.dart';

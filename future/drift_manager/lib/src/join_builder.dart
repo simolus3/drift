@@ -1,4 +1,4 @@
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:meta/meta.dart';
 
 /// A class that contains the information needed to create a join

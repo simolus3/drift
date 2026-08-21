@@ -1,6 +1,6 @@
 import 'dart:js_interop';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3_web/protocol_utils.dart' as utils;
 

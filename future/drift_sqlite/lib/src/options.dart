@@ -1,5 +1,5 @@
 /// @docImport '../native.dart';
-/// @docImport 'package:drift3/drift.dart';
+/// @docImport 'package:drift3_preview/drift.dart';
 library;
 
 /// How a [sqliteConnectionPool] should interact with watched queries in drift.

@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:drift3/drift.dart';
-import 'package:drift3/internal/common_dialect.dart';
+import 'package:drift3_preview/drift.dart';
+import 'package:drift3_preview/internal/common_dialect.dart';
 
 import 'package:sqlite3/common.dart' show jsonb;
 

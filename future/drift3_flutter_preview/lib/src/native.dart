@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift_sqlite/native.dart';
 import 'package:meta/meta.dart';

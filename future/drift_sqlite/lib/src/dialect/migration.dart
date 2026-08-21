@@ -1,4 +1,4 @@
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 /// Contains instructions needed to run a complex migration on a table, using
 /// the steps described in [Making other kinds of table schema changes](https://www.sqlite.org/lang_altertable.html#otheralter).

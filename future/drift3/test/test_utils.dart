@@ -1,4 +1,4 @@
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 
 export 'test_utils/database_stub.dart'

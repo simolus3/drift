@@ -1,6 +1,6 @@
 // dart format width=80
 // ignore_for_file: unused_local_variable, unused_import
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:app_drift3/database/database.dart';
 import 'package:drift_sqlite/schema_verifier.dart';
 import 'package:flutter_test/flutter_test.dart';

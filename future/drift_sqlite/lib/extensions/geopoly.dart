@@ -4,7 +4,7 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 /// The type used for the `_shape` column in virtual `GEOPOLY` tables.
 ///

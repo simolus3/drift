@@ -1,4 +1,4 @@
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:meta/meta.dart';
 
 /// Defines a class which is used to wrap a column to only expose ordering functions

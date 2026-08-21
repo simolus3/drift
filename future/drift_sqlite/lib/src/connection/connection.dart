@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:sqlite3/common.dart' as sqlite;
 
 import '../dialect/dialect.dart';

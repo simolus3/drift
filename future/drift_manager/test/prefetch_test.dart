@@ -1,6 +1,6 @@
 // ignore_for_file: unused_local_variable
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:test/test.dart';
 
 import 'database.dart';

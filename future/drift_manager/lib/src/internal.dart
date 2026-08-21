@@ -1,7 +1,7 @@
 @internal
 library;
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:meta/meta.dart';
 
 ///  Enum of the possible boolean operators

@@ -1,6 +1,6 @@
 // Example on how to test your application's database code.
 import 'package:app_drift3/database/database.dart';
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart';

@@ -1,8 +1,8 @@
 @TestOn('vm')
 library;
 
-import 'package:drift3/drift.dart';
-import 'package:drift3/internal/versioned_schema.dart';
+import 'package:drift3_preview/drift.dart';
+import 'package:drift3_preview/internal/versioned_schema.dart';
 import 'package:drift3_flutter_preview/drift_flutter.dart';
 import 'package:drift3_flutter_preview/src/native.dart'
     show hasConfiguredSqlite;

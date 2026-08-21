@@ -1,7 +1,7 @@
 @internal
 library;
 
-import 'package:drift3/drift.dart' as drift;
+import 'package:drift3_preview/drift.dart' as drift;
 import 'package:meta/meta.dart';
 import 'package:sqlite3/common.dart';
 import 'package:sqlparser/sqlparser.dart';

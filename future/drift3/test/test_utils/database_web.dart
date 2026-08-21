@@ -1,6 +1,6 @@
 import 'dart:js_interop';
 
-import 'package:drift3/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:sqlite3/wasm.dart';
 import 'package:test/scaffolding.dart';

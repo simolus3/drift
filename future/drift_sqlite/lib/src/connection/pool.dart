@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:drift3/drift.dart' hide ResultSet;
+import 'package:drift3_preview/drift.dart' hide ResultSet;
 import 'package:meta/meta.dart';
 import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
 import 'package:sqlite3/sqlite3.dart';
