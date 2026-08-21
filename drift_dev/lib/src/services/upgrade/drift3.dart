@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -369,6 +370,56 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
     }
 
     super.visitClassDeclaration(node);
+  }
+
+  @override
+  void visitSimpleIdentifier(SimpleIdentifier node) {
+    _transformIdentifier(node, node.name, node.element);
+  }
+
+  @override
+  void visitNamedType(NamedType node) {
+    _transformIdentifier(node.name, node.name.lexeme, node.element);
+    super.visitNamedType(node);
+  }
+
+  void _transformIdentifier(
+    SyntacticEntity identifier,
+    String name,
+    Element? element,
+  ) {
+    String? newIdentifier;
+
+    if (element == null && identifier is AstNode) {
+      // It looks like left-hand identifiers of assignments don't have a
+      // static element, infer from parent.
+      if (identifier.parent is AssignmentExpression) {
+        element = (identifier.parent as AssignmentExpression).writeElement;
+      }
+    }
+
+    if (element == null) return;
+
+    for (final annotation in element.metadata.annotations) {
+      final value = annotation.computeConstantValue();
+      if (value == null) return;
+      final type = value.type;
+
+      if (type is! InterfaceType) continue;
+
+      if (type.element.library.isDartCore && type.element.name == 'pragma') {
+        final name = value.getField('name')!.toStringValue()!;
+
+        if (name == 'drift:v3-rename') {
+          newIdentifier = value.getField('options')!.toStringValue()!;
+          break;
+        }
+      }
+    }
+
+    if (newIdentifier != null) {
+      _writer.replace(identifier.offset, name.length, newIdentifier);
+    }
   }
 }
 

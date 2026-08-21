@@ -67,6 +67,27 @@ class TodoEntries extends Table with AutoIncrementingPrimaryKey {
 ''').validate();
     });
 
+    test('migrates renamed identifiers', () async {
+      final original = await _drift2Project([
+        d.file('database.dart', '''
+import 'package:drift/drift.dart';
+
+Expression<bool> m(Expression<int> a, Expression<int> b) {
+  return a.isBiggerOrEqual(b);
+}
+'''),
+      ]);
+      await original.migrateToDrift3();
+
+      await d.file('app/lib/database.dart', '''
+import 'package:drift/drift.dart';
+
+Expression<bool> m(Expression<int> a, Expression<int> b) {
+  return a.isGreaterOrEqual(b);
+}
+''').validate();
+    });
+
     test('migrates tabe query extensions', () async {
       final original = await _drift2Project([
         d.file('database.dart', '''
