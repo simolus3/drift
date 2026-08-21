@@ -1,3 +1,5 @@
+import 'package:analyzer/dart/ast/syntactic_entity.dart';
+
 final class StringRewriter {
   String content;
   var _skew = 0;
@@ -11,6 +13,10 @@ final class StringRewriter {
       newContent,
     );
     _skew += newContent.length - originalLength;
+  }
+
+  void replaceNode(SyntacticEntity entity, String newContent) {
+    replace(entity.offset, entity.length, newContent);
   }
 }
 

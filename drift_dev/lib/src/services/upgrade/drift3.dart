@@ -226,6 +226,8 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   final TypeSystem _typeSystem;
   final _KnownDriftImports _types;
 
+  var isInTableDefinition = false;
+
   String get content => _writer.content;
 
   _DartToDrift3Rewriter(String content, this._typeSystem, this._types)
@@ -261,7 +263,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
 
     final replacement = changedImports[package]?[p.url.joinAll(path)];
     if (replacement != null) {
-      _writer.replace(l.offset, l.length, asDartLiteral(replacement));
+      _writer.replaceNode(l, asDartLiteral(replacement));
     }
   }
 
@@ -294,16 +296,79 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
               staticType,
               _types.databaseConnectionUser,
             )) {
-          _writer.replace(
-            databaseGetter.offset,
-            databaseGetter.length,
-            '${databaseGetter.name}Queries',
-          );
+          _writer.replaceNode(databaseGetter, '${databaseGetter.name}Queries');
         }
       }
     }
 
     super.visitMethodInvocation(node);
+  }
+
+  @override
+  void visitMethodDeclaration(MethodDeclaration node) {
+    // In tables, replace text()() column definitions with just text()
+    if (isInTableDefinition && node.isGetter) {
+      if (node.body case ExpressionFunctionBody(:final expression)) {
+        if (expression.asColumnDefinition() case final def?) {
+          final args = def.argumentList;
+          _writer.replaceNode(args, '');
+          return;
+        }
+      }
+    }
+
+    super.visitMethodDeclaration(node);
+  }
+
+  @override
+  void visitFieldDeclaration(FieldDeclaration node) {
+    // In tables, rewrite `late final x = text()()` with
+    // `Column<Text> get x => text()`.
+    if (isInTableDefinition && node.fields.variables.length == 1) {
+      final [declaredField] = node.fields.variables;
+      final initializer = declaredField.initializer;
+      final type = declaredField.declaredFragment?.element.type;
+
+      if (declaredField.isLate &&
+          declaredField.isFinal &&
+          initializer != null &&
+          type != null) {
+        if (initializer.asColumnDefinition() case final def?) {
+          final args = def.argumentList;
+
+          final start = node.offset;
+          final nameOffset = declaredField.name.offset;
+          // late final $name => Column<Text> get $name
+          _writer.replace(
+            start,
+            nameOffset - start,
+            '${type.getDisplayString()} get ',
+          );
+
+          if (declaredField.equals case final equals?) {
+            _writer.replaceNode(equals, '=>');
+          }
+
+          _writer.replaceNode(args, '');
+          return;
+        }
+      }
+    }
+
+    super.visitFieldDeclaration(node);
+  }
+
+  @override
+  void visitClassDeclaration(ClassDeclaration node) {
+    final thisType = node.declaredFragment?.element.thisType;
+    if (thisType != null &&
+        _typeSystem.isSubtypeOf(thisType, _types.dslTable)) {
+      isInTableDefinition = true;
+      super.visitClassDeclaration(node);
+      isInTableDefinition = false;
+    }
+
+    super.visitClassDeclaration(node);
   }
 }
 
@@ -327,10 +392,29 @@ extension on DriftOptions {
 
 final class _KnownDriftImports {
   final InterfaceType databaseConnectionUser;
+  final InterfaceType dslTable;
 
   _KnownDriftImports(LibraryElement drift)
     : databaseConnectionUser =
           (drift.exportNamespace.definedNames2['DatabaseConnectionUser']
                   as ClassElement)
-              .thisType;
+              .thisType,
+      dslTable = (drift.exportNamespace.definedNames2['Table'] as ClassElement)
+          .thisType;
+}
+
+extension on Expression {
+  FunctionExpressionInvocation? asColumnDefinition() {
+    final invoke = this;
+    if (invoke is FunctionExpressionInvocation) {
+      final element = invoke.element;
+      if (element case MethodElement(
+        enclosingElement: ExtensionElement(name: 'BuildGeneralColumn'),
+      )) {
+        return invoke;
+      }
+    }
+
+    return null;
+  }
 }

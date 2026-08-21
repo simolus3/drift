@@ -36,6 +36,37 @@ import 'package:drift_sqlite/schema_verifier.dart';
 ''').validate();
     });
 
+    test('migrates table definitions', () async {
+      final original = await _drift2Project([
+        d.file('database.dart', '''
+import 'package:drift/drift.dart';
+
+@DataClassName('TodoEntry')
+class TodoEntries extends Table with AutoIncrementingPrimaryKey {
+  TextColumn get description => text()();
+  IntColumn get category => integer().nullable().references(Categories, #id)();
+  DateTimeColumn get dueDate => dateTime().nullable()();
+
+  late final otherSyntax = text()();
+}
+'''),
+      ]);
+      await original.migrateToDrift3();
+
+      await d.file('app/lib/database.dart', '''
+import 'package:drift/drift.dart';
+
+@DataClassName('TodoEntry')
+class TodoEntries extends Table with AutoIncrementingPrimaryKey {
+  TextColumn get description => text();
+  IntColumn get category => integer().nullable().references(Categories, #id);
+  DateTimeColumn get dueDate => dateTime().nullable();
+
+  Column<String> get otherSyntax => text();
+}
+''').validate();
+    });
+
     test('migrates tabe query extensions', () async {
       final original = await _drift2Project([
         d.file('database.dart', '''
