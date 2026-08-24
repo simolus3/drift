@@ -248,12 +248,23 @@ no clear communication scheme between isolates.
 Still, you may want to share a live drift database between your UI engine and potential background engines,
 even without them directly knowing about each other.
 
+If each isolate calls `DriftIsolate.spawn` on its own, you get two independent executor isolates.
+Writes from a background service then will not update `watch()` streams in the UI isolate.
+The same happens if both sides open a plain `NativeDatabase` on the same file.
+
 An [IsolateNameServer](https://api.flutter.dev/flutter/dart-ui/IsolateNameServer-class.html) from `dart:ui` can
 be used to transparently share a drift isolate between such workers.
 You can store the [`connectPort`](https://drift.simonbinder.eu/api/isolate/driftisolate/connectport) of a `DriftIsolate`
 under a specific name to look it up later.
 Other clients can use `DriftIsolate.fromConnectPort` to obtain a `DriftIsolate` from the name server, if one has been
 registered.
+
+<Snippet href="/lib/src/snippets/isolates.dart" name="name-server" />
+
+On Flutter, `package:drift_flutter` can do this lookup for you when you set
+`shareAcrossIsolates: true` on `DriftNativeOptions`. That only discovers databases inside
+the same Flutter engine. Independent engines still need the name-server handshake above,
+and they need one shared executor rather than a second `DriftIsolate.spawn`.
 
 Please note that, at the moment, Flutter still has some inherent problems with spawning isolates from background engines
 that complicate this setup. Further, the `IsolateNameServer` is not cleared on a (stateless) hot reload, even though
