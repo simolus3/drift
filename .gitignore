@@ -8,6 +8,7 @@ pubspec.lock
 */**/pubspec.lock
 .dart_tool/
 devtools_options.yaml
+.widget_preview
 
 benchmark_results.json
 .flutter-plugins

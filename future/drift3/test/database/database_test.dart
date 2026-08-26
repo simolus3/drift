@@ -1,5 +1,6 @@
 import 'package:drift3_preview/drift.dart';
 import 'package:drift_postgres/src/drift3_preview/drift_postgres.dart';
+import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -165,5 +166,19 @@ void main() {
       ),
     );
     expect(postgresDb.$expandVar(1, 3), r'$2,$3,$4');
+  });
+
+  test('doWhenOpened', () async {
+    final db = TodoDb(
+      DriftConnection(
+        dialect: SqliteDialect.new,
+        openConnection: () async => MockSession(),
+      ),
+    );
+    MockSession();
+    // ignore: deprecated_member_use
+    await db.doWhenOpened((session) async {
+      await session.execute(StatementInfo('SELECT 1'));
+    });
   });
 }

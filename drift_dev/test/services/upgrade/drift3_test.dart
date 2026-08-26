@@ -109,6 +109,12 @@ void queryExtension(FakeGeneratedDatabase db) {
   final x = db.users;
   x.insertOne('stub'); // indirect, cannot be migrated
 }
+
+void rawConnection(FakeGeneratedDatabase db) async {
+  db.executor.dialect;
+  await db.executor.ensureOpen(db);
+  await db.executor.close();
+}
 '''),
       ]);
       await original.migrateToDrift3();
@@ -126,6 +132,12 @@ void queryExtension(FakeGeneratedDatabase db) {
   db.users.actualTableName; // not a query extension
   final x = db.users;
   x.insertOne('stub'); // indirect, cannot be migrated
+}
+
+void rawConnection(FakeGeneratedDatabase db) async {
+  db.dialect.known;
+  await db.initialize();
+  await (await db.currentSession()).close();
 }
 ''').validate();
     });

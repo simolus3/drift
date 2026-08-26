@@ -16,7 +16,7 @@ import 'migrations.dart';
 abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   /// The used drift database implementation responsible for building queries
   /// and executing them.
-  final DriftConnection implementation;
+  final DriftConnection _connection;
   Future<DriftSession>? _openingSession;
   DriftSession? _openedSession;
   Future<void>? _closing;
@@ -33,10 +33,10 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
 
   @override
   DriftDialect get dialect =>
-      _resolvedDialect ??= implementation.dialect(dialectOptions);
+      _resolvedDialect ??= _connection.dialect(dialectOptions);
 
-  /// Opens a drift database backed by a given [implementation].
-  GeneratedDatabase(this.implementation) {
+  /// Opens a drift database backed by a given [connection].
+  GeneratedDatabase(this._connection) {
     devtools.handleCreated(this);
   }
 
@@ -82,7 +82,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       return opening;
     } else {
       return _openingSession = Future.sync(() async {
-        final opened = await implementation.open();
+        final opened = await _connection.open();
         _streamQueryStore ??= opened.streamQueries;
         _underlyingStreamQueries?.complete(opened.streamQueries);
         _openedSession = opened.session;

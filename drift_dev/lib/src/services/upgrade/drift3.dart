@@ -347,7 +347,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   void visitMethodInvocation(MethodInvocation node) {
     // Transform usages of the pattern db.table.insertOne (and other extensions
     // defined in on_table.dart) into db.tableQueries.insertOne.
-    if (node.function case SimpleIdentifier(:final element?)) {
+    if (node.function case SimpleIdentifier(:final name, :final element?)) {
       if (element.enclosingElement case ExtensionElement(
         name: 'TableOrViewStatements' || 'TableStatements',
       )) {
@@ -365,9 +365,55 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
           _writer.replaceNode(databaseGetter, '${databaseGetter.name}Queries');
         }
       }
+
+      final target = node.target;
+      if (target != null && _isConnectionOrExecutor(target)) {
+        target as PrefixedIdentifier;
+
+        if (name == 'ensureOpen') {
+          final start = target.identifier.offset;
+          final end = node.end;
+          _writer.replace(start, end - start, 'initialize()');
+        } else {
+          final db = target.prefix.name;
+          _writer.replaceNode(target, '(await $db.currentSession())');
+        }
+      }
     }
 
     super.visitMethodInvocation(node);
+  }
+
+  @override
+  void visitPropertyAccess(PropertyAccess node) {
+    if (node.propertyName.name == 'dialect') {
+      if (_isConnectionOrExecutor(node.realTarget)) {
+        // Replace db.executor.dialect with db.dialect.known
+        final executorOrConnection =
+            (node.realTarget as PrefixedIdentifier).identifier;
+        _writer.replace(
+          executorOrConnection.offset,
+          node.end - executorOrConnection.offset,
+          'dialect.known',
+        );
+        return;
+      }
+    }
+
+    super.visitPropertyAccess(node);
+  }
+
+  /// Whether [expr] is of the form `db.executor` or `db.connection`, where
+  /// `db` is a drift database or accessor.
+  bool _isConnectionOrExecutor(Expression expr) {
+    if (expr case PrefixedIdentifier(
+      prefix: SimpleIdentifier(:final staticType?),
+      identifier: SimpleIdentifier(name: 'executor' || 'connection'),
+    )) {
+      return _typeSystem.isSubtypeOf(staticType, _types.databaseConnectionUser);
+    }
+
+    return false;
   }
 
   @override

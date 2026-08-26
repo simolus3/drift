@@ -474,6 +474,17 @@ abstract base class DatabaseConnectionUser {
     return SelectStatement(this)..addColumns(columns);
   }
 
+  /// Performs the async [fn] after this executor is ready, or directly if it's
+  /// already ready.
+  ///
+  /// Calling this method directly might circumvent the current transaction. For
+  /// that reason, it should only be called inside drift.
+  @Deprecated('Await and use currentSession() instead')
+  Future<T> doWhenOpened<T>(FutureOr<T> Function(DriftSession e) fn) async {
+    final session = await currentSession();
+    return await Future.sync(() => fn(session));
+  }
+
   /// Starts an [InsertStatement] for a given table. You can use that statement
   /// to write data into the [table] by using [InsertStatement.insert].
   InsertStatement<Row, RS> into<
