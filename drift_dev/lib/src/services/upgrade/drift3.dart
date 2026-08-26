@@ -59,6 +59,7 @@ final class UpgradeToDrift3 {
             'builders': {
               'drift_dev': {
                 'options': {
+                  'drift3_preview': true,
                   'dialects': const DriftOptions.defaults()
                       .drift3DialectOptions(),
                 },
@@ -166,6 +167,7 @@ final class UpgradeToDrift3 {
           ...key,
           'dialects',
         ], parsedOptions.drift3DialectOptions());
+        editor.update([...key, 'drift3_preview'], true);
         const outdatedOptions = [
           'store_date_time_values_as_text',
           'sql',
@@ -188,6 +190,7 @@ final class UpgradeToDrift3 {
     if (!_didTransformBuildYaml) {
       var options = <String, Object?>{
         'options': {
+          'drift3_preview': true,
           'dialects': const DriftOptions.defaults().drift3DialectOptions(),
         },
       };

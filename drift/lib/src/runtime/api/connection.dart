@@ -5,6 +5,7 @@ part of 'runtime_api.dart';
 /// - a [QueryExecutor], which runs sql statements.
 /// - a [StreamQueryStore], which dispatches table changes to listening queries,
 ///   on which the auto-updating queries are based.
+@pragma('drift:v3-rename', 'DriftConnection')
 class DatabaseConnection implements QueryExecutor {
   /// The executor to use when queries are executed.
   final QueryExecutor executor;

@@ -162,6 +162,7 @@ targets:
               use_binary_json_representation: false
               store_date_times_as_text: true
             - dialect: postgres
+          drift3_preview: true
 ''').validate();
     });
 
@@ -177,6 +178,7 @@ targets:
     builders:
       drift_dev:
         options:
+          drift3_preview: true
           dialects:
             - dialect: sqlite
               strict_tables_by_default: false
@@ -203,6 +205,7 @@ targets:
     builders:
       drift_dev:
         options:
+          drift3_preview: true
           dialects:
             - dialect: sqlite
               strict_tables_by_default: false
