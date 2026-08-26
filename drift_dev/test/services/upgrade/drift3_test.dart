@@ -30,6 +30,8 @@ import 'package:drift_dev/api/migrations_native.dart';
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
+import 'dart:typed_data';
+import 'package:drift_manager/drift_manager.dart';
 import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/web.dart';
 import 'package:drift_sqlite/schema_verifier.dart';
@@ -54,6 +56,8 @@ class TodoEntries extends Table with AutoIncrementingPrimaryKey {
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
+import 'dart:typed_data';
+import 'package:drift_manager/drift_manager.dart';
 import 'package:drift3_preview/drift.dart';
 
 @DataClassName('TodoEntry')
@@ -80,6 +84,8 @@ Expression<bool> m(Expression<int> a, Expression<int> b) {
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
+import 'dart:typed_data';
+import 'package:drift_manager/drift_manager.dart';
 import 'package:drift3_preview/drift.dart';
 
 Expression<bool> m(Expression<int> a, Expression<int> b) {
@@ -88,7 +94,7 @@ Expression<bool> m(Expression<int> a, Expression<int> b) {
 ''').validate();
     });
 
-    test('migrates tabe query extensions', () async {
+    test('migrates common apis', () async {
       final original = await _drift2Project([
         d.file('database.dart', '''
 import 'package:drift/drift.dart';
@@ -97,7 +103,7 @@ class FakeGeneratedDatabase extends GeneratedDatabase {
   TableInfo get users => throw 'stub';
 }
 
-void foo(FakeGeneratedDatabase db) {
+void queryExtension(FakeGeneratedDatabase db) {
   db.users.insertOne('stub');
   db.users.actualTableName; // not a query extension
   final x = db.users;
@@ -107,13 +113,15 @@ void foo(FakeGeneratedDatabase db) {
       ]);
       await original.migrateToDrift3();
       await d.file('app/lib/database.dart', '''
+import 'dart:typed_data';
+import 'package:drift_manager/drift_manager.dart';
 import 'package:drift3_preview/drift.dart';
 
 class FakeGeneratedDatabase extends GeneratedDatabase {
   TableInfo get users => throw 'stub';
 }
 
-void foo(FakeGeneratedDatabase db) {
+void queryExtension(FakeGeneratedDatabase db) {
   db.usersQueries.insertOne('stub');
   db.users.actualTableName; // not a query extension
   final x = db.users;
@@ -121,6 +129,40 @@ void foo(FakeGeneratedDatabase db) {
 }
 ''').validate();
     });
+  });
+
+  test('migrates pubspec.yaml', () async {
+    final original = await _drift2Project(
+      [],
+      pubspec: r'''
+name: my_app
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  drift: ^2.34.0
+
+dev_dependencies:
+  build_runner:
+  drift_dev: ^2.34.0
+''',
+    );
+    await original.migrateToDrift3();
+
+    await d.file('app/pubspec.yaml', r'''
+name: my_app
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  drift3_preview: ^3.0.0-0
+  drift_manager: ^1.0.0-0
+  drift_sqlite: ^1.0.0-0
+
+dev_dependencies:
+  build_runner:
+  drift_dev: ^2.34.0
+''').validate();
   });
 
   group('migrates build.yaml', () {

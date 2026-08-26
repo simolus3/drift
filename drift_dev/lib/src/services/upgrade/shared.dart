@@ -18,6 +18,10 @@ final class StringRewriter {
   void replaceNode(SyntacticEntity entity, String newContent) {
     replace(entity.offset, entity.length, newContent);
   }
+
+  void insertBefore(SyntacticEntity entity, String addedContent) {
+    replace(entity.offset, 0, addedContent);
+  }
 }
 
 /// A regular expression matching build configuration file names.

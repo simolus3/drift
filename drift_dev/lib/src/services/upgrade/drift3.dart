@@ -84,7 +84,9 @@ final class UpgradeToDrift3 {
         await _transformDartFile(file);
       case '.yaml':
         final name = p.basenameWithoutExtension(file.path);
-        if (buildYamlPattern.hasMatch(name)) {
+        if (name == 'pubspec') {
+          await _transformPubspec(file);
+        } else if (buildYamlPattern.hasMatch(name)) {
           await _transformBuildYaml(file);
         }
     }
@@ -116,12 +118,38 @@ final class UpgradeToDrift3 {
 
     final writer = _DartToDrift3Rewriter(
       contents,
+      project.options,
       unitResult.libraryElement.typeSystem,
       imports,
     );
     unitResult.unit.accept(writer);
 
     _updatedFiles[file.path] = writer.content;
+  }
+
+  Future<void> _transformPubspec(File file) async {
+    final YamlEditor editor;
+    try {
+      editor = YamlEditor(await file.readAsString());
+    } on Exception {
+      logger.warning('Could not parse ${file.path}, ignoring...');
+      return;
+    }
+
+    final dependencies = editor.parseAt([
+      'dependencies',
+    ], orElse: () => _sentinelNode);
+    if (dependencies is! YamlMap) return;
+
+    editor.update(['dependencies', 'drift3_preview'], '^3.0.0-0');
+    editor.update(['dependencies', 'drift_sqlite'], '^1.0.0-0');
+    editor.update(['dependencies', 'drift_manager'], '^1.0.0-0');
+
+    if (dependencies.containsKey('drift')) {
+      editor.remove(['dependencies', 'drift']);
+    }
+
+    _updatedFiles[file.path] = editor.toString();
   }
 
   Future<void> _transformBuildYaml(File file) async {
@@ -133,8 +161,7 @@ final class UpgradeToDrift3 {
       return;
     }
 
-    final sentinelNode = wrapAsYamlNode(null);
-    final targets = editor.parseAt(['targets'], orElse: () => sentinelNode);
+    final targets = editor.parseAt(['targets'], orElse: () => _sentinelNode);
     if (targets is! YamlMap) return;
 
     for (final target in targets.keys.whereType<String>()) {
@@ -142,7 +169,7 @@ final class UpgradeToDrift3 {
         'targets',
         target,
         'builders',
-      ], orElse: () => sentinelNode);
+      ], orElse: () => _sentinelNode);
       if (builders is! YamlMap) continue;
 
       for (final builder in builders.keys.whereType<String>()) {
@@ -150,7 +177,7 @@ final class UpgradeToDrift3 {
 
         final key = ['targets', target, 'builders', builder, 'options'];
 
-        final options = editor.parseAt(key, orElse: () => sentinelNode);
+        final options = editor.parseAt(key, orElse: () => _sentinelNode);
         if (options is! YamlMap) continue;
 
         final DriftOptions parsedOptions;
@@ -177,7 +204,7 @@ final class UpgradeToDrift3 {
         ];
         for (final outdated in outdatedOptions) {
           final path = [...key, outdated];
-          final existing = editor.parseAt(path, orElse: () => sentinelNode);
+          final existing = editor.parseAt(path, orElse: () => _sentinelNode);
           if (existing case YamlScalar(value: null)) continue;
 
           editor.remove(path);
@@ -205,7 +232,7 @@ final class UpgradeToDrift3 {
 
         final parent = editor.parseAt(
           key.take(key.length - 1),
-          orElse: () => sentinelNode,
+          orElse: () => _sentinelNode,
         );
         if (parent case YamlScalar(value: null)) {
           // We can't write into this map directly because it doesn't exist.
@@ -223,19 +250,27 @@ final class UpgradeToDrift3 {
 
     _updatedFiles[file.path] = editor.toString();
   }
+
+  static final _sentinelNode = wrapAsYamlNode(null);
 }
 
 final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
+  final DriftOptions options;
   final StringRewriter _writer;
   final TypeSystem _typeSystem;
   final _KnownDriftImports _types;
 
   var isInTableDefinition = false;
+  LibraryFragment? libraryFragment;
 
   String get content => _writer.content;
 
-  _DartToDrift3Rewriter(String content, this._typeSystem, this._types)
-    : _writer = StringRewriter(content);
+  _DartToDrift3Rewriter(
+    String content,
+    this.options,
+    this._typeSystem,
+    this._types,
+  ) : _writer = StringRewriter(content);
 
   void _rewriteImportString(StringLiteral l) {
     const changedImports = {
@@ -274,7 +309,32 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   }
 
   @override
+  void visitCompilationUnit(CompilationUnit node) {
+    libraryFragment = node.declaredFragment;
+    super.visitCompilationUnit(node);
+  }
+
+  @override
   void visitImportDirective(ImportDirective node) {
+    if (node.uri.stringValue == 'package:drift/drift.dart') {
+      // Drift version 2 exports Uint8List from dart:typed_data, drift3 doesn't.
+      // Manually import that now.
+      var imports = '';
+
+      if (!(libraryFragment?.importedLibraries.any(
+            (e) => e.isInSdk && e.name == 'typed_data',
+          ) ??
+          true)) {
+        imports += "import 'dart:typed_data';\n";
+      }
+
+      if (options.generateManager) {
+        imports += "import 'package:drift_manager/drift_manager.dart';\n";
+      }
+
+      _writer.insertBefore(node, imports);
+    }
+
     _rewriteImportString(node.uri);
   }
 
