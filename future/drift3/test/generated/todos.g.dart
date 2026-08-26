@@ -2798,12 +2798,12 @@ abstract base class _$TodoDb extends GeneratedDatabase {
           'SELECT "_s:0".id, "_s:0".title, "_s:0".content, "_s:0".target_date, "_s:0".category, "_s:0".status FROM todos AS "_s:0" WHERE "_s:0".title = \$2 OR "_s:0".id IN ($expandedvar3) OR "_s:0".title = \$1',
       },
       variables: [
-        mapValue(BuiltinDriftType.text, var1),
-        mapValue(BuiltinDriftType.text, var2),
+        Variable<String>(var1, BuiltinDriftType.text),
+        Variable<String>(var2, BuiltinDriftType.text),
         for (var $ in var3)
-          mapValue(
-            BuiltinDriftType.int,
+          Variable<int>(
             $TodosTableTable.$converterid.toSql($),
+            BuiltinDriftType.int,
           ),
       ],
       readsFrom: {$TodosTableTable()},
@@ -2874,7 +2874,10 @@ base mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
           'SELECT t.id, t.title, t.content, t.target_date, t.category, t.status FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st."user" WHERE u.id = \$1',
       },
       variables: [
-        mapValue(BuiltinDriftType.int, $UsersTable.$converterid.toSql(user)),
+        Variable<int>(
+          $UsersTable.$converterid.toSql(user),
+          BuiltinDriftType.int,
+        ),
       ],
       readsFrom: {$TodosTableTable(), $SharedTodosTable(), $UsersTable()},
       createMapper: (RawResultSet _) {

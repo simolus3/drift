@@ -221,7 +221,7 @@ abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
   Selectable<double?> area(int var1) {
     return customSelectMapped<double?>(
       query: 'SELECT geopoly_area(_shape) FROM geopoly_test WHERE "rowid" = ?1',
-      variables: [mapValue(BuiltinDriftType.int, var1)],
+      variables: [Variable<int>(var1, BuiltinDriftType.int)],
       readsFrom: {GeopolyTest()},
       createMapper: (RawResultSet _) {
         final type$0 = BuiltinDriftType.double.resolveIn(dialect);

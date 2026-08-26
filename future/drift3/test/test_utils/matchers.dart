@@ -113,10 +113,7 @@ class _GeneratesSqlMatcher extends Matcher {
 
     final argsMatchState = <Object?, Object?>{};
     if (_matchVariables != null &&
-        !_matchVariables.matches(
-          result.variables.map((e) => e.rawValue),
-          argsMatchState,
-        )) {
+        !_matchVariables.matches(result.variables, argsMatchState)) {
       matchState['vars'] = result.variables;
       matchState['vars_match'] = argsMatchState;
       matches = false;
@@ -129,9 +126,5 @@ class _GeneratesSqlMatcher extends Matcher {
 Matcher isStatementInBatch(int sqlIndex, List<Object?> variables) {
   return isA<StatementInBatch>()
       .having((e) => e.sqlIndex, 'sqlIndex', sqlIndex)
-      .having(
-        (e) => e.info.variables.map((v) => v.rawValue).toList(),
-        'variables',
-        variables,
-      );
+      .having((e) => e.info.variables, 'variables', variables);
 }

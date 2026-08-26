@@ -22,6 +22,10 @@ void main() {
     });
 
     test('to postgres variable', () {
+      expect(
+        type.sqlParameter(null),
+        TypedValue(Type.boolean, null, isSqlNull: true),
+      );
       expect(type.sqlParameter(true), TypedValue(Type.boolean, true));
       expect(type.sqlParameter(false), TypedValue(Type.boolean, false));
     });

@@ -21,8 +21,10 @@ final class GeopolyPolygonType extends PhysicalSqlType<GeopolyPolygon> {
   }
 
   @override
-  Object sqlParameter(GeopolyPolygon dartValue) {
+  Object? sqlParameter(GeopolyPolygon? dartValue) {
     switch (dartValue) {
+      case null:
+        return null;
       case GeopolyPolygonString(:final value):
         return value;
       case GeopolyPolygonBlob(:final value):

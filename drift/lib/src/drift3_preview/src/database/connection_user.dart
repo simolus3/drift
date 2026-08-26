@@ -13,6 +13,7 @@ import '../query_builder/compiler.dart';
 import '../query_builder/dialect.dart';
 import '../query_builder/expressions/aggregate.dart';
 import '../query_builder/expressions/expression.dart';
+import '../query_builder/expressions/variables.dart';
 import '../query_builder/schema/entities.dart';
 import '../query_builder/schema/result_set.dart';
 import '../query_builder/schema/table.dart';
@@ -21,7 +22,6 @@ import '../query_builder/statements/insert.dart';
 import '../query_builder/statements/select.dart';
 import '../query_builder/statements/statement.dart';
 import '../query_builder/statements/update.dart';
-import '../query_builder/types.dart';
 import 'batch.dart';
 import 'custom_select.dart';
 import 'data_class.dart';
@@ -537,13 +537,13 @@ abstract base class DatabaseConnectionUser {
   /// bound to the [variables] you specify on this query.
   Selectable<CustomRow> customSelect(
     String query, {
-    List<MappedValue> variables = const [],
+    List<Variable> variables = const [],
     Set<SchemaEntityWithResultSet> readsFrom = const {},
     bool isReadOnly = true,
   }) {
     return CustomSelectStatement.unmapped(
       query,
-      variables,
+      Variable.resolveValues(dialect, variables),
       readsFrom,
       this,
       isReadOnly,
@@ -555,13 +555,13 @@ abstract base class DatabaseConnectionUser {
   Selectable<T> customSelectMapped<T>({
     required String query,
     required T Function(RawRow) Function(RawResultSet) createMapper,
-    List<MappedValue> variables = const [],
+    List<Variable> variables = const [],
     Set<SchemaEntityWithResultSet> readsFrom = const {},
     bool isReadOnly = true,
   }) {
     return CustomSelectStatement(
       query,
-      variables,
+      Variable.resolveValues(dialect, variables),
       readsFrom,
       createMapper,
       this,
@@ -574,24 +574,18 @@ abstract base class DatabaseConnectionUser {
   Selectable<T> customSelectMappedAsync<T>({
     required String query,
     required Future<T> Function(RawRow) Function(RawResultSet) createMapper,
-    List<MappedValue> variables = const [],
+    List<Variable> variables = const [],
     Set<SchemaEntityWithResultSet> readsFrom = const {},
     bool isReadOnly = true,
   }) {
     return AsyncCustomSelectStatement(
       query,
-      variables,
+      Variable.resolveValues(dialect, variables),
       readsFrom,
       createMapper,
       this,
       isReadOnly,
     );
-  }
-
-  /// Map a Dart [value] into a typed [MappedValue] understood by the database
-  /// driver.
-  MappedValue mapValue<T extends Object>(SqlType<T> type, T? value) {
-    return MappedValue.map(type.resolveIn(dialect), value);
   }
 
   /// Executes the custom sql [statement] on the database.
@@ -601,10 +595,15 @@ abstract base class DatabaseConnectionUser {
   /// supported on all platforms.
   Future<void> customStatement(
     String statement, [
-    List<MappedValue> args = const [],
+    List<Variable> args = const [],
   ]) async {
     final session = await currentSession();
-    await session.execute(StatementInfo(statement, variables: args));
+    await session.execute(
+      StatementInfo(
+        statement,
+        variables: Variable.resolveValues(dialect, args),
+      ),
+    );
   }
 
   /// Executes a custom delete or update statement and returns the amount of
@@ -617,7 +616,7 @@ abstract base class DatabaseConnectionUser {
   /// query updates, especially when using triggers.
   Future<int> customUpdate(
     String query, {
-    List<MappedValue> variables = const [],
+    List<Variable> variables = const [],
     Set<SchemaEntityWithResultSet>? updates,
     UpdateKind? updateKind,
   }) async {
@@ -638,7 +637,7 @@ abstract base class DatabaseConnectionUser {
   /// then be re-run.
   Future<int> customInsert(
     String query, {
-    List<MappedValue> variables = const [],
+    List<Variable> variables = const [],
     Set<SchemaEntityWithResultSet>? updates,
   }) async {
     final result = await _customWrite(
@@ -661,7 +660,7 @@ abstract base class DatabaseConnectionUser {
   /// especially when using triggers.
   Future<RawResultSet> customWriteReturning(
     String query, {
-    List<MappedValue> variables = const [],
+    List<Variable> variables = const [],
     Set<SchemaEntityWithResultSet>? updates,
     UpdateKind? updateKind,
   }) async {
@@ -680,7 +679,7 @@ abstract base class DatabaseConnectionUser {
   /// stream-queries.
   Future<QueryResult> _customWrite(
     String query,
-    List<MappedValue> variables,
+    List<Variable> variables,
     Set<SchemaEntityWithResultSet>? updates,
     UpdateKind? updateKind,
     bool needsResultSet,
@@ -689,7 +688,7 @@ abstract base class DatabaseConnectionUser {
     final result = await session.execute(
       StatementInfo(
         query,
-        variables: variables,
+        variables: Variable.resolveValues(dialect, variables),
         needsResultSet: needsResultSet,
       ),
     );

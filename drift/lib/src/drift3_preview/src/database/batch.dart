@@ -4,6 +4,7 @@ import '../connection/connection.dart';
 import '../connection/result_set.dart';
 import '../connection/streams/update_rules.dart';
 import '../query_builder/expressions/expression.dart';
+import '../query_builder/expressions/variables.dart';
 import '../query_builder/schema/table.dart';
 import '../query_builder/statements/delete.dart';
 import '../query_builder/statements/insert.dart';
@@ -243,13 +244,15 @@ final class Batch {
   ///    of batches.
   BatchedStatement customStatement(
     String sql, {
-    List<MappedValue> args = const [],
+    List<Variable> args = const [],
     Iterable<TableUpdate> updates = const {},
   }) {
     return _addCustomStatement(
       StatementInfo(
         sql,
-        variables: args.toList(),
+        variables: [
+          for (final variable in args) variable.resolveValue(_database.dialect),
+        ],
         expectedWrites: updates.toSet(),
       ),
     );

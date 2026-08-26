@@ -78,7 +78,7 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     final structure = ResultSetStructure()..addResultSet(this);
     final values = [
       for (final value in asColumnMap.values)
-        (value as Variable).resolveValue(database.dialect).rawValue,
+        (value as Variable).resolveValue(database.dialect),
     ];
 
     final mapper = createMapperToDart(database.dialect, structure);

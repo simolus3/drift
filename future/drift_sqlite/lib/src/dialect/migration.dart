@@ -101,10 +101,11 @@ extension SqliteMigrator on Migrator {
       // re-create those later.
       // We use the legacy sqlite_master table since the _schema rename happened
       // in a very recent version (3.33.0)
+
       final schemaQuery = await database
           .customSelect(
             'SELECT type, name, sql FROM sqlite_master WHERE tbl_name = ?;',
-            variables: [MappedValue.map(database.dialect.textType, tableName)],
+            variables: [Variable.withString(tableName)],
           )
           .get();
 
@@ -200,7 +201,7 @@ extension SqliteMigrator on Migrator {
           final allViews = await database
               .customSelect(
                 'SELECT name, sql FROM sqlite_master WHERE type = ?;',
-                variables: [MappedValue.map(database.dialect.textType, 'view')],
+                variables: [Variable.withString('view')],
               )
               .get();
 

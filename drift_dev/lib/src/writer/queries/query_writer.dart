@@ -1184,10 +1184,10 @@ class _ExpandedVariableWriter {
         if (_emitter.writer.options.drift3Preview) {
           return _emitter.dartCode(
             AnnotatedDartCode.build((b) {
-              b.addSymbol('MappedValue', AnnotatedDartCode.drift);
-              b.addText('.raw(');
-              b.addText('${_queryWriter._outerVariables[capture]},');
-              b.addText('row[${capture.columnIndex}]');
+              b.addSymbol('Variable', AnnotatedDartCode.drift);
+              b.addText('(');
+              b.addText('row[${capture.columnIndex}],');
+              b.addText('${_queryWriter._outerVariables[capture]}');
               b.addText(')');
             }),
           );
@@ -1196,7 +1196,7 @@ class _ExpandedVariableWriter {
         dartExpr = ('row.read(${asDartLiteral(capture.helperColumn)})');
       }
 
-      final code = _emitter.mapValue(
+      final code = _emitter.wrapInVariable(
         element,
         AnnotatedDartCode.text(dartExpr),
         // No longer an array here, we apply a for loop below and run this on

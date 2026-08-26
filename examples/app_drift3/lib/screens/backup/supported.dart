@@ -90,6 +90,6 @@ Future<void> createDatabaseBackup(DatabaseConnectionUser database) async {
     await file.delete();
   }
 
-  await database.customStatement('VACUUM INTO ?',
-      [database.mapValue(database.dialect.textType, file.absolute.path)]);
+  await database.customStatement(
+      'VACUUM INTO ?', [Variable.withString(file.absolute.path)]);
 }

@@ -12,10 +12,7 @@ Future<int?> _getCategoryIdByDescription(
 ) async {
   const q = "SELECT id FROM categories WHERE desc = ?";
   final row = await appDatabase
-      .customSelect(
-        q,
-        variables: [appDatabase.mapValue(BuiltinDriftType.text, description)],
-      )
+      .customSelect(q, variables: [.withString(description)])
       .getSingleOrNull();
   return row?.read("id");
 }

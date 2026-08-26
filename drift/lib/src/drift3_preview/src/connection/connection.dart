@@ -288,7 +288,13 @@ final class StatementInfo {
   final bool needsResultSet;
 
   /// For placeholders or parameters in [sql], their values.
-  final List<MappedValue> variables;
+  ///
+  /// These values are derived from a [PhysicalSqlType] of the dialect compiling
+  /// the statement. They are dialect-specific, two dialects might map the same
+  /// value two different values for the format used by the underlying
+  /// connection drivers. For example, the postgres dialect always wraps mapped
+  /// values in a record to also make their original type available.
+  final List<Object?> variables;
 
   /// For reading queries, all tables referenced in the `FROM` clause.
   ///
@@ -321,38 +327,6 @@ final class StatementInfo {
   String toString() {
     return '$sql, $variables';
   }
-}
-
-/// A value used when binding SQL parameters to statements.
-extension type const MappedValue._((PhysicalSqlType, Object?) _value) {
-  /// Creates a [MappedValue] from the given [type] and [rawValue] components.
-  factory MappedValue.raw(PhysicalSqlType type, Object? rawValue) {
-    return MappedValue._((type, rawValue));
-  }
-
-  /// Applies [PhysicalSqlType.sqlParameter] on the given [type] and
-  /// [dartValue].
-  static MappedValue map<T extends Object>(
-    PhysicalSqlType<T> type,
-    T? dartValue,
-  ) {
-    return MappedValue.raw(type, switch (dartValue) {
-      null => null,
-      var value => type.sqlParameter(value),
-    });
-  }
-
-  /// The type of the variable.
-  ///
-  /// This value is preserved because some implementations need to know the
-  /// original when binding values. This is particularly true for Postgres,
-  /// where `null` values need to have an associated type. Being given the
-  /// [rawValue] alone would not be enough.
-  PhysicalSqlType get type => _value.$1;
-
-  /// The value obtained by calling [PhysicalSqlType.sqlParameter] on the
-  /// original value and the associated [type].
-  Object? get rawValue => _value.$2;
 }
 
 /// An interface describing options to use when beginning a transaction.

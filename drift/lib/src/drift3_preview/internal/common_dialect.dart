@@ -30,7 +30,7 @@ final class CommonByteArrayType extends PhysicalSqlType<Uint8List> {
   }
 
   @override
-  Object sqlParameter(Uint8List value) => value;
+  Object? sqlParameter(Uint8List? value) => value;
 }
 
 /// Common implementation for a `REAL` / [double] type.
@@ -53,7 +53,7 @@ final class CommonDoubleType extends PhysicalSqlType<double> {
   String sqlLiteral(double value) => value.toString();
 
   @override
-  Object sqlParameter(double value) {
+  Object? sqlParameter(double? value) {
     return value;
   }
 }
@@ -84,7 +84,7 @@ final class CommonTextType extends PhysicalSqlType<String> {
   }
 
   @override
-  Object sqlParameter(String value) {
+  Object? sqlParameter(String? value) {
     return value;
   }
 }

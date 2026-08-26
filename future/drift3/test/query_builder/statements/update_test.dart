@@ -177,8 +177,8 @@ void main() {
       await db.customUpdate(
         'DELETE FROM "users" WHERE "name" = ? AND "birthdate" < ?',
         variables: [
-          db.mapValue(BuiltinDriftType.text, 'Name'),
-          db.mapValue(BuiltinDriftType.dateTime, DateTime.utc(2025, 5, 10, 10)),
+          .withString('Name'),
+          .withDateTime(DateTime.utc(2025, 5, 10, 10)),
         ],
       );
 

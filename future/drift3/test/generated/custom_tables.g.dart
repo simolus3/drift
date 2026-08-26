@@ -1711,8 +1711,8 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         _ => 'REPLACE INTO config (config_key, config_value) VALUES (\$1, \$2)',
       },
       variables: [
-        mapValue(BuiltinDriftType.text, key),
-        mapValue(const AnyType(), value),
+        Variable<String>(key, BuiltinDriftType.text),
+        Variable<DriftAny>(value, const AnyType()),
       ],
       updates: {ConfigTable()},
     );
@@ -1726,7 +1726,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         KnownSqlDialect.postgres || _ =>
           'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = \$1',
       },
-      variables: [mapValue(BuiltinDriftType.text, var1)],
+      variables: [Variable<String>(var1, BuiltinDriftType.text)],
       readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
         final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
@@ -1757,7 +1757,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       query:
           'SELECT "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM config AS "_s:0" WHERE "_s:0".config_key IN ($expandedvar1) ${generatedclause.buffer}',
       variables: [
-        for (var $ in var1) mapValue(BuiltinDriftType.text, $),
+        for (var $ in var1) Variable<String>($, BuiltinDriftType.text),
         ...generatedclause.variables,
       ],
       readsFrom: {ConfigTable(), ...generatedclause.watchedTables},
@@ -1826,15 +1826,15 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           'SELECT config_key FROM config WHERE ${generatedpred.buffer} AND(sync_state = \$1 OR sync_state_implicit IN ($expandedvar2))',
       },
       variables: [
-        mapValue(
-          BuiltinDriftType.int,
+        Variable<int>(
           ConfigTable.$convertersyncStaten.toSql(var1),
+          BuiltinDriftType.int,
         ),
         ...generatedpred.variables,
         for (var $ in var2)
-          mapValue(
-            BuiltinDriftType.int,
+          Variable<int>(
             ConfigTable.$convertersyncStateImplicitn.toSql($),
+            BuiltinDriftType.int,
           ),
       ],
       readsFrom: {ConfigTable(), ...generatedpred.watchedTables},
@@ -1924,7 +1924,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         KnownSqlDialect.postgres || _ =>
           'SELECT "_s:0".sender, "_s:0".title, "_s:0".body FROM email AS "_s:0" WHERE "_s:0".email MATCH \$1 ORDER BY "_s:0".rank',
       },
-      variables: [mapValue(BuiltinDriftType.text, term)],
+      variables: [Variable<String>(term, BuiltinDriftType.text)],
       readsFrom: {Email()},
       createMapper: (RawResultSet _) {
         final map_0 = Email().createMapperFromPositions(dialect, const [
@@ -2084,7 +2084,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         KnownSqlDialect.postgres || _ =>
           'SELECT"defaults"."a", "defaults"."b", defaults.b AS "\$n_0" FROM with_defaults AS defaults WHERE a = \$1',
       },
-      variables: [mapValue(const CustomTextType(), var1)],
+      variables: [Variable<String>(var1, const CustomTextType())],
       readsFrom: {WithConstraints(), WithDefaults()},
       createMapper: (RawResultSet _) {
         final map_0 = WithDefaults().createMapperFromPositions(dialect, const [
@@ -2103,7 +2103,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
               KnownSqlDialect.postgres ||
               _ => 'SELECT * FROM with_constraints AS c WHERE c.b = \$1',
             },
-            variables: [MappedValue.raw(type$0, row[2])],
+            variables: [Variable(row[2], type$0)],
             readsFrom: {WithConstraints(), WithDefaults()},
             createMapper: (RawResultSet _) {
               final map_0 = WithConstraints().createMapperFromPositions(

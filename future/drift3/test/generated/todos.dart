@@ -254,8 +254,8 @@ final class UuidType extends PhysicalSqlType<UuidValue> {
   }
 
   @override
-  Object sqlParameter(UuidValue dartValue) {
-    return dartValue.toString();
+  Object? sqlParameter(UuidValue? dartValue) {
+    return dartValue?.toString();
   }
 
   @override

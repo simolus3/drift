@@ -47,10 +47,7 @@ void main() {
 
       b.update(db.users, const UsersCompanion(name: Value('new name 2')));
 
-      b.customStatement(
-        'some custom statement',
-        args: [db.mapValue(BuiltinDriftType.int, 4)],
-      );
+      b.customStatement('some custom statement', args: [Variable.withInt(4)]);
     });
 
     final transaction = session.transactions;

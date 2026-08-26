@@ -297,37 +297,6 @@ abstract class _NodeOrWriter {
     });
   }
 
-  AnnotatedDartCode mapValue(
-    HasType column,
-    AnnotatedDartCode expression, {
-    bool ignoreArray = false,
-  }) {
-    if (!writer.options.drift3Preview) {
-      // Before drift 3, raw variables are represented with the Variable query
-      // builder class.
-      return wrapInVariable(column, expression, ignoreArray: ignoreArray);
-    }
-
-    return AnnotatedDartCode.build((b) {
-      final converter = column.typeConverter;
-
-      b.addText('mapValue(');
-      b.addCode(_drift3SqlType(column.sqlType));
-      b.addText(', ');
-      if (converter != null) {
-        // apply type converter before writing the variable
-        b
-          ..addCode(readConverter(converter, forNullable: column.nullable))
-          ..addText('.toSql(')
-          ..addCode(expression)
-          ..addText(')');
-      } else {
-        b.addCode(expression);
-      }
-      b.addText(')');
-    });
-  }
-
   AnnotatedDartCode wrapInVariable(
     HasType column,
     AnnotatedDartCode expression, {

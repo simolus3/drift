@@ -15,7 +15,7 @@ final class CustomTextType extends PhysicalSqlType<String> {
   }
 
   @override
-  Object sqlParameter(String value) {
+  Object? sqlParameter(String? value) {
     return value;
   }
 

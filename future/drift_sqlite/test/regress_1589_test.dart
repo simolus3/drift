@@ -41,10 +41,7 @@ CREATE TABLE IF NOT EXISTS todo_categories (
           // failing COMMIT.
           await db.customStatement(
             'INSERT INTO todo_items (title, category_id) VALUES (?, ?);',
-            [
-              db.mapValue(BuiltinDriftType.text, 'a'),
-              db.mapValue(BuiltinDriftType.int, 100),
-            ],
+            [Variable.withString('a'), Variable.withInt(100)],
           );
         }),
         throwsA(anyOf(isA<SqliteException>())),

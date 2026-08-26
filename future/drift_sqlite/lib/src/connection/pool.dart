@@ -130,22 +130,17 @@ final class SqlitePoolUpdates extends StreamQueryStore {
   }
 }
 
-List<Object?> _preparedStatementValues(Iterable<MappedValue> values) {
-  return values.map((e) => e.rawValue).toList();
-}
-
 Future<QueryResult> _runStatementOnConnection(
   AsyncConnection connection,
   StatementInfo statement,
 ) async {
-  final values = _preparedStatementValues(statement.variables);
   ExecuteResult execResult;
   RawResultSet? resultSet;
 
   if (statement.needsResultSet) {
     final (sqliteResultSet, res) = await connection.select(
       statement.sql,
-      values,
+      statement.variables,
     );
     execResult = res;
     resultSet = RawResultSet.fromRows(
@@ -153,7 +148,7 @@ Future<QueryResult> _runStatementOnConnection(
       rows: sqliteResultSet.rows,
     );
   } else {
-    execResult = await connection.execute(statement.sql, values);
+    execResult = await connection.execute(statement.sql, statement.variables);
   }
 
   return QueryResult(

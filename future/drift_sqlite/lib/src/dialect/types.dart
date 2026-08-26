@@ -30,7 +30,7 @@ abstract base class _SqliteType<T extends Object> extends PhysicalSqlType<T> {
   }
 
   @override
-  Object sqlParameter(T value) {
+  Object? sqlParameter(T? value) {
     return value;
   }
 }
@@ -55,8 +55,12 @@ final class BoolType extends _SqlTypeWithoutMapping<bool> {
   }
 
   @override
-  Object sqlParameter(bool value) {
-    return value ? 1 : 0;
+  Object? sqlParameter(bool? value) {
+    return switch (value) {
+      null => null,
+      true => 1,
+      false => 0,
+    };
   }
 
   @override
@@ -148,7 +152,9 @@ final class DateTimeType extends _SqliteType<DateTime> {
   }
 
   @override
-  Object sqlParameter(DateTime value) {
+  Object? sqlParameter(DateTime? value) {
+    if (value == null) return null;
+
     if (_asText) {
       // sqlite3 assumes UTC by default, so we store the explicit UTC offset
       // along with the value. For UTC datetimes, there's nothing to change
@@ -220,7 +226,9 @@ final class JsonType extends _SqliteType<DatabaseJson> {
   }
 
   @override
-  Object sqlParameter(DatabaseJson value) {
+  Object? sqlParameter(DatabaseJson? value) {
+    if (value == null) return null;
+
     if (_useBinary) {
       return jsonb.encode(value.dartValue);
     } else {
@@ -295,7 +303,9 @@ final class AnyType extends _SqliteType<DriftAny> {
   }
 
   @override
-  Object sqlParameter(DriftAny value) {
+  Object? sqlParameter(DriftAny? value) {
+    if (value == null) return null;
+
     return value.fromDb;
   }
 

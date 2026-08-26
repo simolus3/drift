@@ -30,13 +30,12 @@ QueryResult executeWithStatement(
   sqlite.CommonPreparedStatement stmt,
   StatementInfo info,
 ) {
-  final variables = info.variables.map((e) => e.rawValue).toList();
   RawResultSet? resultSet;
 
   if (info.needsResultSet) {
-    resultSet = SqliteResultSet(resultSet: stmt.select(variables));
+    resultSet = SqliteResultSet(resultSet: stmt.select(info.variables));
   } else {
-    stmt.execute(variables);
+    stmt.execute(info.variables);
   }
 
   return QueryResult(

@@ -3,7 +3,6 @@
 
 import 'dart:typed_data';
 
-import '../../connection/connection.dart';
 import '../compiler.dart';
 import '../dialect.dart';
 import '../types.dart';
@@ -88,8 +87,21 @@ final class Variable<T extends Object> extends Expression<T> {
 
   /// Resolves the type of this variable and uses that type implementation to
   /// map [value] into the underlying representation for the SQL implementation.
-  MappedValue resolveValue(DriftDialect dialect) {
-    return MappedValue.map(sqlType.resolveIn(dialect), value);
+  Object? resolveValue(DriftDialect dialect) {
+    return sqlType.resolveIn(dialect).sqlParameter(value);
+  }
+
+  /// Calls [Variable.resolveValue] for each variable in [variables].
+  static List<Object?> resolveValues(
+    DriftDialect dialect,
+    Iterable<Variable> variables,
+  ) {
+    if (variables.isEmpty) return const [];
+
+    final resolvedDialect = dialect;
+    return [
+      for (final variable in variables) variable.resolveValue(resolvedDialect),
+    ];
   }
 }
 

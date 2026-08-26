@@ -57,8 +57,8 @@ extension TypeExtension<T extends Object> on SqlType<T> {
 
   /// Maps a Dart [value] to bind to a parameter in a generated statement to a
   /// value understood by database drivers.
-  Object sqlParameter(DriftDialect dialect, T value) {
-    return resolveIn(dialect).dartValue(value);
+  Object? sqlParameter(DriftDialect dialect, T? value) {
+    return resolveIn(dialect).sqlParameter(value);
   }
 }
 
@@ -72,7 +72,7 @@ abstract base class PhysicalSqlType<T extends Object> implements SqlType<T> {
 
   /// Maps a Dart [value] to bind to a parameter in a generated statement to a
   /// value understood by database drivers.
-  Object sqlParameter(T value);
+  Object? sqlParameter(T? value);
 
   /// Maps [value] to its (escaped) SQL literal.
   String sqlLiteral(T value);

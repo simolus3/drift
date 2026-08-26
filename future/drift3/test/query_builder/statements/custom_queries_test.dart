@@ -76,7 +76,7 @@ void main() {
   test('custom update informs stream queries', () async {
     await db.customUpdate(
       'UPDATE tbl SET a = ?',
-      variables: [db.mapValue(BuiltinDriftType.text, 'hi')],
+      variables: [.withString('hi')],
       updates: {db.users},
     );
 
@@ -91,10 +91,7 @@ void main() {
       return queryResult([], lastInsertRowId: 32);
     });
 
-    final id = await db.customInsert(
-      'fake insert',
-      variables: [db.mapValue(BuiltinDriftType.int, 3)],
-    );
+    final id = await db.customInsert('fake insert', variables: [.withInt(3)]);
     expect(id, 32);
 
     // shouldn't call stream queries - we didn't set the updates parameter

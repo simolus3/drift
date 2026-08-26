@@ -52,7 +52,8 @@ final class StatementBuffer {
 
   /// Instantiations of parameters (typically from [Variable] instances) that
   /// have been added to the statement.
-  final List<MappedValue> variables = [];
+  final List<Variable> variables = [];
+
   final Map<Variable, int> _variableIndexes = {};
 
   /// For read-only queries, a set of tables directly referenced in the query.
@@ -115,7 +116,9 @@ final class StatementBuffer {
 
     return StatementInfo(
       buffer.toString(),
-      variables: variables.toList(),
+      variables: [
+        for (final variable in variables) variable.resolveValue(dialect),
+      ],
       needsResultSet: resultSetStructure != null,
       isReadOnly: isReadOnly,
       expectedWrites: possibleUpdates,
@@ -295,7 +298,7 @@ abstract base class StatementCompiler {
     if (statement._variableIndexes[variable] case final index?) {
       addPositionalVariable(index);
     } else {
-      statement.variables.add(variable.resolveValue(dialect));
+      statement.variables.add(variable);
       final sqlIndex = statement.variableOffset + statement.variables.length;
       statement._variableIndexes[variable] = sqlIndex;
 

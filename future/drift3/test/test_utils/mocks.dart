@@ -172,11 +172,7 @@ final class MockSession extends Mock
         argThat(
           isA<StatementInfo>()
               .having((e) => e.sql, 'sql', sql)
-              .having(
-                (e) => e.variables.map((v) => v.rawValue),
-                'variables',
-                variables,
-              ),
+              .having((e) => e.variables, 'variables', variables),
         ),
       );
 

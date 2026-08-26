@@ -95,8 +95,8 @@ final class _NegatedIntType extends PhysicalSqlType<int> {
   }
 
   @override
-  Object sqlParameter(int value) {
-    return -value;
+  Object? sqlParameter(int? value) {
+    return value == null ? null : -value;
   }
 
   @override

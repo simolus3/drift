@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import '../database/db_base.dart';
-import '../query_builder/types.dart';
+import '../query_builder/expressions/variables.dart';
 
 /// True if exporting is supported on this platform, false otherwise.
 final bool isExportSupported = true;
@@ -16,7 +16,7 @@ Future<Uint8List> exportDatabase(GeneratedDatabase database) async {
 
   await database.exclusively(() async {
     await database.customStatement('VACUUM INTO ?;', [
-      database.mapValue(BuiltinDriftType.text, destination.toFilePath()),
+      Variable.withString(destination.toFilePath()),
     ]);
   });
 

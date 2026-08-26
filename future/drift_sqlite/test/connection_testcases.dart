@@ -73,7 +73,7 @@ void declareConnectionTests(
       StatementInfo(
         "explain query plan select * from test where description = ?",
         variables: [
-          MappedValue.raw(const SqliteDialect.withOptions().textType, 't'),
+          const SqliteDialect.withOptions().textType.sqlParameter('t'),
         ],
       ),
     );
@@ -82,7 +82,7 @@ void declareConnectionTests(
       StatementInfo(
         "explain query plan select * from test where description = ?",
         variables: [
-          MappedValue.raw(const SqliteDialect.withOptions().textType, 't'),
+          const SqliteDialect.withOptions().textType.sqlParameter('t'),
         ],
       ),
     );

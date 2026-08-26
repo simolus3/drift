@@ -25,9 +25,7 @@ abstract base class _BaseWebSession implements DriftSession {
 
   @override
   Future<QueryResult> execute(StatementInfo statement) async {
-    final (params, paramTypes) = utils.serializeParameters(
-      statement.variables.map((p) => p.rawValue).toList(),
-    );
+    final (params, paramTypes) = utils.serializeParameters(statement.variables);
 
     final response = await database
         .customRequest(
@@ -54,7 +52,7 @@ abstract base class _BaseWebSession implements DriftSession {
     );
     for (final (i, stmt) in batch.statements.indexed) {
       final (parameters, parameterTypes) = utils.serializeParameters(
-        stmt.info.variables.map((p) => p.rawValue).toList(),
+        stmt.info.variables,
       );
 
       entries[i] = ExecuteBatchEntry(

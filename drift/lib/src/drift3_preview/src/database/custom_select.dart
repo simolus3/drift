@@ -24,7 +24,7 @@ abstract base class BaseCustomSelectStatement<T> with Selectable<T> {
 
   /// The variables for the prepared statement, in the order they appear in
   /// [query]. Variables are denoted using a question mark in the query.
-  final List<MappedValue> variables;
+  final List<Object?> variables;
 
   final DatabaseConnectionUser _db;
   final bool isReadOnly;
@@ -65,7 +65,7 @@ final class CustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
 
   static CustomSelectStatement<CustomRow> unmapped(
     String query,
-    List<MappedValue> variables,
+    List<Object?> variables,
     Set<SchemaEntityWithResultSet> tables,
     DatabaseConnectionUser db,
     bool isReadOnly,

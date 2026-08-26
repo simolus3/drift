@@ -7,9 +7,10 @@ Changes from `drift` versions 2.x:
   - `DatabaseConnection` has been renamed to `DriftConnection` and is always opened lazily now.
   - `NativeDatabase` has been removed, use `sqliteConnectionPool` from `package:drift_sqlite/native.dart`.
   - `WasmDatabase` is now part of `package:drift_sqlite/wasm.dart` and requires a new worker.
-- __Breaking change__: On expressions, `isBiggerThan` has been renamed to `isGreaterThan`; `isSmallerThan` to `isLessThan`. 
+- __Breaking change__: On expressions, `isBiggerThan` has been renamed to `isGreaterThan`; `isSmallerThan` to `isLessThan`.
 - __Breaking change__: Top-level join methods (`innerJoin` and others) are now named constructors on a `Join` class.
 - __Breaking change__: `Constant` has been renamed to `Literal`.
+- __Breaking change__: Remove `DatabaseConnectionUser.customSelectQuery`.
 - __Breaking change__: SQLite-specific constructs are now exposed through `package:drift_sqlite`:
   - The `storeDateTimesAsText` option is now enabled by default.
   - The `InsertMode` parameter is now available as a `.mode()` extension on `InsertStatement`.

@@ -7,7 +7,6 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
-import '../connection/connection.dart';
 import '../database/db_base.dart';
 import '../query_builder.dart';
 
@@ -184,15 +183,17 @@ Object? encodeSqlValue(Object? value) {
   };
 }
 
-MappedValue decodeSqlValue(GeneratedDatabase db, Object? value) {
-  return switch (value) {
-    final String s => db.mapValue(BuiltinDriftType.text, s),
-    final int i => db.mapValue(BuiltinDriftType.int, i),
-    final double d => db.mapValue(BuiltinDriftType.double, d),
-    {'binary': final String binary} => db.mapValue(
+Object? decodeSqlValue(GeneratedDatabase db, Object? value) {
+  final (type, mappedValue) = switch (value) {
+    String() => (BuiltinDriftType.text, value),
+    int() => (BuiltinDriftType.int, value),
+    double() => (BuiltinDriftType.double, value),
+    {'binary': final String binary} => (
       BuiltinDriftType.byteArray,
       base64.decode(binary),
     ),
-    _ => db.mapValue(BuiltinDriftType.text, null),
+    _ => (BuiltinDriftType.text, null),
   };
+
+  return type.sqlParameter(db.dialect, mappedValue);
 }

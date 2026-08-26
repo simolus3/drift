@@ -32,8 +32,8 @@ base class PhysicalPostgresType<T extends Object> extends PhysicalSqlType<T> {
   const PhysicalPostgresType(this.postgresType, this.typeName);
 
   @override
-  pg.TypedValue sqlParameter(T value) {
-    return pg.TypedValue(postgresType, value, isSqlNull: false);
+  pg.TypedValue sqlParameter(T? value) {
+    return pg.TypedValue(postgresType, value, isSqlNull: value == null);
   }
 
   @override
@@ -59,8 +59,8 @@ final class UuidType extends PhysicalPostgresType<UuidValue> {
   }
 
   @override
-  pg.TypedValue<Object> sqlParameter(UuidValue value) {
-    return pg.TypedValue(postgresType, value.uuid);
+  pg.TypedValue<Object> sqlParameter(UuidValue? value) {
+    return pg.TypedValue(postgresType, value?.uuid, isSqlNull: value == null);
   }
 
   @override
@@ -111,8 +111,12 @@ final class DateType<T extends PgTimeValue> extends PhysicalPostgresType<T> {
   }
 
   @override
-  pg.TypedValue<Object> sqlParameter(T value) {
-    return pg.TypedValue(postgresType, value.toDateTime());
+  pg.TypedValue<Object> sqlParameter(T? value) {
+    return pg.TypedValue(
+      postgresType,
+      value?.toDateTime(),
+      isSqlNull: value == null,
+    );
   }
 
   @override
@@ -154,7 +158,11 @@ final class DartBigIntType extends PhysicalPostgresType<BigInt> {
   }
 
   @override
-  pg.TypedValue<Object> sqlParameter(BigInt value) {
-    return pg.TypedValue(postgresType, value.toInt(), isSqlNull: false);
+  pg.TypedValue<Object> sqlParameter(BigInt? value) {
+    return pg.TypedValue(
+      postgresType,
+      value?.toInt(),
+      isSqlNull: value == null,
+    );
   }
 }
