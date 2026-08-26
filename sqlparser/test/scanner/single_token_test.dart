@@ -158,11 +158,20 @@ void main() {
     }
 
     test('hexadecimal', () {
-      checkLiteral('0x123', NumericToken(defaultSpan, hexDigits: '123'), 0x123);
+      checkLiteral(
+        '0x123',
+        NumericToken.hexadecimal(defaultSpan, '123'),
+        0x123,
+      );
       checkLiteral(
         '0x12_34',
-        NumericToken(defaultSpan, hexDigits: '1234'),
+        NumericToken.hexadecimal(defaultSpan, '1234'),
         0x1234,
+      );
+
+      expect(
+        () => SqlEngine().tokenizeString('0x'),
+        throwsA(isA<CumulatedTokenizerException>()),
       );
     });
 
@@ -197,6 +206,17 @@ void main() {
         '42E-1_0',
         NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -10),
         4.2e-9,
+      );
+    });
+
+    test('missing number after exponent', () {
+      expect(
+        () => SqlEngine().tokenizeString('1e+'),
+        throwsA(isA<CumulatedTokenizerException>()),
+      );
+      expect(
+        () => SqlEngine().tokenizeString('1e-x'),
+        throwsA(isA<CumulatedTokenizerException>()),
       );
     });
 

@@ -342,9 +342,13 @@ class Scanner {
           digit = digitCode(isHexDigit);
         }
 
-        return NumericToken(
+        if (hexDigitsBuffer.isEmpty) {
+          return TokenizerError('Expected hex codes here', _currentLocation);
+        }
+
+        return NumericToken.hexadecimal(
           _currentSpan,
-          hexDigits: hexDigitsBuffer.toString(),
+          hexDigitsBuffer.toString(),
         );
       }
     }
@@ -424,7 +428,10 @@ class Scanner {
         parsedExponent = int.parse(exponent);
       } else {
         if (char == $plus || char == $minus) {
-          requireDigit('Expected digits for the exponent');
+          if (requireDigit('Expected digits for the exponent')
+              case final error?) {
+            return error;
+          }
           final exponent = consumeDigits();
 
           parsedExponent = char == $plus
@@ -490,7 +497,7 @@ class Scanner {
   Token _inlineDart() {
     // inline starts with a `, we just need to find the matching ` that
     // terminates this token.
-    while (_peek() != $backquote && !_isAtEnd) {
+    while (!_isAtEnd && _peek() != $backquote) {
       _nextChar();
     }
 

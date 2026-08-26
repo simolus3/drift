@@ -635,9 +635,16 @@ class NumericToken extends Token {
     this.digitsBeforeDecimal,
     this.hasDecimalPoint = false,
     this.digitsAfterDecimal,
-    this.hexDigits,
     this.exponent,
   }) : super(TokenType.numberLiteral, span);
+
+  NumericToken.hexadecimal(FileSpan span, String this.hexDigits)
+    : assert(hexDigits.isNotEmpty),
+      digitsBeforeDecimal = null,
+      hasDecimalPoint = false,
+      digitsAfterDecimal = null,
+      exponent = null,
+      super(TokenType.numberLiteral, span);
 
   /// The numeric literal represented by this token.
   num get parsedNumber {

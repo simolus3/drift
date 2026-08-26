@@ -1,3 +1,7 @@
+## 0.45.1-wip
+
+- Fix a few tokenizer crashes ([#3847](https://github.com/simolus3/drift/issues/3847)).
+
 ## 0.45.0
 
 - Re-release of version `0.44.6` which contained breaking changes and should not

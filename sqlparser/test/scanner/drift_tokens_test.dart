@@ -25,4 +25,13 @@ void main() {
       'const Mapper()',
     );
   });
+
+  test('unterminated dart', () {
+    expect(
+      () => SqlEngine(
+        EngineOptions(driftOptions: DriftSqlOptions()),
+      ).tokenizeString('`unterminated dart'),
+      throwsA(isA<CumulatedTokenizerException>()),
+    );
+  });
 }
