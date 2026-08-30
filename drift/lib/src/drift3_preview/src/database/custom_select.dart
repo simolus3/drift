@@ -192,7 +192,7 @@ final class CustomRow {
   /// The dart type [T] must be supported by the type system of the database
   /// used (mostly contains booleans, strings, numbers and dates).
   T read<T extends Object>(String name) {
-    final type = BuiltinDriftType.forType<T>();
+    final type = BuiltinSqlType.forType<T>();
     if (type == null) {
       throw ArgumentError(
         'Tried to call read() with an unknown type ($T). For '
@@ -203,7 +203,7 @@ final class CustomRow {
     }
 
     return readWithType(
-      BuiltinDriftType.forType<T>()!.resolveIn(_db.dialect),
+      BuiltinSqlType.forType<T>()!.resolveIn(_db.dialect),
       name,
     );
   }
@@ -226,7 +226,7 @@ final class CustomRow {
   /// drift (e.g. booleans, strings, numbers, dates, `Uint8List`s).
   T? readNullable<T extends Object>(String key) {
     return readNullableWithType(
-      BuiltinDriftType.forType<T>()!.resolveIn(_db.dialect),
+      BuiltinSqlType.forType<T>()!.resolveIn(_db.dialect),
       key,
     );
   }

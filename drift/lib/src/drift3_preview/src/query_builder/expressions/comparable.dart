@@ -115,7 +115,7 @@ final class BetweenExpression extends Expression<bool> {
   });
 
   @override
-  SqlType<bool> get sqlType => BuiltinDriftType.bool;
+  SqlType<bool> get sqlType => BuiltinSqlType.bool;
 
   @override
   void compileWith(StatementCompiler compiler) {

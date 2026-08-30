@@ -22,13 +22,13 @@ import 'internal.dart';
 @Target({TargetKind.method})
 final class DriftColumnDeclarationBuilder {
   /// For builtin types, the SQL type of the column.
-  final BuiltinDriftType? builtin;
+  final BuiltinSqlType? builtin;
 
   /// For methods declaring custom (non-builtin) SQL types, a factory of the
   /// type being constructed.
   final SqlType Function()? custom;
 
-  const DriftColumnDeclarationBuilder._(BuiltinDriftType this.builtin)
+  const DriftColumnDeclarationBuilder._(BuiltinSqlType this.builtin)
     : custom = null;
 
   /// Annotation constructor for custom types.
@@ -155,7 +155,7 @@ abstract class Table extends ResultSetDsl {
   /// report the values as a [BigInt] in Dart.
 
   @protected
-  @DriftColumnDeclarationBuilder._(BuiltinDriftType.int)
+  @DriftColumnDeclarationBuilder._(BuiltinSqlType.int)
   ColumnBuilder<int> integer() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds a 64-big
@@ -173,7 +173,7 @@ abstract class Table extends ResultSetDsl {
   /// 2⁵². In all other cases, using [integer] directly is much more efficient
   /// and recommended.
   @protected
-  @DriftColumnDeclarationBuilder._(BuiltinDriftType.int64)
+  @DriftColumnDeclarationBuilder._(BuiltinSqlType.int64)
   ColumnBuilder<BigInt> int64() => isGenerated();
 
   /// Creates a column to store an `enum` class [T].
@@ -190,7 +190,7 @@ abstract class Table extends ResultSetDsl {
   /// TextColumn get name => text()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder._(BuiltinDriftType.text)
+  @DriftColumnDeclarationBuilder._(BuiltinSqlType.text)
   ColumnBuilder<String> text() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds strings.
@@ -199,7 +199,7 @@ abstract class Table extends ResultSetDsl {
   /// TextColumn get name => text()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder._(BuiltinDriftType.json)
+  @DriftColumnDeclarationBuilder._(BuiltinSqlType.json)
   ColumnBuilder<DatabaseJson> json() => isGenerated();
 
   /// Creates a column to store an `enum` class [T].
@@ -215,7 +215,7 @@ abstract class Table extends ResultSetDsl {
   /// BoolColumn get isAwesome => boolean()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder._(BuiltinDriftType.bool)
+  @DriftColumnDeclarationBuilder._(BuiltinSqlType.bool)
   ColumnBuilder<bool> boolean() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds date and
@@ -237,7 +237,7 @@ abstract class Table extends ResultSetDsl {
   ///
   /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
   @protected
-  @DriftColumnDeclarationBuilder._(BuiltinDriftType.dateTime)
+  @DriftColumnDeclarationBuilder._(BuiltinSqlType.dateTime)
   ColumnBuilder<DateTime> dateTime() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds arbitrary
@@ -246,7 +246,7 @@ abstract class Table extends ResultSetDsl {
   /// BlobColumn get payload => blob()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder._(BuiltinDriftType.byteArray)
+  @DriftColumnDeclarationBuilder._(BuiltinSqlType.byteArray)
   ColumnBuilder<Uint8List> blob() => isGenerated();
 
   /// Use this as the body of a getter to declare a column that holds floating
@@ -255,7 +255,7 @@ abstract class Table extends ResultSetDsl {
   /// RealColumn get averageSpeed => real()();
   /// ```
   @protected
-  @DriftColumnDeclarationBuilder._(BuiltinDriftType.double)
+  @DriftColumnDeclarationBuilder._(BuiltinSqlType.double)
   ColumnBuilder<double> real() => isGenerated();
 
   /// Defines a column with a custom [type] when used as a getter.

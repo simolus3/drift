@@ -23,7 +23,7 @@ export 'src/dsl/table.dart';
 
 export 'src/exceptions.dart';
 
-export 'src/query_builder.dart' hide SingleTableStatementMixin;
+export 'src/query_builder.dart' hide SingleTableStatementMixin, BuiltinSqlType;
 export 'src/runtime_options.dart';
 
 export 'src/utils/cancellation_zone.dart'

@@ -12,7 +12,7 @@ class $SomeTableTable extends SomeTable
   @override
   late final TableColumn<int> id = TableColumn<int>(
     name: 'id',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -22,7 +22,7 @@ class $SomeTableTable extends SomeTable
   @override
   late final TableColumn<String> name = TableColumn<String>(
     name: 'name',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
@@ -39,9 +39,9 @@ class $SomeTableTable extends SomeTable
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$name = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -68,9 +68,9 @@ class SomeTableData extends LegacyDataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id, BuiltinDriftType.int);
+    map['id'] = Variable<int>(id, SqlType.int);
     if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name, BuiltinDriftType.text);
+      map['name'] = Variable<String>(name, SqlType.text);
     }
     return map;
   }
@@ -163,10 +163,10 @@ class SomeTableCompanion extends UpdateCompanion<SomeTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
+      map['id'] = Variable<int>(id.value, SqlType.int);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value, BuiltinDriftType.text);
+      map['name'] = Variable<String>(name.value, SqlType.text);
     }
     return map;
   }

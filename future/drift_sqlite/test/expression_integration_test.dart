@@ -217,7 +217,7 @@ final class _TestDatabase extends GeneratedDatabase {
     columns: [
       (name) => TableColumn(
         name: 'id',
-        sqlType: BuiltinDriftType.int,
+        sqlType: .int,
         constraints: () => [
           ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
         ],
@@ -233,14 +233,14 @@ final class _TestDatabase extends GeneratedDatabase {
     columns: [
       (name) => TableColumn(
         name: 'id',
-        sqlType: BuiltinDriftType.int,
+        sqlType: .int,
         constraints: () => [
           ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
         ],
       ),
-      (name) => TableColumn(name: 'category', sqlType: BuiltinDriftType.int),
-      (name) => TableColumn(name: 'title', sqlType: BuiltinDriftType.int),
-      (name) => TableColumn(name: 'content', sqlType: BuiltinDriftType.int),
+      (name) => TableColumn(name: 'category', sqlType: .int),
+      (name) => TableColumn(name: 'title', sqlType: .int),
+      (name) => TableColumn(name: 'content', sqlType: .int),
     ],
     tableConstraints: [],
   );
@@ -249,13 +249,13 @@ final class _TestDatabase extends GeneratedDatabase {
     entityName: 'noRowId',
     isStrict: false,
     withoutRowId: true,
-    columns: [(name) => TableColumn(name: 'a', sqlType: BuiltinDriftType.int)],
+    columns: [(name) => TableColumn(name: 'a', sqlType: .int)],
     tableConstraints: [],
   );
 
   late final fts5 = VersionedVirtualTable(
     entityName: 'fts',
-    columns: [(name) => TableColumn(name: 'a', sqlType: BuiltinDriftType.text)],
+    columns: [(name) => TableColumn(name: 'a', sqlType: .text)],
     moduleAndArgs: 'fts5 (a)',
   );
 }

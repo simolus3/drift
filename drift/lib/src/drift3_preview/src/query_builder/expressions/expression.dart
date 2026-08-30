@@ -57,7 +57,7 @@ abstract base class Expression<T extends Object> implements FunctionParameter {
   /// Resolves the [SqlType] implementation describing the type of this
   /// expression.
   SqlType<T> get sqlType =>
-      BuiltinDriftType.forType<T>() ??
+      BuiltinSqlType.forType<T>() ??
       (throw ArgumentError('Unknown type parameter for builtin type: $T'));
 
   @override

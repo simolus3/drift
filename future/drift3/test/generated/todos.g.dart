@@ -12,7 +12,7 @@ class $CategoriesTable extends Categories
   @override
   late final TableColumnWithTypeConverter<RowId, int> id = TableColumn<int>(
     name: 'id',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -22,7 +22,7 @@ class $CategoriesTable extends Categories
   @override
   late final TableColumn<String> description = TableColumn<String>(
     name: 'desc',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL UNIQUE')],
   )..owningResultSet = this;
@@ -30,7 +30,7 @@ class $CategoriesTable extends Categories
   late final TableColumnWithTypeConverter<CategoryPriority, int> priority =
       TableColumn<int>(
           name: 'priority',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
           requiredDuringInsert: false,
           constraints: () => [
             const ColumnNotNullConstraint(),
@@ -41,7 +41,7 @@ class $CategoriesTable extends Categories
   @override
   late final TableColumn<String> descriptionInUpperCase = TableColumn<String>(
     name: 'description_in_upper_case',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnNotNullConstraint(),
@@ -70,9 +70,9 @@ class $CategoriesTable extends Categories
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$description = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     final pos$priority = positions[2].index;
     final pos$descriptionInUpperCase = positions[3].index;
     return (RawRow row) {
@@ -123,14 +123,14 @@ class Category extends LegacyDataClass implements Insertable<Category> {
     {
       map['id'] = Variable<int>(
         $CategoriesTable.$converterid.toSql(id),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
-    map['desc'] = Variable<String>(description, BuiltinDriftType.text);
+    map['desc'] = Variable<String>(description, SqlType.text);
     {
       map['priority'] = Variable<int>(
         $CategoriesTable.$converterpriority.toSql(priority),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     return map;
@@ -257,16 +257,16 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (id.present) {
       map['id'] = Variable<int>(
         $CategoriesTable.$converterid.toSql(id.value),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (description.present) {
-      map['desc'] = Variable<String>(description.value, BuiltinDriftType.text);
+      map['desc'] = Variable<String>(description.value, SqlType.text);
     }
     if (priority.present) {
       map['priority'] = Variable<int>(
         $CategoriesTable.$converterpriority.toSql(priority.value),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     return map;
@@ -292,7 +292,7 @@ class $TodosTableTable extends TodosTable
   @override
   late final TableColumnWithTypeConverter<RowId, int> id = TableColumn<int>(
     name: 'id',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -302,20 +302,20 @@ class $TodosTableTable extends TodosTable
   @override
   late final TableColumn<String> title = TableColumn<String>(
     name: 'title',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumn<String> content = TableColumn<String>(
     name: 'content',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   @override
   late final TableColumn<DateTime> targetDate = TableColumn<DateTime>(
     name: 'target_date',
-    sqlType: BuiltinDriftType.dateTime,
+    sqlType: SqlType.dateTime,
     requiredDuringInsert: false,
     constraints: () => [const ColumnUniqueConstraint()],
   )..owningResultSet = this;
@@ -323,7 +323,7 @@ class $TodosTableTable extends TodosTable
   late final TableColumnWithTypeConverter<RowId?, int> category =
       TableColumn<int>(
           name: 'category',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
           requiredDuringInsert: false,
           constraints: () => [
             const ColumnForeignKeyConstraint(
@@ -338,7 +338,7 @@ class $TodosTableTable extends TodosTable
   late final TableColumnWithTypeConverter<TodoStatus?, String> status =
       TableColumn<String>(
           name: 'status',
-          sqlType: BuiltinDriftType.text,
+          sqlType: SqlType.text,
           requiredDuringInsert: false,
         ).withConverter<TodoStatus?>($TodosTableTable.$converterstatusn)
         ..owningResultSet = this;
@@ -368,12 +368,12 @@ class $TodosTableTable extends TodosTable
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$title = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     final pos$content = positions[2].index;
     final pos$targetDate = positions[3].index;
-    final type$2 = BuiltinDriftType.dateTime.resolveIn(dialect);
+    final type$2 = SqlType.dateTime.resolveIn(dialect);
     final pos$category = positions[4].index;
     final pos$status = positions[5].index;
     return (RawRow row) {
@@ -436,29 +436,26 @@ class TodoEntry extends LegacyDataClass implements Insertable<TodoEntry> {
     {
       map['id'] = Variable<int>(
         $TodosTableTable.$converterid.toSql(id),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (!nullToAbsent || title != null) {
-      map['title'] = Variable<String>(title, BuiltinDriftType.text);
+      map['title'] = Variable<String>(title, SqlType.text);
     }
-    map['content'] = Variable<String>(content, BuiltinDriftType.text);
+    map['content'] = Variable<String>(content, SqlType.text);
     if (!nullToAbsent || targetDate != null) {
-      map['target_date'] = Variable<DateTime>(
-        targetDate,
-        BuiltinDriftType.dateTime,
-      );
+      map['target_date'] = Variable<DateTime>(targetDate, SqlType.dateTime);
     }
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<int>(
         $TodosTableTable.$convertercategoryn.toSql(category),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (!nullToAbsent || status != null) {
       map['status'] = Variable<String>(
         $TodosTableTable.$converterstatusn.toSql(status),
-        BuiltinDriftType.text,
+        SqlType.text,
       );
     }
     return map;
@@ -641,31 +638,31 @@ class TodosTableCompanion extends UpdateCompanion<TodoEntry> {
     if (id.present) {
       map['id'] = Variable<int>(
         $TodosTableTable.$converterid.toSql(id.value),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (title.present) {
-      map['title'] = Variable<String>(title.value, BuiltinDriftType.text);
+      map['title'] = Variable<String>(title.value, SqlType.text);
     }
     if (content.present) {
-      map['content'] = Variable<String>(content.value, BuiltinDriftType.text);
+      map['content'] = Variable<String>(content.value, SqlType.text);
     }
     if (targetDate.present) {
       map['target_date'] = Variable<DateTime>(
         targetDate.value,
-        BuiltinDriftType.dateTime,
+        SqlType.dateTime,
       );
     }
     if (category.present) {
       map['category'] = Variable<int>(
         $TodosTableTable.$convertercategoryn.toSql(category.value),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (status.present) {
       map['status'] = Variable<String>(
         $TodosTableTable.$converterstatusn.toSql(status.value),
-        BuiltinDriftType.text,
+        SqlType.text,
       );
     }
     return map;
@@ -694,7 +691,7 @@ class $UsersTable extends Users
   @override
   late final TableColumnWithTypeConverter<RowId, int> id = TableColumn<int>(
     name: 'id',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -704,7 +701,7 @@ class $UsersTable extends Users
   @override
   late final TableColumn<String> name = TableColumn<String>(
     name: 'name',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [
       const ColumnNotNullConstraint(),
@@ -714,7 +711,7 @@ class $UsersTable extends Users
   @override
   late final TableColumn<bool> isAwesome = TableColumn<bool>(
     name: 'is_awesome',
-    sqlType: BuiltinDriftType.bool,
+    sqlType: SqlType.bool,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnNotNullConstraint(),
@@ -724,14 +721,14 @@ class $UsersTable extends Users
   @override
   late final TableColumn<Uint8List> profilePicture = TableColumn<Uint8List>(
     name: 'profile_picture',
-    sqlType: BuiltinDriftType.byteArray,
+    sqlType: SqlType.byteArray,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   @override
   late final TableColumn<DateTime> creationTime = TableColumn<DateTime>(
     name: 'creation_time',
-    sqlType: BuiltinDriftType.dateTime,
+    sqlType: SqlType.dateTime,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnNotNullConstraint(),
@@ -761,15 +758,15 @@ class $UsersTable extends Users
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$name = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     final pos$isAwesome = positions[2].index;
-    final type$2 = BuiltinDriftType.bool.resolveIn(dialect);
+    final type$2 = SqlType.bool.resolveIn(dialect);
     final pos$profilePicture = positions[3].index;
-    final type$3 = BuiltinDriftType.byteArray.resolveIn(dialect);
+    final type$3 = SqlType.byteArray.resolveIn(dialect);
     final pos$creationTime = positions[4].index;
-    final type$4 = BuiltinDriftType.dateTime.resolveIn(dialect);
+    final type$4 = SqlType.dateTime.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -813,19 +810,16 @@ class User extends LegacyDataClass implements Insertable<User> {
     {
       map['id'] = Variable<int>(
         $UsersTable.$converterid.toSql(id),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
-    map['name'] = Variable<String>(name, BuiltinDriftType.text);
-    map['is_awesome'] = Variable<bool>(isAwesome, BuiltinDriftType.bool);
+    map['name'] = Variable<String>(name, SqlType.text);
+    map['is_awesome'] = Variable<bool>(isAwesome, SqlType.bool);
     map['profile_picture'] = Variable<Uint8List>(
       profilePicture,
-      BuiltinDriftType.byteArray,
+      SqlType.byteArray,
     );
-    map['creation_time'] = Variable<DateTime>(
-      creationTime,
-      BuiltinDriftType.dateTime,
-    );
+    map['creation_time'] = Variable<DateTime>(creationTime, SqlType.dateTime);
     return map;
   }
 
@@ -986,28 +980,25 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (id.present) {
       map['id'] = Variable<int>(
         $UsersTable.$converterid.toSql(id.value),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value, BuiltinDriftType.text);
+      map['name'] = Variable<String>(name.value, SqlType.text);
     }
     if (isAwesome.present) {
-      map['is_awesome'] = Variable<bool>(
-        isAwesome.value,
-        BuiltinDriftType.bool,
-      );
+      map['is_awesome'] = Variable<bool>(isAwesome.value, SqlType.bool);
     }
     if (profilePicture.present) {
       map['profile_picture'] = Variable<Uint8List>(
         profilePicture.value,
-        BuiltinDriftType.byteArray,
+        SqlType.byteArray,
       );
     }
     if (creationTime.present) {
       map['creation_time'] = Variable<DateTime>(
         creationTime.value,
-        BuiltinDriftType.dateTime,
+        SqlType.dateTime,
       );
     }
     return map;
@@ -1035,14 +1026,14 @@ class $SharedTodosTable extends SharedTodos
   @override
   late final TableColumn<int> todo = TableColumn<int>(
     name: 'todo',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   @override
   late final TableColumn<int> user = TableColumn<int>(
     name: 'user',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
@@ -1062,7 +1053,7 @@ class $SharedTodosTable extends SharedTodos
     List<ColumnPosition> positions,
   ) {
     final pos$todo = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$user = positions[1].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "todo" is missing
@@ -1089,8 +1080,8 @@ class SharedTodo extends LegacyDataClass implements Insertable<SharedTodo> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['todo'] = Variable<int>(todo, BuiltinDriftType.int);
-    map['user'] = Variable<int>(user, BuiltinDriftType.int);
+    map['todo'] = Variable<int>(todo, SqlType.int);
+    map['user'] = Variable<int>(user, SqlType.int);
     return map;
   }
 
@@ -1188,13 +1179,13 @@ class SharedTodosCompanion extends UpdateCompanion<SharedTodo> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (todo.present) {
-      map['todo'] = Variable<int>(todo.value, BuiltinDriftType.int);
+      map['todo'] = Variable<int>(todo.value, SqlType.int);
     }
     if (user.present) {
-      map['user'] = Variable<int>(user.value, BuiltinDriftType.int);
+      map['user'] = Variable<int>(user.value, SqlType.int);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -1224,7 +1215,7 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   late final TableColumnWithTypeConverter<RowId, int> id =
       TableColumn<int>(
           name: 'id',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
           requiredDuringInsert: false,
           constraints: () => [
             const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -1235,50 +1226,50 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   @override
   late final TableColumn<bool> aBool = TableColumn<bool>(
     name: 'a_bool',
-    sqlType: BuiltinDriftType.bool,
+    sqlType: SqlType.bool,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumn<DateTime> aDateTime = TableColumn<DateTime>(
     name: 'a_date_time',
-    sqlType: BuiltinDriftType.dateTime,
+    sqlType: SqlType.dateTime,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumn<String> aText = TableColumn<String>(
     name: 'a_text',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumn<int> anInt = TableColumn<int>(
     name: 'an_int',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumn<BigInt> anInt64 = TableColumn<BigInt>(
     name: 'an_int64',
-    sqlType: BuiltinDriftType.int64,
+    sqlType: SqlType.int64,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumn<double> aReal = TableColumn<double>(
     name: 'a_real',
-    sqlType: BuiltinDriftType.double,
+    sqlType: SqlType.double,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumn<Uint8List> aBlob = TableColumn<Uint8List>(
     name: 'a_blob',
-    sqlType: BuiltinDriftType.byteArray,
+    sqlType: SqlType.byteArray,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumnWithTypeConverter<TodoStatus?, int> anIntEnum =
       TableColumn<int>(
           name: 'an_int_enum',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
           requiredDuringInsert: false,
         ).withConverter<TodoStatus?>(
           $TableWithEveryColumnTypeTable.$converteranIntEnumn,
@@ -1289,7 +1280,7 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   aTextWithConverter =
       TableColumn<String>(
           name: 'insert',
-          sqlType: BuiltinDriftType.text,
+          sqlType: SqlType.text,
           requiredDuringInsert: false,
         ).withConverter<MyCustomObject?>(
           $TableWithEveryColumnTypeTable.$converteraTextWithConvertern,
@@ -1320,20 +1311,20 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$aBool = positions[1].index;
-    final type$1 = BuiltinDriftType.bool.resolveIn(dialect);
+    final type$1 = SqlType.bool.resolveIn(dialect);
     final pos$aDateTime = positions[2].index;
-    final type$2 = BuiltinDriftType.dateTime.resolveIn(dialect);
+    final type$2 = SqlType.dateTime.resolveIn(dialect);
     final pos$aText = positions[3].index;
-    final type$3 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$3 = SqlType.text.resolveIn(dialect);
     final pos$anInt = positions[4].index;
     final pos$anInt64 = positions[5].index;
-    final type$4 = BuiltinDriftType.int64.resolveIn(dialect);
+    final type$4 = SqlType.int64.resolveIn(dialect);
     final pos$aReal = positions[6].index;
-    final type$5 = BuiltinDriftType.double.resolveIn(dialect);
+    final type$5 = SqlType.double.resolveIn(dialect);
     final pos$aBlob = positions[7].index;
-    final type$6 = BuiltinDriftType.byteArray.resolveIn(dialect);
+    final type$6 = SqlType.byteArray.resolveIn(dialect);
     final pos$anIntEnum = positions[8].index;
     final pos$aTextWithConverter = positions[9].index;
     return (RawRow row) {
@@ -1411,37 +1402,34 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
     {
       map['id'] = Variable<int>(
         $TableWithEveryColumnTypeTable.$converterid.toSql(id),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (!nullToAbsent || aBool != null) {
-      map['a_bool'] = Variable<bool>(aBool, BuiltinDriftType.bool);
+      map['a_bool'] = Variable<bool>(aBool, SqlType.bool);
     }
     if (!nullToAbsent || aDateTime != null) {
-      map['a_date_time'] = Variable<DateTime>(
-        aDateTime,
-        BuiltinDriftType.dateTime,
-      );
+      map['a_date_time'] = Variable<DateTime>(aDateTime, SqlType.dateTime);
     }
     if (!nullToAbsent || aText != null) {
-      map['a_text'] = Variable<String>(aText, BuiltinDriftType.text);
+      map['a_text'] = Variable<String>(aText, SqlType.text);
     }
     if (!nullToAbsent || anInt != null) {
-      map['an_int'] = Variable<int>(anInt, BuiltinDriftType.int);
+      map['an_int'] = Variable<int>(anInt, SqlType.int);
     }
     if (!nullToAbsent || anInt64 != null) {
-      map['an_int64'] = Variable<BigInt>(anInt64, BuiltinDriftType.int64);
+      map['an_int64'] = Variable<BigInt>(anInt64, SqlType.int64);
     }
     if (!nullToAbsent || aReal != null) {
-      map['a_real'] = Variable<double>(aReal, BuiltinDriftType.double);
+      map['a_real'] = Variable<double>(aReal, SqlType.double);
     }
     if (!nullToAbsent || aBlob != null) {
-      map['a_blob'] = Variable<Uint8List>(aBlob, BuiltinDriftType.byteArray);
+      map['a_blob'] = Variable<Uint8List>(aBlob, SqlType.byteArray);
     }
     if (!nullToAbsent || anIntEnum != null) {
       map['an_int_enum'] = Variable<int>(
         $TableWithEveryColumnTypeTable.$converteranIntEnumn.toSql(anIntEnum),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (!nullToAbsent || aTextWithConverter != null) {
@@ -1449,7 +1437,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
         $TableWithEveryColumnTypeTable.$converteraTextWithConvertern.toSql(
           aTextWithConverter,
         ),
-        BuiltinDriftType.text,
+        SqlType.text,
       );
     }
     return map;
@@ -1725,42 +1713,39 @@ class TableWithEveryColumnTypeCompanion
     if (id.present) {
       map['id'] = Variable<int>(
         $TableWithEveryColumnTypeTable.$converterid.toSql(id.value),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (aBool.present) {
-      map['a_bool'] = Variable<bool>(aBool.value, BuiltinDriftType.bool);
+      map['a_bool'] = Variable<bool>(aBool.value, SqlType.bool);
     }
     if (aDateTime.present) {
       map['a_date_time'] = Variable<DateTime>(
         aDateTime.value,
-        BuiltinDriftType.dateTime,
+        SqlType.dateTime,
       );
     }
     if (aText.present) {
-      map['a_text'] = Variable<String>(aText.value, BuiltinDriftType.text);
+      map['a_text'] = Variable<String>(aText.value, SqlType.text);
     }
     if (anInt.present) {
-      map['an_int'] = Variable<int>(anInt.value, BuiltinDriftType.int);
+      map['an_int'] = Variable<int>(anInt.value, SqlType.int);
     }
     if (anInt64.present) {
-      map['an_int64'] = Variable<BigInt>(anInt64.value, BuiltinDriftType.int64);
+      map['an_int64'] = Variable<BigInt>(anInt64.value, SqlType.int64);
     }
     if (aReal.present) {
-      map['a_real'] = Variable<double>(aReal.value, BuiltinDriftType.double);
+      map['a_real'] = Variable<double>(aReal.value, SqlType.double);
     }
     if (aBlob.present) {
-      map['a_blob'] = Variable<Uint8List>(
-        aBlob.value,
-        BuiltinDriftType.byteArray,
-      );
+      map['a_blob'] = Variable<Uint8List>(aBlob.value, SqlType.byteArray);
     }
     if (anIntEnum.present) {
       map['an_int_enum'] = Variable<int>(
         $TableWithEveryColumnTypeTable.$converteranIntEnumn.toSql(
           anIntEnum.value,
         ),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (aTextWithConverter.present) {
@@ -1768,7 +1753,7 @@ class TableWithEveryColumnTypeCompanion
         $TableWithEveryColumnTypeTable.$converteraTextWithConvertern.toSql(
           aTextWithConverter.value,
         ),
-        BuiltinDriftType.text,
+        SqlType.text,
       );
     }
     return map;
@@ -1801,28 +1786,28 @@ class $TableWithoutPKTable extends TableWithoutPK
   @override
   late final TableColumn<int> notReallyAnId = TableColumn<int>(
     name: 'not_really_an_id',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   @override
   late final TableColumn<double> someFloat = TableColumn<double>(
     name: 'some_float',
-    sqlType: BuiltinDriftType.double,
+    sqlType: SqlType.double,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   @override
   late final TableColumn<BigInt> webSafeInt = TableColumn<BigInt>(
     name: 'web_safe_int',
-    sqlType: BuiltinDriftType.int64,
+    sqlType: SqlType.int64,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
   late final TableColumnWithTypeConverter<MyCustomObject, String> custom =
       TableColumn<String>(
           name: 'custom',
-          sqlType: BuiltinDriftType.text,
+          sqlType: SqlType.text,
           requiredDuringInsert: false,
           constraints: () => [const ColumnNotNullConstraint()],
           clientDefault: _uuid.v4,
@@ -1847,13 +1832,13 @@ class $TableWithoutPKTable extends TableWithoutPK
     List<ColumnPosition> positions,
   ) {
     final pos$notReallyAnId = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$someFloat = positions[1].index;
-    final type$1 = BuiltinDriftType.double.resolveIn(dialect);
+    final type$1 = SqlType.double.resolveIn(dialect);
     final pos$webSafeInt = positions[2].index;
-    final type$2 = BuiltinDriftType.int64.resolveIn(dialect);
+    final type$2 = SqlType.int64.resolveIn(dialect);
     final pos$custom = positions[3].index;
-    final type$3 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$3 = SqlType.text.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "notReallyAnId" is missing
       if (row[pos$notReallyAnId] == null) {
@@ -1936,31 +1921,22 @@ class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (notReallyAnId.present) {
-      map['not_really_an_id'] = Variable<int>(
-        notReallyAnId.value,
-        BuiltinDriftType.int,
-      );
+      map['not_really_an_id'] = Variable<int>(notReallyAnId.value, SqlType.int);
     }
     if (someFloat.present) {
-      map['some_float'] = Variable<double>(
-        someFloat.value,
-        BuiltinDriftType.double,
-      );
+      map['some_float'] = Variable<double>(someFloat.value, SqlType.double);
     }
     if (webSafeInt.present) {
-      map['web_safe_int'] = Variable<BigInt>(
-        webSafeInt.value,
-        BuiltinDriftType.int64,
-      );
+      map['web_safe_int'] = Variable<BigInt>(webSafeInt.value, SqlType.int64);
     }
     if (custom.present) {
       map['custom'] = Variable<String>(
         $TableWithoutPKTable.$convertercustom.toSql(custom.value),
-        BuiltinDriftType.text,
+        SqlType.text,
       );
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -2008,7 +1984,7 @@ class $PureDefaultsTable extends PureDefaults
   late final TableColumnWithTypeConverter<MyCustomObject?, String> txt =
       TableColumn<String>(
           name: 'insert',
-          sqlType: BuiltinDriftType.text,
+          sqlType: SqlType.text,
           requiredDuringInsert: false,
         ).withConverter<MyCustomObject?>($PureDefaultsTable.$convertertxtn)
         ..owningResultSet = this;
@@ -2028,7 +2004,7 @@ class $PureDefaultsTable extends PureDefaults
     List<ColumnPosition> positions,
   ) {
     final pos$txt = positions[0].index;
-    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$0 = SqlType.text.resolveIn(dialect);
     return (RawRow row) {
       return PureDefault(
         txt: $PureDefaultsTable.$convertertxtn.fromSql(
@@ -2058,7 +2034,7 @@ class PureDefault extends LegacyDataClass implements Insertable<PureDefault> {
     if (!nullToAbsent || txt != null) {
       map['insert'] = Variable<String>(
         $PureDefaultsTable.$convertertxtn.toSql(txt),
-        BuiltinDriftType.text,
+        SqlType.text,
       );
     }
     return map;
@@ -2149,11 +2125,11 @@ class PureDefaultsCompanion extends UpdateCompanion<PureDefault> {
     if (txt.present) {
       map['insert'] = Variable<String>(
         $PureDefaultsTable.$convertertxtn.toSql(txt.value),
-        BuiltinDriftType.text,
+        SqlType.text,
       );
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -2296,7 +2272,7 @@ class WithCustomTypeCompanion extends UpdateCompanion<WithCustomTypeData> {
       map['id'] = Variable<UuidValue>(id.value, uuidType);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -2320,7 +2296,7 @@ class $DepartmentTable extends Department
   @override
   late final TableColumn<int> id = TableColumn<int>(
     name: 'id',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -2330,7 +2306,7 @@ class $DepartmentTable extends Department
   @override
   late final TableColumn<String> name = TableColumn<String>(
     name: 'name',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
@@ -2347,9 +2323,9 @@ class $DepartmentTable extends Department
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$name = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -2376,9 +2352,9 @@ class DepartmentData extends LegacyDataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id, BuiltinDriftType.int);
+    map['id'] = Variable<int>(id, SqlType.int);
     if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name, BuiltinDriftType.text);
+      map['name'] = Variable<String>(name, SqlType.text);
     }
     return map;
   }
@@ -2471,10 +2447,10 @@ class DepartmentCompanion extends UpdateCompanion<DepartmentData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
+      map['id'] = Variable<int>(id.value, SqlType.int);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value, BuiltinDriftType.text);
+      map['name'] = Variable<String>(name.value, SqlType.text);
     }
     return map;
   }
@@ -2577,9 +2553,9 @@ class $CategoryTodoCountViewView extends CategoryTodoCountView
     List<ColumnPosition> positions,
   ) {
     final pos$categoryId = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$description = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     final pos$itemCount = positions[2].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "categoryId" is missing
@@ -2599,18 +2575,18 @@ class $CategoryTodoCountViewView extends CategoryTodoCountView
   late final ViewColumnWithTypeConverter<RowId, int> categoryId =
       ViewColumn<int>(
           name: 'category_id',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
           expression: categories.id,
         ).withConverter<RowId>($CategoriesTable.$converterid)
         ..owningResultSet = this;
   late final ViewColumn<String> description = ViewColumn<String>(
     name: 'description',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     expression: categories.description + const Variable('!'),
   )..owningResultSet = this;
   late final ViewColumn<int> itemCount = ViewColumn<int>(
     name: 'item_count',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     expression: BaseAggregate(todos.id).count(),
   )..owningResultSet = this;
   @override
@@ -2700,7 +2676,7 @@ class $TodoWithCategoryViewView extends TodoWithCategoryView
     List<ColumnPosition> positions,
   ) {
     final pos$title = positions[0].index;
-    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$0 = SqlType.text.resolveIn(dialect);
     final pos$description = positions[1].index;
     return (RawRow row) {
       return TodoWithCategoryViewData(
@@ -2712,12 +2688,12 @@ class $TodoWithCategoryViewView extends TodoWithCategoryView
 
   late final ViewColumn<String> title = ViewColumn<String>(
     name: 'title',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     expression: todos.title,
   )..owningResultSet = this;
   late final ViewColumn<String> description = ViewColumn<String>(
     name: 'desc',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     expression: categories.description,
   )..owningResultSet = this;
   @override
@@ -2798,13 +2774,10 @@ abstract base class _$TodoDb extends GeneratedDatabase {
           'SELECT "_s:0".id, "_s:0".title, "_s:0".content, "_s:0".target_date, "_s:0".category, "_s:0".status FROM todos AS "_s:0" WHERE "_s:0".title = \$2 OR "_s:0".id IN ($expandedvar3) OR "_s:0".title = \$1',
       },
       variables: [
-        Variable<String>(var1, BuiltinDriftType.text),
-        Variable<String>(var2, BuiltinDriftType.text),
+        Variable<String>(var1, SqlType.text),
+        Variable<String>(var2, SqlType.text),
         for (var $ in var3)
-          Variable<int>(
-            $TodosTableTable.$converterid.toSql($),
-            BuiltinDriftType.int,
-          ),
+          Variable<int>($TodosTableTable.$converterid.toSql($), SqlType.int),
       ],
       readsFrom: {$TodosTableTable()},
       createMapper: (RawResultSet _) {
@@ -2874,10 +2847,7 @@ base mixin _$SomeDaoMixin on DatabaseAccessor<TodoDb> {
           'SELECT t.id, t.title, t.content, t.target_date, t.category, t.status FROM todos AS t INNER JOIN shared_todos AS st ON st.todo = t.id INNER JOIN users AS u ON u.id = st."user" WHERE u.id = \$1',
       },
       variables: [
-        Variable<int>(
-          $UsersTable.$converterid.toSql(user),
-          BuiltinDriftType.int,
-        ),
+        Variable<int>($UsersTable.$converterid.toSql(user), SqlType.int),
       ],
       readsFrom: {$TodosTableTable(), $SharedTodosTable(), $UsersTable()},
       createMapper: (RawResultSet _) {

@@ -260,14 +260,14 @@ void main() {
         columns: [
           (_) => TableColumn(
             name: 'id',
-            sqlType: BuiltinDriftType.int,
+            sqlType: .int,
             constraints: () => [
               ColumnPrimaryKeyConstraint(isAutoIncrementing: false),
             ],
           ),
           (_) => TableColumn(
             name: 'parent',
-            sqlType: BuiltinDriftType.int,
+            sqlType: .int,
             constraints: () => [
               ColumnForeignKeyConstraint(
                 otherTableName: 'tbl',

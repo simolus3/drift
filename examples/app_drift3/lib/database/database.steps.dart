@@ -59,18 +59,18 @@ extension type Shape0(i0.VersionedTable _) implements i0.VersionedTable {
 }
 i1.TableColumn<int> _column_0(String aliasedName) => i1.TableColumn<int>(
     name: 'id',
-    sqlType: i1.BuiltinDriftType.int,
+    sqlType: i1.SqlType.int,
     constraints: () => [
           const i1.ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
           const i1.ColumnNotNullConstraint()
         ]);
 i1.TableColumn<String> _column_1(String aliasedName) => i1.TableColumn<String>(
     name: 'name',
-    sqlType: i1.BuiltinDriftType.text,
+    sqlType: i1.SqlType.text,
     constraints: () => [const i1.ColumnNotNullConstraint()]);
 i1.TableColumn<int> _column_2(String aliasedName) => i1.TableColumn<int>(
     name: 'color',
-    sqlType: i1.BuiltinDriftType.int,
+    sqlType: i1.SqlType.int,
     constraints: () => [const i1.ColumnNotNullConstraint()]);
 extension type Shape1(i0.VersionedTable _) implements i0.VersionedTable {
   i1.TableColumn<int> get id => columnsByName['id']! as i1.TableColumn<int>;
@@ -83,13 +83,12 @@ extension type Shape1(i0.VersionedTable _) implements i0.VersionedTable {
 }
 i1.TableColumn<String> _column_3(String aliasedName) => i1.TableColumn<String>(
     name: 'description',
-    sqlType: i1.BuiltinDriftType.text,
+    sqlType: i1.SqlType.text,
     constraints: () => [const i1.ColumnNotNullConstraint()]);
 i1.TableColumn<int> _column_4(String aliasedName) =>
-    i1.TableColumn<int>(name: 'category', sqlType: i1.BuiltinDriftType.int);
+    i1.TableColumn<int>(name: 'category', sqlType: i1.SqlType.int);
 i1.TableColumn<DateTime> _column_5(String aliasedName) =>
-    i1.TableColumn<DateTime>(
-        name: 'due_date', sqlType: i1.BuiltinDriftType.dateTime);
+    i1.TableColumn<DateTime>(name: 'due_date', sqlType: i1.SqlType.dateTime);
 extension type Shape2(i0.VersionedVirtualTable _)
     implements i0.VersionedVirtualTable {
   i1.SchemaColumn<String> get description =>
@@ -97,7 +96,7 @@ extension type Shape2(i0.VersionedVirtualTable _)
 }
 i1.TableColumn<String> _column_6(String aliasedName) => i1.TableColumn<String>(
     name: 'description',
-    sqlType: i1.BuiltinDriftType.text,
+    sqlType: i1.SqlType.text,
     constraints: () => [i1.ColumnConstraint.customSql('')]);
 
 final class Schema3 extends i0.VersionedSchema {
@@ -157,7 +156,7 @@ final class Schema3 extends i0.VersionedSchema {
 
 i1.TableColumn<int> _column_7(String aliasedName) => i1.TableColumn<int>(
     name: 'id',
-    sqlType: i1.BuiltinDriftType.int,
+    sqlType: i1.SqlType.int,
     constraints: () => [
           i1.ColumnConstraint.custom(i1.CustomComponent(
               'PRIMARY KEY AUTOINCREMENT',
@@ -166,7 +165,7 @@ i1.TableColumn<int> _column_7(String aliasedName) => i1.TableColumn<int>(
         ]);
 i1.TableColumn<int> _column_8(String aliasedName) => i1.TableColumn<int>(
     name: 'category',
-    sqlType: i1.BuiltinDriftType.int,
+    sqlType: i1.SqlType.int,
     constraints: () => [
           i1.ColumnConstraint.custom(i1.CustomComponent(
               'REFERENCES categories (id)',
@@ -230,16 +229,16 @@ final class Schema4 extends i0.VersionedSchema {
 
 i1.TableColumn<int> _column_9(String aliasedName) => i1.TableColumn<int>(
     name: 'id',
-    sqlType: i1.BuiltinDriftType.int,
+    sqlType: i1.SqlType.int,
     constraints: () =>
         [i1.ColumnConstraint.customSql('PRIMARY KEY AUTOINCREMENT NOT NULL')]);
 i1.TableColumn<String> _column_10(String aliasedName) => i1.TableColumn<String>(
     name: 'name',
-    sqlType: i1.BuiltinDriftType.text,
+    sqlType: i1.SqlType.text,
     constraints: () => [i1.ColumnConstraint.customSql('NOT NULL')]);
 i1.TableColumn<int> _column_11(String aliasedName) => i1.TableColumn<int>(
     name: 'color',
-    sqlType: i1.BuiltinDriftType.int,
+    sqlType: i1.SqlType.int,
     constraints: () => [i1.ColumnConstraint.customSql('NOT NULL')]);
 extension type Shape3(i0.VersionedTable _) implements i0.VersionedTable {
   i1.TableColumn<int> get id => columnsByName['id']! as i1.TableColumn<int>;
@@ -252,16 +251,16 @@ extension type Shape3(i0.VersionedTable _) implements i0.VersionedTable {
 }
 i1.TableColumn<String> _column_12(String aliasedName) => i1.TableColumn<String>(
     name: 'description',
-    sqlType: i1.BuiltinDriftType.text,
+    sqlType: i1.SqlType.text,
     constraints: () => [i1.ColumnConstraint.customSql('NOT NULL')]);
 i1.TableColumn<int> _column_13(String aliasedName) => i1.TableColumn<int>(
     name: 'category',
-    sqlType: i1.BuiltinDriftType.int,
+    sqlType: i1.SqlType.int,
     constraints: () =>
         [i1.ColumnConstraint.customSql('REFERENCES categories(id)')]);
 i1.TableColumn<int> _column_14(String aliasedName) => i1.TableColumn<int>(
     name: 'due_date',
-    sqlType: i1.BuiltinDriftType.int,
+    sqlType: i1.SqlType.int,
     constraints: () => [i1.ColumnConstraint.customSql('')]);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,

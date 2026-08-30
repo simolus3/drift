@@ -111,7 +111,7 @@ final class Subquery<Row extends Object>
     final name = select.structure.createNameForColumn(addedPosition);
     // We don't want to use columnsByName here because iterating over columns
     // assigns a name to every column.
-    final fakeColumn = SchemaColumn(name: name, sqlType: BuiltinDriftType.text)
+    final fakeColumn = SchemaColumn(name: name, sqlType: BuiltinSqlType.text)
       ..owningResultSet = this;
     return fakeColumn.dartCast();
   }
@@ -121,7 +121,7 @@ final class Subquery<Row extends Object>
     for (final entry in select.structure.expressions.entries)
       SchemaColumn(
         name: select.structure.createNameForColumn(entry.value),
-        sqlType: BuiltinDriftType.text,
+        sqlType: BuiltinSqlType.text,
       )..owningResultSet = this,
   ];
 

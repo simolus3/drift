@@ -9,7 +9,7 @@ void main() {
   const dialect = PostgresDialect.withOptions();
 
   group('boolean', () {
-    final type = BuiltinDriftType.bool.resolveIn(dialect);
+    final type = SqlType.bool.resolveIn(dialect);
 
     test('read', () {
       expect(type.dartValue(fakeValue(Type.boolean, true)), true);

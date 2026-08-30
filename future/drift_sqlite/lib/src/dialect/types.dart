@@ -280,7 +280,8 @@ extension type const DriftAny(Object fromDb) implements Object {
   ///
   /// You can obtain a [dialect] instance from a database or DAO by using
   /// [DatabaseConnectionUser.dialect].
-  /// For [type], enum values of [BuiltinDriftType] are most commonly used.
+  /// For [type], the default types (like [SqlType.text]) are most commonly
+  /// used.
   ///
   /// [as text]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#datetime-options
   T readAs<T extends Object>(SqlType<T> type, DriftDialect dialect) {

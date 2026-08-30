@@ -13,14 +13,14 @@ import '../query_builder.dart';
 typedef JsonObject = Map<String, Object?>;
 
 class TypeDescription {
-  final BuiltinDriftType? builtin;
+  final BuiltinSqlType? builtin;
   final String? sqlTypeName;
 
   TypeDescription({this.builtin, this.sqlTypeName});
 
   factory TypeDescription.fromDrift(DriftDialect dialect, SqlType type) {
     return TypeDescription(
-      builtin: type is BuiltinDriftType ? type : null,
+      builtin: type is BuiltinSqlType ? type : null,
       sqlTypeName: type.typeName(dialect),
     );
   }
@@ -30,7 +30,7 @@ class TypeDescription {
 
     return TypeDescription(
       builtin: builtinName != null
-          ? BuiltinDriftType.values.byName(builtinName)
+          ? BuiltinSqlType.values.byName(builtinName)
           : null,
       sqlTypeName: obj['sqlTypeName'] as String?,
     );
@@ -185,14 +185,14 @@ Object? encodeSqlValue(Object? value) {
 
 Object? decodeSqlValue(GeneratedDatabase db, Object? value) {
   final (type, mappedValue) = switch (value) {
-    String() => (BuiltinDriftType.text, value),
-    int() => (BuiltinDriftType.int, value),
-    double() => (BuiltinDriftType.double, value),
+    String() => (BuiltinSqlType.text, value),
+    int() => (BuiltinSqlType.int, value),
+    double() => (BuiltinSqlType.double, value),
     {'binary': final String binary} => (
-      BuiltinDriftType.byteArray,
+      BuiltinSqlType.byteArray,
       base64.decode(binary),
     ),
-    _ => (BuiltinDriftType.text, null),
+    _ => (BuiltinSqlType.text, null),
   };
 
   return type.sqlParameter(db.dialect, mappedValue);

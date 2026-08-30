@@ -183,7 +183,7 @@ final class SqliteCompiler extends StatementCompiler {
 
   @override
   void addDialectSpecificDefaultColumnConstraints(TableColumn<Object> column) {
-    if (column.sqlType == BuiltinDriftType.bool) {
+    if (column.sqlType == SqlType.bool) {
       statement.buffer.write(' CHECK (');
       addReference(column.name);
       statement.buffer.write(' IN (0, 1))');

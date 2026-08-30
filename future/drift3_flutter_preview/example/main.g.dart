@@ -12,7 +12,7 @@ class $ExampleTableTable extends ExampleTable
   @override
   late final TableColumn<int> id = TableColumn<int>(
     name: 'id',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
     constraints: () => [
       const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -22,7 +22,7 @@ class $ExampleTableTable extends ExampleTable
   @override
   late final TableColumn<String> description = TableColumn<String>(
     name: 'description',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
@@ -35,16 +35,14 @@ class $ExampleTableTable extends ExampleTable
   $ExampleTableTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
-  @override
   ExampleTableData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$description = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -71,8 +69,8 @@ class ExampleTableData extends LegacyDataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id, BuiltinDriftType.int);
-    map['description'] = Variable<String>(description, BuiltinDriftType.text);
+    map['id'] = Variable<int>(id, SqlType.int);
+    map['description'] = Variable<String>(description, SqlType.text);
     return map;
   }
 
@@ -166,13 +164,10 @@ class ExampleTableCompanion extends UpdateCompanion<ExampleTableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
+      map['id'] = Variable<int>(id.value, SqlType.int);
     }
     if (description.present) {
-      map['description'] = Variable<String>(
-        description.value,
-        BuiltinDriftType.text,
-      );
+      map['description'] = Variable<String>(description.value, SqlType.text);
     }
     return map;
   }
@@ -190,6 +185,16 @@ class ExampleTableCompanion extends UpdateCompanion<ExampleTableData> {
 abstract base class _$ExampleDatabase extends GeneratedDatabase {
   _$ExampleDatabase(super.implementation);
   $ExampleTableTable get exampleTable => $ExampleTableTable();
+  TableOrViewStatements<ExampleTableData, $ExampleTableTable>
+  get exampleTableQueries => this.exampleTable.statements(this);
+  @override
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.sqlite: const SqliteOptions(
+      strictTablesByDefault: true,
+      storeDateTimesAsText: true,
+      useBinaryJsonRepresentation: true,
+    ),
+  };
   @override
   DatabaseSchema get schema => _$schema;
   static final DatabaseSchema _$schema = DatabaseSchema([$ExampleTableTable()]);

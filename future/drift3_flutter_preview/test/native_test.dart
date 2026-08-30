@@ -180,7 +180,7 @@ final class SimpleDatabase extends GeneratedDatabase {
     columns: [
       (name) => TableColumn(
         name: 'id',
-        sqlType: BuiltinDriftType.int,
+        sqlType: .int,
         requiredDuringInsert: false,
         constraints: () => const [
           ColumnNotNullConstraint(),

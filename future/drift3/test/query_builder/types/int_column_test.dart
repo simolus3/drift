@@ -8,7 +8,7 @@ void main() {
   test('int column writes AUTOINCREMENT constraint', () {
     final column = TableColumn<int>(
       name: 'foo',
-      sqlType: BuiltinDriftType.int,
+      sqlType: .int,
 
       constraints: () => const [
         ColumnNotNullConstraint(),
@@ -26,7 +26,7 @@ void main() {
   test('int column writes PRIMARY KEY constraint', () {
     final column = TableColumn<int>(
       name: 'foo',
-      sqlType: BuiltinDriftType.int,
+      sqlType: .int,
       constraints: () => const [
         ColumnNotNullConstraint(),
         ColumnPrimaryKeyConstraint(isAutoIncrementing: false),
@@ -43,7 +43,7 @@ void main() {
   test('can add custom constraints', () {
     final column = TableColumn<int>(
       name: 'foo',
-      sqlType: BuiltinDriftType.int,
+      sqlType: .int,
       constraints: () => [
         ColumnPrimaryKeyConstraint(isAutoIncrementing: false),
         ColumnConstraint.customSql('custom'),

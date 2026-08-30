@@ -48,11 +48,11 @@ void main() {
     final value = DriftAny(1);
 
     expect(value.readAs(type, dialect), value);
-    expect(value.readAs(BuiltinDriftType.text, dialect), '1');
-    expect(value.readAs(BuiltinDriftType.int, dialect), 1);
-    expect(value.readAs(BuiltinDriftType.bool, dialect), true);
-    expect(value.readAs(BuiltinDriftType.int64, dialect), BigInt.one);
-    expect(value.readAs(BuiltinDriftType.double, dialect), 1.0);
+    expect(value.readAs(.text, dialect), '1');
+    expect(value.readAs(.int, dialect), 1);
+    expect(value.readAs(.bool, dialect), true);
+    expect(value.readAs(.int64, dialect), BigInt.one);
+    expect(value.readAs(.double, dialect), 1.0);
   });
 
   test('can be written', () {

@@ -171,7 +171,7 @@ final class CollateExpression extends Expression<String> {
   CollateExpression._(this.source, this.collation);
 
   @override
-  SqlType<String> get sqlType => BuiltinDriftType.text;
+  SqlType<String> get sqlType => BuiltinSqlType.text;
 
   @override
   int get hashCode => Object.hash(source, collation);

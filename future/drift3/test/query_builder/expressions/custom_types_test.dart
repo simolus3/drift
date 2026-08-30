@@ -64,7 +64,7 @@ void main() {
       'b',
       customType: SqlType<int>.dialectSpecific(
         fallback: _NegatedIntType(),
-        overrides: {KnownSqlDialect.postgres: BuiltinDriftType.int},
+        overrides: {KnownSqlDialect.postgres: .int},
       ),
       precedence: Precedence.primary,
     );

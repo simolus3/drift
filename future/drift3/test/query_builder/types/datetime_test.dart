@@ -5,13 +5,10 @@ import 'package:test/test.dart';
 import '../../test_utils.dart';
 
 void main() {
-  final nullable = TableColumn<DateTime>(
-    name: 'name',
-    sqlType: BuiltinDriftType.dateTime,
-  );
+  final nullable = TableColumn<DateTime>(name: 'name', sqlType: .dateTime);
   final nonNull = TableColumn<DateTime>(
     name: 'name',
-    sqlType: BuiltinDriftType.dateTime,
+    sqlType: .dateTime,
     constraints: () => const [ColumnNotNullConstraint()],
   );
 
@@ -166,7 +163,7 @@ void main() {
         );
 
         expect(
-          BuiltinDriftType.dateTime.resolveIn(dialect).dartValue(1658443992),
+          SqlType.dateTime.resolveIn(dialect).dartValue(1658443992),
           DateTime.utc(2022, 07, 21, 22, 53, 12).toLocal(),
         );
       });
@@ -177,14 +174,12 @@ void main() {
         );
 
         expect(
-          BuiltinDriftType.dateTime
-              .resolveIn(dialect)
-              .dartValue('2022-07-21T22:53:12Z'),
+          SqlType.dateTime.resolveIn(dialect).dartValue('2022-07-21T22:53:12Z'),
           DateTime.utc(2022, 07, 21, 22, 53, 12),
         );
 
         expect(
-          BuiltinDriftType.dateTime
+          SqlType.dateTime
               .resolveIn(dialect)
               .dartValue('2022-07-21T22:53:12 -03:00'),
           DateTime.utc(

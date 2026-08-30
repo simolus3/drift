@@ -301,7 +301,7 @@ void main() {
     late TableColumn<int> column;
     column = TableColumn<int>(
       name: 'foo',
-      sqlType: BuiltinDriftType.int,
+      sqlType: .int,
       constraints: () => [
         ColumnCheckConstraint(column.isLessThan(const Variable(3))),
       ],
@@ -407,7 +407,7 @@ final class _FakeSchemaVersion extends VersionedSchema {
       columns: [
         (name) => TableColumn<int>(
           name: 'foo',
-          sqlType: BuiltinDriftType.int,
+          sqlType: .int,
           constraints: () => [ColumnNotNullConstraint()],
         ),
       ],

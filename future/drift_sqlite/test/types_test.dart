@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('bool type', () {
-    final sqliteType = BuiltinDriftType.bool.resolveIn(
+    final sqliteType = SqlType.bool.resolveIn(
       const SqliteDialect.withOptions(),
     );
 
@@ -25,7 +25,7 @@ void main() {
   });
 
   group('real type', () {
-    final sqliteType = BuiltinDriftType.double.resolveIn(
+    final sqliteType = SqlType.double.resolveIn(
       const SqliteDialect.withOptions(),
     );
 

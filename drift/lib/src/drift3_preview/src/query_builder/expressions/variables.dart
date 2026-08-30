@@ -28,9 +28,9 @@ final class Variable<T extends Object> extends Expression<T> {
     }
 
     final builtin =
-        BuiltinDriftType.forType<T>() ??
-        BuiltinDriftType.forValue(value) ??
-        BuiltinDriftType.text;
+        BuiltinSqlType.forType<T>() ??
+        BuiltinSqlType.forValue(value) ??
+        BuiltinSqlType.text;
     return builtin as SqlType<T>;
   }
 
@@ -39,37 +39,37 @@ final class Variable<T extends Object> extends Expression<T> {
 
   /// Creates a variable that holds the specified boolean.
   static Variable<bool> withBool(bool value) {
-    return Variable(value, BuiltinDriftType.bool);
+    return Variable(value, BuiltinSqlType.bool);
   }
 
   /// Creates a variable that holds the specified int.
   static Variable<int> withInt(int value) {
-    return Variable(value, BuiltinDriftType.int);
+    return Variable(value, BuiltinSqlType.int);
   }
 
   /// Creates a variable that holds the specified BigInt.
   static Variable<BigInt> withBigInt(BigInt value) {
-    return Variable(value, BuiltinDriftType.int64);
+    return Variable(value, BuiltinSqlType.int64);
   }
 
   /// Creates a variable that holds the specified string.
   static Variable<String> withString(String value) {
-    return Variable(value, BuiltinDriftType.text);
+    return Variable(value, BuiltinSqlType.text);
   }
 
   /// Creates a variable that holds the specified date.
   static Variable<DateTime> withDateTime(DateTime value) {
-    return Variable(value, BuiltinDriftType.dateTime);
+    return Variable(value, BuiltinSqlType.dateTime);
   }
 
   /// Creates a variable that holds the specified data blob.
   static Variable<Uint8List> withBlob(Uint8List value) {
-    return Variable(value, BuiltinDriftType.byteArray);
+    return Variable(value, BuiltinSqlType.byteArray);
   }
 
   /// Creates a variable that holds the specified floating point value.
   static Variable<double> withReal(double value) {
-    return Variable(value, BuiltinDriftType.double);
+    return Variable(value, BuiltinSqlType.double);
   }
 
   @override
@@ -137,9 +137,9 @@ final class Literal<T extends Object> extends Expression<T> {
     }
 
     final builtin =
-        BuiltinDriftType.forType<T>() ??
-        BuiltinDriftType.forValue(value) ??
-        BuiltinDriftType.text;
+        BuiltinSqlType.forType<T>() ??
+        BuiltinSqlType.forValue(value) ??
+        BuiltinSqlType.text;
     return builtin as SqlType<T>;
   }
 

@@ -271,7 +271,7 @@ FROM tbl AS parent WHERE parent.a = :a;
     test('drift3 preview', () {
       return runTest(const DriftOptions.defaults(drift3Preview: true), [
         contains(
-          r"variables: [Variable<String>(a, BuiltinDriftType.text), Variable(row[1],type$0), Variable<String>(b, BuiltinDriftType.text)]",
+          r"variables: [Variable<String>(a, BuiltinSqlType.text), Variable(row[1],type$0), Variable<String>(b, BuiltinSqlType.text)]",
         ),
       ]);
     });

@@ -7,7 +7,7 @@ extension BooleanExpressionOperators on Expression<bool> {
   /// Negates this boolean expression. The returned expression is true if
   /// `this` is false, and vice versa.
   Expression<bool> not() =>
-      UnaryExpression(UnaryOperator.not, this, type: BuiltinDriftType.bool);
+      UnaryExpression(UnaryOperator.not, this, type: BuiltinSqlType.bool);
 
   /// Returns an expression that is true iff both `this` and [other] are true.
   ///
@@ -17,7 +17,7 @@ extension BooleanExpressionOperators on Expression<bool> {
       this,
       BinaryOperator.and,
       other,
-      type: BuiltinDriftType.bool,
+      type: BuiltinSqlType.bool,
     );
   }
 
@@ -29,7 +29,7 @@ extension BooleanExpressionOperators on Expression<bool> {
       this,
       BinaryOperator.or,
       other,
-      type: BuiltinDriftType.bool,
+      type: BuiltinSqlType.bool,
     );
   }
 }

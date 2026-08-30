@@ -3,6 +3,7 @@ import 'dart:core' as core;
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 import 'dialect.dart';
 
@@ -36,6 +37,12 @@ final class DatabaseJson {
 }
 
 /// The base class for column types in databases.
+///
+/// This interface describes a logical, dialect-independent SQL type. The actual
+/// type used in the underlying database is resolved to a [PhysicalSqlType] vi
+/// [resolveIn]. That mapping is dialect-specific, and can even depend on
+/// dialect options. For example, [BuiltinSqlType.dateTime] resolves to a text
+/// or integer type for SQLite databases depending on a options.
 abstract interface class SqlType<T extends Object> {
   /// Creates a [SqlType] implementation based on a [fallback] type
   /// implementation used by default and [overrides] used as fallbacks.
@@ -46,6 +53,32 @@ abstract interface class SqlType<T extends Object> {
 
   /// Resolves an implementation of the type in the given dialect.
   PhysicalSqlType<T> resolveIn(DriftDialect dialect);
+
+  /// A type suitable for storing text of arbitrary length.
+  static const SqlType<core.String> text = BuiltinSqlType.text;
+
+  /// A type suitable for storing 64-bit integers.
+  static const SqlType<core.int> int = BuiltinSqlType.int;
+
+  /// Guaranteed to be the same SQL type as [int], but stores [BigInt] values
+  /// to ensure we don't loose precision when compiling Dart to JavaScript
+  /// (where ints are doubles).
+  static const SqlType<core.BigInt> int64 = BuiltinSqlType.int64;
+
+  /// A type suitable for storing double values.
+  static const SqlType<core.double> double = BuiltinSqlType.double;
+
+  /// A type suitable for storing byte arrays as blobs.
+  static const SqlType<Uint8List> byteArray = BuiltinSqlType.byteArray;
+
+  /// A type suitable for storing boolean values.
+  static const SqlType<core.bool> bool = BuiltinSqlType.bool;
+
+  /// A type suitable for storing datetime values.
+  static const SqlType<core.DateTime> dateTime = BuiltinSqlType.dateTime;
+
+  /// A type suitable for storing JSON values.
+  static const SqlType<DatabaseJson> json = BuiltinSqlType.json;
 }
 
 /// Adds type implementation methods to [SqlType] by looking up the type in a
@@ -148,69 +181,53 @@ abstract interface class TypeProvider {
   PhysicalSqlType<bool> get boolType;
 }
 
-interface class _BuiltinDriftTypeWithoutBound<T> {}
+interface class _BuiltinSqlTypeWithoutBound<T> {}
 
 /// A builtin type drift expects every database to implement.
 ///
 /// These are not necessarily different types in all databases. For instance,
 /// SQLite does not have a dedicated [json] type. So depending on dialect
 /// options, drift would use a `TEXT` or `BLOB` (JSONB) type for that.
-enum BuiltinDriftType<T extends Object>
-    implements _BuiltinDriftTypeWithoutBound<T>, SqlType<T> {
-  /// A type suitable for storing text of arbitrary length.
+@internal
+enum BuiltinSqlType<T extends Object>
+    implements _BuiltinSqlTypeWithoutBound<T>, SqlType<T> {
   text<core.String>._(),
-
-  /// A type suitable for storing 64-bit integers.
   int<core.int>._(),
-
-  /// Guaranteed to be the same SQL type as [int], but stores [BigInt] values
-  /// to ensure we don't loose precision when compiling Dart to JavaScript
-  /// (where ints are doubles).
   int64<core.BigInt>._(),
-
-  /// A type suitable for storing double values.
   double<core.double>._(),
-
-  /// A type suitable for storing byte arrays as blobs.
   byteArray<Uint8List>._(),
-
-  /// A type suitable for storing boolean values.
   bool<core.bool>._(),
-
-  /// A type suitable for storing datetime values.
   dateTime<DateTime>._(),
-
-  /// A type suitable for storing JSON values.
   json<DatabaseJson>._();
 
-  const BuiltinDriftType._();
+  const BuiltinSqlType._();
 
   /// Returns the implementation of this type in a [TypeProvider] (most commonly
   /// a [DriftDialect] instance).
   @override
   PhysicalSqlType<T> resolveIn(TypeProvider implementation) {
     return switch (this) {
-          BuiltinDriftType.text => implementation.textType,
-          BuiltinDriftType.int => implementation.intType,
-          BuiltinDriftType.int64 => implementation.int64Type,
-          BuiltinDriftType.double => implementation.doubleType,
-          BuiltinDriftType.byteArray => implementation.byteArrayType,
-          BuiltinDriftType.json => implementation.jsonType,
-          BuiltinDriftType.bool => implementation.boolType,
-          BuiltinDriftType.dateTime => implementation.dateTimeType,
+          BuiltinSqlType.text => implementation.textType,
+          BuiltinSqlType.int => implementation.intType,
+          BuiltinSqlType.int64 => implementation.int64Type,
+          BuiltinSqlType.double => implementation.doubleType,
+          BuiltinSqlType.byteArray => implementation.byteArrayType,
+          BuiltinSqlType.json => implementation.jsonType,
+          BuiltinSqlType.bool => implementation.boolType,
+          BuiltinSqlType.dateTime => implementation.dateTimeType,
         }
         as PhysicalSqlType<T>;
   }
 
-  void _addToMap(Map<Type, BuiltinDriftType> map) {
+  void _addToMap(Map<Type, BuiltinSqlType> map) {
     _addToTypeMap<T>(map, this);
     // Unfortunately, `T?` by itself is not an expression so we have to jump
     // through hoops to add the nullable variant to the type map.
     _addToTypeMap<T?>(map, this);
   }
 
-  static Map<Type, BuiltinDriftType> _dartToDrift = () {
-    final map = <Type, BuiltinDriftType>{};
+  static Map<Type, BuiltinSqlType> _dartToDrift = () {
+    final map = <Type, BuiltinSqlType>{};
 
     for (final value in values) {
       value._addToMap(map);
@@ -220,8 +237,8 @@ enum BuiltinDriftType<T extends Object>
   }();
 
   static void _addToTypeMap<T>(
-    Map<Type, BuiltinDriftType> map,
-    BuiltinDriftType<Object> type,
+    Map<Type, BuiltinSqlType> map,
+    BuiltinSqlType<Object> type,
   ) {
     map[T] = type;
   }
@@ -231,40 +248,40 @@ enum BuiltinDriftType<T extends Object>
   ///
   /// The [Dart] type must be the type of the instance _after_ applying type
   /// converters.
-  static BuiltinDriftType<Dart>? forType<Dart extends Object>() {
+  static BuiltinSqlType<Dart>? forType<Dart extends Object>() {
     final type = _dartToDrift[Dart];
 
     if (type == null) {
       return null;
     }
 
-    return type as BuiltinDriftType<Dart>;
+    return type as BuiltinSqlType<Dart>;
   }
 
   /// A variant of [forType] that also works for nullable [Dart] types.
   ///
   /// Using [forType] should pretty much always be preferred over this method,
   /// this one just exists for backwards compatibility.
-  static BuiltinDriftType? forNullableType<Dart>() {
+  static BuiltinSqlType? forNullableType<Dart>() {
     // Lookup the type in the map first for faster lookups. Go back to a full
     // typecheck where that doesn't work (which can be the case for complex
     // type like `forNullableType<FutureOr<int?>>`).
     final type =
         _dartToDrift[Dart] ??
-        values.whereType<_BuiltinDriftTypeWithoutBound<Dart>>().singleOrNull;
+        values.whereType<_BuiltinSqlTypeWithoutBound<Dart>>().singleOrNull;
 
     if (type == null) {
       return null;
     }
 
-    return type as BuiltinDriftType;
+    return type as BuiltinSqlType;
   }
 
-  /// Attempts to resolve a [BuiltinDriftType] for the type of [value].
+  /// Attempts to resolve a [BuiltinSqlType] for the type of [value].
   ///
   /// The static variants ([forType] and [forNullableType] should almost always
   /// be preferred to this because they can assign types to null values too).
-  static BuiltinDriftType? forValue(Object? value) {
+  static BuiltinSqlType? forValue(Object? value) {
     return _dartToDrift[value.runtimeType];
   }
 }

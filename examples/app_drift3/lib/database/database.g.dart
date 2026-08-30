@@ -12,7 +12,7 @@ class $CategoriesTable extends Categories
   @override
   late final TableColumn<int> id = TableColumn<int>(
       name: 'id',
-      sqlType: BuiltinDriftType.int,
+      sqlType: SqlType.int,
       requiredDuringInsert: false,
       constraints: () => [
             const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -22,14 +22,14 @@ class $CategoriesTable extends Categories
   @override
   late final TableColumn<String> name = TableColumn<String>(
       name: 'name',
-      sqlType: BuiltinDriftType.text,
+      sqlType: SqlType.text,
       requiredDuringInsert: true,
       constraints: () => [const ColumnNotNullConstraint()])
     ..owningResultSet = this;
   @override
   late final TableColumnWithTypeConverter<Color, int> color = TableColumn<int>(
           name: 'color',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
           requiredDuringInsert: true,
           constraints: () => [const ColumnNotNullConstraint()])
       .withConverter<Color>($CategoriesTable.$convertercolor)
@@ -46,9 +46,9 @@ class $CategoriesTable extends Categories
   Category? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$name = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     final pos$color = positions[2].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
@@ -80,11 +80,11 @@ class Category extends LegacyDataClass implements Insertable<Category> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id, BuiltinDriftType.int);
-    map['name'] = Variable<String>(name, BuiltinDriftType.text);
+    map['id'] = Variable<int>(id, SqlType.int);
+    map['name'] = Variable<String>(name, SqlType.text);
     {
       map['color'] = Variable<int>(
-          $CategoriesTable.$convertercolor.toSql(color), BuiltinDriftType.int);
+          $CategoriesTable.$convertercolor.toSql(color), SqlType.int);
     }
     return map;
   }
@@ -190,15 +190,14 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
+      map['id'] = Variable<int>(id.value, SqlType.int);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value, BuiltinDriftType.text);
+      map['name'] = Variable<String>(name.value, SqlType.text);
     }
     if (color.present) {
       map['color'] = Variable<int>(
-          $CategoriesTable.$convertercolor.toSql(color.value),
-          BuiltinDriftType.int);
+          $CategoriesTable.$convertercolor.toSql(color.value), SqlType.int);
     }
     return map;
   }
@@ -223,7 +222,7 @@ class $TodoEntriesTable extends TodoEntries
   @override
   late final TableColumn<int> id = TableColumn<int>(
       name: 'id',
-      sqlType: BuiltinDriftType.int,
+      sqlType: SqlType.int,
       requiredDuringInsert: false,
       constraints: () => [
             const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
@@ -233,14 +232,14 @@ class $TodoEntriesTable extends TodoEntries
   @override
   late final TableColumn<String> description = TableColumn<String>(
       name: 'description',
-      sqlType: BuiltinDriftType.text,
+      sqlType: SqlType.text,
       requiredDuringInsert: true,
       constraints: () => [const ColumnNotNullConstraint()])
     ..owningResultSet = this;
   @override
   late final TableColumn<int> category = TableColumn<int>(
       name: 'category',
-      sqlType: BuiltinDriftType.int,
+      sqlType: SqlType.int,
       requiredDuringInsert: false,
       constraints: () => [
             const ColumnForeignKeyConstraint(
@@ -251,9 +250,7 @@ class $TodoEntriesTable extends TodoEntries
     ..owningResultSet = this;
   @override
   late final TableColumn<DateTime> dueDate = TableColumn<DateTime>(
-      name: 'due_date',
-      sqlType: BuiltinDriftType.dateTime,
-      requiredDuringInsert: false)
+      name: 'due_date', sqlType: SqlType.dateTime, requiredDuringInsert: false)
     ..owningResultSet = this;
   @override
   List<TableColumn> get columns => [id, description, category, dueDate];
@@ -267,12 +264,12 @@ class $TodoEntriesTable extends TodoEntries
   TodoEntry? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$description = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     final pos$category = positions[2].index;
     final pos$dueDate = positions[3].index;
-    final type$2 = BuiltinDriftType.dateTime.resolveIn(dialect);
+    final type$2 = SqlType.dateTime.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -306,13 +303,13 @@ class TodoEntry extends LegacyDataClass implements Insertable<TodoEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id, BuiltinDriftType.int);
-    map['description'] = Variable<String>(description, BuiltinDriftType.text);
+    map['id'] = Variable<int>(id, SqlType.int);
+    map['description'] = Variable<String>(description, SqlType.text);
     if (!nullToAbsent || category != null) {
-      map['category'] = Variable<int>(category, BuiltinDriftType.int);
+      map['category'] = Variable<int>(category, SqlType.int);
     }
     if (!nullToAbsent || dueDate != null) {
-      map['due_date'] = Variable<DateTime>(dueDate, BuiltinDriftType.dateTime);
+      map['due_date'] = Variable<DateTime>(dueDate, SqlType.dateTime);
     }
     return map;
   }
@@ -443,18 +440,16 @@ class TodoEntriesCompanion extends UpdateCompanion<TodoEntry> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value, BuiltinDriftType.int);
+      map['id'] = Variable<int>(id.value, SqlType.int);
     }
     if (description.present) {
-      map['description'] =
-          Variable<String>(description.value, BuiltinDriftType.text);
+      map['description'] = Variable<String>(description.value, SqlType.text);
     }
     if (category.present) {
-      map['category'] = Variable<int>(category.value, BuiltinDriftType.int);
+      map['category'] = Variable<int>(category.value, SqlType.int);
     }
     if (dueDate.present) {
-      map['due_date'] =
-          Variable<DateTime>(dueDate.value, BuiltinDriftType.dateTime);
+      map['due_date'] = Variable<DateTime>(dueDate.value, SqlType.dateTime);
     }
     return map;
   }
@@ -481,7 +476,7 @@ class TextEntries extends Table
   TextEntries([this.alias]);
   late final TableColumn<String> description = TableColumn<String>(
       name: 'description',
-      sqlType: BuiltinDriftType.text,
+      sqlType: SqlType.text,
       requiredDuringInsert: true,
       constraints: () => [const ColumnNotNullConstraint()])
     ..owningResultSet = this;
@@ -497,7 +492,7 @@ class TextEntries extends Table
   TextEntry? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$description = positions[0].index;
-    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$0 = SqlType.text.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "description" is missing
       if (row[pos$description] == null) {
@@ -527,7 +522,7 @@ class TextEntry extends LegacyDataClass implements Insertable<TextEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['description'] = Variable<String>(description, BuiltinDriftType.text);
+    map['description'] = Variable<String>(description, SqlType.text);
     return map;
   }
 
@@ -611,11 +606,10 @@ class TextEntriesCompanion extends UpdateCompanion<TextEntry> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (description.present) {
-      map['description'] =
-          Variable<String>(description.value, BuiltinDriftType.text);
+      map['description'] = Variable<String>(description.value, SqlType.text);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -662,8 +656,8 @@ abstract base class _$AppDatabase extends GeneratedDatabase {
           $CategoriesTable(),
         },
         createMapper: (RawResultSet _) {
-          final type$0 = BuiltinDriftType.int.resolveIn(dialect);
-          final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+          final type$0 = SqlType.int.resolveIn(dialect);
+          final type$1 = SqlType.text.resolveIn(dialect);
 
           return (RawRow row) => CategoriesWithCountResult(
                 id: type$0.nullableDartValue(row[0]),
@@ -680,7 +674,7 @@ abstract base class _$AppDatabase extends GeneratedDatabase {
     return customSelectMapped<SearchResult>(
         query:
             'SELECT"todos"."id", "todos"."description", "todos"."category", "todos"."due_date","cat"."id", "cat"."name", "cat"."color" FROM text_entries INNER JOIN todo_entries AS todos ON todos.id = text_entries."rowid" LEFT OUTER JOIN categories AS cat ON cat.id = todos.category WHERE text_entries MATCH ?1 ORDER BY rank',
-        variables: [mapValue(BuiltinDriftType.text, query)],
+        variables: [Variable<String>(query, SqlType.text)],
         readsFrom: {
           TextEntries(),
           $TodoEntriesTable(),

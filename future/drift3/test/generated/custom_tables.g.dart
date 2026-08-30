@@ -11,7 +11,7 @@ class NoIds extends Table
   NoIds([this.alias]);
   late final TableColumn<Uint8List> payload = TableColumn<Uint8List>(
     name: 'payload',
-    sqlType: BuiltinDriftType.byteArray,
+    sqlType: SqlType.byteArray,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')],
   )..owningResultSet = this;
@@ -29,7 +29,7 @@ class NoIds extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$payload = positions[0].index;
-    final type$0 = BuiltinDriftType.byteArray.resolveIn(dialect);
+    final type$0 = SqlType.byteArray.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "payload" is missing
       if (row[pos$payload] == null) {
@@ -69,10 +69,7 @@ class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (payload.present) {
-      map['payload'] = Variable<Uint8List>(
-        payload.value,
-        BuiltinDriftType.byteArray,
-      );
+      map['payload'] = Variable<Uint8List>(payload.value, SqlType.byteArray);
     }
     return map;
   }
@@ -100,7 +97,7 @@ class WithDefaults extends Table
   )..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
     name: 'b',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
     constraints: () => [ColumnConstraint.customSql('UNIQUE NULL')],
   )..owningResultSet = this;
@@ -120,7 +117,7 @@ class WithDefaults extends Table
     final pos$a = positions[0].index;
     final type$0 = const CustomTextType().resolveIn(dialect);
     final pos$b = positions[1].index;
-    final type$1 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$1 = SqlType.int.resolveIn(dialect);
     return (RawRow row) {
       return WithDefault(
         a: type$0.nullableDartValue(row[pos$a]),
@@ -149,7 +146,7 @@ class WithDefault extends LegacyDataClass implements Insertable<WithDefault> {
       map['a'] = Variable<String>(a, const CustomTextType());
     }
     if (!nullToAbsent || b != null) {
-      map['b'] = Variable<int>(b, BuiltinDriftType.int);
+      map['b'] = Variable<int>(b, SqlType.int);
     }
     return map;
   }
@@ -256,10 +253,10 @@ class WithDefaultsCompanion extends UpdateCompanion<WithDefault> {
       map['a'] = Variable<String>(a.value, const CustomTextType());
     }
     if (b.present) {
-      map['b'] = Variable<int>(b.value, BuiltinDriftType.int);
+      map['b'] = Variable<int>(b.value, SqlType.int);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -283,18 +280,18 @@ class WithConstraints extends Table
   WithConstraints([this.alias]);
   late final TableColumn<String> a = TableColumn<String>(
     name: 'a',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   late final TableColumn<int> b = TableColumn<int>(
     name: 'b',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL')],
   )..owningResultSet = this;
   late final TableColumn<double> c = TableColumn<double>(
     name: 'c',
-    sqlType: BuiltinDriftType.double,
+    sqlType: SqlType.double,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
@@ -311,11 +308,11 @@ class WithConstraints extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$a = positions[0].index;
-    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$0 = SqlType.text.resolveIn(dialect);
     final pos$b = positions[1].index;
-    final type$1 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$1 = SqlType.int.resolveIn(dialect);
     final pos$c = positions[2].index;
-    final type$2 = BuiltinDriftType.double.resolveIn(dialect);
+    final type$2 = SqlType.double.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "b" is missing
       if (row[pos$b] == null) {
@@ -352,11 +349,11 @@ class WithConstraint extends LegacyDataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (!nullToAbsent || a != null) {
-      map['a'] = Variable<String>(a, BuiltinDriftType.text);
+      map['a'] = Variable<String>(a, SqlType.text);
     }
-    map['b'] = Variable<int>(b, BuiltinDriftType.int);
+    map['b'] = Variable<int>(b, SqlType.int);
     if (!nullToAbsent || c != null) {
-      map['c'] = Variable<double>(c, BuiltinDriftType.double);
+      map['c'] = Variable<double>(c, SqlType.double);
     }
     return map;
   }
@@ -477,16 +474,16 @@ class WithConstraintsCompanion extends UpdateCompanion<WithConstraint> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (a.present) {
-      map['a'] = Variable<String>(a.value, BuiltinDriftType.text);
+      map['a'] = Variable<String>(a.value, SqlType.text);
     }
     if (b.present) {
-      map['b'] = Variable<int>(b.value, BuiltinDriftType.int);
+      map['b'] = Variable<int>(b.value, SqlType.int);
     }
     if (c.present) {
-      map['c'] = Variable<double>(c.value, BuiltinDriftType.double);
+      map['c'] = Variable<double>(c.value, SqlType.double);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -511,7 +508,7 @@ class ConfigTable extends Table
   ConfigTable([this.alias]);
   late final TableColumn<String> configKey = TableColumn<String>(
     name: 'config_key',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL PRIMARY KEY')],
   )..owningResultSet = this;
@@ -523,14 +520,14 @@ class ConfigTable extends Table
   late final TableColumnWithTypeConverter<SyncType?, int> syncState =
       TableColumn<int>(
           name: 'sync_state',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
           requiredDuringInsert: false,
         ).withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
         ..owningResultSet = this;
   late final TableColumnWithTypeConverter<SyncType?, int> syncStateImplicit =
       TableColumn<int>(
           name: 'sync_state_implicit',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
           requiredDuringInsert: false,
         ).withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn)
         ..owningResultSet = this;
@@ -553,11 +550,11 @@ class ConfigTable extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$configKey = positions[0].index;
-    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$0 = SqlType.text.resolveIn(dialect);
     final pos$configValue = positions[1].index;
     final type$1 = const AnyType().resolveIn(dialect);
     final pos$syncState = positions[2].index;
-    final type$2 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$2 = SqlType.int.resolveIn(dialect);
     final pos$syncStateImplicit = positions[3].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "configKey" is missing
@@ -614,20 +611,20 @@ class Config extends LegacyDataClass implements Insertable<Config> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['config_key'] = Variable<String>(configKey, BuiltinDriftType.text);
+    map['config_key'] = Variable<String>(configKey, SqlType.text);
     if (!nullToAbsent || configValue != null) {
       map['config_value'] = Variable<DriftAny>(configValue, const AnyType());
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(
         ConfigTable.$convertersyncStaten.toSql(syncState),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (!nullToAbsent || syncStateImplicit != null) {
       map['sync_state_implicit'] = Variable<int>(
         ConfigTable.$convertersyncStateImplicitn.toSql(syncStateImplicit),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     return map;
@@ -781,10 +778,7 @@ class ConfigCompanion extends UpdateCompanion<Config> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (configKey.present) {
-      map['config_key'] = Variable<String>(
-        configKey.value,
-        BuiltinDriftType.text,
-      );
+      map['config_key'] = Variable<String>(configKey.value, SqlType.text);
     }
     if (configValue.present) {
       map['config_value'] = Variable<DriftAny>(
@@ -795,17 +789,17 @@ class ConfigCompanion extends UpdateCompanion<Config> {
     if (syncState.present) {
       map['sync_state'] = Variable<int>(
         ConfigTable.$convertersyncStaten.toSql(syncState.value),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (syncStateImplicit.present) {
       map['sync_state_implicit'] = Variable<int>(
         ConfigTable.$convertersyncStateImplicitn.toSql(syncStateImplicit.value),
-        BuiltinDriftType.int,
+        SqlType.int,
       );
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -831,23 +825,23 @@ class Mytable extends Table
   Mytable([this.alias]);
   late final TableColumn<int> someid = TableColumn<int>(
     name: 'someid',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: false,
     constraints: () => [ColumnConstraint.customSql('NOT NULL')],
   )..owningResultSet = this;
   late final TableColumn<String> sometext = TableColumn<String>(
     name: 'sometext',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   late final TableColumn<bool> isInserting = TableColumn<bool>(
     name: 'is_inserting',
-    sqlType: BuiltinDriftType.bool,
+    sqlType: SqlType.bool,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   late final TableColumn<DateTime> somedate = TableColumn<DateTime>(
     name: 'somedate',
-    sqlType: BuiltinDriftType.dateTime,
+    sqlType: SqlType.dateTime,
     requiredDuringInsert: false,
   )..owningResultSet = this;
   @override
@@ -870,13 +864,13 @@ class Mytable extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$someid = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$sometext = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     final pos$isInserting = positions[2].index;
-    final type$2 = BuiltinDriftType.bool.resolveIn(dialect);
+    final type$2 = SqlType.bool.resolveIn(dialect);
     final pos$somedate = positions[3].index;
-    final type$3 = BuiltinDriftType.dateTime.resolveIn(dialect);
+    final type$3 = SqlType.dateTime.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "someid" is missing
       if (row[pos$someid] == null) {
@@ -919,15 +913,15 @@ class MytableData extends LegacyDataClass implements Insertable<MytableData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['someid'] = Variable<int>(someid, BuiltinDriftType.int);
+    map['someid'] = Variable<int>(someid, SqlType.int);
     if (!nullToAbsent || sometext != null) {
-      map['sometext'] = Variable<String>(sometext, BuiltinDriftType.text);
+      map['sometext'] = Variable<String>(sometext, SqlType.text);
     }
     if (!nullToAbsent || isInserting != null) {
-      map['is_inserting'] = Variable<bool>(isInserting, BuiltinDriftType.bool);
+      map['is_inserting'] = Variable<bool>(isInserting, SqlType.bool);
     }
     if (!nullToAbsent || somedate != null) {
-      map['somedate'] = Variable<DateTime>(somedate, BuiltinDriftType.dateTime);
+      map['somedate'] = Variable<DateTime>(somedate, SqlType.dateTime);
     }
     return map;
   }
@@ -1064,22 +1058,16 @@ class MytableCompanion extends UpdateCompanion<MytableData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (someid.present) {
-      map['someid'] = Variable<int>(someid.value, BuiltinDriftType.int);
+      map['someid'] = Variable<int>(someid.value, SqlType.int);
     }
     if (sometext.present) {
-      map['sometext'] = Variable<String>(sometext.value, BuiltinDriftType.text);
+      map['sometext'] = Variable<String>(sometext.value, SqlType.text);
     }
     if (isInserting.present) {
-      map['is_inserting'] = Variable<bool>(
-        isInserting.value,
-        BuiltinDriftType.bool,
-      );
+      map['is_inserting'] = Variable<bool>(isInserting.value, SqlType.bool);
     }
     if (somedate.present) {
-      map['somedate'] = Variable<DateTime>(
-        somedate.value,
-        BuiltinDriftType.dateTime,
-      );
+      map['somedate'] = Variable<DateTime>(somedate.value, SqlType.dateTime);
     }
     return map;
   }
@@ -1104,19 +1092,19 @@ class Email extends Table
   Email([this.alias]);
   late final TableColumn<String> sender = TableColumn<String>(
     name: 'sender',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   late final TableColumn<String> title = TableColumn<String>(
     name: 'title',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
   late final TableColumn<String> body = TableColumn<String>(
     name: 'body',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [const ColumnNotNullConstraint()],
   )..owningResultSet = this;
@@ -1134,7 +1122,7 @@ class Email extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$sender = positions[0].index;
-    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$0 = SqlType.text.resolveIn(dialect);
     final pos$title = positions[1].index;
     final pos$body = positions[2].index;
     return (RawRow row) {
@@ -1169,9 +1157,9 @@ class EMail extends LegacyDataClass implements Insertable<EMail> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['sender'] = Variable<String>(sender, BuiltinDriftType.text);
-    map['title'] = Variable<String>(title, BuiltinDriftType.text);
-    map['body'] = Variable<String>(body, BuiltinDriftType.text);
+    map['sender'] = Variable<String>(sender, SqlType.text);
+    map['title'] = Variable<String>(title, SqlType.text);
+    map['body'] = Variable<String>(body, SqlType.text);
     return map;
   }
 
@@ -1289,16 +1277,16 @@ class EmailCompanion extends UpdateCompanion<EMail> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (sender.present) {
-      map['sender'] = Variable<String>(sender.value, BuiltinDriftType.text);
+      map['sender'] = Variable<String>(sender.value, SqlType.text);
     }
     if (title.present) {
-      map['title'] = Variable<String>(title.value, BuiltinDriftType.text);
+      map['title'] = Variable<String>(title.value, SqlType.text);
     }
     if (body.present) {
-      map['body'] = Variable<String>(body.value, BuiltinDriftType.text);
+      map['body'] = Variable<String>(body.value, SqlType.text);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -1323,13 +1311,13 @@ class WeirdTable extends Table
   WeirdTable([this.alias]);
   late final TableColumn<int> sqlClass = TableColumn<int>(
     name: 'class',
-    sqlType: BuiltinDriftType.int,
+    sqlType: SqlType.int,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL')],
   )..owningResultSet = this;
   late final TableColumn<String> textColumn = TableColumn<String>(
     name: 'text',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
     constraints: () => [ColumnConstraint.customSql('NOT NULL')],
   )..owningResultSet = this;
@@ -1347,9 +1335,9 @@ class WeirdTable extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$sqlClass = positions[0].index;
-    final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$0 = SqlType.int.resolveIn(dialect);
     final pos$textColumn = positions[1].index;
-    final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$1 = SqlType.text.resolveIn(dialect);
     return (RawRow row) {
       // Not part of row if non-nullable column "sqlClass" is missing
       if (row[pos$sqlClass] == null) {
@@ -1378,8 +1366,8 @@ class WeirdData extends LegacyDataClass implements Insertable<WeirdData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['class'] = Variable<int>(sqlClass, BuiltinDriftType.int);
-    map['text'] = Variable<String>(textColumn, BuiltinDriftType.text);
+    map['class'] = Variable<int>(sqlClass, SqlType.int);
+    map['text'] = Variable<String>(textColumn, SqlType.text);
     return map;
   }
 
@@ -1484,13 +1472,13 @@ class WeirdTableCompanion extends UpdateCompanion<WeirdData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (sqlClass.present) {
-      map['class'] = Variable<int>(sqlClass.value, BuiltinDriftType.int);
+      map['class'] = Variable<int>(sqlClass.value, SqlType.int);
     }
     if (textColumn.present) {
-      map['text'] = Variable<String>(textColumn.value, BuiltinDriftType.text);
+      map['text'] = Variable<String>(textColumn.value, SqlType.text);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -1610,11 +1598,11 @@ class MyView
     List<ColumnPosition> positions,
   ) {
     final pos$configKey = positions[0].index;
-    final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+    final type$0 = SqlType.text.resolveIn(dialect);
     final pos$configValue = positions[1].index;
     final type$1 = const AnyType().resolveIn(dialect);
     final pos$syncState = positions[2].index;
-    final type$2 = BuiltinDriftType.int.resolveIn(dialect);
+    final type$2 = SqlType.int.resolveIn(dialect);
     final pos$syncStateImplicit = positions[3].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "configKey" is missing
@@ -1636,7 +1624,7 @@ class MyView
 
   late final ViewColumn<String> configKey = ViewColumn<String>.forDriftFile(
     name: 'config_key',
-    sqlType: BuiltinDriftType.text,
+    sqlType: SqlType.text,
   )..owningResultSet = this;
   late final ViewColumn<DriftAny> configValue =
       ViewColumn<DriftAny>.forDriftFile(
@@ -1646,13 +1634,13 @@ class MyView
   late final ViewColumnWithTypeConverter<SyncType?, int> syncState =
       ViewColumn<int>.forDriftFile(
           name: 'sync_state',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
         ).withConverter<SyncType?>(ConfigTable.$convertersyncStaten)
         ..owningResultSet = this;
   late final ViewColumnWithTypeConverter<SyncType?, int> syncStateImplicit =
       ViewColumn<int>.forDriftFile(
           name: 'sync_state_implicit',
-          sqlType: BuiltinDriftType.int,
+          sqlType: SqlType.int,
         ).withConverter<SyncType?>(ConfigTable.$convertersyncStateImplicitn)
         ..owningResultSet = this;
   @override
@@ -1711,7 +1699,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         _ => 'REPLACE INTO config (config_key, config_value) VALUES (\$1, \$2)',
       },
       variables: [
-        Variable<String>(key, BuiltinDriftType.text),
+        Variable<String>(key, SqlType.text),
         Variable<DriftAny>(value, const AnyType()),
       ],
       updates: {ConfigTable()},
@@ -1726,7 +1714,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         KnownSqlDialect.postgres || _ =>
           'SELECT config_key AS ck, config_value AS cf, sync_state AS cs1, sync_state_implicit AS cs2 FROM config WHERE config_key = \$1',
       },
-      variables: [Variable<String>(var1, BuiltinDriftType.text)],
+      variables: [Variable<String>(var1, SqlType.text)],
       readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
         final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
@@ -1757,7 +1745,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       query:
           'SELECT "_s:0".config_key, "_s:0".config_value, "_s:0".sync_state, "_s:0".sync_state_implicit FROM config AS "_s:0" WHERE "_s:0".config_key IN ($expandedvar1) ${generatedclause.buffer}',
       variables: [
-        for (var $ in var1) Variable<String>($, BuiltinDriftType.text),
+        for (var $ in var1) Variable<String>($, SqlType.text),
         ...generatedclause.variables,
       ],
       readsFrom: {ConfigTable(), ...generatedclause.watchedTables},
@@ -1828,18 +1816,18 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [
         Variable<int>(
           ConfigTable.$convertersyncStaten.toSql(var1),
-          BuiltinDriftType.int,
+          SqlType.int,
         ),
         ...generatedpred.variables,
         for (var $ in var2)
           Variable<int>(
             ConfigTable.$convertersyncStateImplicitn.toSql($),
-            BuiltinDriftType.int,
+            SqlType.int,
           ),
       ],
       readsFrom: {ConfigTable(), ...generatedpred.watchedTables},
       createMapper: (RawResultSet _) {
-        final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+        final type$0 = SqlType.text.resolveIn(dialect);
 
         return (RawRow row) => type$0.dartValue(row[0]!);
       },
@@ -1853,7 +1841,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
-        final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+        final type$0 = SqlType.text.resolveIn(dialect);
 
         return (RawRow row) => JsonResult(
           row: row,
@@ -1870,7 +1858,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {},
       createMapper: (RawResultSet _) {
-        final type$0 = BuiltinDriftType.text.resolveIn(dialect);
+        final type$0 = SqlType.text.resolveIn(dialect);
 
         return (RawRow row) => JsonResult(
           row: row,
@@ -1900,7 +1888,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       },
       createMapper: (RawResultSet _) {
         final type$0 = const CustomTextType().resolveIn(dialect);
-        final type$1 = BuiltinDriftType.int.resolveIn(dialect);
+        final type$1 = SqlType.int.resolveIn(dialect);
         final map_0 = WithConstraints().createMapperFromPositions(
           dialect,
           const [ColumnPosition(2), ColumnPosition(3), ColumnPosition(4)],
@@ -1924,7 +1912,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
         KnownSqlDialect.postgres || _ =>
           'SELECT "_s:0".sender, "_s:0".title, "_s:0".body FROM email AS "_s:0" WHERE "_s:0".email MATCH \$1 ORDER BY "_s:0".rank',
       },
-      variables: [Variable<String>(term, BuiltinDriftType.text)],
+      variables: [Variable<String>(term, SqlType.text)],
       readsFrom: {Email()},
       createMapper: (RawResultSet _) {
         final map_0 = Email().createMapperFromPositions(dialect, const [
@@ -1951,8 +1939,8 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [...generatedexpr.variables],
       readsFrom: {ConfigTable(), ...generatedexpr.watchedTables},
       createMapper: (RawResultSet _) {
-        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
-        final type$1 = BuiltinDriftType.text.resolveIn(dialect);
+        final type$0 = SqlType.int.resolveIn(dialect);
+        final type$1 = SqlType.text.resolveIn(dialect);
         final type$2 = const AnyType().resolveIn(dialect);
 
         return (RawRow row) => ReadRowIdResult(
@@ -2008,7 +1996,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {},
       createMapper: (RawResultSet _) {
-        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+        final type$0 = SqlType.int.resolveIn(dialect);
 
         return (RawRow row) => type$0.dartValue(row[0]!);
       },
@@ -2021,7 +2009,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
-        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+        final type$0 = SqlType.int.resolveIn(dialect);
 
         return (RawRow row) => type$0.nullableDartValue(row[0]);
       },
@@ -2091,7 +2079,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           ColumnPosition(0),
           ColumnPosition(1),
         ]);
-        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+        final type$0 = SqlType.int.resolveIn(dialect);
 
         return (RawRow row) async => NestedResult(
           row: row,
@@ -2126,7 +2114,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {WithConstraints(), ConfigTable(), NoIds()},
       createMapper: (RawResultSet _) {
-        final type$0 = BuiltinDriftType.int.resolveIn(dialect);
+        final type$0 = SqlType.int.resolveIn(dialect);
         final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
           ColumnPosition(2),
           ColumnPosition(3),
@@ -2150,7 +2138,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
             variables: [],
             readsFrom: {NoIds()},
             createMapper: (RawResultSet _) {
-              final type$0 = BuiltinDriftType.byteArray.resolveIn(dialect);
+              final type$0 = SqlType.byteArray.resolveIn(dialect);
 
               return (RawRow row) => Buffer(type$0.dartValue(row[0]!));
             },

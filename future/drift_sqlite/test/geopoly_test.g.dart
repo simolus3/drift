@@ -189,7 +189,7 @@ class GeopolyTestCompanion extends UpdateCompanion<GeopolyTestData> {
       map['a'] = Variable<DriftAny>(a.value, const AnyType());
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value, BuiltinDriftType.int);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -221,10 +221,10 @@ abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
   Selectable<double?> area(int var1) {
     return customSelectMapped<double?>(
       query: 'SELECT geopoly_area(_shape) FROM geopoly_test WHERE "rowid" = ?1',
-      variables: [Variable<int>(var1, BuiltinDriftType.int)],
+      variables: [Variable<int>(var1, SqlType.int)],
       readsFrom: {GeopolyTest()},
       createMapper: (RawResultSet _) {
-        final type$0 = BuiltinDriftType.double.resolveIn(dialect);
+        final type$0 = SqlType.double.resolveIn(dialect);
 
         return (RawRow row) => type$0.nullableDartValue(row[0]);
       },

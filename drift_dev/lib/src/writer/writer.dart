@@ -401,7 +401,7 @@ abstract class _NodeOrWriter {
     AnnotatedDartCode builtinType(String name) {
       return AnnotatedDartCode.importedSymbol(
         AnnotatedDartCode.drift,
-        'BuiltinDriftType.$name',
+        'SqlType.$name',
       );
     }
 
