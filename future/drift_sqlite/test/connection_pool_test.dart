@@ -99,6 +99,7 @@ void main() {
     final completeTransaction = Completer<void>();
     db.transaction(() async {
       hasTransaction.complete();
+      await completeTransaction.future;
     }, options: TransactionOptions(readOnly: true));
     await hasTransaction.future;
 
