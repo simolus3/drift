@@ -248,16 +248,32 @@ no clear communication scheme between isolates.
 Still, you may want to share a live drift database between your UI engine and potential background engines,
 even without them directly knowing about each other.
 
-An [IsolateNameServer](https://api.flutter.dev/flutter/dart-ui/IsolateNameServer-class.html) from `dart:ui` can
-be used to transparently share a drift isolate between such workers.
-You can store the [`connectPort`](https://drift.simonbinder.eu/api/isolate/driftisolate/connectport) of a `DriftIsolate`
-under a specific name to look it up later.
-Other clients can use `DriftIsolate.fromConnectPort` to obtain a `DriftIsolate` from the name server, if one has been
-registered.
+If each isolate calls `DriftIsolate.spawn` on its own, you get two independent executor isolates.
+Writes from a background service then will not update `watch()` streams in the UI isolate.
+The same happens if both sides open a plain `NativeDatabase` on the same file.
 
-Please note that, at the moment, Flutter still has some inherent problems with spawning isolates from background engines
-that complicate this setup. Further, the `IsolateNameServer` is not cleared on a (stateless) hot reload, even though
-the isolates are stopped and registered ports become invalid.
-There is no reliable way to check if a `SendPort` is bound to an active `ReceivePort` or not.
+For Flutter apps, an [IsolateNameServer](https://api.flutter.dev/flutter/dart-ui/IsolateNameServer-class.html)
+from `dart:ui` can be used to transparently share a drift isolate between such workers.
+However, this is a delicate API and tricky to set up correctly.
+Instead of using this API directly, consider the `drift_flutter` package.
+Its `driftDatabase()` function can be used to open databases, setting `shareAcrossIsolates: true`
+makes it use an isolate name server with additional checks to improve reliability:
+
+```dart
+MyAppDatabase.defaults(): super(
+  driftDatabase(
+    name: 'app_db',
+    native: DriftNativeOptions(
+      shareAcrossIsolates: true,
+    ),
+  ),
+);
+```
+
+If you need a custom connection without `drift_flutter`, [its sources](https://github.com/simolus3/drift/blob/develop/drift_flutter/lib/src/native.dart)
+may serve as a reference implementation.
+
+`shareAcrossIsolates` only discovers databases inside the same Flutter engine.
+Independent engines still cannot share one `DriftIsolate` this way.
 
 Possible implementations of this pattern and associated problems are described in [this issue](https://github.com/simolus3/drift/issues/567#issuecomment-934514380).
