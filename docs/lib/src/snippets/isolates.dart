@@ -32,11 +32,6 @@ class BackgroundIsolateBinaryMessenger {
   static void ensureInitialized(RootIsolateToken token) {}
 }
 
-class IsolateNameServer {
-  static SendPort? lookupPortByName(String name) => null;
-  static bool registerPortWithName(SendPort port, String name) => true;
-}
-
 // #docregion isolate, database-definition
 
 @DriftDatabase(tables: [SomeTable] /* ... */)
@@ -72,27 +67,6 @@ Future<DriftIsolate> createIsolateWithSpawn() async {
   });
 }
 // #enddocregion driftisolate-spawn
-
-// #docregion name-server
-const _portName = 'drift_connect_port';
-
-/// One shared [DriftIsolate] for the whole Dart process.
-///
-/// Calling [DriftIsolate.spawn] from both the UI isolate and a background
-/// worker creates two independent databases. Streams on one side will not see
-/// writes from the other. Look the connect port up first and only spawn when
-/// nobody has registered one yet.
-Future<DriftIsolate> existingOrNewDriftIsolate() async {
-  final existing = IsolateNameServer.lookupPortByName(_portName);
-  if (existing != null) {
-    return DriftIsolate.fromConnectPort(existing);
-  }
-
-  final isolate = await createIsolateWithSpawn();
-  IsolateNameServer.registerPortWithName(isolate.connectPort, _portName);
-  return isolate;
-}
-// #enddocregion name-server
 
 // #docregion custom-spawn
 Future<DriftIsolate> createIsolateManually() async {

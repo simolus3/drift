@@ -245,30 +245,40 @@ In Flutter apps, this model may not always fit your use case.
 For instance, your app may use background tasks or receive FCM notifications while closed.
 These tasks will run in a background `FlutterEngine` managed by native platform code, so there's
 no clear communication scheme between isolates.
-Still, you may want to share a live drift database between your UI engine and potential background engines,
-even without them directly knowing about each other.
+Still, you may want to share a live drift database between your UI isolate and a background worker
+in the same Flutter engine.
 
 If each isolate calls `DriftIsolate.spawn` on its own, you get two independent executor isolates.
 Writes from a background service then will not update `watch()` streams in the UI isolate.
 The same happens if both sides open a plain `NativeDatabase` on the same file.
 
-An [IsolateNameServer](https://api.flutter.dev/flutter/dart-ui/IsolateNameServer-class.html) from `dart:ui` can
-be used to transparently share a drift isolate between such workers.
-You can store the [`connectPort`](https://drift.simonbinder.eu/api/isolate/driftisolate/connectport) of a `DriftIsolate`
-under a specific name to look it up later.
-Other clients can use `DriftIsolate.fromConnectPort` to obtain a `DriftIsolate` from the name server, if one has been
-registered.
+Do not wire this up with a raw `IsolateNameServer` lookup. That API is Flutter-only, and a
+hot restart (or a crashed isolate) can leave a dead `SendPort` registered. Connecting to it
+hangs until you time out.
 
-<Snippet href="/lib/src/snippets/isolates.dart" name="name-server" />
+For Flutter apps, use `package:drift_flutter` with `shareAcrossIsolates: true`. It already
+looks up a running database isolate, pings it, and drops stale name-server entries:
 
-On Flutter, `package:drift_flutter` can do this lookup for you when you set
-`shareAcrossIsolates: true` on `DriftNativeOptions`. That only discovers databases inside
-the same Flutter engine. Independent engines still need the name-server handshake above,
-and they need one shared executor rather than a second `DriftIsolate.spawn`.
+```dart
+MyAppDatabase.defaults(): super(
+  driftDatabase(
+    name: 'app_db',
+    native: DriftNativeOptions(
+      shareAcrossIsolates: true,
+    ),
+  ),
+);
+```
+
+See [`drift_flutter/lib/src/native.dart`](https://github.com/simolus3/drift/blob/develop/drift_flutter/lib/src/native.dart)
+if you still need a custom handshake. Copy the timeout and ping, not a bare
+`lookupPortByName` / `registerPortWithName` pair.
+
+`shareAcrossIsolates` only discovers databases inside the same Flutter engine.
+Independent engines still cannot share one `DriftIsolate` this way.
 
 Please note that, at the moment, Flutter still has some inherent problems with spawning isolates from background engines
 that complicate this setup. Further, the `IsolateNameServer` is not cleared on a (stateless) hot reload, even though
 the isolates are stopped and registered ports become invalid.
-There is no reliable way to check if a `SendPort` is bound to an active `ReceivePort` or not.
 
 Possible implementations of this pattern and associated problems are described in [this issue](https://github.com/simolus3/drift/issues/567#issuecomment-934514380).
