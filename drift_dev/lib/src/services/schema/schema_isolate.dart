@@ -140,7 +140,7 @@ class SchemaIsolate {
 
     final receive = ReceivePort();
     final receiveErrors = ReceivePort();
-    final Isolate isolate;
+    Isolate? isolate;
     try {
       isolate = await Isolate.spawnUri(
         entrypointFile.uri,
@@ -151,25 +151,28 @@ class SchemaIsolate {
         packageConfig: await Isolate.packageConfig,
         debugName: 'drift schema export',
       );
+
+      final result = await Future.any([
+        receive.firstOrNever,
+        receiveErrors.firstOrNever.then((e) {
+          throw SchemaIsolateException(e! as Object, entrypointFile);
+        }),
+      ]);
+
+      if (deleteAfterGeneration != null) {
+        await deleteAfterGeneration.delete(recursive: true);
+      }
+
+      return result;
+    } on SchemaIsolateException {
+      rethrow;
     } catch (e) {
       throw SchemaIsolateException(e, entrypointFile);
+    } finally {
+      isolate?.kill();
+      receiveErrors.close();
+      receive.close();
     }
-
-    final result = await Future.any([
-      receive.firstOrNever,
-      receiveErrors.firstOrNever.then((e) {
-        throw SchemaIsolateException(e! as Object, entrypointFile);
-      }),
-    ]);
-
-    isolate.kill();
-    receiveErrors.close();
-    receive.close();
-    if (deleteAfterGeneration != null) {
-      await deleteAfterGeneration.delete(recursive: true);
-    }
-
-    return result;
   }
 
   static Future<List<String>> collectAllCreateStatements(

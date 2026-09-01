@@ -1,6 +1,7 @@
 ## 2.35.0 (unreleased)
 
 - Remove legacy command used to migrate from `moor` from `drift`.
+- Fix `drift_dev` command not completing when spawning a schema isolate fails.
 
 ## 2.34.5
 
