@@ -47,10 +47,11 @@ final class Batch {
   final List<StatementInBatch> _statements = [];
   final Set<TableUpdate> _createdUpdates = {};
 
-  final DatabaseConnectionUser _database;
+  /// The database on which the batch will run when completed.
+  final DatabaseConnectionUser database;
 
   /// Creates a new pending batch on a [DatabaseConnectionUser].
-  Batch._(this._database);
+  Batch._(this.database);
 
   /// Adds an [SqlStatement] to execute in this batch.
   ///
@@ -58,7 +59,7 @@ final class Batch {
   /// add advanced statements to a batch when no shorthand method exists for
   /// those.
   BatchedStatement addStatement(SqlStatement stmt) {
-    final built = _database.dialect.compile(stmt);
+    final built = database.dialect.compile(stmt);
     return _addCustomStatement(built);
   }
 
@@ -91,7 +92,7 @@ final class Batch {
     Insertable<Row> row, {
     UpsertClause<Row, RS>? onConflict,
   }) {
-    final stmt = InsertStatement<Row, RS>(_database, table)..values(row);
+    final stmt = InsertStatement<Row, RS>(database, table)..values(row);
     if (onConflict != null) {
       stmt.onConflict(onConflict);
     }
@@ -119,7 +120,7 @@ final class Batch {
     required Map<TableColumn, Expression> columns,
     UpsertClause<Row, RS>? onConflict,
   }) {
-    final stmt = InsertStatement<Row, RS>(_database, table)
+    final stmt = InsertStatement<Row, RS>(database, table)
       ..fromSelect(select, columns: columns);
     if (onConflict != null) {
       stmt.onConflict(onConflict);
@@ -167,7 +168,7 @@ final class Batch {
     Insertable<Row> row, {
     Expression<bool> Function(RS table)? where,
   }) {
-    final stmt = UpdateStatement(_database, table)..setValues(row);
+    final stmt = UpdateStatement(database, table)..setValues(row);
     if (where != null) stmt.where(where);
 
     return addStatement(stmt);
@@ -183,7 +184,7 @@ final class Batch {
     Row extends Object,
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table, Insertable<Row> row) {
-    return addStatement(UpdateStatement(_database, table)..prepareReplace(row));
+    return addStatement(UpdateStatement(database, table)..prepareReplace(row));
   }
 
   /// Helper that calls [replace] for all [rows].
@@ -205,7 +206,7 @@ final class Batch {
     Row extends Object,
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table, Insertable<Row> row) {
-    final stmt = DeleteStatement(_database, table)..whereSamePrimaryKey(row);
+    final stmt = DeleteStatement(database, table)..whereSamePrimaryKey(row);
     return addStatement(stmt);
   }
 
@@ -217,7 +218,7 @@ final class Batch {
     Row extends Object,
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table, Expression<bool> Function(RS tbl) filter) {
-    final stmt = DeleteStatement(_database, table)..where(filter);
+    final stmt = DeleteStatement(database, table)..where(filter);
     return addStatement(stmt);
   }
 
@@ -229,7 +230,7 @@ final class Batch {
     Row extends Object,
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table) {
-    final stmt = DeleteStatement(_database, table);
+    final stmt = DeleteStatement(database, table);
     return addStatement(stmt);
   }
 
@@ -251,7 +252,7 @@ final class Batch {
       StatementInfo(
         sql,
         variables: [
-          for (final variable in args) variable.resolveValue(_database.dialect),
+          for (final variable in args) variable.resolveValue(database.dialect),
         ],
         expectedWrites: updates.toSet(),
       ),
@@ -259,12 +260,12 @@ final class Batch {
   }
 
   Future<BatchResult> _run() async {
-    return await _database.transaction(() async {
-      final session = await _database.currentSession();
+    return await database.transaction(() async {
+      final session = await database.currentSession();
       final results = await session.executeBatch(
         StatementBatch(sql: _sql, statements: _statements),
       );
-      _database.notifyUpdates(_createdUpdates);
+      database.notifyUpdates(_createdUpdates);
 
       return BatchResult._(_token, results);
     });

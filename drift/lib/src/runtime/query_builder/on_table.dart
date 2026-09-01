@@ -57,6 +57,7 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
   ///
   /// This is equivalent to calling [InsertStatement.insert] - see that method
   /// for more information.
+  @pragma('drift:insert-mode-replacement', 'insertOneMode')
   Future<int> insertOne(
     Insertable<Row> row, {
     InsertMode? mode,
@@ -72,6 +73,7 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
   /// Unlike calling [Batch.insertAll] in a [Batch] directly, foreign keys are
   /// checked only _after_ all inserts ran. In other words, the order in which
   /// the [rows] are in doesn't matter if there are foreign keys between them.
+  @pragma('drift:insert-mode-replacement', 'insertAllMode')
   Future<void> insertAll(
     Iterable<Insertable<Row>> rows, {
     InsertMode? mode,
@@ -110,6 +112,7 @@ extension TableStatements<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
   /// not guaranteed that a row gets inserted (for instance because an upsert
   /// clause with a `where` clause is used). For those instances,
   /// use [insertReturningOrNull] instead.
+  @pragma('drift:insert-mode-replacement', 'insertReturningMode')
   Future<Row> insertReturning(
     Insertable<Row> row, {
     InsertMode? mode,

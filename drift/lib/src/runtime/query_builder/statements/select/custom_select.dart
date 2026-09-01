@@ -57,6 +57,7 @@ class CustomSelectStatement with Selectable<QueryRow> {
 }
 
 /// For custom select statements, represents a row in the result set.
+@pragma('drift:v3-rename', 'CustomRow')
 class QueryRow {
   /// The raw data in this row.
   ///

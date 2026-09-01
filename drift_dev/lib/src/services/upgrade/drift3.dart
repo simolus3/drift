@@ -6,8 +6,10 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_system.dart';
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart' show SqlDialect;
 import 'package:drift_dev/src/backends/analyzer_context_backend.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
@@ -256,6 +258,7 @@ final class UpgradeToDrift3 {
 
 final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   final DriftOptions options;
+  final String originalContent;
   final StringRewriter _writer;
   final TypeSystem _typeSystem;
   final _KnownDriftImports _types;
@@ -266,11 +269,15 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   String get content => _writer.content;
 
   _DartToDrift3Rewriter(
-    String content,
+    this.originalContent,
     this.options,
     this._typeSystem,
     this._types,
-  ) : _writer = StringRewriter(content);
+  ) : _writer = StringRewriter(originalContent);
+
+  String _lexeme(SyntacticEntity entity) {
+    return originalContent.substring(entity.offset, entity.end);
+  }
 
   void _rewriteImportString(StringLiteral l) {
     const changedImports = {
@@ -328,8 +335,12 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
         imports += "import 'dart:typed_data';\n";
       }
 
-      if (options.generateManager) {
-        imports += "import 'package:drift_manager/drift_manager.dart';\n";
+      if (_writer.content.contains('@DriftDatabase')) {
+        imports += "import 'package:drift_sqlite/drift_sqlite.dart';\n";
+
+        if (options.generateManager) {
+          imports += "import 'package:drift_manager/drift_manager.dart';\n";
+        }
       }
 
       _writer.insertBefore(node, imports);
@@ -367,16 +378,40 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
       }
 
       final target = node.target;
-      if (target != null && _isConnectionOrExecutor(target)) {
-        target as PrefixedIdentifier;
+      final modeArg = node.argumentList.arguments.singleWhereOrNull(
+        (e) => e is NamedArgument && e.name.lexeme == 'mode',
+      );
 
-        if (name == 'ensureOpen') {
-          final start = target.identifier.offset;
-          final end = node.end;
-          _writer.replace(start, end - start, 'initialize()');
-        } else {
-          final db = target.prefix.name;
-          _writer.replaceNode(target, '(await $db.currentSession())');
+      if (target != null) {
+        if (_isConnectionOrExecutor(target)) {
+          target as PrefixedIdentifier;
+
+          if (name == 'ensureOpen') {
+            final start = target.identifier.offset;
+            final end = node.end;
+            _writer.replace(start, end - start, 'initialize()');
+          } else {
+            final db = target.prefix.name;
+            _writer.replaceNode(target, '(await $db.currentSession())');
+          }
+        }
+
+        if (modeArg != null && _isInsertStatement(target)) {
+          // Chain a .mode() before this call.
+          final mode = _lexeme(modeArg.argumentExpression);
+          _writer.insertBefore(node.function, 'mode($mode).');
+          _writer.replaceNode(modeArg, '');
+          return;
+        }
+      }
+
+      if (element.readStringPragma('drift:insert-mode-replacement')
+          case final replacement?) {
+        if (modeArg != null) {
+          _writer.replaceNode(node.methodName, replacement);
+          final mode = _lexeme(modeArg.argumentExpression);
+          _writer.insertBefore(node.argumentList.arguments.first, '$mode, ');
+          _writer.replaceNode(modeArg, '');
         }
       }
     }
@@ -414,6 +449,17 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
     }
 
     return false;
+  }
+
+  bool _isInsertStatement(Expression expr) {
+    final type = expr.staticType;
+    if (type == null) return false;
+
+    final bound = _typeSystem.instantiateInterfaceToBounds(
+      element: _types.insertStatement,
+      nullabilitySuffix: NullabilitySuffix.none,
+    );
+    return _typeSystem.isAssignableTo(type, bound);
   }
 
   @override
@@ -499,8 +545,6 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
     String name,
     Element? element,
   ) {
-    String? newIdentifier;
-
     if (element == null && identifier is AstNode) {
       // It looks like left-hand identifiers of assignments don't have a
       // static element, infer from parent.
@@ -511,24 +555,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
 
     if (element == null) return;
 
-    for (final annotation in element.metadata.annotations) {
-      final value = annotation.computeConstantValue();
-      if (value == null) return;
-      final type = value.type;
-
-      if (type is! InterfaceType) continue;
-
-      if (type.element.library.isDartCore && type.element.name == 'pragma') {
-        final name = value.getField('name')!.toStringValue()!;
-
-        if (name == 'drift:v3-rename') {
-          newIdentifier = value.getField('options')!.toStringValue()!;
-          break;
-        }
-      }
-    }
-
-    if (newIdentifier != null) {
+    if (element.readStringPragma('drift:v3-rename') case final newIdentifier?) {
       _writer.replace(identifier.offset, name.length, newIdentifier);
     }
   }
@@ -578,9 +605,32 @@ extension on DriftOptions {
   }
 }
 
+extension on Element {
+  String? readStringPragma(String pragma) {
+    for (final annotation in metadata.annotations) {
+      final value = annotation.computeConstantValue();
+      if (value == null) continue;
+      final type = value.type;
+
+      if (type is! InterfaceType) continue;
+
+      if (type.element.library.isDartCore && type.element.name == 'pragma') {
+        final name = value.getField('name')!.toStringValue()!;
+
+        if (name == pragma) {
+          return value.getField('options')?.toStringValue();
+        }
+      }
+    }
+
+    return null;
+  }
+}
+
 final class _KnownDriftImports {
   final InterfaceType databaseConnectionUser;
   final InterfaceType dslTable;
+  final ClassElement insertStatement;
 
   _KnownDriftImports(LibraryElement drift)
     : databaseConnectionUser =
@@ -588,7 +638,10 @@ final class _KnownDriftImports {
                   as ClassElement)
               .thisType,
       dslTable = (drift.exportNamespace.definedNames2['Table'] as ClassElement)
-          .thisType;
+          .thisType,
+      insertStatement =
+          drift.exportNamespace.definedNames2['InsertStatement']
+              as ClassElement;
 }
 
 extension on Expression {

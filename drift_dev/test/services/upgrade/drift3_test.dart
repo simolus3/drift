@@ -31,7 +31,6 @@ import 'package:drift_dev/api/migrations_native.dart';
 
       await d.file('app/lib/database.dart', '''
 import 'dart:typed_data';
-import 'package:drift_manager/drift_manager.dart';
 import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/web.dart';
 import 'package:drift_sqlite/schema_verifier.dart';
@@ -57,7 +56,6 @@ class TodoEntries extends Table with AutoIncrementingPrimaryKey {
 
       await d.file('app/lib/database.dart', '''
 import 'dart:typed_data';
-import 'package:drift_manager/drift_manager.dart';
 import 'package:drift3_preview/drift.dart';
 
 @DataClassName('TodoEntry')
@@ -85,7 +83,6 @@ Expression<bool> m(Expression<int> a, Expression<int> b) {
 
       await d.file('app/lib/database.dart', '''
 import 'dart:typed_data';
-import 'package:drift_manager/drift_manager.dart';
 import 'package:drift3_preview/drift.dart';
 
 Expression<bool> m(Expression<int> a, Expression<int> b) {
@@ -115,12 +112,18 @@ void rawConnection(FakeGeneratedDatabase db) async {
   await db.executor.ensureOpen(db);
   await db.executor.close();
 }
+
+void insertMode(FakeGeneratedDatabase db) async {
+  final stmt = db.into(db.users);
+  await stmt.insert(stub, mode: InsertMode.replace);
+  await db.users.insertOne(stub);
+  await db.users.insertOne(stub, mode: InsertMode.insertOrReplace);
+}
 '''),
       ]);
       await original.migrateToDrift3();
       await d.file('app/lib/database.dart', '''
 import 'dart:typed_data';
-import 'package:drift_manager/drift_manager.dart';
 import 'package:drift3_preview/drift.dart';
 
 class FakeGeneratedDatabase extends GeneratedDatabase {
@@ -138,6 +141,13 @@ void rawConnection(FakeGeneratedDatabase db) async {
   db.dialect.known;
   await db.initialize();
   await (await db.currentSession()).close();
+}
+
+void insertMode(FakeGeneratedDatabase db) async {
+  final stmt = db.into(db.users);
+  await stmt.mode(InsertMode.replace).insert(stub, );
+  await db.usersQueries.insertOne(stub);
+  await db.usersQueries.insertOneMode(InsertMode.insertOrReplace, stub, );
 }
 ''').validate();
     });

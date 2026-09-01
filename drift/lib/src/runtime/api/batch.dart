@@ -44,6 +44,7 @@ class Batch {
   ///
   /// See also:
   ///  - [InsertStatement.insert], which would be used outside a [Batch].
+  @pragma('drift:insert-mode-replacement', 'insertMode')
   void insert<T extends Table, D>(
     TableInfo<T, D> table,
     Insertable<D> row, {
@@ -72,6 +73,7 @@ class Batch {
   /// See also:
   ///  - [InsertStatement.insertFromSelect], which would be used outside a
   ///  [Batch].
+  @pragma('drift:insert-mode-replacement', 'insertFromSelectMode')
   void insertFromSelect<T extends Table, D>(
     TableInfo<T, D> table,
     BaseSelectStatement select, {
@@ -102,6 +104,7 @@ class Batch {
   /// checks.
   /// [onConflict] can be used to create an upsert clause for engines that
   /// support it. For details and examples, see [InsertStatement.insert].
+  @pragma('drift:insert-mode-replacement', 'insertAllMode')
   void insertAll<T extends Table, D>(
     TableInfo<T, D> table,
     Iterable<Insertable<D>> rows, {

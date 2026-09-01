@@ -1,6 +1,8 @@
 /// @docImport 'statements/query.dart';
 library;
 
+import 'package:meta/meta.dart';
+
 import '../connection/connection.dart';
 import '../database/connection_user.dart';
 import '../database/data_class.dart';
@@ -22,10 +24,15 @@ final class TableOrViewStatements<
   Row extends Object,
   RS extends ResultSet<Row, RS>
 > {
-  final RS _resultSet;
-  final DatabaseConnectionUser _database;
+  /// The result set on which these statements operate.
+  @internal
+  final RS resultSet;
 
-  TableOrViewStatements._(this._resultSet, this._database);
+  /// The database used to create statements.
+  @internal
+  final DatabaseConnectionUser database;
+
+  TableOrViewStatements._(this.resultSet, this.database);
 
   /// Selects all rows that are in this table.
   ///
@@ -46,7 +53,7 @@ final class TableOrViewStatements<
     final count = countAll();
     final stmt = selectOnly()..addColumns([count]);
     if (where != null) {
-      stmt.where(where(_resultSet));
+      stmt.where(where(resultSet));
     }
 
     return stmt.map((row) => row.read(count)!);
@@ -56,14 +63,14 @@ final class TableOrViewStatements<
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.select].
   SingleTableSelectStatement<Row, RS> select({bool distinct = false}) {
-    return _database.select(_resultSet, distinct: distinct);
+    return database.select(resultSet, distinct: distinct);
   }
 
   /// Composes a `SELECT` statement only selecting a subset of columns.
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.selectOnly].
   SelectStatement selectOnly({bool distinct = false}) {
-    return _database.selectOnly(_resultSet, distinct: distinct);
+    return database.selectOnly(resultSet, distinct: distinct);
   }
 }
 
@@ -75,7 +82,7 @@ extension TableStatements<
     on TableOrViewStatements<Row, RS> {
   /// Creates an insert statment to be used to compose an insert on the table.
   InsertStatement<Row, RS> insert() {
-    return InsertStatement(_database, _resultSet);
+    return InsertStatement(database, resultSet);
   }
 
   /// Inserts one row into this table.
@@ -98,11 +105,11 @@ extension TableStatements<
     Iterable<Insertable<Row>> rows, {
     UpsertClause<Row, RS>? onConflict,
   }) {
-    return _database.transaction(
+    return database.transaction(
       options: const TransactionOptions(deferForeignKeys: true),
       () async {
-        await _database.batch((b) {
-          b.insertAll(_resultSet, rows, onConflict: onConflict);
+        await database.batch((b) {
+          b.insertAll(resultSet, rows, onConflict: onConflict);
         });
       },
     );
@@ -151,7 +158,7 @@ extension TableStatements<
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.update] with the
   /// captured table.
-  UpdateStatement<Row, RS> update() => _database.update(_resultSet);
+  UpdateStatement<Row, RS> update() => database.update(resultSet);
 
   /// Replaces a single row with an update statement.
   ///
@@ -164,7 +171,7 @@ extension TableStatements<
   ///
   /// This is equivalent to calling [DatabaseConnectionUser.delete] with the
   /// captured table.
-  DeleteStatement<Row, RS> delete() => _database.delete(_resultSet);
+  DeleteStatement<Row, RS> delete() => database.delete(resultSet);
 
   /// Deletes the [row] from the captured table.
   Future<bool> deleteOne(Insertable<Row> row) async {
