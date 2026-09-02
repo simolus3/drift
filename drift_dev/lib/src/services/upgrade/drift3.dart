@@ -358,13 +358,15 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   void visitMethodInvocation(MethodInvocation node) {
     // Transform usages of the pattern db.table.insertOne (and other extensions
     // defined in on_table.dart) into db.tableQueries.insertOne.
+    final target = node.target;
+
     if (node.function case SimpleIdentifier(:final name, :final element?)) {
       if (element.enclosingElement case ExtensionElement(
         name: 'TableOrViewStatements' || 'TableStatements',
       )) {
         // This needs a rewrite, which can be automated if the receiver is a
         // getter invocation from a database.
-        if (node.target
+        if (target
             case PrefixedIdentifier(
               prefix: SimpleIdentifier(:final staticType?),
               identifier: final databaseGetter,
@@ -377,7 +379,6 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
         }
       }
 
-      final target = node.target;
       final modeArg = node.argumentList.arguments.singleWhereOrNull(
         (e) => e is NamedArgument && e.name.lexeme == 'mode',
       );
@@ -464,6 +465,8 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
 
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
+    super.visitMethodDeclaration(node);
+
     // In tables, replace text()() column definitions with just text()
     if (isInTableDefinition && node.isGetter) {
       if (node.body case ExpressionFunctionBody(:final expression)) {
@@ -474,8 +477,6 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
         }
       }
     }
-
-    super.visitMethodDeclaration(node);
   }
 
   @override
@@ -524,9 +525,9 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
       isInTableDefinition = true;
       super.visitClassDeclaration(node);
       isInTableDefinition = false;
+    } else {
+      super.visitClassDeclaration(node);
     }
-
-    super.visitClassDeclaration(node);
   }
 
   @override
