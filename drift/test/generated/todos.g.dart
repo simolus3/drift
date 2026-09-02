@@ -4222,7 +4222,7 @@ class $$CategoriesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$CategoriesTable, Category>(table),
                   $$CategoriesTableReferences(db, table, e),
                 ),
               )
@@ -4542,7 +4542,7 @@ class $$TodosTableTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$TodosTableTable, TodoEntry>(table),
                   $$TodosTableTableReferences(db, table, e),
                 ),
               )
@@ -4775,7 +4775,12 @@ class $$UsersTableTableManager
                 creationTime: creationTime,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$UsersTable, User>(table),
+                  BaseReferences<_$TodoDb, $UsersTable, User>(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -4908,7 +4913,16 @@ class $$SharedTodosTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$SharedTodosTable, SharedTodo>(table),
+                  BaseReferences<_$TodoDb, $SharedTodosTable, SharedTodo>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -5091,7 +5105,16 @@ class $$TableWithoutPKTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$TableWithoutPKTable, CustomRowClass>(table),
+                  BaseReferences<
+                    _$TodoDb,
+                    $TableWithoutPKTable,
+                    CustomRowClass
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -5210,7 +5233,16 @@ class $$PureDefaultsTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => PureDefaultsCompanion.insert(txt: txt, rowid: rowid),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$PureDefaultsTable, PureDefault>(table),
+                  BaseReferences<_$TodoDb, $PureDefaultsTable, PureDefault>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -5319,7 +5351,16 @@ class $$WithCustomTypeTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => WithCustomTypeCompanion.insert(id: id, rowid: rowid),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$WithCustomTypeTable, WithCustomTypeData>(table),
+                  BaseReferences<
+                    _$TodoDb,
+                    $WithCustomTypeTable,
+                    WithCustomTypeData
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -5631,7 +5672,19 @@ class $$TableWithEveryColumnTypeTableTableManager
                 aTextWithConverter: aTextWithConverter,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<
+                    $TableWithEveryColumnTypeTable,
+                    TableWithEveryColumnTypeData
+                  >(table),
+                  BaseReferences<
+                    _$TodoDb,
+                    $TableWithEveryColumnTypeTable,
+                    TableWithEveryColumnTypeData
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -5832,7 +5885,7 @@ class $$DepartmentTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DepartmentTable, DepartmentData>(table),
                   $$DepartmentTableReferences(db, table, e),
                 ),
               )
@@ -6167,7 +6220,7 @@ class $$ProductTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ProductTable, ProductData>(table),
                   $$ProductTableReferences(db, table, e),
                 ),
               )
@@ -6418,8 +6471,10 @@ class $$StoreTableTableManager
               }) => StoreCompanion.insert(id: id, name: name),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$StoreTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$StoreTable, StoreData>(table),
+                  $$StoreTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: ({listings = false}) {
@@ -6766,7 +6821,7 @@ class $$ListingTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ListingTable, ListingData>(table),
                   $$ListingTableReferences(db, table, e),
                 ),
               )

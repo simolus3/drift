@@ -278,7 +278,7 @@ class $$TodoItemsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<i1.$TodoItemsTable, i1.TodoItem>(table),
                   i1.$$TodoItemsTableReferences(db, table, e),
                 ),
               )
@@ -537,7 +537,7 @@ class $$CategoriesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<i1.$CategoriesTable, i1.Category>(table),
                   i1.$$CategoriesTableReferences(db, table, e),
                 ),
               )
@@ -696,7 +696,16 @@ class $$UsersTableTableManager
                 required DateTime birthDate,
               }) => i1.UsersCompanion.insert(id: id, birthDate: birthDate),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i1.$UsersTable, i1.User>(table),
+                  i0.BaseReferences<
+                    i0.GeneratedDatabase,
+                    i1.$UsersTable,
+                    i1.User
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

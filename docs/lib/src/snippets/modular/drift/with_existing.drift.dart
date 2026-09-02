@@ -103,7 +103,16 @@ class $UsersTableManager
                 required String name,
               }) => i2.UsersCompanion.insert(id: id, name: name),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i2.Users, i1.User>(table),
+                  i0.BaseReferences<i0.GeneratedDatabase, i2.Users, i1.User>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -409,8 +418,10 @@ class $FriendsTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), i2.$FriendsReferences(db, table, e)),
+                (e) => (
+                  e.readTable<i2.Friends, i2.Friend>(table),
+                  i2.$FriendsReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: ({userA = false, userB = false}) {
@@ -834,10 +845,10 @@ class WithExistingDrift extends i3.ModularAccessor {
     return customSelect(
       'SELECT"users"."id" AS "nested_0.id", "users"."name" AS "nested_0.name", users.id AS "\$n_0", users.id AS "\$n_1" FROM users WHERE id = ?1',
       variables: [i0.Variable<int>(id)],
-      readsFrom: {users, friends},
+      readsFrom: {this.users, this.friends},
     ).asyncMap(
       (i0.QueryRow row) async => i1.UserWithFriends(
-        await users.mapFromRow(row, tablePrefix: 'nested_0'),
+        await this.users.mapFromRow(row, tablePrefix: 'nested_0'),
         friends:
             await customSelect(
                   'SELECT * FROM users AS a INNER JOIN friends ON user_a = a.id WHERE user_b = ?1 OR user_a = ?2',
@@ -845,7 +856,7 @@ class WithExistingDrift extends i3.ModularAccessor {
                     i0.Variable<int>(row.read('\$n_0')),
                     i0.Variable<int>(row.read('\$n_1')),
                   ],
-                  readsFrom: {users, friends},
+                  readsFrom: {this.users, this.friends},
                 )
                 .map(
                   (i0.QueryRow row) =>

@@ -1106,7 +1106,8 @@ class _ExpandedVariableWriter {
           (e) => !e.supportsIndexedParameters,
         ) &&
         query.referencesAnyElementMoreThanOnce) {
-      _buffer.write('executor.dialect.desugarDuplicateVariables([');
+      final dialect = _queryWriter.drift3 ? 'dialect' : 'executor.dialect';
+      _buffer.write('$dialect.desugarDuplicateVariables([');
       _writeNewVariables();
       _buffer.write('],');
 

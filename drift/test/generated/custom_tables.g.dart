@@ -2355,7 +2355,16 @@ class $NoIdsTableManager
           createCompanionCallback: ({required Uint8List payload}) =>
               NoIdsCompanion.insert(payload: payload),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<NoIds, NoIdRow>(table),
+                  BaseReferences<_$CustomTablesDb, NoIds, NoIdRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2487,7 +2496,16 @@ class $WithDefaultsTableManager
                 Value<int> rowid = const Value.absent(),
               }) => WithDefaultsCompanion.insert(a: a, b: b, rowid: rowid),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<WithDefaults, WithDefault>(table),
+                  BaseReferences<_$CustomTablesDb, WithDefaults, WithDefault>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2644,7 +2662,16 @@ class $WithConstraintsTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<WithConstraints, WithConstraint>(table),
+                  BaseReferences<
+                    _$CustomTablesDb,
+                    WithConstraints,
+                    WithConstraint
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2829,7 +2856,16 @@ class $ConfigTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<ConfigTable, Config>(table),
+                  BaseReferences<_$CustomTablesDb, ConfigTable, Config>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2997,7 +3033,16 @@ class $MytableTableManager
                 somedate: somedate,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<Mytable, MytableData>(table),
+                  BaseReferences<_$CustomTablesDb, Mytable, MytableData>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -3150,7 +3195,12 @@ class $EmailTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<Email, EMail>(table),
+                  BaseReferences<_$CustomTablesDb, Email, EMail>(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -3288,7 +3338,16 @@ class $WeirdTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<WeirdTable, WeirdData>(table),
+                  BaseReferences<_$CustomTablesDb, WeirdTable, WeirdData>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

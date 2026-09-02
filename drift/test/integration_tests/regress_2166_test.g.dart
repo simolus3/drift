@@ -319,7 +319,16 @@ class $$_SomeTableTableTableManager
                 Value<String?> name = const Value.absent(),
               }) => _SomeTableCompanion.insert(id: id, name: name),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$_SomeTableTable, _SomeTableData>(table),
+                  BaseReferences<_$_SomeDb, $_SomeTableTable, _SomeTableData>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

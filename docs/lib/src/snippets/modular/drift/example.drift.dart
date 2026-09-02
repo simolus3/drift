@@ -247,7 +247,10 @@ class $TodosTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (e.readTable(table), i1.$TodosReferences(db, table, e)),
+                (e) => (
+                  e.readTable<i1.Todos, i1.Todo>(table),
+                  i1.$TodosReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: ({category = false}) {
@@ -501,7 +504,7 @@ class $CategoriesTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<i1.Categories, i1.Category>(table),
                   i1.$CategoriesReferences(db, table, e),
                 ),
               )
@@ -1074,8 +1077,8 @@ class ExampleDrift extends i2.ModularAccessor {
     return customSelect(
       'SELECT * FROM todos WHERE ${generatedpredicate.sql}',
       variables: [...generatedpredicate.introducedVariables],
-      readsFrom: {todos, ...generatedpredicate.watchedTables},
-    ).asyncMap(todos.mapFromRow);
+      readsFrom: {this.todos, ...generatedpredicate.watchedTables},
+    ).asyncMap(this.todos.mapFromRow);
   }
 
   i0.Selectable<i1.Todo> getTodos({GetTodos$predicate? predicate}) {
@@ -1088,8 +1091,8 @@ class ExampleDrift extends i2.ModularAccessor {
     return customSelect(
       'SELECT * FROM todos WHERE ${generatedpredicate.sql}',
       variables: [...generatedpredicate.introducedVariables],
-      readsFrom: {todos, ...generatedpredicate.watchedTables},
-    ).asyncMap(todos.mapFromRow);
+      readsFrom: {this.todos, ...generatedpredicate.watchedTables},
+    ).asyncMap(this.todos.mapFromRow);
   }
 
   i1.Todos get todos =>

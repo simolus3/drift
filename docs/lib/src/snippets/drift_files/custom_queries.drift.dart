@@ -13,7 +13,7 @@ abstract class $MyDatabase extends i0.GeneratedDatabase {
     return customSelect(
       'SELECT *, (SELECT COUNT(*) FROM todo_items WHERE category = c.id) AS amount FROM categories AS c',
       variables: [],
-      readsFrom: {todoItems, categories},
+      readsFrom: {this.todoItems, this.categories},
     ).map(
       (i0.QueryRow row) => CategoriesWithCountResult(
         id: row.read<int>('id'),

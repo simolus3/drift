@@ -379,7 +379,16 @@ class $GeopolyTestTableManager
               }) =>
                   GeopolyTestCompanion.insert(shape: shape, a: a, rowid: rowid),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<GeopolyTest, GeopolyTestData>(table),
+                  BaseReferences<
+                    _$_GeopolyTestDatabase,
+                    GeopolyTest,
+                    GeopolyTestData
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

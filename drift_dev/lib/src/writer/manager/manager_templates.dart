@@ -236,8 +236,13 @@ class _ManagerCodeTemplates {
   }) {
     final forwardRelations = relations.where((e) => !e.isReverse).toList();
     final reverseRelations = relations.where((e) => e.isReverse).toList();
+
+    final generatedTable = leaf.dartCode(leaf.entityInfoType(table));
+    final rowClass = leaf.dartCode(leaf.rowType(table));
+    final dbType = databaseType(leaf, dbClassName);
+
     return """class ${rootTableManagerName(table)} extends ${leaf.drift("RootTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)} {
-    ${rootTableManagerName(table)}(${databaseType(leaf, dbClassName)} db, ${tableClassWithPrefix(table, leaf)} table) : super(
+    ${rootTableManagerName(table)}($dbType db, ${tableClassWithPrefix(table, leaf)} table) : super(
       ${leaf.drift("TableManagerState")}(
         db: db,
         table: table,
@@ -249,7 +254,7 @@ class _ManagerCodeTemplates {
         withReferenceMapper: (p0) => p0
               .map(
                   (e) =>
-                     (e.readTable(table), ${rowReferencesClassName(table: table, relations: relations, dbClassName: dbClassName, leaf: leaf, withTypeArgs: false)}(db, table, e))
+                     (e.readTable<$generatedTable, $rowClass>(table), ${rowReferencesClassName(table: table, relations: relations, dbClassName: dbClassName, leaf: leaf, withTypeArgs: true)}(db, table, e))
                   )
               .toList(),
         prefetchHooksCallback: ${relations.isEmpty ? 'null' : """

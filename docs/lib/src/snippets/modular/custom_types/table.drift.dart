@@ -149,7 +149,18 @@ class $$PeriodicRemindersTableTableManager
                 reminder: reminder,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i1.$PeriodicRemindersTable, i1.PeriodicReminder>(
+                    table,
+                  ),
+                  i0.BaseReferences<
+                    i0.GeneratedDatabase,
+                    i1.$PeriodicRemindersTable,
+                    i1.PeriodicReminder
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

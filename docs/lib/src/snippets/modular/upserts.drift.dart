@@ -120,7 +120,16 @@ class $$WordsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i1.$WordsTable, i1.Word>(table),
+                  i0.BaseReferences<
+                    i0.GeneratedDatabase,
+                    i1.$WordsTable,
+                    i1.Word
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -301,7 +310,16 @@ class $$MatchResultsTableTableManager
                 teamAWon: teamAWon,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i1.$MatchResultsTable, i1.MatchResult>(table),
+                  i0.BaseReferences<
+                    i0.GeneratedDatabase,
+                    i1.$MatchResultsTable,
+                    i1.MatchResult
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

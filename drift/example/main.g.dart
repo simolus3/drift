@@ -1000,7 +1000,7 @@ class $$TodoCategoriesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$TodoCategoriesTable, TodoCategory>(table),
                   $$TodoCategoriesTableReferences(db, table, e),
                 ),
               )
@@ -1297,7 +1297,7 @@ class $$TodoItemsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$TodoItemsTable, TodoItem>(table),
                   $$TodoItemsTableReferences(db, table, e),
                 ),
               )

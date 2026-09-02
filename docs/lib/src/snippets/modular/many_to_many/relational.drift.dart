@@ -203,7 +203,7 @@ class $$ShoppingCartsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<i2.$ShoppingCartsTable, i2.ShoppingCart>(table),
                   i2.$$ShoppingCartsTableReferences(db, table, e),
                 ),
               )
@@ -586,7 +586,10 @@ class $$ShoppingCartEntriesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<
+                    i2.$ShoppingCartEntriesTable,
+                    i2.ShoppingCartEntry
+                  >(table),
                   i2.$$ShoppingCartEntriesTableReferences(db, table, e),
                 ),
               )

@@ -128,7 +128,16 @@ class $$ShoppingCartsTableTableManager
                 required i3.ShoppingCartEntries entries,
               }) => i2.ShoppingCartsCompanion.insert(id: id, entries: entries),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i2.$ShoppingCartsTable, i2.ShoppingCart>(table),
+                  i0.BaseReferences<
+                    i0.GeneratedDatabase,
+                    i2.$ShoppingCartsTable,
+                    i2.ShoppingCart
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

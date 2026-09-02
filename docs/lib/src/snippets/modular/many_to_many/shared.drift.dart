@@ -146,7 +146,16 @@ class $$BuyableItemsTableTableManager
                 price: price,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i1.$BuyableItemsTable, i1.BuyableItem>(table),
+                  i0.BaseReferences<
+                    i0.GeneratedDatabase,
+                    i1.$BuyableItemsTable,
+                    i1.BuyableItem
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),

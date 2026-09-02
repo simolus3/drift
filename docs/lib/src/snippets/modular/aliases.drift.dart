@@ -161,7 +161,16 @@ class $$GeoPointsTableTableManager
                 longitude: longitude,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i1.$GeoPointsTable, i1.GeoPoint>(table),
+                  i0.BaseReferences<
+                    i0.GeneratedDatabase,
+                    i1.$GeoPointsTable,
+                    i1.GeoPoint
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -342,7 +351,16 @@ class $$RoutesTableTableManager
                 destination: destination,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<i1.$RoutesTable, i1.Route>(table),
+                  i0.BaseReferences<
+                    i0.GeneratedDatabase,
+                    i1.$RoutesTable,
+                    i1.Route
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
