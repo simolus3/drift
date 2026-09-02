@@ -1,4 +1,4 @@
-## 2.24.4-wip
+## 2.34.4
 
 - Allow using `rowid` extension on virtual tables, as they usually provide rowids as well.
 

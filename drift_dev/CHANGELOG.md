@@ -1,7 +1,8 @@
-## 2.35.0 (unreleased)
+## 2.34.6
 
 - Remove legacy command used to migrate from `moor` from `drift`.
 - Fix `drift_dev` command not completing when spawning a schema isolate fails.
+- Support analyzer versions 14.x.
 
 ## 2.34.5
 

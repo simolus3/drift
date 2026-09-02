@@ -1,4 +1,4 @@
-## 3.0.0-wip.0
+## 3.0.0-alpha.0
 
 Changes from `drift` versions 2.x:
 
