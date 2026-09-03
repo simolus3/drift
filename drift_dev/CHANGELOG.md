@@ -1,3 +1,8 @@
+## 2.34.7-wip
+
+- Add the `upserts_write_null_values` build option, enabling
+  `DriftDatabaseOptions.upsertsWriteNullValues` on generated databases (#2998).
+
 ## 2.34.6
 
 - Remove legacy command used to migrate from `moor` from `drift`.

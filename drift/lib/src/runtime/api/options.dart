@@ -12,6 +12,40 @@ class DriftDatabaseOptions {
 
   final bool _storeDateTimeAsText;
 
+  /// Whether the `DO UPDATE SET` clause of an upsert should assign columns
+  /// holding a `null` value instead of leaving them out of the statement.
+  ///
+  /// By default (and for backwards-compatibility), drift builds the update
+  /// clause of an upsert by treating `null` values as absent. So for an
+  /// [Insertable] describing a row with a `null` column, that column is
+  /// omitted from `DO UPDATE SET` entirely, meaning that a conflicting row
+  /// keeps whatever value it had before:
+  ///
+  /// ```sql
+  /// -- with upsertsWriteNullValues: false (the default)
+  /// INSERT INTO "users" ("id", "name", "nickname") VALUES (?, ?, NULL)
+  ///   ON CONFLICT("id") DO UPDATE SET "id" = ?, "name" = ?
+  /// ```
+  ///
+  /// This is a sensible default for partial updates, but it is surprising for
+  /// upserts: the row that was inserted and the row that was updated no longer
+  /// describe the same data. When this option is enabled, `null` values are
+  /// written out explicitly, so that a conflicting row ends up matching the row
+  /// that was passed to the insert:
+  ///
+  /// ```sql
+  /// -- with upsertsWriteNullValues: true
+  /// INSERT INTO "users" ("id", "name", "nickname") VALUES (?, ?, NULL)
+  ///   ON CONFLICT("id") DO UPDATE SET "id" = ?, "name" = ?, "nickname" = NULL
+  /// ```
+  ///
+  /// Note that this only affects columns that are explicitly set to `null`.
+  /// Columns that are absent from the [Insertable] (e.g. a `Value.absent()` in
+  /// a companion) are never written, regardless of this option.
+  ///
+  /// See also: https://github.com/simolus3/drift/issues/2998
+  final bool upsertsWriteNullValues;
+
   /// Creates database-specific database options.
   ///
   /// When [storeDateTimeAsText] is enabled (it defaults to `false` for
@@ -20,13 +54,19 @@ class DriftDatabaseOptions {
   ///
   /// For details on how datetimes can be stored, see [the documentation].
   ///
+  /// When [upsertsWriteNullValues] is enabled (it defaults to `false` for
+  /// backwards-compatibility), `null` values are written into the
+  /// `DO UPDATE SET` clause of upserts instead of being treated as absent.
+  ///
   /// [the documentation]: https://drift.simonbinder.eu/docs/getting-started/advanced_dart_tables/#supported-column-types
-  const DriftDatabaseOptions({bool storeDateTimeAsText = false})
-    : _storeDateTimeAsText = storeDateTimeAsText,
-      // ignore: deprecated_member_use_from_same_package
-      types = storeDateTimeAsText
-          ? const SqlTypes(true)
-          : const SqlTypes(false);
+  const DriftDatabaseOptions({
+    bool storeDateTimeAsText = false,
+    this.upsertsWriteNullValues = false,
+  }) : _storeDateTimeAsText = storeDateTimeAsText,
+       // ignore: deprecated_member_use_from_same_package
+       types = storeDateTimeAsText
+           ? const SqlTypes(true)
+           : const SqlTypes(false);
 
   /// Creates a type mapping suitable for these options and the given [dialect].
   SqlTypes createTypeMapping(SqlDialect dialect) {

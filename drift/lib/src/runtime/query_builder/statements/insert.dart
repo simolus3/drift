@@ -389,7 +389,14 @@ class InsertStatement<T extends Table, D> {
             .throwIfInvalid(upsertInsertable);
       }
 
-      final updateSet = upsertInsertable.toColumns(true);
+      // Unless `upsertsWriteNullValues` is enabled, `null` values are treated
+      // as absent here, which means that they are left out of the update
+      // clause entirely. That keeps the previous value of a conflicting row
+      // instead of overwriting it with `null`.
+      // https://github.com/simolus3/drift/issues/2998
+      final updateSet = upsertInsertable.toColumns(
+        !ctx.options.upsertsWriteNullValues,
+      );
 
       writeOnConflictConstraint(
         onConflict.target,
