@@ -62,7 +62,7 @@ In a database or database accessor class, the method can then be called like thi
 <Snippet href="/lib/src/snippets/modular/schema_inspection.dart" name="updateTodo" />
 
 Hopefully, this page gives you some pointers to start reflectively inspecting your drift databases.
-The linked Dart documentation also expains the concepts in more detail.
+The linked Dart documentation also explains the concepts in more detail.
 If you have questions about this, or have a suggestion for more examples to include on this page, feel free to [start a discussion](https://github.com/simolus3/drift/discussions/new?category=q-a) about this.
 
 [ResultSetImplementation]: https://drift.simonbinder.eu/api/drift/resultsetimplementation-class

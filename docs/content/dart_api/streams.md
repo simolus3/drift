@@ -93,7 +93,7 @@ It's also possible to mark a table as updated manually:
 
 ## Caveats
 
-While streams are useful to automically get updates for whatever queries you're running, it's
+While streams are useful to automatically get updates for whatever queries you're running, it's
 important to understand their functionality and limitations.
 Stream queries are implemented as a heuristic in drift: For each active stream, drift tracks
 which tables it's listening on (information that is available from the query builder).

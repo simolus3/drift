@@ -33,7 +33,7 @@ Additional examples from our awesome community are available as well:
 - The [clean architecture](https://github.com/rodydavis/clean_architecture_todo_app) example app written by [Rody Davis](https://github.com/rodydavis) shows how to use drift
   in a more complex architecture.
 - [Abdelrahman Mostafa Elmarakby](https://github.com/abdelrahmanelmarakby) wrote an animated version of the todo app available [here](https://github.com/abdelrahmanelmarakby/todo_with_moor_and_animation).
-- [Abdelrahman Mostafa Elmarakby](https://github.com/abdelrahmanelmarakby) wrote an hotel booking app with GetX version with diffrent relationships available [here](https://github.com/abdelrahmanelmarakby/hotels_booking).
+- [Abdelrahman Mostafa Elmarakby](https://github.com/abdelrahmanelmarakby) wrote an hotel booking app with GetX version with different relationships available [here](https://github.com/abdelrahmanelmarakby/hotels_booking).
 - [BingeTube](https://bingetube.io/) is an app letting you watch YouTube channels in chronological order. It is [open source](https://github.com/mohansella/BingeTube) and uses
   drift for persistence.
 - The [HackerNews reader app](https://github.com/filiph/hn_app) from the [Boring Flutter Show](https://www.youtube.com/playlist?list=PLjxrf2q8roU3ahJVrSgAnPjzkpGmL9Czl)

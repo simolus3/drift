@@ -53,7 +53,7 @@ If there were 1000 todos, this would issue 1000 queries to fetch the category fo
 
     <h4>How does this affect me?</h4>
 
-    If you have foreign keys contraints enabled (`PRAGMA foreign_keys = ON`) this won't affect you. The database will enfore that the `id` column on the `categories` table is the same as the `category` column on the `todos` table.
+    If you have foreign keys constraints enabled (`PRAGMA foreign_keys = ON`) this won't affect you. The database will enforce that the `id` column on the `categories` table is the same as the `category` column on the `todos` table.
 
     If you don't have foreign key constraints enabled, you should be aware that the above query will not check that the category with `id` 1 exists. It will only check that the `category` column on the `todos` table is 1.
 

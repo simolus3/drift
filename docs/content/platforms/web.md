@@ -99,7 +99,7 @@ web/
 #### Additional headers
 
 On browsers that support it, drift uses the origin-private part of the [FileSystem Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) to store databases efficiently.
-As parts of that API are asynchronous, and since sqlite3 expectes a synchronous file system, we need to
+As parts of that API are asynchronous, and since sqlite3 expects a synchronous file system, we need to
 use two workers with shared memory and `Atomics.wait`/`notify`.
 Just like the official sqlite3 port to the web, __this requires your website to be served with two special headers__:
 
@@ -369,7 +369,7 @@ Be aware that `dart2js` needs to be used as a compiler. `dartdevc` generates mod
 for workers without additional setup.
 
 Compiling the `sqlite3.wasm` file requires a C toolchain capable of compiling to WebAssembly.
-On Arch Linux, I'm using `clang` with the `wasi-compiler-rt` and `wasi-libc` pacakges.
+On Arch Linux, I'm using `clang` with the `wasi-compiler-rt` and `wasi-libc` packages.
 Depending on your distribution, you may have to compile the [wasi-sdk](https://github.com/WebAssembly/wasi-sdk) or
 another toolchain yourself.
 Finally, we're also using [binaryen](https://github.com/WebAssembly/binaryen) as an optimizer.

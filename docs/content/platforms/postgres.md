@@ -125,4 +125,4 @@ by SQLite, only a tiny subset of PostgreSQL's advanced operators and functions a
 
 If you're running into problems or bugs with the postgres database, please let us know by creating an issue
 or a discussion.
-Contributions expanding wrappers around PosgreSQL functions are also much appreciated.
+Contributions expanding wrappers around PostgreSQL functions are also much appreciated.
