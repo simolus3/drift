@@ -37,6 +37,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'named_parameters_always_required',
         'scoped_dart_components',
         'store_date_time_values_as_text',
+        'upserts_write_null_values',
         'case_from_dart_to_sql',
         'write_to_columns_mixins',
         'assume_correct_reference',
@@ -141,6 +142,10 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'store_date_time_values_as_text',
         (v) => v as bool? ?? false,
       ),
+      upsertsWriteNullValues: $checkedConvert(
+        'upserts_write_null_values',
+        (v) => v as bool? ?? false,
+      ),
       caseFromDartToSql: $checkedConvert(
         'case_from_dart_to_sql',
         (v) =>
@@ -215,6 +220,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
     'modules': 'sqlite_modules',
     'sqliteAnalysisOptions': 'sqlite',
     'storeDateTimeValuesAsText': 'store_date_time_values_as_text',
+    'upsertsWriteNullValues': 'upserts_write_null_values',
     'caseFromDartToSql': 'case_from_dart_to_sql',
     'writeToColumnsMixins': 'write_to_columns_mixins',
     'fatalWarnings': 'fatal_warnings',
@@ -259,6 +265,7 @@ Map<String, dynamic> _$DriftOptionsToJson(
   'named_parameters_always_required': instance.namedParametersAlwaysRequired,
   'scoped_dart_components': instance.scopedDartComponents,
   'store_date_time_values_as_text': instance.storeDateTimeValuesAsText,
+  'upserts_write_null_values': instance.upsertsWriteNullValues,
   'case_from_dart_to_sql':
       _$CaseFromDartToSqlEnumMap[instance.caseFromDartToSql]!,
   'write_to_columns_mixins': instance.writeToColumnsMixins,

@@ -172,15 +172,21 @@ class DatabaseWriter {
         ..writeln('int get schemaVersion => $version;');
     }
 
-    if (scope.options.storeDateTimeValuesAsText) {
-      // Override database options to reflect that DateTimes are stored as text.
+    // Override database options to reflect build options changing the runtime
+    // behavior of the generated database.
+    final optionArguments = [
+      if (scope.options.storeDateTimeValuesAsText) 'storeDateTimeAsText: true',
+      if (scope.options.upsertsWriteNullValues) 'upsertsWriteNullValues: true',
+    ];
+
+    if (optionArguments.isNotEmpty) {
       final options = schemaScope.drift('DriftDatabaseOptions');
 
       schemaScope
         ..writeln('@override')
         ..writeln(
           '$options get options => '
-          'const $options(storeDateTimeAsText: true);',
+          'const $options(${optionArguments.join(', ')});',
         );
     }
 

@@ -77,6 +77,15 @@ At the moment, drift supports these options:
   The function has a parameter for each table that is available in the query, making it easier to get aliases right when using
   Dart placeholders.
 - `store_date_time_values_as_text`: Whether date-time columns should be stored as ISO 8601 string instead of a unix timestamp.
+- `upserts_write_null_values` (defaults to `false`): Controls how the `DO UPDATE SET` clause of an upsert
+  (e.g. `insertOnConflictUpdate`, or `insert` with a `DoUpdate` clause) handles columns that are `null`.
+  By default, drift treats `null` values as absent and leaves those columns out of the update clause, so a
+  conflicting row keeps whatever value it had before. That means the same upsert produces a different row
+  depending on whether it inserted or updated. With this option enabled, `null` values are written out
+  explicitly (`SET "col" = NULL`), so the resulting row always matches the row that was passed to the insert.
+  This only affects insertables that distinguish `null` from absent by value (like generated row classes) -
+  companions always write exactly the values that are `present`, with or without this option.
+  See [issue 2998](https://github.com/simolus3/drift/issues/2998) for context.
   For more information on these modes, see [datetime options](../dart_api/tables.md#datetime-options).
 - `case_from_dart_to_sql` (defaults to `snake_case`): Controls how the table and column names are re-cased from the Dart identifiers.
   The possible values are `preserve`, `camelCase`, `CONSTANT_CASE`, `snake_case`, `PascalCase`, `lowercase` and `UPPERCASE` (default: `snake_case`).

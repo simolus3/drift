@@ -1,3 +1,10 @@
+## 2.34.5-wip
+
+- Add `DriftDatabaseOptions.upsertsWriteNullValues`, an opt-in option making the
+  `DO UPDATE SET` clause of upserts write `null` values instead of treating them
+  as absent. This makes an upsert yield the row that was passed to it regardless
+  of whether it inserted or updated (#2998).
+
 ## 2.34.4
 
 - Allow using `rowid` extension on virtual tables, as they usually provide rowids as well.

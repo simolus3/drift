@@ -135,6 +135,13 @@ class DriftOptions {
   @JsonKey(defaultValue: false)
   final bool storeDateTimeValuesAsText;
 
+  /// Whether the `DO UPDATE SET` clause of an upsert should assign columns
+  /// holding a `null` value instead of treating them as absent.
+  ///
+  /// See `DriftDatabaseOptions.upsertsWriteNullValues` for details.
+  @JsonKey(name: 'upserts_write_null_values', defaultValue: false)
+  final bool upsertsWriteNullValues;
+
   @JsonKey(name: 'case_from_dart_to_sql', defaultValue: CaseFromDartToSql.snake)
   final CaseFromDartToSql caseFromDartToSql;
 
@@ -185,6 +192,7 @@ class DriftOptions {
     this.modules = const [],
     this.sqliteAnalysisOptions,
     this.storeDateTimeValuesAsText = false,
+    this.upsertsWriteNullValues = false,
     this.dialect = const DialectOptions(null, [SqlDialect.sqlite], null),
     this.caseFromDartToSql = CaseFromDartToSql.snake,
     this.preamble,
@@ -221,6 +229,7 @@ class DriftOptions {
     required this.modules,
     required this.sqliteAnalysisOptions,
     required this.storeDateTimeValuesAsText,
+    required this.upsertsWriteNullValues,
     required this.caseFromDartToSql,
     required this.writeToColumnsMixins,
     required this.fatalWarnings,
