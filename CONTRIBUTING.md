@@ -16,7 +16,7 @@ most certainly helps to resolve the issue quickly.
 All kinds of pull requests are absolutely appreciated! Before working on bigger changes, it
 can be helpful to create an issue describing your plans to help coordination.
 
-When working on drift, its recommended to fork the `develop` branch and also target that
+When working on drift, it's recommended to fork the `develop` branch and also target that
 branch for PRs. When possible, we only use the `latest_release` branch to reflect the state
 that's been released to pub.
 
@@ -90,7 +90,7 @@ Minor changes will be published directly, no special steps are necessary. For ma
 updates that span multiple versions, we should follow these steps
 
 1. Changelogs: The changelog of `drift_dev` should only mention changes to the generator,
-   most changes shuold be in `drift/CHANGELOG.md`.
+   most changes should be in `drift/CHANGELOG.md`.
 2. Make sure each package has the correct dependencies: `drift_dev` version `1.x` should depend
    on `drift` `1.x` as well to ensure users will always `dart pub get` drift packages that are compatible
    with each other.
@@ -102,4 +102,4 @@ The `sqlparser` library can be published independently of drift.
 ### Building the documentation
 
 We use `build_runner` to build the documentation. The [readme](docs/README.md) contains everything
-you need to know go get started.
+you need to know to get started.

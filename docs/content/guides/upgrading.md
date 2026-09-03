@@ -61,7 +61,7 @@ maintain and to unblock upcoming new features. This release also provides some
 new features, like nested transactions or support for `RETURNING` for updates
 and deletes in the dart_api.
 We hope the upgrade is worthwhile. If you run into any issues, please do not
-hesistate to [start a new discussion](https://github.com/simolus3/drift/discussions)
+hesitate to [start a new discussion](https://github.com/simolus3/drift/discussions)
 or to [open an issue](https://github.com/simolus3/drift/issues).
 Thanks for using drift!
 

@@ -43,7 +43,7 @@ They use Flutter's package channels and support both Android and iOS. They don't
 projects not using flutter.
 
 For new projects, we generally recommend the newer ffi-based implementation, but `drift_sqflite`
-is maintaned and supported too.
+is maintained and supported too.
 
 ### using `drift/native`
 

@@ -132,7 +132,7 @@ a todo item with this query:
 
 <Snippet href="/lib/src/snippets/dart_api/expressions.dart" name="averageItemLength" />
 
-__Note__: We're using `selectOnly` instead of `select` because we're not interested in any colum that
+__Note__: We're using `selectOnly` instead of `select` because we're not interested in any column that
 `todos` provides - we only care about the average length. More details are available
 [here](select.md#group-by).
 
