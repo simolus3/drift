@@ -12,6 +12,5 @@ library;
 export 'src/web/sql_js.dart';
 export 'src/web/storage.dart' hide CustomSchemaVersionSave;
 export 'src/web/web_db.dart';
-export 'src/web/channel_legacy_dummy.dart'
-    if (dart.library.html) 'src/web/channel_legacy.dart';
+export 'src/web/channel_legacy_dummy.dart';
 export 'src/web/channel_new.dart';

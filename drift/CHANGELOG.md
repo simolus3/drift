@@ -1,3 +1,7 @@
+## 3.35.0-wip
+
+- Breaking change (web): Remove `PortToChannel` extension on `dart:html` type. Use `WebPortToChannel` extension on `MessagePort` from `package:web` instead.
+
 ## 2.34.4
 
 - Allow using `rowid` extension on virtual tables, as they usually provide rowids as well.
