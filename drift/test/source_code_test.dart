@@ -10,17 +10,12 @@ import 'package:test/test.dart';
 
 void main() {
   test('drift does not import legacy JS interop files', () {
-    // The old web APIs can't be used in dart2wasm, so we shouldn't use them in
-    // web-specific drift code.
-    const allowedLegacyCode = ['lib/src/web/channel_legacy.dart'];
-
     final failures = <(String, String)>[];
 
     void check(FileSystemEntity e) {
       switch (e) {
         case File():
           if (p.extension(e.path) != '.dart') return;
-          if (allowedLegacyCode.contains(e.path)) return;
 
           final text = e.readAsStringSync();
           final parsed = parseString(content: text).unit;
