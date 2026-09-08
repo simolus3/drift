@@ -72,7 +72,36 @@ emailsWithFts5: SELECT * FROM email WHERE email MATCH 'fts5' ORDER BY rank;
 
 The `bm25`, `highlight` and `snippet` functions from fts5 can also be used in custom queries.
 
-It's not possible to declare fts5 tables, or queries on fts5 tables, in Dart.
+It's not possible to declare fts5 tables in Dart.
+Queries on fts5 tables declared in a drift file are supported with the helpers
+from `package:drift/extensions/fts5.dart` though.
+Assuming the `email` table from above was declared in an included drift file,
+a full-text search could look like this:
+```dart
+import 'package:drift/drift.dart';
+import 'package:drift/extensions/fts5.dart';
+
+// find emails matching the fts5 query, best matches first.
+Future<List<Email>> searchEmails(String query) {
+  return (select(email)
+        ..where((tbl) => tbl.match(query))
+        ..orderBy([(tbl) => OrderingTerm(expression: tbl.rank)]))
+      .get();
+}
+
+// return the titles of all matching emails with the search terms
+// wrapped in `<b>` tags.
+Future<List<String>> highlightedTitles(String query) {
+  final highlight = email.highlight(email.title, before: '<b>', after: '</b>');
+
+  return (selectOnly(email)
+        ..addColumns([highlight])
+        ..where(email.match(query)))
+      .map((row) => row.read(highlight)!)
+      .get();
+}
+```
+
 You can learn more about the fts5 extension on [sqlite.org](https://www.sqlite.org/fts5.html).
 
 ## geopoly

@@ -1,5 +1,6 @@
 ## 3.35.0-wip
 
+- Add support for FTS5 queries in the Dart API: `match`, `matchExp`, `highlight`, `snippet`, `bm25` and `rank` are now available as extension methods on FTS5 tables from `package:drift/extensions/fts5.dart` (#3843).
 - Breaking change (web): Remove `PortToChannel` extension on `dart:html` types. Use `WebPortToChannel` extension on `MessagePort` from `package:web` instead.
 - Web: Fix race to OPFS file handle in compatiblity check.
 
