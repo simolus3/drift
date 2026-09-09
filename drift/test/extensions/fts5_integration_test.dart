@@ -3,7 +3,7 @@ library;
 
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/extensions/fts5.dart';
-import 'package:sqlite3/sqlite3.dart' show SqliteException;
+import 'package:sqlite3/common.dart' show SqliteException;
 import 'package:test/test.dart';
 
 import '../generated/custom_tables.dart';

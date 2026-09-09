@@ -29,7 +29,7 @@ final class CustomExpression<D extends Object> extends Expression<D> {
 
   @override
   void compileWith(StatementCompiler compiler) {
-    return customText.compileWith(compiler);
+    compiler.writeExpression(this, () => customText.compileWith(compiler));
   }
 
   @override

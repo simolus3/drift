@@ -97,7 +97,10 @@ enum BinaryOperator implements SqlComponent {
   /// A `LIKE` operator in SQL.
   like(Precedence.comparison, 'LIKE'),
 
-  /// A `LIKE` operator in SQL.
+  /// A `MATCH` operator in SQL.
+  match(Precedence.comparison, 'MATCH'),
+
+  /// A `REGEXP` operator in SQL.
   regexp(Precedence.comparison, 'REGEXP'),
 
   /// An `IS` operator in SQL.

@@ -720,7 +720,7 @@ void main() {
       verify(
         session.executeSql(
           'WITH _source AS ('
-          'SELECT "categories"."desc" || CAST((COUNT("todos"."id")) AS TEXT) AS "c0",'
+          'SELECT "categories"."desc" || CAST(COUNT("todos"."id") AS TEXT) AS "c0",'
           '"categories"."priority" AS "c1" FROM "todos" '
           'INNER JOIN "categories" ON "categories"."id" = "todos"."category" '
           'GROUP BY "categories"."id")'

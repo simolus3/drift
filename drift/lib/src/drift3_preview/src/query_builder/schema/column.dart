@@ -21,6 +21,18 @@ base class SchemaColumn<T extends Object> extends Expression<T> {
   SchemaColumn({required this.name, required this.sqlType});
 
   @override
+  int get hashCode => Object.hash(name, owningResultSet);
+
+  @override
+  bool operator ==(Object other) {
+    if (other case final SchemaColumn other) {
+      return other.name == name && other.owningResultSet == owningResultSet;
+    }
+
+    return false;
+  }
+
+  @override
   String toString() {
     return '${owningResultSet.alias}.$name';
   }

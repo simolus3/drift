@@ -728,6 +728,7 @@ abstract base class StatementCompiler {
   void addCastExpression(CastExpression expr) {
     writeExpression(expr, () {
       statement.buffer.write('CAST(');
+      _expressionPrecedence = null; // We're inside of parentheses
       expr.inner.compileWith(this);
       statement.buffer.write(' AS ');
       addTypeName(expr.sqlType.resolveIn(dialect));
@@ -740,9 +741,12 @@ abstract base class StatementCompiler {
   }
 
   void addTuple(ExpressionTuple tuple) {
+    final savedPrecedence = _expressionPrecedence;
     statement.buffer.write('(');
+    _expressionPrecedence = null;
     addCommaSeparated(tuple.values);
     statement.buffer.write(')');
+    _expressionPrecedence = savedPrecedence;
   }
 
   void addSubqueryExpression(SubqueryExpression e) {
@@ -814,6 +818,7 @@ abstract base class StatementCompiler {
     writeExpression(expr, () {
       expr.function.compileWith(this);
       statement.buffer.write(' OVER (');
+      _expressionPrecedence = null;
       if (expr.partitionBy case final partitionBy?
           when partitionBy.isNotEmpty) {
         statement.buffer.write('PARTITION BY ');

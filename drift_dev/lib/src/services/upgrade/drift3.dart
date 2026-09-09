@@ -282,6 +282,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   void _rewriteImportString(StringLiteral l) {
     const changedImports = {
       'drift': {
+        'extensions/fts5.dart': 'package:drift_sqlite/extensions/fts5.dart',
         'extensions/geopoly.dart':
             'package:drift_sqlite/extensions/geopoly.dart',
         'backends.dart': 'package:drift3_preview/drift.dart',
