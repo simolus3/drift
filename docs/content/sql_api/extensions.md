@@ -61,14 +61,12 @@ To enable the fts5 extension in drift files and compiled queries, modify the
 
 Just like you'd expect when using sqlite, you can create a fts5 table in a drift file
 by using a `CREATE VIRTUAL TABLE` statement.
-```sql
-CREATE VIRTUAL TABLE email USING fts5(sender, title, body);
-```
+
+<Snippet href="/lib/src/snippets/modular/drift/fts5.drift" name="table" />
 
 Queries on fts5 tables work like expected:
-```sql
-emailsWithFts5: SELECT * FROM email WHERE email MATCH 'fts5' ORDER BY rank;
-```
+
+<Snippet href="/lib/src/snippets/modular/drift/fts5.drift" name="query" />
 
 The `bm25`, `highlight` and `snippet` functions from fts5 can also be used in custom queries.
 
@@ -77,30 +75,8 @@ Queries on fts5 tables declared in a drift file are supported with the helpers
 from `package:drift/extensions/fts5.dart` though.
 Assuming the `email` table from above was declared in an included drift file,
 a full-text search could look like this:
-```dart
-import 'package:drift/drift.dart';
-import 'package:drift/extensions/fts5.dart';
 
-// find emails matching the fts5 query, best matches first.
-Future<List<Email>> searchEmails(String query) {
-  return (select(email)
-        ..where((tbl) => tbl.match(query))
-        ..orderBy([(tbl) => OrderingTerm(expression: tbl.rank)]))
-      .get();
-}
-
-// return the titles of all matching emails with the search terms
-// wrapped in `<b>` tags.
-Future<List<String>> highlightedTitles(String query) {
-  final highlight = email.highlight(email.title, before: '<b>', after: '</b>');
-
-  return (selectOnly(email)
-        ..addColumns([highlight])
-        ..where(email.match(query)))
-      .map((row) => row.read(highlight)!)
-      .get();
-}
-```
+<Snippet href="/lib/src/snippets/modular/drift/dart_example.dart" name="email-queries" />
 
 You can learn more about the fts5 extension on [sqlite.org](https://www.sqlite.org/fts5.html).
 

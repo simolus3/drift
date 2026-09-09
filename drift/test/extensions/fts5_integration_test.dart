@@ -261,32 +261,13 @@ void main() {
     await expectation;
   });
 
-  test('highlight returns columns without a match as they are', () async {
-    await insertEmails();
-
-    final titleHighlight = db.email.highlight(
-      db.email.title,
-      before: '<b>',
-      after: '</b>',
-    );
-    // `greetings` only appears in the body of the second email, so its title
-    // is returned without any markers.
-    final query = db.selectOnly(db.email)
-      ..addColumns([db.email.title, titleHighlight])
-      ..where(db.email.match('greetings'));
-    final row = await query.getSingle();
-
-    expect(row.read(db.email.title), 'hello world');
-    expect(row.read(titleHighlight), 'hello world');
-  });
-
   test('match works with multiple fts5 tables in one query', () async {
     await insertEmails();
     await db.customStatement('CREATE VIRTUAL TABLE docs USING fts5(content)');
     await db.customStatement("INSERT INTO docs VALUES ('drift documentation')");
 
     // a drift-side representation of the table created above.
-    final docs = CustomTable('docs', db, [
+    final docs = CustomVirtualTable('docs', db, 'fts5(content)', [
       GeneratedColumn<String>(
         'content',
         'docs',

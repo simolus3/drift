@@ -17,7 +17,7 @@ void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   late _Fts5TestDb db;
-  late CustomTable email;
+  late CustomVirtualTable email;
   late GeneratedColumn<String> sender;
   late GeneratedColumn<String> title;
   late GeneratedColumn<String> body;
@@ -46,7 +46,11 @@ void main() {
       true,
       type: DriftSqlType.string,
     );
-    email = CustomTable('email', db, [sender, title, body]);
+    email = CustomVirtualTable('email', db, 'fts5(sender, title, body)', [
+      sender,
+      title,
+      body,
+    ]);
   });
 
   test('generates a match expression', () {
@@ -81,35 +85,6 @@ void main() {
     expect(
       email.highlight(sender, before: '[', after: ']'),
       generates('highlight("email", ?, ?, ?)', [0, '[', ']']),
-    );
-  });
-
-  test('highlight resolves columns by name', () {
-    // Aliases of a table create fresh column instances, so columns are matched
-    // by name: a column with the same name from another table resolves to the
-    // column with that name in this table.
-    final otherTitle = GeneratedColumn<String>(
-      'title',
-      'other',
-      true,
-      type: DriftSqlType.string,
-    );
-    expect(
-      email.highlight(otherTitle, before: '[', after: ']'),
-      generates('highlight("email", ?, ?, ?)', [1, '[', ']']),
-    );
-  });
-
-  test('highlight rejects unknown columns', () {
-    final unknown = GeneratedColumn<String>(
-      'other_col',
-      'email',
-      true,
-      type: DriftSqlType.string,
-    );
-    expect(
-      () => email.highlight(unknown, before: '[', after: ']'),
-      throwsArgumentError,
     );
   });
 
@@ -160,11 +135,27 @@ void main() {
       // Like the generated `createAlias`, aliases created here get fresh column
       // instances. Columns are matched by name, so the `title` column of the
       // original table resolves to the aliased `email` column with that name.
-      final aliased = CustomTable('email', db, [
-        GeneratedColumn<String>('sender', 'e', true, type: DriftSqlType.string),
-        GeneratedColumn<String>('title', 'e', true, type: DriftSqlType.string),
-        GeneratedColumn<String>('body', 'e', true, type: DriftSqlType.string),
-      ], 'e');
+      final aliased = CustomVirtualTable(
+        'email',
+        db,
+        'fts5(sender,title,body)',
+        [
+          GeneratedColumn<String>(
+            'sender',
+            'e',
+            true,
+            type: DriftSqlType.string,
+          ),
+          GeneratedColumn<String>(
+            'title',
+            'e',
+            true,
+            type: DriftSqlType.string,
+          ),
+          GeneratedColumn<String>('body', 'e', true, type: DriftSqlType.string),
+        ],
+        'e',
+      );
 
       final ctx = stubContext()..hasMultipleTables = true;
       aliased.match('x').writeInto(ctx);

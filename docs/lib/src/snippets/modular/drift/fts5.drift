@@ -1,0 +1,7 @@
+-- #docregion table
+CREATE VIRTUAL TABLE email USING fts5(sender, title, body);
+-- #enddocregion table
+
+-- #docregion query
+emailsWithFts5: SELECT * FROM email WHERE email MATCH 'fts5' ORDER BY rank;
+-- #enddocregion query

@@ -25,7 +25,7 @@ import '../drift.dart';
 ///
 /// See the [sqlite documentation](https://www.sqlite.org/fts5.html) for
 /// details on the fts5 query syntax and its auxiliary functions.
-extension Fts5Extensions on TableInfo {
+extension Fts5Extensions on VirtualTableInfo {
   /// A reference to this fts5 table as an sql expression.
   ///
   /// fts5 adds a hidden column named after the table itself to every virtual
@@ -82,6 +82,7 @@ extension Fts5Extensions on TableInfo {
   ///
   /// ```dart
   /// selectOnly(emails)
+  ///   ..where(emails.match('reminder'))
   ///   ..addColumns([
   ///     emails.highlight(emails.title, before: '<b>', after: '</b>'),
   ///   ]);

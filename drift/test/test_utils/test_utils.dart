@@ -112,6 +112,20 @@ class CustomTable extends Table with TableInfo<CustomTable, void> {
   }
 }
 
+class CustomVirtualTable extends CustomTable
+    with VirtualTableInfo<CustomTable, void> {
+  @override
+  final String moduleAndArgs;
+
+  CustomVirtualTable(
+    super.actualTableName,
+    super.attachedDatabase,
+    this.moduleAndArgs,
+    super.columns, [
+    super._alias,
+  ]);
+}
+
 class PretendDialectInterceptor extends QueryInterceptor {
   final SqlDialect _dialect;
 
