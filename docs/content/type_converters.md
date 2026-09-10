@@ -6,7 +6,7 @@ description: Store more complex data in columns with type converters
 ---
 
 Drift supports a variety of types out of the box, but sometimes you need to store more complex data.
-You can achieve this by using `TypeConverters`. In this example, we'll use the the
+You can achieve this by using `TypeConverters`. In this example, we'll use the
 [json_serializable](https://pub.dev/packages/json_annotation) package to store a custom object in a
 text column. Drift supports any Dart type for which you provide a `TypeConverter`, we're using that
 package here to make the example simpler.

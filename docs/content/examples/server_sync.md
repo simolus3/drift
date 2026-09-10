@@ -69,7 +69,7 @@ Drift also supports the PowerSync SQL extension [in drift files](../generation_o
 
 !!! note "This section may be outdated"
 
-    The Dart package for Electric referenced here refers to an [older version of Electric SQL](https://legacy.electric-sql.com/),
+    The Dart package for Electric referenced here refers to an [older version of Electric SQL](https://electric-sql.com/),
     the current version of Electric does not appear to be available to Dart apps.
 
 [ElectricSQL](https://electric-sql.com/) is a solution you can self-host to synchronize PostgreSQL databases

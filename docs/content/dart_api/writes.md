@@ -46,7 +46,7 @@ the statement will affect all rows in the table!
     You might have noticed that we used a `TodosCompanion` for the first update instead of
     just passing a `Todo`. Drift generates the `Todo` class (also called _data
     class_ for the table) to hold a __full__ row with all its data. For _partial_ data,
-    prefer to use companions. In the example above, we only set the the `category` column,
+    prefer to use companions. In the example above, we only set the `category` column,
     so we used a companion.
     Why is that necessary? If a field was set to `null`, we wouldn't know whether we need
     to set that column back to null in the database or if we should just leave it unchanged.

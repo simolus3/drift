@@ -39,7 +39,7 @@ what we got:
     watch, all todo entries. It can be used with `allTodos().get()` and
     `allTodos().watch()`.
 - Classes for select statements that don't match a table. In the example
-  above, thats the `AllTodosResult` class, which contains all fields from
+  above, that's the `AllTodosResult` class, which contains all fields from
   `todos` and the description of the associated category.
 
 !!! tip "Comment syntax for better editor support"

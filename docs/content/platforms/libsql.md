@@ -47,7 +47,7 @@ void main() async {
 
 ## drift_hrana
 
-Drift can connect to hosted libSQL servers with the the [`drift_hrana`](https://pub.dev/packages/drift_hrana)
+Drift can connect to hosted libSQL servers with the [`drift_hrana`](https://pub.dev/packages/drift_hrana)
 package, named after the [Hrana protocol](https://github.com/tursodatabase/libsql/blob/main/docs/HRANA_3_SPEC.md)
 used by libSQL.
 This runs _all_ queries against the server, similarly to how one might connect to a Postgres

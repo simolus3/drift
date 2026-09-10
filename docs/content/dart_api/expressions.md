@@ -164,7 +164,7 @@ with the `separator` argument on `groupConcat`.
 
 ### Window functions
 
-In addition to aggregate expressions and `groupBy`, drift supports [window functions](https://en.wikipedia.org/wiki/Window_function_(SQL)).
+In addition to aggregate expressions and `groupBy`, drift supports [window functions](https://en.wikipedia.org/wiki/Window_function_%28SQL%29).
 Unlike regular aggregates, which collapse a group of rows into a single value, window functions allow
 running aggregations over a subset of rows related to the current one.
 For instance, you could use this to track a running total of values:
