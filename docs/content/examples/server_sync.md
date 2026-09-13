@@ -64,24 +64,3 @@ that will make your query streams update in real-time for changes from the backe
 Drift also supports the PowerSync SQL extension [in drift files](../generation_options/index.md#available-extensions).
 
 [This example](https://github.com/powersync-ja/powersync.dart/tree/main/demos/supabase-todolist-drift) shows how PowerSync can be integrated into a drift app.
-
-## ElectricSQL
-
-!!! note "This section may be outdated"
-
-    The Dart package for Electric referenced here refers to an [older version of Electric SQL](https://legacy.electric-sql.com/),
-    the current version of Electric does not appear to be available to Dart apps.
-
-[ElectricSQL](https://electric-sql.com/) is a solution you can self-host to synchronize PostgreSQL databases
-with clients.
-Instead of having to deal with changes manually, a service receives updates from the PostgreSQL server and
-local sqlite3 databases. This service takes care of all the synchronization logic, with no backend changes
-and only simple frontend changes being required to integrate this.
-
-There is no official Dart support yet, but there are [community bindings](https://github.com/SkillDevs/electric_dart)
-which have great support for drift databases.
-This even works with stream queries - writes happening in the backend are quickly synchronized to the frontend,
-and will update the UI right away.
-
-[This example](https://github.com/SkillDevs/electric_dart/tree/master/todos_flutter) contains a Flutter app
-and a simple backend, both using drift and synchronizing their database with ElectricSQL.

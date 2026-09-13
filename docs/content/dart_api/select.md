@@ -209,7 +209,7 @@ for each todo entry that didn't have one assigned before:
 
 <Snippet href="/lib/src/snippets/dart_api/select.dart" name="createCategoryForUnassignedTodoEntries" />
 
-The first parameter for `insertFromSelect` is the select statement statement to use as a source.
+The first parameter for `insertFromSelect` is the select statement to use as a source.
 Then, the `columns` map maps columns from the table in which rows are inserted to columns from the
 select statement.
 In the example, the `newDescription` expression as added as a column to the query.

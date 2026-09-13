@@ -9,7 +9,7 @@ The Dart and Flutter ecosystem provides great packages to access sqlite3 databas
 [sqflite](https://pub.dev/packages/sqflite) uses Flutter-specific platform channels
 talking to sqlite3 libraries from the operating system, while [sqlite3](https://pub.dev/packages/sqlite3)
 uses `dart:ffi` to bind to the native library without platform channels.
-Drift is built ontop of these lower-level packages to provide additional
+Drift is built on top of these lower-level packages to provide additional
 features, such as:
 
 - Type-safe access to your database, giving you resolved classes for queries instead of

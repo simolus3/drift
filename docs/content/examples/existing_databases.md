@@ -13,7 +13,7 @@ by drift into a file.
 
 You can use a `LazyDatabase` wrapper to run an asynchronous computation before drift
 opens a database.
-This is a good place to check if the target database file exists, and, if it doesnt,
+This is a good place to check if the target database file exists, and, if it doesn't,
 create one.
 This example shows how to do that from assets.
 

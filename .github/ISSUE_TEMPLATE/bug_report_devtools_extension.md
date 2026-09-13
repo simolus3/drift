@@ -25,6 +25,6 @@ Please add here the versions of `drift` and related packages as well as `flutter
 
 Add screenshots and videos here if needed to help explain your point.
 
-**Aditional info**
+**Additional info**
 
-Write down any aditional info/discussion for this issue.
+Write down any additional info/discussion for this issue.

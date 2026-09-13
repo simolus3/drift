@@ -10,7 +10,7 @@ description: Generate test code to write unit tests for your migrations.
       If you are using the `make-migrations` command, tests are already generated for you.
 
 While migrations can be written manually without additional help from drift, dedicated tools testing
-your migrations help to ensure that they are correct and aren't loosing any data.
+your migrations help to ensure that they are correct and aren't losing any data.
 
 Drift's migration tooling consists of the following steps:
 
