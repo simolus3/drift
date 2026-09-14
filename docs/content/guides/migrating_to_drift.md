@@ -87,7 +87,7 @@ You can open the same database with drift like this:
 import 'package:drift_sqflite/drift_sqflite.dart';
 
 static QueryExecutor _openDatabase() {
-  return SqfliteQueryExecutor.inDatabaseFolder(path: 'db.sqlite');
+  return SqfliteQueryExecutor.inDatabaseFolder(path: 'demo.db');
 }
 ```
 
@@ -108,12 +108,40 @@ import 'package:drift/native.dart';
 static QueryExecutor _openDatabase() {
   return LazyDatabase(() async {
     var dbFolder = await getApplicationDocumentsDirectory();
-    var file = File(p.join(dbFolder.path, 'db.sqlite'));
+    var file = File(p.join(dbFolder.path, 'demo.db'));
 
     return NativeDatabase.createInBackground(file);
   });
 }
 ```
+
+If you're using the [`drift_flutter`](https://pub.dev/packages/drift_flutter) package instead
+(the approach recommended in the [setup guide](../setup.md)), be aware that `driftDatabase()`
+does not use the same file by default: it stores a `<name>.sqlite` file under
+`getApplicationDocumentsDirectory()`, which is a different file than the one opened above. To
+keep using your existing database, pass a `databasePath` callback that returns its exact path:
+
+```dart
+import 'package:drift_flutter/drift_flutter.dart';
+import 'package:path_provider/path_provider.dart';
+
+static QueryExecutor _openDatabase() {
+  return driftDatabase(
+    name: 'demo',
+    native: DriftNativeOptions(
+      databasePath: () async {
+        var dbFolder = await getApplicationDocumentsDirectory();
+        return p.join(dbFolder.path, 'demo.db');
+      },
+    ),
+  );
+}
+```
+
+`databasePath` and `databaseDirectory` are mutually exclusive; use `databasePath` when you need to
+keep an exact existing file name and location. If you're migrating from `sqflite` specifically, use
+`getDatabasesPath()` from `package:sqflite` instead of `getApplicationDocumentsDirectory()` here,
+matching whatever location your previous setup used.
 
 ## Telling drift about your database
 
