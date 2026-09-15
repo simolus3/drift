@@ -166,6 +166,14 @@ class DriftWebDriver {
     await driver.executeAsync('insert("", arguments[0])', []);
   }
 
+  Future<void> insertInTransaction() async {
+    await driver.executeAsync('insert_in_transaction("", arguments[0])', []);
+  }
+
+  Future<void> insertReturning() async {
+    await driver.executeAsync('insert_returning("", arguments[0])', []);
+  }
+
   Future<void> runExclusiveBlock() async {
     await driver.executeAsync('do_exclusive("", arguments[0])', []);
   }

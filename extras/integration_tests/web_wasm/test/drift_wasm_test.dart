@@ -290,6 +290,21 @@ final class _TestConfiguration {
             await driver.openDatabase();
             expect(await driver.hasTable, isFalse);
           });
+
+          test('persists writes from transactions and RETURNING', () async {
+            await driver.openDatabase(implementation: entry);
+            await driver.insertInTransaction();
+            await driver.insertReturning();
+            expect(await driver.amountOfRows, 2);
+
+            // No delay before reloading: the writes must have been persisted
+            // by the time they complete.
+            await driver.driver.refresh();
+            await driver.waitReady();
+
+            await driver.openDatabase(implementation: entry);
+            expect(await driver.amountOfRows, 2);
+          });
         }
 
         group(
