@@ -38,6 +38,7 @@ First, add a dependency on `drift` and related packages used to generate code to
 ```yaml
 dependencies:
   drift: ^{{ versions.drift }}
+  drift_flutter: ^{{ versions.drift_flutter }} # Skip this if you're not building Flutter apps.
 
 dev_dependencies:
   drift_dev: ^{{ versions.drift_dev }}
@@ -71,77 +72,42 @@ You will get a warning about `schema.drift` not existing, that file can be added
 ### Opening a drift database
 
 A suitable implementation of `_openDatabase` depends on the database you've previously used.
-If you have been using `sqflite` directly, you can use a drift implementation based on `sqflite`.
+If you have used `sqflite` directly, you can use a drift implementation also based on `sqflite`.
 For that, run `dart pub add drift_sqflite`.
-Then, if you have previously been using
+Then, migrate from direct `sqflite` databases like:
 
-```dart
-var databasesPath = await getDatabasesPath();
-var path = join(databasesPath, 'demo.db');
-var database = await openDatabase(path, version: ...);
-```
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/open_connection.dart" name="old-sqflite" />
 
-You can open the same database with drift like this:
+to drift with:
 
-```dart
-import 'package:drift_sqflite/drift_sqflite.dart';
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/open_connection.dart" name="new-sqflite" />
 
-static QueryExecutor _openDatabase() {
-  return SqfliteQueryExecutor.inDatabaseFolder(path: 'demo.db');
-}
-```
-
-On the other hand, if you have previously been using `package:sqlite3` or `package:sqlite_async`,
+On the other hand, if you have previously used `package:sqlite3` or `package:sqlite_async`,
 your database code may have looked like this:
 
-```dart
-var dbFolder = await getApplicationDocumentsDirectory();
-var path = p.join(dbFolder.path, 'demo.db');
-var database = sqlite3.open(path);
-```
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/open_connection.dart" name="old-sqlite" />
 
 Here, a matching drift implementation would be:
 
-```dart
-import 'package:drift/native.dart';
+<Tabs defaultValue="drift_flutter">
+  <TabItem label="Flutter" value="drift_flutter">
 
-static QueryExecutor _openDatabase() {
-  return LazyDatabase(() async {
-    var dbFolder = await getApplicationDocumentsDirectory();
-    var file = File(p.join(dbFolder.path, 'demo.db'));
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/open_connection.dart" name="new-flutter" />
 
-    return NativeDatabase.createInBackground(file);
-  });
-}
-```
+!!! note
 
-If you're using the [`drift_flutter`](https://pub.dev/packages/drift_flutter) package instead
-(the approach recommended in the [setup guide](../setup.md)), be aware that `driftDatabase()`
-does not use the same file by default: it stores a `<name>.sqlite` file under
-`getApplicationDocumentsDirectory()`, which is a different file than the one opened above. To
-keep using your existing database, pass a `databasePath` callback that returns its exact path:
+    `driftDatabase()` does not use the same file without the `databasePath` option:
+    It stores a `<name>.sqlite` file under `getApplicationDocumentsDirectory()`, which is a
+    different file than the one opened above. To keep using your existing database,
+    pass a `databasePath` callback that returns its exact path.
 
-```dart
-import 'package:drift_flutter/drift_flutter.dart';
-import 'package:path_provider/path_provider.dart';
+  </TabItem>
+  <TabItem label="Plain Dart" value="drift_native">
 
-static QueryExecutor _openDatabase() {
-  return driftDatabase(
-    name: 'demo',
-    native: DriftNativeOptions(
-      databasePath: () async {
-        var dbFolder = await getApplicationDocumentsDirectory();
-        return p.join(dbFolder.path, 'demo.db');
-      },
-    ),
-  );
-}
-```
+<Snippet href="/lib/src/snippets/setup/migrate_to_drift/open_connection.dart" name="new-native" />  
 
-`databasePath` and `databaseDirectory` are mutually exclusive; use `databasePath` when you need to
-keep an exact existing file name and location. If you're migrating from `sqflite` specifically, use
-`getDatabasesPath()` from `package:sqflite` instead of `getApplicationDocumentsDirectory()` here,
-matching whatever location your previous setup used.
+  </TabItem>
+</Tabs>
 
 ## Telling drift about your database
 
