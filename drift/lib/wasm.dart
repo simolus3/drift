@@ -359,12 +359,27 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
     await _fileSystem?.flush();
   }
 
-  Future _runWithArgs(String statement, List<Object?> args) async {
-    runWithArgsSync(statement, args);
-
-    if (!isInTransaction) {
+  Future<void> _flushIfOutsideOfTransaction() async {
+    // Checking isInTransaction isn't enough here: The flag is only reset after
+    // the COMMIT statement has completed, so relying on it would never flush
+    // the changes made in a transaction.
+    if (database.autocommit) {
       await _flush();
     }
+  }
+
+  Future _runWithArgs(String statement, List<Object?> args) async {
+    runWithArgsSync(statement, args);
+    await _flushIfOutsideOfTransaction();
+  }
+
+  @override
+  Future<QueryResult> runSelect(String statement, List<Object?> args) async {
+    final result = await super.runSelect(statement, args);
+    // Selects can write too (e.g. with a RETURNING clause). Flushing without
+    // pending writes is cheap.
+    await _flushIfOutsideOfTransaction();
+    return result;
   }
 
   @override
@@ -387,10 +402,7 @@ class _WasmDelegate extends Sqlite3Delegate<CommonDatabase> {
   @override
   Future<void> runBatched(BatchedStatements statements) async {
     runBatchSync(statements);
-
-    if (!isInTransaction) {
-      await _flush();
-    }
+    await _flushIfOutsideOfTransaction();
   }
 
   @override

@@ -1,3 +1,7 @@
+## 2.35.1-dev
+
+- Web: Fix writes made in transactions or through `RETURNING` statements not being persisted to IndexedDB (#3864).
+
 ## 2.35.0
 
 - Add support for FTS5 queries in the Dart API: `match`, `matchExp`, `highlight`, `snippet`, `bm25` and `rank` are now available as extension methods on FTS5 tables from `package:drift/extensions/fts5.dart` (#3843).

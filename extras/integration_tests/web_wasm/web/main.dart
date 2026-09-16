@@ -50,6 +50,22 @@ void main() {
     return null;
   });
   _addCallbackForWebDriver('insert', _insert);
+  _addCallbackForWebDriver('insert_in_transaction', (arg) async {
+    final db = openedDatabase!;
+    await db.transaction(() async {
+      await db
+          .into(db.testTable)
+          .insert(TestTableCompanion.insert(content: 'from transaction'));
+    });
+    return null;
+  });
+  _addCallbackForWebDriver('insert_returning', (arg) async {
+    final db = openedDatabase!;
+    await db
+        .into(db.testTable)
+        .insertReturning(TestTableCompanion.insert(content: 'returning'));
+    return null;
+  });
   _addCallbackForWebDriver('get_rows', _getRows);
   _addCallbackForWebDriver('has_table', _hasTables);
   _addCallbackForWebDriver('wait_for_update', _waitForUpdate);
