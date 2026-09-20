@@ -394,6 +394,83 @@ void main() {
     );
   });
 
+  group('clients that are gone', () {
+    // A browser tab that is closed sends no rollback and no close message, so
+    // the server has to end what that client still held. Without this, its
+    // transaction stays at the head of the backlog and every other client of
+    // the same server waits behind it forever.
+    test('has its open transaction rolled back', () async {
+      final server = DriftServer(testInMemoryDatabase());
+      addTearDown(server.shutdown);
+
+      final closed = await _RemoteClient.connect(server);
+      await closed.db.customStatement(
+        'CREATE TABLE items (name TEXT NOT NULL)',
+      );
+
+      final inTransaction = Completer<void>();
+      unawaited(
+        closed.db.transaction(() async {
+          await closed.db.customInsert("INSERT INTO items VALUES ('closed')");
+          inTransaction.complete();
+          await Completer<void>().future;
+        }),
+      );
+      await inTransaction.future;
+      closed.vanish();
+
+      final other = await _RemoteClient.connect(server);
+      await other.db
+          .transaction(() async {
+            await other.db.customInsert("INSERT INTO items VALUES ('open')");
+          })
+          .timeout(const Duration(seconds: 10));
+
+      final rows = await other.db.customSelect('SELECT name FROM items').get();
+      expect(rows.map((row) => row.read<String>('name')), ['open']);
+    });
+
+    test('has a transaction granted after it closed abandoned too', () async {
+      final server = DriftServer(testInMemoryDatabase());
+      addTearDown(server.shutdown);
+
+      final open = await _RemoteClient.connect(server);
+      final closed = await _RemoteClient.connect(server);
+      await open.db.customStatement('CREATE TABLE items (name TEXT NOT NULL)');
+
+      final holding = Completer<void>();
+      final release = Completer<void>();
+      final held = open.db.transaction(() async {
+        await open.db.customSelect('SELECT 1').get();
+        holding.complete();
+        await release.future;
+      });
+      await holding.future;
+
+      // Queued behind the transaction above when its client disappears.
+      unawaited(
+        closed.db.transaction(() async {
+          await closed.db.customInsert("INSERT INTO items VALUES ('closed')");
+          await Completer<void>().future;
+        }),
+      );
+      await pumpEventQueue();
+      closed.vanish();
+
+      release.complete();
+      await held;
+
+      await open.db
+          .transaction(() async {
+            await open.db.customInsert("INSERT INTO items VALUES ('open')");
+          })
+          .timeout(const Duration(seconds: 10));
+
+      final rows = await open.db.customSelect('SELECT name FROM items').get();
+      expect(rows.map((row) => row.read<String>('name')), ['open']);
+    });
+  });
+
   test('reports correct dialect of remote', () async {
     final executor = MockExecutor();
     when(executor.dialect).thenReturn(SqlDialect.postgres);
@@ -455,5 +532,46 @@ extension on MultiChannel<Object?> {
     sink.add(channel.id);
 
     return await connectToRemoteAndInitialize(channel);
+  }
+}
+
+/// A client that can disappear the way a closed browser tab does: its messages
+/// stop reaching the server, with no rollback and no close notification.
+class _RemoteClient {
+  _RemoteClient(this.db, this.vanish);
+
+  final TodoDb db;
+  final void Function() vanish;
+
+  static Future<_RemoteClient> connect(DriftServer server) async {
+    final toServer = StreamController<Object?>();
+    final toClient = StreamController<Object?>();
+    unawaited(
+      server.serve(
+        StreamChannel(toServer.stream, toClient.sink),
+        serialize: false,
+      ),
+    );
+
+    var vanished = false;
+    final fromClient = StreamController<Object?>();
+    fromClient.stream.listen((message) {
+      if (!vanished) toServer.add(message);
+    });
+
+    final connection = await connectToRemoteAndInitialize(
+      StreamChannel(toClient.stream, fromClient.sink),
+      serialize: false,
+    );
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    final db = TodoDb(connection);
+    // Clients open their database when they start, so that later transactions
+    // are sent to the server instead of queueing behind the open request.
+    await db.customSelect('SELECT 1').get();
+
+    return _RemoteClient(db, () {
+      vanished = true;
+      toServer.close();
+    });
   }
 }

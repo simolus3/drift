@@ -36,13 +36,19 @@ enum ProtocolVersion {
   /// encountered on web workers will end up being [SqliteException]s, treating
   /// them specially allows clients to make informed decisions based on the
   /// exact [SqliteException.resultCode].
-  v4(4);
+  v4(4),
+
+  /// This adds [ServeDriftDatabase.clientLock], the name of a Web Lock the
+  /// client holds for as long as it exists. Workers request the same lock to
+  /// find out when a client is gone without having closed its databases,
+  /// which a closed tab never does.
+  v5(5);
 
   final int versionCode;
 
   const ProtocolVersion(this.versionCode);
 
-  static const current = v4;
+  static const current = v5;
 
   void writeToJs(JSObject object) {
     object['v'] = versionCode.toJS;
@@ -59,7 +65,8 @@ enum ProtocolVersion {
       1 => v1,
       2 => v2,
       3 => v3,
-      > 3 => current,
+      4 => v4,
+      > 4 => current,
       _ => throw AssertionError(),
     };
   }
@@ -270,6 +277,12 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
   final bool enableMigrations;
   final bool newSerialization;
 
+  /// The name of a Web Lock held by the client for as long as it lives.
+  ///
+  /// Available from [ProtocolVersion.v5]. Workers request this lock, which
+  /// is granted to them once the client is gone.
+  final String? clientLock;
+
   ServeDriftDatabase({
     required this.sqlite3WasmUri,
     required this.port,
@@ -279,6 +292,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
     required this.protocolVersion,
     required this.enableMigrations,
     required this.newSerialization,
+    this.clientLock,
   });
 
   factory ServeDriftDatabase.fromJsPayload(JSObject payload) {
@@ -299,6 +313,9 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
           ? (payload['new_serialization'] as JSBoolean).toDart
           : true,
       protocolVersion: version,
+      clientLock: version >= ProtocolVersion.v5
+          ? (payload['client_lock'] as JSString?)?.toDart
+          : null,
     );
   }
 
@@ -312,6 +329,9 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
       ..['initPort'] = initializationPort
       ..['migrations'] = enableMigrations.toJS
       ..['new_serialization'] = newSerialization.toJS;
+    if (clientLock case final lock?) {
+      object['client_lock'] = lock.toJS;
+    }
 
     protocolVersion.writeToJs(object);
 

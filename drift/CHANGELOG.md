@@ -1,5 +1,9 @@
 ## 2.35.1-dev
 
+- Release transactions held by web clients that are gone: a tab closed
+  while a transaction was open would block database access in every other
+  tab connected to the same worker.
+
 - Web: Fix writes made in transactions or through `RETURNING` statements not being persisted to IndexedDB (#3864).
 
 ## 2.35.0

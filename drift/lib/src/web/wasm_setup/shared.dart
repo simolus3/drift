@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' show Random;
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
@@ -323,6 +324,7 @@ class DriftServerController {
         explicitClose: message.protocolVersion >= ProtocolVersion.v1,
         webNativeSerialization: message.newSerialization,
         nativeSerializionVersion: message.protocolVersion.versionCode,
+        peerGone: clientGone(message.clientLock),
       ),
       // With the new serialization mode, instruct the drift server not to apply
       // its internal serialization logic.
@@ -543,4 +545,41 @@ extension AcquireLock on LockManager {
 
     return hasLock.future;
   }
+}
+
+// Detecting clients that are gone without having closed their databases.
+//
+// A closed tab sends its worker nothing, so a transaction it had open stays at
+// the head of the drift server's backlog and every other tab's database work
+// waits behind it. `MessagePort`s have no close event for a context going away,
+// but a Web Lock is released when the context holding it is destroyed. Clients
+// therefore hold a uniquely named lock for their entire lifetime and tell the
+// worker its name; the worker requests the same lock, which it is granted only
+// once the client is gone.
+
+/// Takes a lock that is held until this JavaScript context is gone and returns
+/// its name, or null where Web Locks are unavailable.
+Future<String?> holdClientLock() async {
+  final manager = locks;
+  if (manager == null) return null;
+
+  final name =
+      'drift-client-${DateTime.now().microsecondsSinceEpoch}-'
+      '${Random().nextInt(0x7fffffff)}';
+  // The completer returning the lock is never completed, so the browser
+  // releases it only when this context is destroyed.
+  await manager.acquire(name, Completer<void>());
+  return name;
+}
+
+/// Completes once the client holding [lockName] is gone, or null when that
+/// cannot be observed.
+Future<void>? clientGone(String? lockName) {
+  final manager = locks;
+  if (lockName == null || manager == null) return null;
+
+  // Granted once the client has released the lock, which happens when the
+  // context holding it goes away.
+  final release = Completer<void>();
+  return manager.acquire(lockName, release).then((_) => release.complete());
 }

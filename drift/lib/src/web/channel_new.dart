@@ -28,6 +28,10 @@ extension WebPortToChannel on web.MessagePort {
   /// Both "ends" of a JS channel calling [channel] on their part must use the
   /// value for [explicitClose].
   ///
+  /// [peerGone], when set, completes once the other end is known to be gone
+  /// despite never having sent a close message - a closed browser tab, for
+  /// instance. The returned channel is closed when it completes.
+  ///
   /// When [webNativeSerialization] is enabled, the [StreamChannel] can only be
   /// used for drift databases using the `package:drift/remote.dart` protocol
   /// and is not suitable for any other message.
@@ -38,6 +42,7 @@ extension WebPortToChannel on web.MessagePort {
     bool explicitClose = false,
     bool webNativeSerialization = false,
     int nativeSerializionVersion = 0,
+    Future<void>? peerGone,
   }) {
     final controller = StreamChannelController<Object?>();
     final protocol = WebProtocol(
@@ -75,6 +80,10 @@ extension WebPortToChannel on web.MessagePort {
         close();
       },
     );
+
+    // Ending the stream is what tells a drift server that this client is
+    // gone, so that it can release the executors the client still held.
+    peerGone?.then((_) => controller.local.sink.close());
 
     return controller.foreign;
   }

@@ -23,6 +23,13 @@ class ServerImplementation implements DriftServer {
   final bool closeExecutorWhenShutdown;
 
   final Map<int, QueryExecutor> _managedExecutors = {};
+
+  /// The channel that opened each transaction or exclusive executor.
+  ///
+  /// A client can disappear without closing its transactions - a browser
+  /// tab being closed sends no rollback and no close message. Knowing who
+  /// opened an executor lets us end it when that client is gone.
+  final Map<int, DriftCommunication> _executorOwners = {};
   int _currentExecutorId = 0;
   int _knownSchemaVersion = 0;
 
@@ -78,7 +85,10 @@ class ServerImplementation implements DriftServer {
     comm.notify(ServerInfo(connection.dialect));
 
     _activeChannels.add(comm);
-    return comm.closed.then((_) => _activeChannels.remove(comm));
+    return comm.closed.then((_) {
+      _activeChannels.remove(comm);
+      return _abandonExecutorsOf(comm);
+    });
   }
 
   @override
@@ -197,9 +207,17 @@ class ServerImplementation implements DriftServer {
 
   Future<QueryExecutor> _loadExecutor(int? transactionId) async {
     await _waitForTurn(transactionId);
-    return transactionId != null
-        ? _managedExecutors[transactionId]!
-        : connection;
+    if (transactionId == null) return connection;
+
+    final executor = _managedExecutors[transactionId];
+    if (executor == null) {
+      throw StateError(
+        'Executor $transactionId is no longer active: it was committed, '
+        'rolled back, or abandoned because the client that opened it was '
+        'closed.',
+      );
+    }
+    return executor;
   }
 
   Future<int> _spawnTransaction(DriftCommunication comm, int? executor) async {
@@ -207,13 +225,13 @@ class ServerImplementation implements DriftServer {
     await transaction.ensureOpen(
       _ServerDbUser(this, comm, _knownSchemaVersion),
     );
-    return _putExecutor(transaction, beforeCurrent: true);
+    return _putOwnedExecutor(transaction, comm);
   }
 
   Future<int> _spawnExclusive(DriftCommunication comm, int? executor) async {
     final exclusive = (await _loadExecutor(executor)).beginExclusive();
     await exclusive.ensureOpen(_ServerDbUser(this, comm, _knownSchemaVersion));
-    return _putExecutor(exclusive, beforeCurrent: true);
+    return _putOwnedExecutor(exclusive, comm);
   }
 
   int _putExecutor(QueryExecutor executor, {bool beforeCurrent = false}) {
@@ -226,6 +244,17 @@ class ServerImplementation implements DriftServer {
       _executorBacklog.add(id);
     }
 
+    return id;
+  }
+
+  int _putOwnedExecutor(QueryExecutor executor, DriftCommunication owner) {
+    final id = _putExecutor(executor, beforeCurrent: true);
+    _executorOwners[id] = owner;
+    if (owner.isClosed) {
+      // The client went away while this executor was waiting for its turn,
+      // so nothing will ever commit it or roll it back.
+      unawaited(_abandonExecutor(id));
+    }
     return id;
   }
 
@@ -284,8 +313,48 @@ class ServerImplementation implements DriftServer {
     return null;
   }
 
+  /// Rolls back the transactions and closes the exclusive executors [comm]
+  /// opened and can no longer finish because it closed.
+  ///
+  /// A client that disappears mid-transaction, like a browser tab that is
+  /// closed, otherwise leaves its executor at the head of the backlog. Every
+  /// other client of this server then waits behind it indefinitely.
+  Future<void> _abandonExecutorsOf(DriftCommunication comm) async {
+    final owned = [
+      for (final MapEntry(:key, :value) in _executorOwners.entries)
+        if (value == comm) key,
+    ];
+    // A nested executor is created after its parent and has to end first.
+    owned.sort((a, b) => b.compareTo(a));
+    for (final id in owned) {
+      await _abandonExecutor(id);
+    }
+  }
+
+  Future<void> _abandonExecutor(int id) async {
+    if (!_managedExecutors.containsKey(id)) return;
+    await _waitForTurn(id);
+    final executor = _managedExecutors[id];
+    if (executor == null) return;
+
+    try {
+      if (executor is TransactionExecutor) {
+        await executor.rollback();
+      } else {
+        await executor.close();
+      }
+    } catch (_) {
+      // There is no client left to report this to, and the executor is
+      // released either way - drift already considers a transaction over
+      // after a rollback, successful or not.
+    } finally {
+      _releaseExecutor(id);
+    }
+  }
+
   void _releaseExecutor(int id) {
     _managedExecutors.remove(id);
+    _executorOwners.remove(id);
     _executorBacklog.remove(id);
     _notifyActiveExecutorUpdated();
   }
@@ -295,8 +364,11 @@ class ServerImplementation implements DriftServer {
       if (transactionId == null) {
         return _executorBacklog.isEmpty;
       } else {
-        return _executorBacklog.isNotEmpty &&
-            _executorBacklog.first == transactionId;
+        // A released executor never becomes active again. Reporting it as
+        // active makes the caller fail on it instead of waiting forever.
+        return !_managedExecutors.containsKey(transactionId) ||
+            (_executorBacklog.isNotEmpty &&
+                _executorBacklog.first == transactionId);
       }
     }
 
