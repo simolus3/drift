@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' show Random;
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
@@ -12,6 +11,7 @@ import 'package:web/web.dart'
         Worker,
         Navigator,
         LockManager,
+        Crypto,
         StorageManager,
         IDBFactory,
         IDBRequest,
@@ -557,15 +557,16 @@ extension AcquireLock on LockManager {
 // worker its name; the worker requests the same lock, which it is granted only
 // once the client is gone.
 
+@JS('crypto')
+external Crypto get _crypto;
+
 /// Takes a lock that is held until this JavaScript context is gone and returns
 /// its name, or null where Web Locks are unavailable.
 Future<String?> holdClientLock() async {
   final manager = locks;
   if (manager == null) return null;
 
-  final name =
-      'drift-client-${DateTime.now().microsecondsSinceEpoch}-'
-      '${Random().nextInt(0x7fffffff)}';
+  final name = 'drift-client-${_crypto.randomUUID()}';
   // The completer returning the lock is never completed, so the browser
   // releases it only when this context is destroyed.
   await manager.acquire(name, Completer<void>());

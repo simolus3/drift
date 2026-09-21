@@ -36,19 +36,13 @@ enum ProtocolVersion {
   /// encountered on web workers will end up being [SqliteException]s, treating
   /// them specially allows clients to make informed decisions based on the
   /// exact [SqliteException.resultCode].
-  v4(4),
-
-  /// This adds [ServeDriftDatabase.clientLock], the name of a Web Lock the
-  /// client holds for as long as it exists. Workers request the same lock to
-  /// find out when a client is gone without having closed its databases,
-  /// which a closed tab never does.
-  v5(5);
+  v4(4);
 
   final int versionCode;
 
   const ProtocolVersion(this.versionCode);
 
-  static const current = v5;
+  static const current = v4;
 
   void writeToJs(JSObject object) {
     object['v'] = versionCode.toJS;
@@ -65,8 +59,7 @@ enum ProtocolVersion {
       1 => v1,
       2 => v2,
       3 => v3,
-      4 => v4,
-      > 4 => current,
+      > 3 => current,
       _ => throw AssertionError(),
     };
   }
@@ -279,8 +272,9 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
 
   /// The name of a Web Lock held by the client for as long as it lives.
   ///
-  /// Available from [ProtocolVersion.v5]. Workers request this lock, which
-  /// is granted to them once the client is gone.
+  /// Workers request this lock, which is granted to them once the client is
+  /// gone. Sent unconditionally: the field is nullable, so a worker that
+  /// predates it ignores it and a newer worker simply finds it absent.
   final String? clientLock;
 
   ServeDriftDatabase({
@@ -313,9 +307,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
           ? (payload['new_serialization'] as JSBoolean).toDart
           : true,
       protocolVersion: version,
-      clientLock: version >= ProtocolVersion.v5
-          ? (payload['client_lock'] as JSString?)?.toDart
-          : null,
+      clientLock: (payload['client_lock'] as JSString?)?.toDart,
     );
   }
 

@@ -430,6 +430,51 @@ void main() {
       expect(rows.map((row) => row.read<String>('name')), ['open']);
     });
 
+    test('has statements already in flight finish before the rollback', () async {
+      // A handler resolves its executor and then yields, so a rollback that
+      // began in between would release the executor while a statement was
+      // still about to use it -- and that statement would then run outside
+      // the transaction it was issued in.
+      final server = DriftServer(testInMemoryDatabase());
+      addTearDown(server.shutdown);
+
+      final closed = await _RemoteClient.connect(server);
+      await closed.db.customStatement(
+        'CREATE TABLE items (name TEXT NOT NULL)',
+      );
+
+      final inTransaction = Completer<void>();
+      unawaited(
+        closed.db.transaction(() async {
+          await closed.db.customInsert("INSERT INTO items VALUES ('first')");
+          inTransaction.complete();
+          // Issued but not awaited: in flight when the client disappears.
+          unawaited(
+            closed.db
+                .customInsert("INSERT INTO items VALUES ('in flight')")
+                .catchError((_) => 0),
+          );
+          await Completer<void>().future;
+        }),
+      );
+      await inTransaction.future;
+      closed.vanish();
+
+      final other = await _RemoteClient.connect(server);
+      await other.db
+          .transaction(() async {
+            await other.db.customInsert("INSERT INTO items VALUES ('other')");
+          })
+          .timeout(const Duration(seconds: 10));
+
+      final rows = await other.db.customSelect('SELECT name FROM items').get();
+      expect(
+        rows.map((row) => row.read<String>('name')),
+        ['other'],
+        reason: 'nothing from the abandoned transaction may survive it',
+      );
+    });
+
     test('has a transaction granted after it closed abandoned too', () async {
       final server = DriftServer(testInMemoryDatabase());
       addTearDown(server.shutdown);
