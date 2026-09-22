@@ -11,6 +11,7 @@ import 'package:web/web.dart'
         Worker,
         Navigator,
         LockManager,
+        Crypto,
         StorageManager,
         IDBFactory,
         IDBRequest,
@@ -323,6 +324,7 @@ class DriftServerController {
         explicitClose: message.protocolVersion >= ProtocolVersion.v1,
         webNativeSerialization: message.newSerialization,
         nativeSerializionVersion: message.protocolVersion.versionCode,
+        closeSignal: clientGone(message.clientLock),
       ),
       // With the new serialization mode, instruct the drift server not to apply
       // its internal serialization logic.
@@ -543,4 +545,32 @@ extension AcquireLock on LockManager {
 
     return hasLock.future;
   }
+}
+
+@JS('crypto')
+external Crypto get _crypto;
+
+/// Takes a lock that is held until this JavaScript context is gone and returns
+/// its name, or null where Web Locks are unavailable.
+Future<String?> holdClientLock() async {
+  final manager = locks;
+  if (manager == null) return null;
+
+  final name = 'drift-client-${_crypto.randomUUID()}';
+  // The completer returning the lock is never completed, so the browser
+  // releases it only when this context is destroyed.
+  await manager.acquire(name, Completer<void>());
+  return name;
+}
+
+/// Completes once the client holding [lockName] is gone, or null when that
+/// cannot be observed.
+Future<void>? clientGone(String? lockName) {
+  final manager = locks;
+  if (lockName == null || manager == null) return null;
+
+  // Granted once the client has released the lock, which happens when the
+  // context holding it goes away.
+  final release = Completer<void>()..complete();
+  return manager.acquire(lockName, release);
 }

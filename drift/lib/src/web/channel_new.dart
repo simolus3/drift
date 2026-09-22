@@ -28,6 +28,9 @@ extension WebPortToChannel on web.MessagePort {
   /// Both "ends" of a JS channel calling [channel] on their part must use the
   /// value for [explicitClose].
   ///
+  /// When [closeSignal] is set, the returned channel is automatically closed
+  /// when the future completes.
+  ///
   /// When [webNativeSerialization] is enabled, the [StreamChannel] can only be
   /// used for drift databases using the `package:drift/remote.dart` protocol
   /// and is not suitable for any other message.
@@ -38,6 +41,7 @@ extension WebPortToChannel on web.MessagePort {
     bool explicitClose = false,
     bool webNativeSerialization = false,
     int nativeSerializionVersion = 0,
+    Future<void>? closeSignal,
   }) {
     final controller = StreamChannelController<Object?>();
     final protocol = WebProtocol(
@@ -56,6 +60,7 @@ extension WebPortToChannel on web.MessagePort {
         controller.local.sink.add(message.dartify());
       }
     }.toJS;
+    closeSignal?.whenComplete(controller.local.sink.close);
 
     controller.local.stream.listen(
       (e) {

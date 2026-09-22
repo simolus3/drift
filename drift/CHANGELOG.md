@@ -1,5 +1,6 @@
 ## 2.35.1-dev
 
+- Web: Properly release transactions held by closing tabs.
 - Web: Fix writes made in transactions or through `RETURNING` statements not being persisted to IndexedDB (#3864).
 
 ## 2.35.0

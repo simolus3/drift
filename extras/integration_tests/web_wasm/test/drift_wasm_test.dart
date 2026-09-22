@@ -210,6 +210,30 @@ final class _TestConfiguration {
       expect(await driver.hasTable, isFalse);
     });
 
+    test('closes transactions when tab closes', () async {
+      await driver.openDatabase(
+          implementation: WasmStorageImplementation.sharedIndexedDb);
+      final newTabLink = await driver.driver.findElement(By.id('newtab'));
+      await newTabLink.click();
+
+      final windows = await driver.driver.windows.toList();
+      expect(windows, hasLength(2));
+      // Firefox does crazy things when setAsActive is called without
+      // this delay. I don't really understand why, Chrome works...
+      await Future.delayed(const Duration(seconds: 1));
+      await windows.last.setAsActive();
+
+      await driver.openDatabase(
+          implementation: WasmStorageImplementation.sharedIndexedDb);
+      await driver.lockForever();
+      await windows.last.close();
+
+      await windows.first.setAsActive();
+      // We should be able to use the database in the first tab despite the
+      // second tab locking it, as the second tab has now been closed.
+      await driver.insertInTransaction();
+    });
+
     for (final entry in browser.availableImplementations) {
       group(entry.name, () {
         test('basic', () async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
@@ -112,6 +113,18 @@ void main() {
       });
     });
 
+    return null;
+  });
+  _addCallbackForWebDriver('lock_forever', (arg) async {
+    final database = openedDatabase!;
+    final hasLock = Completer<void>();
+
+    database.exclusively(() async {
+      hasLock.complete();
+      return Completer().future;
+    });
+
+    await hasLock.future;
     return null;
   });
 

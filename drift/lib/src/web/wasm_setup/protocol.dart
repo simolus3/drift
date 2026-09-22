@@ -270,6 +270,13 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
   final bool enableMigrations;
   final bool newSerialization;
 
+  /// The name of a Web Lock held by the client for as long as it lives.
+  ///
+  /// Workers request this lock, which is granted to them once the client is
+  /// gone. Sent unconditionally: the field is nullable, so a worker that
+  /// predates it ignores it and a newer worker simply finds it absent.
+  final String? clientLock;
+
   ServeDriftDatabase({
     required this.sqlite3WasmUri,
     required this.port,
@@ -279,6 +286,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
     required this.protocolVersion,
     required this.enableMigrations,
     required this.newSerialization,
+    this.clientLock,
   });
 
   factory ServeDriftDatabase.fromJsPayload(JSObject payload) {
@@ -299,6 +307,7 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
           ? (payload['new_serialization'] as JSBoolean).toDart
           : true,
       protocolVersion: version,
+      clientLock: (payload['client_lock'] as JSString?)?.toDart,
     );
   }
 
@@ -311,7 +320,8 @@ final class ServeDriftDatabase extends WasmInitializationMessage {
       ..['database'] = databaseName.toJS
       ..['initPort'] = initializationPort
       ..['migrations'] = enableMigrations.toJS
-      ..['new_serialization'] = newSerialization.toJS;
+      ..['new_serialization'] = newSerialization.toJS
+      ..['client_lock'] = clientLock?.toJS;
 
     protocolVersion.writeToJs(object);
 

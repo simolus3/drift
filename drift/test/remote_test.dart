@@ -394,6 +394,95 @@ void main() {
     );
   });
 
+  group('suddenly closed clients', () {
+    test('roll back open transactions', () async {
+      final server = DriftServer(testInMemoryDatabase());
+      addTearDown(server.shutdown);
+
+      {
+        final controller = StreamChannelController<Object?>();
+        server.serve(controller.foreign);
+
+        final client = await connectToRemoteAndInitialize(controller.local);
+        final db = TodoDb(client);
+        await db.customStatement('CREATE TABLE items (name TEXT NOT NULL)');
+
+        final inTransaction = Completer<void>();
+        unawaited(
+          db.transaction(() async {
+            await db.customInsert("INSERT INTO items VALUES ('closed')");
+
+            // Close the connection from the perspective of the server.
+            controller.foreign.sink.close();
+            inTransaction.complete();
+
+            await Completer<void>().future;
+          }),
+        );
+        await inTransaction.future;
+      }
+
+      final otherController = StreamChannelController<Object?>();
+      server.serve(otherController.foreign);
+      final db = TodoDb(
+        await connectToRemoteAndInitialize(otherController.local),
+      );
+
+      await db.transaction(() async {
+        await db.customInsert("INSERT INTO items VALUES ('open')");
+      });
+
+      final rows = await db.customSelect('SELECT name FROM items').get();
+      expect(rows.map((row) => row.read<String>('name')), ['open']);
+    });
+
+    test('roll back open transactions with pending statements', () async {
+      final server = DriftServer(testInMemoryDatabase());
+      addTearDown(server.shutdown);
+
+      {
+        final controller = StreamChannelController<Object?>();
+        server.serve(controller.foreign);
+
+        final client = await connectToRemoteAndInitialize(controller.local);
+        final db = TodoDb(client);
+        await db.customStatement('CREATE TABLE items (name TEXT NOT NULL)');
+
+        final inTransaction = Completer<void>();
+        unawaited(
+          db.transaction(() async {
+            await db.customInsert("INSERT INTO items VALUES ('first')");
+
+            // Issued but not awaited: in flight when the client disappears.
+            unawaited(
+              db
+                  .customInsert("INSERT INTO items VALUES ('in flight')")
+                  .catchError((_) => 0),
+            );
+            // Close connection from server's perspective
+            controller.foreign.sink.close();
+            inTransaction.complete();
+            await Completer<void>().future;
+          }),
+        );
+        await inTransaction.future;
+      }
+
+      final otherController = StreamChannelController<Object?>();
+      server.serve(otherController.foreign);
+      final db = TodoDb(
+        await connectToRemoteAndInitialize(otherController.local),
+      );
+
+      await db.transaction(() async {
+        await db.customInsert("INSERT INTO items VALUES ('other')");
+      });
+
+      final rows = await db.customSelect('SELECT name FROM items').get();
+      expect(rows.map((row) => row.read<String>('name')), ['other']);
+    });
+  });
+
   test('reports correct dialect of remote', () async {
     final executor = MockExecutor();
     when(executor.dialect).thenReturn(SqlDialect.postgres);

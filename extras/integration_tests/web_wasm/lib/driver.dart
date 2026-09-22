@@ -178,6 +178,10 @@ class DriftWebDriver {
     await driver.executeAsync('do_exclusive("", arguments[0])', []);
   }
 
+  Future<void> lockForever() async {
+    await driver.executeAsync('lock_forever("", arguments[0])', []);
+  }
+
   Future<int> get amountOfRows async {
     return await driver.executeAsync('get_rows("", arguments[0])', []);
   }
