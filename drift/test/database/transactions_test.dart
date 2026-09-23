@@ -166,6 +166,29 @@ void main() {
 
       verify(outerTransactions.send());
     });
+
+    test('notify about table updates after the outer transaction', () async {
+      final innerTransactions = executor.transactions.transactions;
+      when(
+        innerTransactions.runUpdate(any, any),
+      ).thenAnswer((_) => Future.value(2));
+
+      await db.transaction(() async {
+        await db.transaction(() async {
+          await db
+              .update(db.users)
+              .write(const UsersCompanion(name: Value('Updated name')));
+        });
+
+        verifyZeroInteractions(streamQueries);
+      });
+
+      verify(
+        streamQueries.handleTableUpdates({
+          TableUpdate.onTable(db.users, kind: UpdateKind.update),
+        }),
+      ).called(1);
+    });
   });
 
   test('code in callback uses transaction', () async {

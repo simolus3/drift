@@ -509,7 +509,7 @@ abstract class DatabaseConnectionUser {
 
     return await resolved.doWhenOpened((executor) {
       final transactionExecutor = executor.beginTransaction();
-      final transaction = Transaction(this, transactionExecutor);
+      final transaction = Transaction(resolved, transactionExecutor);
 
       return _runConnectionZoned(transaction, () async {
         var success = false;
