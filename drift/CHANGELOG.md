@@ -2,6 +2,7 @@
 
 - Web: Properly release transactions held by closing tabs.
 - Web: Fix writes made in transactions or through `RETURNING` statements not being persisted to IndexedDB (#3864).
+- Fix stream queries being updated when a nested transaction completes instead of after the outermost transaction, which could make them miss writes with `MultiExecutor` (#3867).
 
 ## 2.35.0
 
