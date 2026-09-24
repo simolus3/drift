@@ -30,7 +30,6 @@ targets:
               store_date_times_as_text: false
               use_binary_json_representation: false
           drift3_preview: true
-          generate_manager: false
 
       # Configuring this builder isn't required for most apps. In our case, we
       # want to compile the web worker in `web/worker.dart` to JS and we use the

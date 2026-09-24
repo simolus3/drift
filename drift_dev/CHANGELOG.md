@@ -1,3 +1,7 @@
+## 2.35.1-wip
+
+- Support latest version of `package:cli_util`.
+
 ## 2.35.0
 
 - Warn when a table class is annotated with `@DriftDatabase` instead of silently
