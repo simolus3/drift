@@ -68,6 +68,19 @@ void main() {
     expect(row.description, 'original description new description');
   });
 
+  test('upsert writes null columns from row object', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/2998
+    final department = await db
+        .into(db.department)
+        .insertReturning(DepartmentCompanion.insert(name: Value('name')));
+    final withoutName = department.copyWith(name: Value(null));
+
+    await db.into(db.department).insertOnConflictUpdate(withoutName);
+
+    final resultingDepartment = await db.departmentQueries.all().getSingle();
+    expect(resultingDepartment.name, isNull);
+  });
+
   test(
     'insert with DoUpdate and excluded row and where statement true',
     () async {

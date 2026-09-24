@@ -1098,7 +1098,7 @@ abstract base class StatementCompiler {
     );
     statement.buffer.write(' DO UPDATE SET ');
 
-    final updateSet = clause.createInsertable(table).toColumns(true);
+    final updateSet = clause.createInsertable(table).toColumns(false);
     addUpdateValues(updateSet);
 
     if (clause.buildWhereClause(table) case final where?) {
