@@ -1,6 +1,6 @@
 name: drift_manager
 description: A high-level query builder built with drift.
-version: 1.0.0-wip
+version: 1.0.0-alpha.0
 repository: https://github.com/simolus3/drift
 homepage: https://drift.simonbinder.eu/
 issue_tracker: https://github.com/simolus3/drift/issues
@@ -11,8 +11,9 @@ environment:
 
 dependencies:
   collection: ^1.19.1
-  drift3_preview:
-  drift_sqlite:
+  drift3_preview: ^3.0.0-alpha.0
+  drift: ^2.35.0
+  drift_sqlite: ^0.1.0-alpha.0
   meta: ^1.17.0
   sqlite3: ^3.0.0
 
