@@ -4,7 +4,6 @@ targets:
       drift_dev:
         options:
           drift3_preview: true
-          generate_manager: false
           dialects:
             - dialect: sqlite
               version: "3.37"

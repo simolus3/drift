@@ -55,5 +55,8 @@ final class PackageVersionDataLoader implements DataLoader {
     'sqlite3',
     'path_provider',
     'postgres',
+    'drift3',
+    'drift_sqlite',
+    'drift_manager',
   ];
 }

@@ -4,7 +4,6 @@ targets:
       drift_dev:
         options:
           drift3_preview: true
-          generate_manager: false # not yet ported to drift3
 
           override_hash_and_equals_in_result_sets: true
           use_column_name_as_json_key_when_defined_in_moor_file: true

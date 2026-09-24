@@ -5,6 +5,98 @@ description: How to upgrade between major drift versions
 
 ---
 
+## Migrating from drift 2.x to drift 3.x preview
+
+!!! warning "Upcoming release"
+
+    Version 3 of drift is currently only available as a preview. The rest of this
+    documentation site continues to document version 2 of drift.
+
+Version 3 is an upcoming major upgrade for drift that is currently in preview.
+`drift_dev` provides a tool to automatically migrate most of your project, run
+it _before_ changing any dependencies:
+
+```sh
+dart run drift_dev upgrade
+```
+
+The focus of this upgrade is a faster query interface, better support for other
+SQL dialects and changes to the generated code to prepare for augmentations.
+Most of these changes are internal and only relevant for custom drift backends,
+but some affect all apps using drift.
+
+To support both major versions in a transition period, drift version 3 is currently
+only available as the `drift3_preview` package.
+SQLite support additionally requires the `drift_sqlite` package. Manager queries
+require a dependency on `drift_manager`.
+
+### Dialect changes
+
+Drift no longer has a default SQLite dialect. To reflect that all dialects are equally
+supported, SQLite support has moved to the `drift_sqlite` package. This also makes it
+possible to implement your own drift dialect by extending the `DriftDialect` class.
+
+Support for [custom column types](../sql_api/types.md) is no longer a special case, as
+all SQL types are treated equally. The `SqlType` interface represents a logical SQL
+type that works across dialects, while `PhysicalSqlType` is a dialect-specific type
+implementation.
+
+The SQLite dialect now stores date times as text by default to preserve accuracy and
+time zones.
+The SQLite dialect uses [strict tables](https://www.sqlite.org/stricttables.html) by default
+now.
+The upgrade tool disables both options for existing databases, as existing migrations otherwise
+require a migration.
+
+Drift now has builtin support for JSON columns. SQLite stores them as [jsonb](https://www.sqlite.org/json1.html#jsonb)
+by default, this can be changed to text.
+
+In `build.yaml` files, dialect options are now an array with one element per dialect:
+
+```yaml
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          drift3_preview: true
+          dialects:
+            - dialect: sqlite
+              version: "3.50"
+              strict_tables_by_default: true
+            - dialect: postgres
+```
+
+### Connection setup
+
+The `drift_flutter` package continues to work without major changes. Under the hood,
+default connections use a much faster default configuration now:
+
+- `package:drift/isolate.dart` and `package:drift/remote.dart` have been removed.
+  The only builtin way to use multi-threaded connections is to use `sqliteConnectionPool`
+  from `package:drift_sqlite/native.dart`. That option uses multiple connections and
+  isolates for fast and parallel queries.
+  Two isolates opening the same file with `sqliteConnectionPool` automatically coordinate
+  access and update notifications, even on different Flutter engines.
+- Web support from `package:drift/wasm.dart` was moved to `package:drift_sqlite/web.dart`,
+  and uses the [sqlite3_web](pub.dev/packages/sqlite3_web) package, which is faster.
+- The deprecated `package:drift/web.dart` library has been removed without replacement.
+
+### Other
+
+- Generating [manager](../dart_api/manager.md) code is now opt-in and requires
+  the `generate_manager: true` [builder option](../generation_options/index.md)
+  as well as a dependency on the `drift_manager` package.
+- `computeWithDatabase` has been moved to the `drift_sqlite` package.
+
+### Internal
+
+- Remove `QueryExecutor` class, replaced with `DriftSession` which is much easier to implement.
+  - Remove `runCustom`, `runDelete`, `runInsert`, `runSelect` and `runUpdate`. Use `execute` instead.
+- Change row representation from `Map<String, Object?>` to `List<Object?>` for efficiency.
+- Make reading rows more efficient by only resolving types once per query instead of
+  once per value.
+
 ## Migrating from drift 1.x to drift 2.x
 
 The first major upgrade from drift 1 to drift 2 involves a number of breaking

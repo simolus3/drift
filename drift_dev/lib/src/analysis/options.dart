@@ -83,8 +83,10 @@ class DriftOptions {
   final bool generateConnectConstructor;
 
   /// Generate managers to assist with common database operations.
-  @JsonKey(name: 'generate_manager', defaultValue: true)
-  final bool generateManager;
+  @JsonKey(name: 'generate_manager')
+  final bool? explicitGenerateManager;
+
+  bool get generateManager => explicitGenerateManager ?? !drift3Preview;
 
   @JsonKey(name: 'sqlite_modules', defaultValue: [])
   @Deprecated('Use effectiveModules instead')
@@ -172,7 +174,7 @@ class DriftOptions {
     this.useColumnNameAsJsonKeyWhenDefinedInMoorFile = true,
     this.useSqlColumnNameAsJsonKey = false,
     this.generateConnectConstructor = false,
-    this.generateManager = true,
+    this.explicitGenerateManager,
     this.dataClassToCompanions = true,
     this.generateMutableClasses = false,
     this.rowClassConstructorAllRequired = false,
@@ -208,7 +210,7 @@ class DriftOptions {
     required this.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
     required this.useSqlColumnNameAsJsonKey,
     required this.generateConnectConstructor,
-    required this.generateManager,
+    required this.explicitGenerateManager,
     required this.dataClassToCompanions,
     required this.generateMutableClasses,
     required this.rowClassConstructorAllRequired,

@@ -85,9 +85,9 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'generate_connect_constructor',
         (v) => v as bool? ?? false,
       ),
-      generateManager: $checkedConvert(
+      explicitGenerateManager: $checkedConvert(
         'generate_manager',
-        (v) => v as bool? ?? true,
+        (v) => v as bool?,
       ),
       dataClassToCompanions: $checkedConvert(
         'data_class_to_companions',
@@ -202,7 +202,7 @@ DriftOptions _$DriftOptionsFromJson(Map json) => $checkedCreate(
         'use_column_name_as_json_key_when_defined_in_moor_file',
     'useSqlColumnNameAsJsonKey': 'use_sql_column_name_as_json_key',
     'generateConnectConstructor': 'generate_connect_constructor',
-    'generateManager': 'generate_manager',
+    'explicitGenerateManager': 'generate_manager',
     'dataClassToCompanions': 'data_class_to_companions',
     'generateMutableClasses': 'mutable_classes',
     'rowClassConstructorAllRequired': 'row_class_constructor_all_required',
@@ -242,7 +242,7 @@ Map<String, dynamic> _$DriftOptionsToJson(
       instance.useColumnNameAsJsonKeyWhenDefinedInMoorFile,
   'use_sql_column_name_as_json_key': instance.useSqlColumnNameAsJsonKey,
   'generate_connect_constructor': instance.generateConnectConstructor,
-  'generate_manager': instance.generateManager,
+  'generate_manager': instance.explicitGenerateManager,
   'sqlite_modules': instance.modules
       .map((e) => _$SqlModuleEnumMap[e]!)
       .toList(),
