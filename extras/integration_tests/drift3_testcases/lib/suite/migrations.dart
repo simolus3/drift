@@ -87,7 +87,7 @@ void migrationTests(TestExecutor executor) {
           .customSelect('SELECT version FROM __schema')
           .getSingle();
     }
-    expect(result.row, [1]);
+    expect(database.dialect.intType.dartValue(result.row[0]!), 1);
 
     await executor.clearDatabaseAndClose(database);
   });

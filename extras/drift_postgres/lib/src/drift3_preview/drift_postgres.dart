@@ -16,6 +16,7 @@ import 'type.dart';
 
 export 'package:uuid/uuid_value.dart' show UuidValue;
 export 'dialect.dart' show PostgresDialect;
+export 'session.dart';
 
 /// Type for columns storing [UuidValue]s.
 typedef UuidColumn = Column<UuidValue>;

@@ -10,7 +10,6 @@ void transactionTests(TestExecutor executor) {
   test('transactions write data', () async {
     final db = Database(executor.createConnection());
 
-    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
     await db.transaction(() async {
       final florianId = await db.writeUser(people.florian);
 

@@ -259,7 +259,7 @@ final class DriftCompatibilityTransaction extends DriftCompatibilitySession
     assert(!isClosed);
 
     if (_isUsingUnderlyingTransaction) {
-      await (_inner as DriftTransactionSession).commit();
+      await (_inner.transaction!).commit();
     } else {
       await _inner.execute(
         _dialect.compile(CommitStatement(depth: _transactionDepth)),

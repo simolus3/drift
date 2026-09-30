@@ -48,7 +48,7 @@ final class PostgresDialect extends DriftDialect {
 
   @override
   PhysicalSqlType<double> get doubleType =>
-      const PhysicalPostgresType(Type.double, 'double');
+      const PhysicalPostgresType(Type.double, 'double precision');
 
   @override
   PhysicalSqlType<BigInt> get int64Type => const DartBigIntType();
@@ -80,6 +80,28 @@ final class PostgresSqlCompiler extends StatementCompiler {
   PostgresSqlCompiler._(this._dialect);
 
   @override
+  void addInsertStatement(
+    InsertStatement<Object, GeneratedTable<Object, dynamic>> insert,
+  ) {
+    super.addInsertStatement(insert);
+
+    if (insert.returning == null) {
+      final pk = insert.table.resolvedPrimaryKey;
+      if (pk.length == 1) {
+        final soleColumn = pk.first;
+        if (soleColumn.sqlType.resolveIn(_dialect) == _dialect.intType) {
+          statement.buffer.write(' RETURNING ');
+          addColumnReference(soleColumn);
+
+          statement.resultSetStructure = ResultSetStructure(
+            expressions: {soleColumn: const ColumnPosition(0)},
+          );
+        }
+      }
+    }
+  }
+
+  @override
   void addDateExtractionOperator(DateExtractionOperator<Object> e) {
     throw UnsupportedError('date extraction operators in postgres');
   }
@@ -92,6 +114,30 @@ final class PostgresSqlCompiler extends StatementCompiler {
   @override
   void addUnixTimestampToDateTime(UnixTimestampToDateTime e) {
     throw UnsupportedError('mapping unix timestamps to date time');
+  }
+
+  @override
+  void addColumnPrimaryKeyConstraint(ColumnPrimaryKeyConstraint constraint) {
+    statement.buffer.write('PRIMARY KEY');
+    // Don't write AUTOINCREMENT constraint, we generate a bigserial type
+    // instead.
+  }
+
+  @override
+  void addTableColumnDefinition(TableColumn column) {
+    final isSerial = column.constraints.any(
+      (e) => e is ColumnPrimaryKeyConstraint && e.isAutoIncrementing,
+    );
+
+    addReference(column.name);
+    statement.space();
+    if (isSerial) {
+      statement.buffer.write('bigserial');
+    } else {
+      statement.buffer.write(column.sqlType.typeName(dialect));
+    }
+
+    addTableColumnConstraints(column);
   }
 
   @override

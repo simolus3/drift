@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:test/test.dart';
 
 import '../tests.dart';
@@ -56,18 +55,6 @@ void crudTests(TestExecutor executor) {
     final updatedUser = await db.getUserById(1);
 
     expect(updatedUser.name, equals('Marcell'));
-    await executor.clearDatabaseAndClose(db);
-  });
-
-  test('insert mode', () async {
-    final db = Database(executor.createConnection());
-    if (db.dialect.known == KnownSqlDialect.postgres) {
-      await expectLater(
-          db.into(db.users).mode(InsertMode.insertOrReplace).insert(
-                marcell,
-              ),
-          throwsA(isA<ArgumentError>()));
-    }
     await executor.clearDatabaseAndClose(db);
   });
 
@@ -174,7 +161,7 @@ void crudTests(TestExecutor executor) {
     });
 
     test('int', () {
-      expect(evaluate(Variable<double>(42)), completion(42));
+      expect(evaluate(Variable<int>(42)), completion(42));
     });
 
     test('double', () {

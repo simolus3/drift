@@ -232,6 +232,10 @@ abstract base class StatementCompiler {
     statement.space();
     statement.buffer.write(column.sqlType.typeName(dialect));
 
+    addTableColumnConstraints(column);
+  }
+
+  void addTableColumnConstraints(TableColumn column) {
     for (final constraint in column.constraints) {
       if (constraint case CustomColumnConstraint(:final onlyOnDialect?)) {
         if (onlyOnDialect != dialect.known) {

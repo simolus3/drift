@@ -1,8 +1,8 @@
 @TestOn('vm')
 library;
 
-import 'package:drift_postgres/drift_postgres.dart';
-import 'package:drift_testcases/tests.dart';
+import 'package:drift_postgres/src/drift3_preview/drift_postgres.dart';
+import 'package:drift3_testcases/tests.dart';
 import 'package:postgres/postgres.dart' as pg;
 import 'package:test/test.dart';
 
@@ -14,17 +14,22 @@ class PgExecutor extends TestExecutor {
   bool get supportsNestedTransactions => true;
 
   @override
-  DatabaseConnection createConnection() {
-    return DatabaseConnection(
-      PgDatabase(
-        endpoint: pg.Endpoint(
+  DriftConnection createConnection() {
+    return DriftConnection(
+      dialect: PostgresDialect.new,
+      openConnection: () async {
+        final endpoint = pg.Endpoint(
           host: 'localhost',
           database: 'postgres',
           username: 'postgres',
           password: 'postgres',
-        ),
-        settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
-      ),
+        );
+        final connection = await PostgresSession.open(
+          endpoint,
+          settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
+        );
+        return connection;
+      },
     );
   }
 
@@ -59,7 +64,7 @@ CREATE TEMPORARY TABLE mytable (
     // Provide null to a nullable column
     await db.customInsert(
       r'INSERT INTO mytable (id, value) VALUES (1, $1);',
-      variables: [Variable(null)],
+      variables: [Variable<int>(null)],
     );
 
     await executor.clearDatabaseAndClose(db);

@@ -11,7 +11,7 @@ To use drift_postgres, add this to your `pubspec.yaml`
 ```yaml
 dependencies:
   drift: "$latest version"
-  drift_postgres: ^0.1.0
+  drift_postgres: ^1.3.0
 ```
 
 To connect your drift database class to postgres, use a `PgDatabase` from `package:drift_postgres/postgres.dart`:

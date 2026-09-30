@@ -31,3 +31,4 @@ dev_dependencies:
   drift_testcases:
     path: ../integration_tests/drift_testcases
   build_runner: ^2.4.6
+  drift3_testcases: ^1.0.0

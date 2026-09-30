@@ -24,7 +24,7 @@ extension GeneratedTableExtension on GeneratedTable {
   ///
   /// This is the [Table.primaryKey] when set on the table, but can also be a
   /// column with a primary key constraint on it.
-  Iterable<TableColumn> get resolvedPrimaryKey {
+  Set<TableColumn> get resolvedPrimaryKey {
     if (primaryKey case final fromTableConstraint?) {
       return fromTableConstraint.cast();
     }

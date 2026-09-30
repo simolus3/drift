@@ -8,42 +8,10 @@ import 'package:postgres/postgres.dart';
 
 import 'type.dart';
 
-/// A drift database implementation that talks to a postgres database.
-final class PostgresSession implements DriftSession {
+abstract base class _BasePostgresSession implements DriftSession {
   final Session _session;
-  final Completer<void>? _closeCompleter;
-  final _PgVersionDelegate? _versionDelegate;
 
-  PostgresSession._(this._session, [this._versionDelegate])
-    : _closeCompleter = _session is SessionExecutor ? null : Completer();
-
-  /// Wraps an opened [Session] as a drift implementation.
-  ///
-  /// The session will be closed when this database is closed.
-  factory PostgresSession.opened(
-    Session session, {
-
-    /// Enable migrations on this database.
-    bool enableMigrations = true,
-  }) {
-    final delegate = enableMigrations ? _PgVersionDelegate(session) : null;
-    return PostgresSession._(session, delegate);
-  }
-
-  @override
-  Future<void> close() async {
-    if (_session case final SessionExecutor e) {
-      await e.close();
-    } else {
-      _closeCompleter!.complete();
-    }
-  }
-
-  @override
-  Future<void> get closed => _closeCompleter?.future ?? _session.closed;
-
-  @override
-  bool get isClosed => _closeCompleter?.isCompleted ?? !_session.isOpen;
+  _BasePostgresSession(this._session);
 
   @override
   Future<QueryResult> execute(StatementInfo statement) async {
@@ -76,10 +44,18 @@ final class PostgresSession implements DriftSession {
   }
 
   QueryResult _mapResult(StatementInfo statement, Result result) {
+    var lastInsertRowId = -1;
+    // Postgres doesn't have a last_insert_rowid, but if there's a serial pk
+    // then we generate an implicit returning clause for this.
+    if (result.length == 1 && result.schema.columns.length == 1) {
+      final value = result[0][0];
+      if (value is int) lastInsertRowId = value;
+    }
+
     return QueryResult(
       resultSet: statement.needsResultSet ? _PostgresResultSet(result) : null,
       affectedRows: result.affectedRows,
-      lastInsertRowId: -1,
+      lastInsertRowId: lastInsertRowId,
     );
   }
 
@@ -87,22 +63,117 @@ final class PostgresSession implements DriftSession {
   DriftSessionWithInternalLocks? get locks => null;
 
   @override
-  PersistentSchemaVersion? get persistentSchemaVersion => _versionDelegate;
-
-  @override
   Object? get tag => null;
 
   @override
-  DriftTransactionSession? get transaction => switch (_session) {
-    final TxSession tx => _TransactionSession(tx),
-    _ => null,
-  };
+  Future<void> get closed => _session.closed;
 
   @override
-  DriftTransactionParent? get transactionParent => switch (_session) {
-    final SessionExecutor ex => _TransactionParent(ex),
-    _ => null,
-  };
+  bool get isClosed => !_session.isOpen;
+}
+
+/// A drift database implementation that talks to a postgres database.
+final class PostgresSession extends _BasePostgresSession
+    implements DriftTransactionParent {
+  final SessionExecutor _connection;
+  final bool _enableMigrations;
+
+  /// Wraps an opened [Connection] as a drift implementation.
+  ///
+  /// The connection will be closed when this database is closed.
+  PostgresSession(
+    Connection super._session, {
+
+    /// Enable migrations on this database.
+    bool enableMigrations = true,
+  }) : _connection = _session,
+       _enableMigrations = enableMigrations;
+
+  /// Opens a [PostgresSession] by calling [Connection.open].
+  static Future<PostgresSession> open(
+    Endpoint endpoint, {
+    ConnectionSettings? settings,
+  }) async {
+    return PostgresSession(await Connection.open(endpoint, settings: settings));
+  }
+
+  @override
+  Future<void> close() async {
+    await _connection.close();
+  }
+
+  @override
+  PersistentSchemaVersion? get persistentSchemaVersion =>
+      _enableMigrations ? _PgVersionDelegate(_session) : null;
+
+  @override
+  DriftTransactionSession? get transaction => null;
+
+  @override
+  DriftTransactionParent? get transactionParent => this;
+
+  @override
+  Future<DriftSession> begin(TransactionOptions options) async {
+    final transactionStarted = Completer<DriftSession>();
+
+    _connection
+        .runTx((tx) async {
+          final session = _TransactionSession(tx);
+          transactionStarted.complete(session);
+
+          await session._closedInner.future;
+        })
+        // Ensure we don't return without completing the transactionStarted
+        // completer.
+        .then(
+          (_) {
+            if (!transactionStarted.isCompleted) {
+              transactionStarted.completeError(
+                StateError('Transaction never started'),
+              );
+            }
+          },
+          onError: (Object e, StackTrace s) {
+            if (!transactionStarted.isCompleted) {
+              transactionStarted.completeError(e, s);
+            }
+          },
+        );
+
+    return await transactionStarted.future;
+  }
+}
+
+final class _TransactionSession extends _BasePostgresSession
+    implements DriftTransactionSession {
+  final TxSession _tx;
+  final Completer<void> _closedInner = Completer();
+
+  _TransactionSession(this._tx) : super(_tx);
+
+  @override
+  Future<void> commit() => close();
+
+  @override
+  Future<void> rollback() async {
+    await _tx.rollback();
+    return close();
+  }
+
+  @override
+  Future<void> close() {
+    _closedInner.complete();
+    return closed;
+  }
+
+  @override
+  PersistentSchemaVersion? get persistentSchemaVersion => null;
+
+  @override
+  DriftTransactionSession? get transaction => this;
+
+  @override
+  DriftTransactionParent? get transactionParent => null;
 }
 
 final class _PgVersionDelegate implements PersistentSchemaVersion {
@@ -150,57 +221,6 @@ final class _PgVersionDelegate implements PersistentSchemaVersion {
       Sql(r'UPDATE __schema SET version = $1', types: [Type.integer]),
       parameters: [TypedValue(Type.integer, version)],
     );
-  }
-}
-
-final class _TransactionParent implements DriftTransactionParent {
-  final SessionExecutor _ex;
-
-  _TransactionParent(this._ex);
-
-  @override
-  Future<DriftSession> begin(TransactionOptions options) async {
-    final transactionStarted = Completer<DriftSession>();
-
-    _ex
-        .runTx((tx) async {
-          final session = PostgresSession._(tx);
-          transactionStarted.complete(session);
-
-          await session.closed;
-        })
-        // Ensure we don't return without completing the transactionStarted
-        // completer.
-        .then(
-          (_) {
-            if (!transactionStarted.isCompleted) {
-              transactionStarted.completeError(
-                StateError('Transaction never started'),
-              );
-            }
-          },
-          onError: (Object e, StackTrace s) {
-            if (!transactionStarted.isCompleted) {
-              transactionStarted.completeError(e, s);
-            }
-          },
-        );
-
-    return await transactionStarted.future;
-  }
-}
-
-final class _TransactionSession implements DriftTransactionSession {
-  final TxSession _tx;
-
-  _TransactionSession(this._tx);
-
-  @override
-  Future<void> commit() async {}
-
-  @override
-  Future<void> rollback() async {
-    await _tx.rollback();
   }
 }
 
