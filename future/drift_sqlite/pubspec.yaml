@@ -30,3 +30,4 @@ dev_dependencies:
   async: ^2.13.1
   build_web_compilers: ^4.8.0
   benchmark_harness: ^2.4.0
+  drift3_testcases: ^1.0.0

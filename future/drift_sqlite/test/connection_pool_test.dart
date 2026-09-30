@@ -7,6 +7,8 @@ import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:drift3_preview/drift.dart';
+import 'package:drift3_testcases/suite/suite.dart';
+import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift_sqlite/native.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -21,6 +23,8 @@ void main() {
 
 void _nativePoolTests(bool useBackgroundIsolates) {
   declareConnectionTests(() => _openPool(useBackgroundIsolates));
+
+  runAllTests(_ConnectionPoolTestExecutor(useBackgroundIsolates));
 
   test('returns new columns after recompilation', () async {
     // https://github.com/simolus3/drift/issues/2454
@@ -179,4 +183,21 @@ Future<OpenedDriftConnection> _openPool(bool useBackgroundIsolates) async {
     file: file,
     useBackgroundIsolates: useBackgroundIsolates,
   ).open();
+}
+
+final class _ConnectionPoolTestExecutor extends TestExecutor {
+  final bool useBackgroundIsolates;
+
+  _ConnectionPoolTestExecutor(this.useBackgroundIsolates);
+
+  @override
+  DriftConnection createConnection() {
+    return DriftConnection.withImplementation(
+      dialect: SqliteDialect.new,
+      implementation: () => _openPool(useBackgroundIsolates),
+    );
+  }
+
+  @override
+  Future<dynamic> deleteData() async {}
 }

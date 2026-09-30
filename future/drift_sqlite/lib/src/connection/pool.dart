@@ -149,7 +149,8 @@ final class SqlitePoolUpdates extends StreamQueryStore {
   final bool _enableCustomUpdates;
 
   /// @nodoc
-  SqlitePoolUpdates(this._pool, {required this._enableCustomUpdates});
+  SqlitePoolUpdates(this._pool, {required bool enableCustomUpdates})
+    : _enableCustomUpdates = enableCustomUpdates;
 
   @override
   void handleTableUpdates(Set<TableUpdate> updates) {

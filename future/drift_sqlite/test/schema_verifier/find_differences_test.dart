@@ -191,7 +191,8 @@ void main() {
         final result = compare(
           SyntacticSchemaElement(
             name: 'a',
-            create: 'CREATE TABLE a (b INTEGER NOT NULL CONSTRAINT x DEFAULT TRUE);',
+            create:
+                'CREATE TABLE a (b INTEGER NOT NULL CONSTRAINT x DEFAULT TRUE);',
           ),
           SyntacticSchemaElement(
             name: 'a',
@@ -243,8 +244,9 @@ CompareResult compare(
   SyntacticSchemaElement actual, {
   ValidationOptions options = const ValidationOptions(),
 }) {
-  return SyntacticSchema([actual])
-      .compareTo(expected: SyntacticSchema([expected]), options: options);
+  return SyntacticSchema([
+    actual,
+  ]).compareTo(expected: SyntacticSchema([expected]), options: options);
 }
 
 Matcher hasChanges = _matchChanges(false);

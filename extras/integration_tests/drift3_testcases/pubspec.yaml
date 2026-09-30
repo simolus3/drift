@@ -1,0 +1,21 @@
+name: drift3_testcases
+description: A starting point for Dart libraries or applications.
+version: 1.0.0
+resolution: workspace
+# homepage: https://www.example.com
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  drift3_preview:
+  drift_manager:
+  drift_sqlite:
+  json_annotation: ^4.5.0
+  test: ^1.22.0
+
+dev_dependencies:
+  build_runner: ^2.1.11
+  drift_dev: ^2.0.0
+  json_serializable: ^6.2.0
+  lints: ^6.0.0

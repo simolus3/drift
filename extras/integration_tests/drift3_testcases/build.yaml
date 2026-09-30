@@ -1,0 +1,21 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          override_hash_and_equals_in_result_sets: true
+          use_column_name_as_json_key_when_defined_in_moor_file: true
+          raw_result_set_data: false
+          named_parameters: false
+          dialects:
+            - dialect: sqlite
+              modules:
+                - json1
+                - fts5
+              version: "3.37"
+              strict_tables_by_default: false
+              use_binary_json_representation: false
+              store_date_times_as_text: false
+            - dialect: postgres
+            - dialect: mariadb
+          drift3_preview: true

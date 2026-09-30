@@ -1,0 +1,49 @@
+import 'package:test/test.dart';
+
+import '../tests.dart';
+import 'crud_tests.dart';
+import 'custom_objects.dart';
+import 'migrations.dart';
+import 'transactions.dart';
+
+abstract class TestExecutor {
+  DriftConnection createConnection();
+
+  bool get supportsReturning => false;
+  bool get supportsNestedTransactions => false;
+
+  /// Whether variables are replaced with strings by the database implementation,
+  /// causing all kinds of issues we can't avoid.
+  bool get hackyVariables => false;
+
+  /// Delete the data that would be written by the executor.
+  Future deleteData();
+
+  /// Clear database before close
+  Future clearDatabaseAndClose(Database db) async {
+    await db.close();
+  }
+}
+
+void runAllTests(TestExecutor executor) {
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+
+  tearDown(() async {
+    await executor.deleteData();
+  });
+
+  crudTests(executor);
+  migrationTests(executor);
+  customObjectTests(executor);
+  transactionTests(executor);
+}
+
+Matcher toString(Matcher matcher) => _ToString(matcher);
+
+class _ToString extends CustomMatcher {
+  _ToString(Matcher matcher)
+      : super("Object string represent is", "toString()", matcher);
+
+  @override
+  Object? featureValueOf(dynamic actual) => actual.toString();
+}
