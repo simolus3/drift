@@ -1,4 +1,4 @@
-## 2.35.1-wip
+## 2.35.1
 
 - Support latest version of `package:cli_util`.
 

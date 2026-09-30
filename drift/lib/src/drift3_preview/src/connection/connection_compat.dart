@@ -226,7 +226,7 @@ without awaiting every statement in it.''');
 /// [DriftTransactionSession].
 final class DriftCompatibilityTransaction extends DriftCompatibilitySession
     implements DriftTransactionSession {
-  /// Whether this is using [inner] to drive the transaction.
+  /// Whether this is using [_inner] to drive the transaction.
   ///
   /// When false, there's an outer session that is locked while this transaction
   /// is active and we implement transactions with a pair of `BEGIN` / `COMMIT`
@@ -273,7 +273,7 @@ final class DriftCompatibilityTransaction extends DriftCompatibilitySession
     assert(!isClosed);
 
     if (_isUsingUnderlyingTransaction) {
-      await (_inner as DriftTransactionSession).rollback();
+      await (_inner.transaction!).rollback();
     } else {
       await _inner.execute(
         _dialect.compile(RollbackStatement(depth: _transactionDepth)),

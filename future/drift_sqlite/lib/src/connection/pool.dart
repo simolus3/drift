@@ -228,6 +228,9 @@ final class _TransactionPoolConnection extends _LeasedPoolConnection
     : super(session, _lease);
 
   @override
+  DriftTransactionSession? get transaction => this;
+
+  @override
   void _returnConnection() {
     _lease.returnLease();
   }

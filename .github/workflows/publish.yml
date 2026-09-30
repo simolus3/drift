@@ -8,6 +8,7 @@ on:
       - 'sqlparser-[0-9]+.[0-9]+.[0-9]+*'
       - 'drift_postgres-[0-9]+.[0-9]+.[0-9]+*'
       - 'drift_flutter-[0-9]+.[0-9]+.[0-9]+*'
+      - 'drift_sqlite-[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   setup:
@@ -146,6 +147,27 @@ jobs:
     defaults:
       run:
         working-directory: drift_flutter
+    steps:
+      - uses: actions/checkout@v7
+      # Install dart because the action installs a pub token.
+      - uses: dart-lang/setup-dart@v1
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: dart pub get
+      - run: flutter pub publish --dry-run
+      - run: flutter pub publish -f
+
+  publish_drift_sqlite:
+    if: "${{ startsWith(github.ref_name, 'drift_sqlite-') }}"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    defaults:
+      run:
+        working-directory: future/drift_sqlite
     steps:
       - uses: actions/checkout@v7
       # Install dart because the action installs a pub token.
