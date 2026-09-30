@@ -10,9 +10,11 @@ void main() {
   QueriesBenchmark(10_000, true).report();
 }
 
-class QueriesBenchmark(final int dataSize, final bool useBackgroundIsolates)
-    extends AsyncBenchmarkBase {
-  this
+class QueriesBenchmark extends AsyncBenchmarkBase {
+  final int dataSize;
+  final bool useBackgroundIsolates;
+
+  QueriesBenchmark(this.dataSize, this.useBackgroundIsolates)
     : super(
         'Running queries ($dataSize, background isolates: $useBackgroundIsolates',
       );

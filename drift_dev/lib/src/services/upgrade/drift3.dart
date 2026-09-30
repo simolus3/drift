@@ -144,7 +144,7 @@ final class UpgradeToDrift3 {
     if (dependencies is! YamlMap) return;
 
     editor.update(['dependencies', 'drift3_preview'], '^3.0.0-0');
-    editor.update(['dependencies', 'drift_sqlite'], '^1.0.0-0');
+    editor.update(['dependencies', 'drift_sqlite'], '^0.1.0-0');
     editor.update(['dependencies', 'drift_manager'], '^1.0.0-0');
 
     if (dependencies.containsKey('drift')) {
@@ -196,6 +196,12 @@ final class UpgradeToDrift3 {
           ...key,
           'dialects',
         ], parsedOptions.drift3DialectOptions());
+        if (parsedOptions.explicitGenerateManager != false) {
+          // generate_manager is off by default in drift3, so enable it for
+          // backwards compatibilityx.
+          editor.update([...key, 'generate_manager'], true);
+        }
+
         editor.update([...key, 'drift3_preview'], true);
         const outdatedOptions = [
           'store_date_time_values_as_text',
@@ -220,6 +226,7 @@ final class UpgradeToDrift3 {
       var options = <String, Object?>{
         'options': {
           'drift3_preview': true,
+          'generate_manager': true,
           'dialects': const DriftOptions.defaults().drift3DialectOptions(),
         },
       };
@@ -520,15 +527,25 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
-    final thisType = node.declaredFragment?.element.thisType;
-    if (thisType != null &&
-        _typeSystem.isSubtypeOf(thisType, _types.dslTable)) {
-      isInTableDefinition = true;
-      super.visitClassDeclaration(node);
-      isInTableDefinition = false;
-    } else {
-      super.visitClassDeclaration(node);
+    final element = node.declaredFragment?.element;
+    final thisType = element?.thisType;
+    if (element != null && thisType != null) {
+      if (_typeSystem.isSubtypeOf(thisType, _types.dslTable)) {
+        isInTableDefinition = true;
+        super.visitClassDeclaration(node);
+        isInTableDefinition = false;
+        return;
+      }
+
+      if (_typeSystem.isSubtypeOf(thisType, _types.databaseConnectionUser)) {
+        // This class started being a base class in drift3, so add the modifier.
+        if (!element.isBase) {
+          _writer.replaceNode(node.classKeyword, 'base class');
+        }
+      }
     }
+
+    super.visitClassDeclaration(node);
   }
 
   @override

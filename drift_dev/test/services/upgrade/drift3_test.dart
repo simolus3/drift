@@ -126,7 +126,7 @@ void insertMode(FakeGeneratedDatabase db) async {
 import 'dart:typed_data';
 import 'package:drift3_preview/drift.dart';
 
-class FakeGeneratedDatabase extends GeneratedDatabase {
+base class FakeGeneratedDatabase extends GeneratedDatabase {
   TableInfo get users => throw 'stub';
 }
 
@@ -179,7 +179,7 @@ environment:
 dependencies:
   drift3_preview: ^3.0.0-0
   drift_manager: ^1.0.0-0
-  drift_sqlite: ^1.0.0-0
+  drift_sqlite: ^0.1.0-0
 
 dev_dependencies:
   build_runner:
@@ -226,6 +226,7 @@ targets:
               use_binary_json_representation: false
               store_date_times_as_text: true
             - dialect: postgres
+          generate_manager: true
           drift3_preview: true
 ''').validate();
     });
@@ -270,6 +271,7 @@ targets:
       drift_dev:
         options:
           drift3_preview: true
+          generate_manager: true
           dialects:
             - dialect: sqlite
               strict_tables_by_default: false
