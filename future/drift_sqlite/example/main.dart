@@ -34,8 +34,7 @@ final class ExampleDatabase extends _$ExampleDatabase {
   int get schemaVersion => 1;
 
   Future<Note> createNote(String contents) async {
-    return await into(
-      notes,
-    ).insertReturning(NotesCompanion.insert(contents: contents));
+    return await into(notes)
+        .insertReturning(NotesCompanion.insert(contents: contents));
   }
 }

@@ -7,7 +7,7 @@ issue_tracker: https://github.com/simolus3/drift/issues
 resolution: workspace
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.13.0
 
 dependencies:
   drift: ^2.35.0
@@ -29,3 +29,4 @@ dev_dependencies:
   stream_channel: ^2.1.4
   async: ^2.13.1
   build_web_compilers: ^4.8.0
+  benchmark_harness: ^2.4.0

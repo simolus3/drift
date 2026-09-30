@@ -29,6 +29,12 @@ export 'src/options.dart';
 /// SQL text) frequently. By default, 16 statements are cached per connection in
 /// the pool. The value can be set to `0` to disable the statement cache.
 ///
+/// [useBackgroundIsolates] (enabled by default) controls whether queries should
+/// run on a background isolate. This should be enabled when this function is
+/// called on the main UI isolate to avoid blocking it. For background tasks
+/// with database access, disabling it can make queries faster by running them
+/// synchronously on the calling thread.
+///
 /// Two isolates calling [sqliteConnectionPool] with the same path will
 /// implicitly use the same connection pool without conflict.
 DriftConnection sqliteConnectionPool({
@@ -36,6 +42,7 @@ DriftConnection sqliteConnectionPool({
   UpdateNotificationMode updates = .native,
   int amountOfReaders = 4,
   int preparedStatementCacheSize = 16,
+  bool useBackgroundIsolates = true,
   void Function(Database, {required bool isWriter})? configureDatabase,
 }) {
   return DriftConnection.withImplementation(
@@ -44,6 +51,7 @@ DriftConnection sqliteConnectionPool({
       file: file,
       amountOfReaders: amountOfReaders,
       preparedStatementCacheSize: preparedStatementCacheSize,
+      useBackgroundIsolates: useBackgroundIsolates,
       configureDatabase: configureDatabase,
       updates: updates,
     ),
@@ -54,6 +62,7 @@ Future<OpenedDriftConnection> _sqliteConnectionPool({
   required File file,
   required int amountOfReaders,
   required int preparedStatementCacheSize,
+  required bool useBackgroundIsolates,
   required void Function(Database, {required bool isWriter})? configureDatabase,
   required UpdateNotificationMode updates,
 }) async {
@@ -99,7 +108,7 @@ Future<OpenedDriftConnection> _sqliteConnectionPool({
   );
 
   return OpenedDriftConnection(
-    SqlitePoolSession(pool),
+    SqlitePoolSession(pool, useBackgroundIsolates: useBackgroundIsolates),
     SqlitePoolUpdates(pool, enableCustomUpdates: updates == .drift),
   );
 }

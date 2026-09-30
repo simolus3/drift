@@ -58,6 +58,9 @@ Future<T> _runWithDatabase<T, DB extends GeneratedDatabase>({
               // Don't try to re-run migrations here, the database is already
               // open.
               includePersistentSchemaVersion: false,
+              // Since we already are on a background isolate, run queries
+              // synchronously.
+              useBackgroundIsolates: false,
             ),
             SqlitePoolUpdates(pool, enableCustomUpdates: false),
           );

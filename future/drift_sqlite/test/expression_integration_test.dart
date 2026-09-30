@@ -66,9 +66,8 @@ void _declareJsonTests(bool binary) {
   tearDown(() => db.close());
 
   test('array length', () async {
-    final length = Variable(
-      DatabaseJson(jsonObject),
-    ).jsonArrayLength(r'$.array');
+    final length = Variable(DatabaseJson(jsonObject))
+        .jsonArrayLength(r'$.array');
     final row = await db.selectExpressions([
       Variable(DatabaseJson(jsonObject)).jsonArrayLength(r'$.array'),
     ]).getSingle();

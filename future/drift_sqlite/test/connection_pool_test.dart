@@ -14,7 +14,13 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'connection_testcases.dart';
 
 void main() {
-  declareConnectionTests(_openPool);
+  group('without background isolates', () => _nativePoolTests(false));
+
+  group('with background isolates', () => _nativePoolTests(true));
+}
+
+void _nativePoolTests(bool useBackgroundIsolates) {
+  declareConnectionTests(() => _openPool(useBackgroundIsolates));
 
   test('returns new columns after recompilation', () async {
     // https://github.com/simolus3/drift/issues/2454
@@ -22,6 +28,7 @@ void main() {
     final session = (await (sqliteConnectionPool(
       file: file,
       amountOfReaders: 1,
+      useBackgroundIsolates: useBackgroundIsolates,
     ).open())).session;
     addTearDown(session.close);
 
@@ -56,6 +63,7 @@ void main() {
           isWriter ? 'writer' : 'reader',
         ]);
       },
+      useBackgroundIsolates: useBackgroundIsolates,
     ).open()).session;
     addTearDown(session.close);
 
@@ -84,6 +92,7 @@ void main() {
       sqliteConnectionPool(
         file: File(d.path('test.db')),
         configureDatabase: (db, {required bool isWriter}) => throw exception,
+        useBackgroundIsolates: useBackgroundIsolates,
       ).open(),
       throwsA(exception),
     );
@@ -91,7 +100,11 @@ void main() {
 
   test('can cancel queries', () async {
     final db = EmptyDb(
-      sqliteConnectionPool(file: File(d.path('test.db')), amountOfReaders: 1),
+      sqliteConnectionPool(
+        file: File(d.path('test.db')),
+        amountOfReaders: 1,
+        useBackgroundIsolates: useBackgroundIsolates,
+      ),
     );
 
     // Occupy the single read connection
@@ -126,6 +139,7 @@ void main() {
             file: File(path),
             amountOfReaders: 1,
             updates: mode,
+            useBackgroundIsolates: useBackgroundIsolates,
           ),
         );
         await db.customStatement('CREATE TABLE foo (bar TEXT);');
@@ -137,6 +151,7 @@ void main() {
               file: File(path),
               amountOfReaders: 1,
               updates: mode,
+              useBackgroundIsolates: useBackgroundIsolates,
             ),
           );
 
@@ -158,7 +173,10 @@ void main() {
   }
 }
 
-Future<OpenedDriftConnection> _openPool() async {
+Future<OpenedDriftConnection> _openPool(bool useBackgroundIsolates) async {
   final file = File(d.path('test.db'));
-  return sqliteConnectionPool(file: file).open();
+  return sqliteConnectionPool(
+    file: file,
+    useBackgroundIsolates: useBackgroundIsolates,
+  ).open();
 }

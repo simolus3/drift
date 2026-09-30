@@ -18,8 +18,13 @@ final class SqlitePoolSession
   final Completer<void> _closed = Completer();
 
   final bool includePersistentSchemaVersion;
+  final bool useBackgroundIsolates;
 
-  SqlitePoolSession(this.pool, {this.includePersistentSchemaVersion = true});
+  SqlitePoolSession(
+    this.pool, {
+    this.includePersistentSchemaVersion = true,
+    this.useBackgroundIsolates = true,
+  });
 
   @override
   Future<void> close() async {
@@ -46,7 +51,7 @@ final class SqlitePoolSession
   Future<QueryResult> execute(StatementInfo statement) async {
     final connection = await _lease(!statement.isReadOnly);
     try {
-      return await _runStatementOnConnection(connection, statement);
+      return await _executeOnLease(connection, statement);
     } finally {
       connection.returnLease();
     }
@@ -56,9 +61,45 @@ final class SqlitePoolSession
   Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
     final writer = await _lease(true);
     try {
-      return await _runBatchOnConnection(writer, batch);
+      return await _executeBatchOnLease(writer, batch);
     } finally {
       writer.returnLease();
+    }
+  }
+
+  Future<QueryResult> _executeOnLease(
+    AsyncConnection connection,
+    StatementInfo statement,
+  ) {
+    return _runWithDatabase(
+      connection,
+      _PoolConnectionStatements._runClosure(
+        statement.sql,
+        statement.variables,
+        statement.needsResultSet,
+      ),
+    );
+  }
+
+  Future<List<QueryResult>> _executeBatchOnLease(
+    AsyncConnection connection,
+    StatementBatch batch,
+  ) async {
+    return _runWithDatabase(
+      connection,
+      _PoolConnectionStatements._runBatchClosure(batch),
+    );
+  }
+
+  Future<T> _runWithDatabase<T>(
+    AsyncConnection connection,
+    T Function(PoolConnection) closure,
+  ) {
+    // This is safe because we're not closing the connection here.
+    if (useBackgroundIsolates) {
+      return connection.unsafeAccessOnIsolate(closure);
+    } else {
+      return connection.unsafeAccess(closure);
     }
   }
 
@@ -90,7 +131,7 @@ final class SqlitePoolSession
     assert(await connection.autocommit);
     await connection.execute('BEGIN IMMEDIATE;');
     assert(!await connection.autocommit);
-    return _TransactionPoolConnection(connection);
+    return _TransactionPoolConnection(this, connection);
   }
 
   @override
@@ -98,7 +139,7 @@ final class SqlitePoolSession
     final access = await pool
         .exclusiveAccess(abortSignal: cancellationSignal)
         .poolAbortExceptionsToDrift();
-    return _ExclusivePoolConnection(access);
+    return _ExclusivePoolConnection(this, access);
   }
 }
 
@@ -108,8 +149,7 @@ final class SqlitePoolUpdates extends StreamQueryStore {
   final bool _enableCustomUpdates;
 
   /// @nodoc
-  SqlitePoolUpdates(this._pool, {required bool enableCustomUpdates})
-    : _enableCustomUpdates = enableCustomUpdates;
+  SqlitePoolUpdates(this._pool, {required this._enableCustomUpdates});
 
   @override
   void handleTableUpdates(Set<TableUpdate> updates) {
@@ -130,72 +170,12 @@ final class SqlitePoolUpdates extends StreamQueryStore {
   }
 }
 
-Future<QueryResult> _runStatementOnConnection(
-  AsyncConnection connection,
-  StatementInfo statement,
-) async {
-  ExecuteResult execResult;
-  RawResultSet? resultSet;
-
-  if (statement.needsResultSet) {
-    final (sqliteResultSet, res) = await connection.select(
-      statement.sql,
-      statement.variables,
-    );
-    execResult = res;
-    resultSet = RawResultSet.fromRows(
-      columnNames: sqliteResultSet.columnNames,
-      rows: sqliteResultSet.rows,
-    );
-  } else {
-    execResult = await connection.execute(statement.sql, statement.variables);
-  }
-
-  return QueryResult(
-    resultSet: resultSet,
-    affectedRows: execResult.changes,
-    lastInsertRowId: execResult.lastInsertRowId,
-  );
-}
-
-Future<List<QueryResult>> _runBatchOnConnection(
-  AsyncConnection connection,
-  StatementBatch batch,
-) async {
-  return await connection.unsafeAccessOnIsolate(_runBatch(batch));
-}
-
-List<QueryResult> Function(PoolConnection) _runBatch(StatementBatch batch) {
-  return (connection) {
-    final database = connection.database;
-    final results = <QueryResult>[];
-    final prepared = <PreparedStatement>[];
-
-    try {
-      for (final sql in batch.sql) {
-        prepared.add(database.prepare(sql));
-      }
-
-      for (final stmt in batch.statements) {
-        results.add(
-          executeWithStatement(database, prepared[stmt.sqlIndex], stmt.info),
-        );
-      }
-    } finally {
-      for (final stmt in prepared) {
-        stmt.close();
-      }
-    }
-
-    return [];
-  };
-}
-
 abstract class _LeasedPoolConnection implements DriftSession {
   final Completer<void> _closed = Completer();
+  final SqlitePoolSession _root;
   final AsyncConnection _connection;
 
-  _LeasedPoolConnection(this._connection);
+  _LeasedPoolConnection(this._root, this._connection);
 
   void _returnConnection();
 
@@ -214,13 +194,13 @@ abstract class _LeasedPoolConnection implements DriftSession {
   bool get isClosed => _closed.isCompleted;
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) async {
-    return await _runStatementOnConnection(_connection, statement);
+  Future<QueryResult> execute(StatementInfo statement) {
+    return _root._executeOnLease(_connection, statement);
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
-    return await _runBatchOnConnection(_connection, batch);
+  Future<List<QueryResult>> executeBatch(StatementBatch batch) {
+    return _root._executeBatchOnLease(_connection, batch);
   }
 
   @override
@@ -243,7 +223,8 @@ final class _TransactionPoolConnection extends _LeasedPoolConnection
     implements DriftTransactionSession {
   final ConnectionLease _lease;
 
-  _TransactionPoolConnection(this._lease) : super(_lease);
+  _TransactionPoolConnection(SqlitePoolSession session, this._lease)
+    : super(session, _lease);
 
   @override
   void _returnConnection() {
@@ -266,11 +247,69 @@ final class _TransactionPoolConnection extends _LeasedPoolConnection
 final class _ExclusivePoolConnection extends _LeasedPoolConnection {
   final ExclusivePoolAccess _access;
 
-  _ExclusivePoolConnection(this._access) : super(_access.writer);
+  _ExclusivePoolConnection(SqlitePoolSession session, this._access)
+    : super(session, _access.writer);
 
   @override
   void _returnConnection() {
     _access.close();
+  }
+}
+
+extension _PoolConnectionStatements on PoolConnection {
+  QueryResult run(String sql, List<Object?> variables, bool needsResult) {
+    final rawDb = database;
+    RawResultSet? resultSet;
+
+    if (needsResult) {
+      resultSet = SqliteResultSet(resultSet: select(sql, variables));
+    } else {
+      execute(sql, variables);
+    }
+
+    return QueryResult(
+      resultSet: resultSet,
+      affectedRows: rawDb.updatedRows,
+      lastInsertRowId: rawDb.lastInsertRowId,
+    );
+  }
+
+  List<QueryResult> runBatch(StatementBatch batch) {
+    final database = this.database;
+    final results = <QueryResult>[];
+    final prepared = <PreparedStatement>[];
+
+    try {
+      for (final sql in batch.sql) {
+        prepared.add(database.prepare(sql));
+      }
+
+      for (final stmt in batch.statements) {
+        results.add(
+          executeWithStatement(database, prepared[stmt.sqlIndex], stmt.info),
+        );
+      }
+    } finally {
+      for (final stmt in prepared) {
+        stmt.close();
+      }
+    }
+
+    return results;
+  }
+
+  static QueryResult Function(PoolConnection) _runClosure(
+    String sql,
+    List<Object?> variables,
+    bool needsResult,
+  ) {
+    return (conn) => conn.run(sql, variables, needsResult);
+  }
+
+  static List<QueryResult> Function(PoolConnection) _runBatchClosure(
+    StatementBatch batch,
+  ) {
+    return (conn) => conn.runBatch(batch);
   }
 }
 
