@@ -19,15 +19,17 @@ final class NavigatorLocksExecutor implements QueryExecutor {
 
   @override
   QueryExecutor beginExclusive() {
-    return _inner.beginExclusive().interceptWith(
-      _AcquireNavigatorLockInterceptor(this),
+    final inner = _inner.beginExclusive();
+    return inner.interceptWith(
+      _AcquireNavigatorLockInterceptor(this, ownsLock: inner),
     );
   }
 
   @override
   TransactionExecutor beginTransaction() {
-    return _inner.beginTransaction().interceptWith(
-          _AcquireNavigatorLockInterceptor(this),
+    final inner = _inner.beginTransaction();
+    return inner.interceptWith(
+          _AcquireNavigatorLockInterceptor(this, ownsLock: inner),
         )
         as TransactionExecutor;
   }
@@ -103,9 +105,18 @@ final class _AcquireNavigatorLockInterceptor extends QueryInterceptor {
   final NavigatorLocksExecutor _executor;
   final Completer<void> _returnNavigatorLocks = Completer();
 
+  /// The executor whose commit, rollback or close ends this interceptor's
+  /// navigator-lock scope. Executors for nested transactions flow through
+  /// this same interceptor but must not complete the shared completer.
+  /// See https://github.com/simolus3/drift/issues/3870
+  final QueryExecutor _ownsNavigatorLock;
+
   Future<void>? _acquiredNavigatorLock;
 
-  _AcquireNavigatorLockInterceptor(this._executor);
+  _AcquireNavigatorLockInterceptor(
+    this._executor, {
+    required QueryExecutor ownsLock,
+  }) : _ownsNavigatorLock = ownsLock;
 
   @override
   Future<bool> ensureOpen(
@@ -122,18 +133,25 @@ final class _AcquireNavigatorLockInterceptor extends QueryInterceptor {
 
   @override
   Future<void> close(QueryExecutor inner) {
-    return inner.close().whenComplete(() => _returnNavigatorLocks.complete());
+    return inner.close().whenComplete(() => _releaseLock(inner));
   }
 
   @override
   Future<void> commitTransaction(TransactionExecutor inner) {
-    return inner.send().whenComplete(() => _returnNavigatorLocks.complete());
+    return inner.send().whenComplete(() => _releaseLock(inner));
   }
 
   @override
   Future<void> rollbackTransaction(TransactionExecutor inner) {
-    return inner.rollback().whenComplete(
-      () => _returnNavigatorLocks.complete(),
-    );
+    return inner.rollback().whenComplete(() => _releaseLock(inner));
+  }
+
+  void _releaseLock(QueryExecutor inner) {
+    // A nested transaction completes before the outermost one; releasing the
+    // navigator lock here would make the outer commit fail with
+    // `Bad state: Future already completed` and its rollback hang forever.
+    if (identical(inner, _ownsNavigatorLock)) {
+      _returnNavigatorLocks.complete();
+    }
   }
 }
