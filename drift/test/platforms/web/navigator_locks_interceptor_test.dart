@@ -40,6 +40,37 @@ void main() {
     expect(await db.todosTable.all().get(), isNotEmpty);
   });
 
+  test('nested transactions complete the outer transaction', () async {
+    // Regression test for https://github.com/simolus3/drift/issues/3870:
+    // the nested transaction used to complete the shared navigator-lock
+    // completer, so the outer commit failed and its rollback hung forever.
+    final db = TodoDb(connect());
+    addTearDown(db.close);
+
+    await db.transaction(() async {
+      await db.transaction(() async {});
+    });
+  });
+
+  test('nested transaction with rollback rolls the outer one back', () async {
+    final db = TodoDb(connect());
+    addTearDown(db.close);
+
+    final outer = db.transaction<void>(() async {
+      await db
+          .transaction(() async {
+            await db.todosTable.insertOne(
+              TodosTableCompanion.insert(content: 'nested'),
+            );
+          })
+          .then((_) => throw Exception('rollback after nested commit'));
+    });
+    // The nested commit succeeded, but the outer transaction rolls back.
+    await expectLater(outer, throwsA(isA<Exception>()));
+
+    expect(await db.todosTable.all().get(), isEmpty);
+  });
+
   test("can't have concurrent transactions", () async {
     var concurrentTransactions = 0;
     var totalTransactions = 0;

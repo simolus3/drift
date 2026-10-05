@@ -1,3 +1,7 @@
+## Unreleased
+
+- Web: Fix nested transactions failing to commit and hanging on rollback with `WasmStorageImplementation.opfsLocks`. A nested transaction completed the shared navigator-lock completer, so the outer commit failed with `Bad state: Future already completed` and its rollback never resolved (#3870).
+
 ## 2.35.1
 
 - Web: Properly release transactions held by closing tabs.
