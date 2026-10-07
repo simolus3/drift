@@ -21,6 +21,7 @@ final class NavigatorLocksExecutor implements QueryExecutor {
   QueryExecutor beginExclusive() {
     return _inner.beginExclusive().interceptWith(
       _AcquireNavigatorLockInterceptor(this),
+      sticky: false,
     );
   }
 
@@ -28,6 +29,7 @@ final class NavigatorLocksExecutor implements QueryExecutor {
   TransactionExecutor beginTransaction() {
     return _inner.beginTransaction().interceptWith(
           _AcquireNavigatorLockInterceptor(this),
+          sticky: false,
         )
         as TransactionExecutor;
   }

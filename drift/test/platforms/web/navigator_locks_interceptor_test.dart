@@ -73,6 +73,17 @@ void main() {
     expect(totalTransactions, 20);
   });
 
+  test('can nest transactions', () async {
+    final a = TodoDb(connect());
+    addTearDown(a.close);
+
+    await a.transaction(() async {
+      await a.transaction(() async {
+        await a.exclusively(() async {});
+      });
+    });
+  });
+
   test("can't have concurrent exclusive", () async {
     var concurrentTransactions = 0;
     var totalTransactions = 0;

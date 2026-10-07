@@ -1,3 +1,7 @@
+## 2.35.2
+
+- Web: Fix OPFS file systems not supporting nested transactions (a regression introduced in version 2.34.3).
+
 ## 2.35.1
 
 - Web: Properly release transactions held by closing tabs.

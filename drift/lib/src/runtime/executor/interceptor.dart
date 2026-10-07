@@ -9,13 +9,19 @@ extension ApplyInterceptor on QueryExecutor {
   ///
   /// This can be used to, for instance, write a custom statement logger or to
   /// retry failing statements automatically.
-  QueryExecutor interceptWith(QueryInterceptor interceptor) {
+  ///
+  /// When [sticky] is enabled (the default), child executors
+  /// (e.g. transactions) are also intercepted using the interceptor.
+  QueryExecutor interceptWith(
+    QueryInterceptor interceptor, {
+    bool sticky = true,
+  }) {
     final $this = this;
 
     if ($this is TransactionExecutor) {
-      return _InterceptedTransactionExecutor($this, interceptor);
+      return _InterceptedTransactionExecutor($this, interceptor, sticky);
     } else {
-      return _InterceptedExecutor($this, interceptor);
+      return _InterceptedExecutor($this, interceptor, sticky);
     }
   }
 }
@@ -133,21 +139,23 @@ abstract class QueryInterceptor {
 class _InterceptedExecutor extends QueryExecutor {
   final QueryExecutor _inner;
   final QueryInterceptor _interceptor;
+  final bool sticky;
 
-  _InterceptedExecutor(this._inner, this._interceptor);
+  _InterceptedExecutor(this._inner, this._interceptor, this.sticky);
 
   @override
-  TransactionExecutor beginTransaction() => _InterceptedTransactionExecutor(
-    _interceptor.beginTransaction(_inner),
-    _interceptor,
-  );
+  TransactionExecutor beginTransaction() {
+    final inner = _interceptor.beginTransaction(_inner);
+
+    return sticky
+        ? _InterceptedTransactionExecutor(inner, _interceptor, true)
+        : inner;
+  }
 
   @override
   QueryExecutor beginExclusive() {
-    return _InterceptedExecutor(
-      _interceptor.beginExclusive(_inner),
-      _interceptor,
-    );
+    final inner = _interceptor.beginExclusive(_inner);
+    return sticky ? _InterceptedExecutor(inner, _interceptor, true) : inner;
   }
 
   @override
@@ -199,7 +207,7 @@ class _InterceptedExecutor extends QueryExecutor {
 
 class _InterceptedTransactionExecutor extends _InterceptedExecutor
     implements TransactionExecutor {
-  _InterceptedTransactionExecutor(super.inner, super.interceptor);
+  _InterceptedTransactionExecutor(super.inner, super.interceptor, super.sticky);
 
   @override
   Future<void> rollback() {

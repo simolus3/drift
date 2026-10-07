@@ -64,6 +64,28 @@ void main() {
     await database.users.delete().go();
     expect(events, ['update']);
   });
+
+  test('can disable intercepting inner', () async {
+    final interceptor = EmittingInterceptor();
+    final events = <String>[];
+    interceptor.events.stream.listen(events.add);
+
+    final connection = testInMemoryDatabase().executor;
+
+    final database = TodoDb(
+      connection.interceptWith(interceptor, sticky: false),
+    );
+    await database.batch((batch) {
+      batch.insert(
+        database.categories,
+        CategoriesCompanion.insert(description: 'from batch'),
+      );
+    });
+    await database.categories.select().get();
+    // batch and commit is called on inner, non-intercepted.
+    expect(events, ['begin', 'select']);
+    events.clear();
+  });
 }
 
 class EmittingInterceptor extends QueryInterceptor {
