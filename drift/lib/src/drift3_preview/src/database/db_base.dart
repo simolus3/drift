@@ -82,7 +82,7 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
       return opening;
     } else {
       return _openingSession = Future.sync(() async {
-        final opened = await _connection.open();
+        final opened = await _connection.open(dialect);
         _streamQueryStore ??= opened.streamQueries;
         _underlyingStreamQueries?.complete(opened.streamQueries);
         _openedSession = opened.session;

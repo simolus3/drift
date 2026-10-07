@@ -16,7 +16,7 @@ void main() {
       final database = _GeopolyTestDatabase(
         DriftConnection(
           dialect: SqliteDialect.new,
-          openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
+          openConnection: (_) async => SqliteConnection(sqlite3.openInMemory()),
         ),
       );
       expect(database.geopolyTest.shape.sqlType, isA<GeopolyPolygonType>());

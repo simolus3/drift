@@ -11,7 +11,7 @@ void main() {
   setUp(() {
     final inMemory = DriftConnection(
       dialect: SqliteDialect.new,
-      openConnection: () async => SqliteConnection(
+      openConnection: (_) async => SqliteConnection(
         sqlite3.openInMemory(),
       ),
     );

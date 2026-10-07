@@ -194,7 +194,7 @@ final class _ConnectionPoolTestExecutor extends TestExecutor {
   DriftConnection createConnection() {
     return DriftConnection.withImplementation(
       dialect: SqliteDialect.new,
-      implementation: () => _openPool(useBackgroundIsolates),
+      implementation: (_) => _openPool(useBackgroundIsolates),
     );
   }
 

@@ -18,6 +18,6 @@ DriftConnection testInMemoryDatabase([DriftDialectFactory? dialect]) {
   throw UnsupportedError('Stub, should resolve to web or vm');
 }
 
-Future<DriftSession> openInMemoryDatabase() async {
+Future<DriftSession> openInMemoryDatabase(DriftDialect dialect) async {
   throw UnsupportedError('Stub, should resolve to web or vm');
 }

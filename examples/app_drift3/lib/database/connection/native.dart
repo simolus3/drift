@@ -28,7 +28,7 @@ Future<void> validateDatabaseSchema(GeneratedDatabase database) async {
     await database.validateDatabaseSchema(
       connection: DriftConnection(
         dialect: SqliteDialect.new,
-        openConnection: () async {
+        openConnection: (_) async {
           return SqliteConnection(sqlite3.openInMemory());
         },
       ),

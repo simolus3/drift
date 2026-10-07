@@ -160,7 +160,7 @@ final class TestDatabase extends _$TestDatabase {
     return TestDatabase(
       DriftConnection(
         dialect: SqliteDialect.new,
-        openConnection: () async {
+        openConnection: (_) async {
           return SqliteConnection(sqlite3.openInMemory());
         },
       ),

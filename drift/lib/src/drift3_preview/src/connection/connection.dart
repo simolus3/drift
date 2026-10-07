@@ -3,7 +3,6 @@ import 'dart:async';
 import '../query_builder/dialect.dart';
 import '../query_builder/types.dart';
 import 'result_set.dart';
-import 'streams/delayed_stream_queries.dart';
 import 'streams/in_memory_store.dart';
 import 'streams/store.dart';
 import 'streams/update_rules.dart';
@@ -34,12 +33,13 @@ final class DriftConnection {
   /// This should always correspond to the [OpenedDriftConnection] opened
   /// by this session. SQLite connections would use a SQLite dialect.
   final DriftDialectFactory dialect;
-  final Future<OpenedDriftConnection> Function() _openConnection;
+  final Future<OpenedDriftConnection> Function(DriftDialect dialect)
+  _openConnection;
 
   /// @nodoc
   DriftConnection({
     required this.dialect,
-    required Future<DriftSession> Function() openConnection,
+    required Future<DriftSession> Function(DriftDialect) openConnection,
     bool closeStreamsSynchronously = false,
     StreamQueryStore? streamQueries,
   }) : _openConnection = _wrapOpenSession(
@@ -51,7 +51,8 @@ final class DriftConnection {
   /// A drift connection resolving to the [implementation] when [open]ed.
   DriftConnection.withImplementation({
     required this.dialect,
-    required Future<OpenedDriftConnection> Function() implementation,
+    required Future<OpenedDriftConnection> Function(DriftDialect)
+    implementation,
   }) : _openConnection = implementation;
 
   /// A drift connection referring to another [DriftConnection] lazily when
@@ -60,32 +61,13 @@ final class DriftConnection {
     Future<DriftConnection> Function() open, {
     required DriftDialectFactory dialect,
   }) {
-    final session = Completer<DriftSession>();
-    final streamQueries = Completer<StreamQueryStore>();
-
-    Future<void> request() {
-      if (!session.isCompleted) {
-        session.complete(
-          Future(() async {
-            final connection = await open();
-            final implementation = await connection.open();
-
-            streamQueries.complete(implementation.streamQueries);
-            return implementation.session;
-          }),
-        );
-      }
-
-      return session.future;
-    }
-
-    return DriftConnection(
+    return DriftConnection.withImplementation(
       dialect: dialect,
-      openConnection: () async {
-        await request();
-        return await session.future;
+      implementation: (dialect) async {
+        final session = await open();
+        final opened = await session.open(dialect);
+        return opened;
       },
-      streamQueries: DelayedStreamQueryStore(streamQueries.future, request),
     );
   }
 
@@ -93,35 +75,18 @@ final class DriftConnection {
   ///
   /// The returned implementation should eventually be closed to avoid leaking
   /// resources.
-  Future<OpenedDriftConnection> open() async {
-    return await _openConnection();
+  Future<OpenedDriftConnection> open([DriftDialect? resolvedDialect]) async {
+    return await _openConnection(resolvedDialect ?? dialect(const {}));
   }
 
-  /// Returns a [DriftConnection] that has the underlying [DriftSession]
-  /// replaced by the [change] function.
-  DriftConnection changeSession(
-    FutureOr<DriftSession> Function(DriftSession) change,
-  ) {
-    return DriftConnection.withImplementation(
-      dialect: dialect,
-      implementation: () async {
-        final implementation = await open();
-        return OpenedDriftConnection(
-          await change(implementation.session),
-          implementation.streamQueries,
-        );
-      },
-    );
-  }
-
-  static Future<OpenedDriftConnection> Function() _wrapOpenSession(
-    Future<DriftSession> Function() session,
+  static Future<OpenedDriftConnection> Function(DriftDialect) _wrapOpenSession(
+    Future<DriftSession> Function(DriftDialect) session,
     StreamQueryStore? store,
     bool closeStreamsSynchronously,
   ) {
-    return () async {
+    return (dialect) async {
       return OpenedDriftConnection(
-        await session(),
+        await session(dialect),
         store ??
             InMemoryStreamQueryStore(
               closeStreamsSynchronously: closeStreamsSynchronously,

@@ -44,7 +44,7 @@ Future<T> _runWithDatabase<T, DB extends GeneratedDatabase>({
     final database = connect(
       DriftConnection.withImplementation(
         dialect: SqliteDialect.new,
-        implementation: () async {
+        implementation: (_) async {
           final pool = SqliteConnectionPool.open(
             name: name,
             openConnections: () => throw StateError(

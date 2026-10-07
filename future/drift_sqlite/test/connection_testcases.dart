@@ -20,7 +20,7 @@ void declareConnectionTests(
     final db = EmptyDb(
       DriftConnection.withImplementation(
         dialect: SqliteDialect.new,
-        implementation: openConnection,
+        implementation: (_) => openConnection(),
       ),
     );
     addTearDown(db.close);

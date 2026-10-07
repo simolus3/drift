@@ -39,7 +39,7 @@ final class _WebInMemoryExecutor extends TestExecutor {
   DriftConnection createConnection() {
     return DriftConnection(
       dialect: SqliteDialect.new,
-      openConnection: () async =>
+      openConnection: (_) async =>
           SqliteConnection(sqlite().open('/tmp/$_deleteCounter/test.db')),
     );
   }

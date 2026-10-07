@@ -8,7 +8,7 @@ void main() {
   TodoDb(
     DriftConnection(
       dialect: SqliteDialect.new,
-      openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
+      openConnection: (_) async => SqliteConnection(sqlite3.openInMemory()),
     ),
   );
   print('database created');

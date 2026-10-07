@@ -19,6 +19,6 @@ DriftConnection testInMemoryDatabase([DriftDialectFactory? dialect]) {
   );
 }
 
-Future<DriftSession> openInMemoryDatabase() async {
+Future<DriftSession> openInMemoryDatabase(DriftDialect dialect) async {
   return SqliteConnection(sqlite3.openInMemory());
 }

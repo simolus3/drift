@@ -44,7 +44,7 @@ void _defineTest(
         ? _SomeDb(
             DriftConnection(
               dialect: SqliteDialect.new,
-              openConnection: () async =>
+              openConnection: (_) async =>
                   SqliteConnection(sqlite3.openInMemory()),
             ),
           )

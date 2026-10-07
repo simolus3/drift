@@ -13,7 +13,7 @@ DriftConnection createConnection(
 }) {
   return DriftConnection(
     dialect: dialect ?? SqliteDialect.new,
-    openConnection: () async => session,
+    openConnection: (_) async => session,
     streamQueries: streams,
   );
 }

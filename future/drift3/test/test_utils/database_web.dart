@@ -42,7 +42,7 @@ DriftConnection testInMemoryDatabase([DriftDialectFactory? dialect]) {
   );
 }
 
-Future<DriftSession> openInMemoryDatabase() async {
+Future<DriftSession> openInMemoryDatabase(DriftDialect dialect) async {
   final sqlite = await sqlite3;
   sqlite.registerVirtualFileSystem(InMemoryFileSystem(), makeDefault: true);
 

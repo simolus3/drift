@@ -17,7 +17,7 @@ class PgExecutor extends TestExecutor {
   DriftConnection createConnection() {
     return DriftConnection(
       dialect: PostgresDialect.new,
-      openConnection: () async {
+      openConnection: (_) async {
         final endpoint = pg.Endpoint(
           host: 'localhost',
           database: 'postgres',

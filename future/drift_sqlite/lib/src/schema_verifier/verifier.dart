@@ -225,7 +225,7 @@ final class InitializedSchema {
   DriftConnection newConnection() {
     return DriftConnection(
       dialect: _dialect,
-      openConnection: () async =>
+      openConnection: (_) async =>
           SqliteConnection(rawDatabase, closeUnderlyingWhenClosed: false),
     );
   }

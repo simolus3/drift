@@ -34,7 +34,8 @@ void sendCreateStatements(
     final opened = database(
       DriftConnection(
         dialect: dialectFactory,
-        openConnection: () => Future.error(UnsupportedError('Stub connection')),
+        openConnection: (_) =>
+            Future.error(UnsupportedError('Stub connection')),
       ),
     );
     final dialect = opened.dialect;

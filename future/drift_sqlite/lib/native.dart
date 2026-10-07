@@ -47,7 +47,7 @@ DriftConnection sqliteConnectionPool({
 }) {
   return DriftConnection.withImplementation(
     dialect: SqliteDialect.new,
-    implementation: () => _sqliteConnectionPool(
+    implementation: (_) => _sqliteConnectionPool(
       file: file,
       amountOfReaders: amountOfReaders,
       preparedStatementCacheSize: preparedStatementCacheSize,

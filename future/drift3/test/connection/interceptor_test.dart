@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:drift3_preview/drift.dart';
-import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:test/test.dart';
 
 import '../generated/todos.dart';
@@ -14,12 +13,7 @@ void main() {
     final events = <String>[];
     interceptor.events.stream.listen(events.add);
 
-    final database = TodoDb(
-      testInMemoryDatabase().interceptWith(
-        interceptor,
-        SqliteDialect.withOptions(),
-      ),
-    );
+    final database = TodoDb(testInMemoryDatabase().interceptWith(interceptor));
     await database.initialize();
     events.clear();
 
@@ -82,6 +76,30 @@ void main() {
     await database.delete(database.users).go();
 
     expect(events, ['write: update']);
+  });
+
+  test('can disable intercepting inner', () async {
+    final interceptor = EmittingInterceptor();
+    final events = <String>[];
+    interceptor.events.stream.listen(events.add);
+
+    final connection = testInMemoryDatabase();
+
+    final database = TodoDb(
+      connection.interceptWith(interceptor, sticky: false),
+    );
+    await database.initialize();
+    events.clear();
+    await database.batch((batch) {
+      batch.insert(
+        database.categories,
+        CategoriesCompanion.insert(description: 'from batch'),
+      );
+    });
+    await database.categoriesQueries.select().get();
+    // batch and commit is called on inner, non-intercepted.
+    expect(events, ['begin', 'read']);
+    events.clear();
   });
 }
 

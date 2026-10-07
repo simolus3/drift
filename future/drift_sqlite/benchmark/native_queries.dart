@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/native.dart';
+import 'package:drift_sqlite/src/dialect/dialect.dart';
 
 // Run with dart run benchmark_harness:bench --flavor jit --target benchmark/native_queries.dart
 void main() {
@@ -29,7 +30,7 @@ class QueriesBenchmark extends AsyncBenchmarkBase {
       file: File('${_tempDir.path}/app.db'),
       useBackgroundIsolates: useBackgroundIsolates,
     );
-    _connection = await pool.open();
+    _connection = await pool.open(const SqliteDialect.withOptions());
   }
 
   @override

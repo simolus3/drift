@@ -17,7 +17,7 @@ Future<void> validateDatabaseSchema(GeneratedDatabase database) async {
     database.validateDatabaseSchema(
       connection: DriftConnection(
         dialect: SqliteDialect.new,
-        openConnection: () async {
+        openConnection: (_) async {
           final sqlite =
               await WasmSqlite3.loadFromUrl(Uri.parse('/sqlite3.wasm'));
           sqlite.registerVirtualFileSystem(InMemoryFileSystem(),

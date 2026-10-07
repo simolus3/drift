@@ -59,7 +59,7 @@ void _declareJsonTests(bool binary) {
     db = _TestDatabase(
       DriftConnection(
         dialect: SqliteDialect.new,
-        openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
+        openConnection: (_) async => SqliteConnection(sqlite3.openInMemory()),
       ),
     )..binaryJson = binary;
   });
@@ -189,7 +189,7 @@ void _declareJsonTests(bool binary) {
 
 DriftConnection get _nullConnection => DriftConnection(
   dialect: SqliteDialect.new,
-  openConnection: () async => throw UnsupportedError('Open connection'),
+  openConnection: (_) async => throw UnsupportedError('Open connection'),
 );
 
 final class _TestDatabase extends GeneratedDatabase {

@@ -125,7 +125,7 @@ final class SqliteConnection implements DriftSession {
   }) {
     return DriftConnection(
       dialect: SqliteDialect.new,
-      openConnection: () async => SqliteConnection(open()),
+      openConnection: (_) async => SqliteConnection(open()),
     );
   }
 }

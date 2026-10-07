@@ -327,5 +327,5 @@ final class SomeDao extends DatabaseAccessor<TodoDb> with _$SomeDaoMixin {
 
 DriftConnection get _nullConnection => DriftConnection(
   dialect: SqliteDialect.new,
-  openConnection: () => throw UnsupportedError('stub'),
+  openConnection: (_) => throw UnsupportedError('stub'),
 );

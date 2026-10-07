@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS todo_categories (
       await testWith(
         DriftConnection(
           dialect: SqliteDialect.new,
-          openConnection: () async => SqliteConnection(sqlite3.openInMemory()),
+          openConnection: (_) async => SqliteConnection(sqlite3.openInMemory()),
         ),
       );
     });

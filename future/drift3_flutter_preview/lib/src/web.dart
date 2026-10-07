@@ -19,7 +19,7 @@ DriftConnection driftDatabase({
 
   return DriftConnection(
     dialect: SqliteDialect.new,
-    openConnection: () async {
+    openConnection: (_) async {
       final sqlite = WebSqlite.open(
         workers: .defaultWorkers(web.driftWorker.toString()),
         wasmModule: web.sqlite3Wasm.toString(),
