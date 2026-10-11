@@ -1,3 +1,8 @@
+## 2.0.0-alpha.0
+
+- Upgrade to version 3 preview of drift. See the [upgrade guide](https://drift.simonbinder.eu/guides/upgrading/) for details.
+- Remove deprecated `package:drift_postgres/postgres.dart` library. Use `package:drift_postgres/drift_postgres.dart` instead.
+
 ## 1.3.1
 
 - Add `toJson()` method to `PgDate` and `PgDateTime`.

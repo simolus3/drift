@@ -71,7 +71,7 @@ dependency_overrides:
   drift_flutter:
     path: ../drift_flutter
   drift_postgres:
-    path: ../extras/drift_postgres
+    path: ../extras/legacy/drift_postgres
   drift_sqflite:
     path: ../drift_sqflite
   sqlparser:

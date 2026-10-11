@@ -17,7 +17,7 @@ base class ResolvedDialect {
     return switch (json['dialect']) {
       'sqlite' => _$Drift3SqliteDialectFromJson(json),
       'mysql' || 'mariadb' => ResolvedDialect(SqlDialect.mariadb),
-      'postgres' => ResolvedDialect(SqlDialect.postgres),
+      'postgres' => _$Drift3PostgresDialectFromJson(json),
       'duckdb' => ResolvedDialect(SqlDialect.duckdb),
       // TODO: Support custom dialects?
       _ => throw ArgumentError.value(
@@ -115,5 +115,36 @@ final class Drift3SqliteDialect extends ResolvedDialect
 
   static final _driftSqlite = Uri.parse(
     'package:drift_sqlite/drift_sqlite.dart',
+  );
+}
+
+@JsonSerializable(constructor: 'withOptions')
+final class Drift3PostgresDialect extends ResolvedDialect {
+  final bool useBinaryJsonRepresentation;
+
+  Drift3PostgresDialect.withOptions({this.useBinaryJsonRepresentation = true})
+    : super(SqlDialect.postgres);
+
+  @override
+  Map<String, Object?> toJson() => {
+    ...super.toJson(),
+    ..._$Drift3PostgresDialectToJson(this),
+  };
+
+  @override
+  bool get canInstantiateOptions => true;
+
+  @override
+  void writeOptions(TextEmitter scope) {
+    scope
+      ..write('const ')
+      ..writeUriRef(_driftPostgres, 'PostgresDialectOptions')
+      ..write('(')
+      ..write('useJsonb: $useBinaryJsonRepresentation,')
+      ..write(')');
+  }
+
+  static final _driftPostgres = Uri.parse(
+    'package:drift_postgres/drift_postgres.dart',
   );
 }

@@ -5,82 +5,67 @@
 part of 'main.dart';
 
 // ignore_for_file: type=lint
-class $UsersTable extends Users with TableInfo<$UsersTable, User> {
+class $UsersTable extends Users
+    with ResultSet<User, $UsersTable>
+    implements GeneratedTable<User, $UsersTable> {
   @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  final String? alias;
+  $UsersTable([this.alias]);
   @override
-  late final GeneratedColumn<UuidValue> id = GeneratedColumn<UuidValue>(
-    'id',
-    aliasedName,
-    false,
-    type: PgTypes.uuid,
+  late final TableColumn<UuidValue> id = TableColumn<UuidValue>(
+    name: 'id',
+    sqlType: PgTypes.uuid,
     requiredDuringInsert: false,
-    defaultValue: genRandomUuid(),
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+    constraints: () => [
+      const ColumnNotNullConstraint(),
+      ColumnDefaultConstraint<UuidValue>(genRandomUuid()),
+    ],
+  )..owningResultSet = this;
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
+  late final TableColumn<String> name = TableColumn<String>(
+    name: 'name',
+    sqlType: SqlType.text,
     requiredDuringInsert: true,
-  );
+    constraints: () => [const ColumnNotNullConstraint()],
+  )..owningResultSet = this;
   @override
-  List<GeneratedColumn> get $columns => [id, name];
+  List<TableColumn> get columns => [id, name];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'users';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<User> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+  $UsersTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get primaryKey => {id};
+  @override
+  User? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$id = positions[0].index;
+    final type$0 = PgTypes.uuid.resolveIn(dialect);
+    final pos$name = positions[1].index;
+    final type$1 = SqlType.text.resolveIn(dialect);
+    return (RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return User(
+        id: type$0.dartValue(row[pos$id]!),
+        name: type$1.dartValue(row[pos$name]!),
       );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    return context;
+    };
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return User(
-      id: attachedDatabase.typeMapping.read(
-        PgTypes.uuid,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-    );
-  }
-
-  @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
+  $UsersTable withAlias(String alias) {
+    return $UsersTable(alias);
   }
 }
 
-class User extends DataClass implements Insertable<User> {
+class User extends LegacyDataClass implements Insertable<User> {
   final UuidValue id;
   final String name;
   const User({required this.id, required this.name});
@@ -88,7 +73,7 @@ class User extends DataClass implements Insertable<User> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<UuidValue>(id, PgTypes.uuid);
-    map['name'] = Variable<String>(name);
+    map['name'] = Variable<String>(name, SqlType.text);
     return map;
   }
 
@@ -186,10 +171,10 @@ class UsersCompanion extends UpdateCompanion<User> {
       map['id'] = Variable<UuidValue>(id.value, PgTypes.uuid);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['name'] = Variable<String>(name.value, SqlType.text);
     }
     if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
+      map['rowid'] = Variable<int>(rowid.value, SqlType.int);
     }
     return map;
   }
@@ -205,151 +190,16 @@ class UsersCompanion extends UpdateCompanion<User> {
   }
 }
 
-abstract class _$DriftPostgresDatabase extends GeneratedDatabase {
-  _$DriftPostgresDatabase(QueryExecutor e) : super(e);
-  $DriftPostgresDatabaseManager get managers =>
-      $DriftPostgresDatabaseManager(this);
-  late final $UsersTable users = $UsersTable(this);
+abstract base class _$DriftPostgresDatabase extends GeneratedDatabase {
+  _$DriftPostgresDatabase(super.implementation);
+  $UsersTable get users => $UsersTable();
+  TableOrViewStatements<User, $UsersTable> get usersQueries =>
+      this.users.statements(this);
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Map<KnownSqlDialect, Object> get dialectOptions => {
+    KnownSqlDialect.postgres: const PostgresDialectOptions(useJsonb: true),
+  };
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [users];
-}
-
-typedef $$UsersTableCreateCompanionBuilder =
-    UsersCompanion Function({
-      Value<UuidValue> id,
-      required String name,
-      Value<int> rowid,
-    });
-typedef $$UsersTableUpdateCompanionBuilder =
-    UsersCompanion Function({
-      Value<UuidValue> id,
-      Value<String> name,
-      Value<int> rowid,
-    });
-
-class $$UsersTableFilterComposer
-    extends Composer<_$DriftPostgresDatabase, $UsersTable> {
-  $$UsersTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<UuidValue> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$UsersTableOrderingComposer
-    extends Composer<_$DriftPostgresDatabase, $UsersTable> {
-  $$UsersTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<UuidValue> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$UsersTableAnnotationComposer
-    extends Composer<_$DriftPostgresDatabase, $UsersTable> {
-  $$UsersTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<UuidValue> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-}
-
-class $$UsersTableTableManager
-    extends
-        RootTableManager<
-          _$DriftPostgresDatabase,
-          $UsersTable,
-          User,
-          $$UsersTableFilterComposer,
-          $$UsersTableOrderingComposer,
-          $$UsersTableAnnotationComposer,
-          $$UsersTableCreateCompanionBuilder,
-          $$UsersTableUpdateCompanionBuilder,
-          (User, BaseReferences<_$DriftPostgresDatabase, $UsersTable, User>),
-          User,
-          PrefetchHooks Function()
-        > {
-  $$UsersTableTableManager(_$DriftPostgresDatabase db, $UsersTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$UsersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$UsersTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$UsersTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<UuidValue> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => UsersCompanion(id: id, name: name, rowid: rowid),
-          createCompanionCallback:
-              ({
-                Value<UuidValue> id = const Value.absent(),
-                required String name,
-                Value<int> rowid = const Value.absent(),
-              }) => UsersCompanion.insert(id: id, name: name, rowid: rowid),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$UsersTableProcessedTableManager =
-    ProcessedTableManager<
-      _$DriftPostgresDatabase,
-      $UsersTable,
-      User,
-      $$UsersTableFilterComposer,
-      $$UsersTableOrderingComposer,
-      $$UsersTableAnnotationComposer,
-      $$UsersTableCreateCompanionBuilder,
-      $$UsersTableUpdateCompanionBuilder,
-      (User, BaseReferences<_$DriftPostgresDatabase, $UsersTable, User>),
-      User,
-      PrefetchHooks Function()
-    >;
-
-class $DriftPostgresDatabaseManager {
-  final _$DriftPostgresDatabase _db;
-  $DriftPostgresDatabaseManager(this._db);
-  $$UsersTableTableManager get users =>
-      $$UsersTableTableManager(_db, _db.users);
+  DatabaseSchema get schema => _$schema;
+  static final DatabaseSchema _$schema = DatabaseSchema([$UsersTable()]);
 }

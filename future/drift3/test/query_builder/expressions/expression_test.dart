@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:drift3_preview/drift.dart';
-import 'package:drift_postgres/src/drift3_preview/drift_postgres.dart';
+import 'package:drift_postgres/drift_postgres.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:test/test.dart';
 

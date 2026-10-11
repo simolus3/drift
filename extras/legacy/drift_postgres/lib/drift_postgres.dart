@@ -6,17 +6,15 @@ library;
 
 // ignore_for_file: experimental_member_use
 
-// ignore: implementation_imports
-import 'package:drift/src/drift3_preview/drift.dart';
+import 'package:drift/drift.dart';
 import 'package:postgres/postgres.dart' as pg;
 import 'package:uuid/uuid.dart';
 
-import 'array_access_expression.dart';
-import 'type.dart';
+import 'src/array_access_expression.dart';
+import 'src/types.dart';
 
+export 'src/pg_database.dart';
 export 'package:uuid/uuid_value.dart' show UuidValue;
-export 'dialect.dart' show PostgresDialect;
-export 'session.dart';
 
 /// Type for columns storing [UuidValue]s.
 typedef UuidColumn = Column<UuidValue>;
@@ -42,64 +40,76 @@ final class PgTypes {
   PgTypes._();
 
   /// The `UUID` type in Postgres.
-  static const PhysicalSqlType<UuidValue> uuid = UuidType();
+  static const CustomSqlType<UuidValue> uuid = UuidType();
 
   /// The `interval` type in Postgres.
-  static const PhysicalSqlType<pg.Interval> interval = IntervalType();
+  static const CustomSqlType<pg.Interval> interval = IntervalType();
 
   /// The `date` type in Postgres.
-  static const PhysicalSqlType<PgDate> date = DateType(
+  static const CustomSqlType<PgDate> date = DateType(
     pg.Type.date,
     'date',
     PgDate.fromDateTime,
   );
 
   /// The `timestamp with time zone` type in Postgres.
-  static const PhysicalSqlType<PgDateTime> timestampWithTimezone = DateType(
+  static const CustomSqlType<PgDateTime> timestampWithTimezone = DateType(
     pg.Type.timestampWithTimezone,
     'timestamp with time zone',
     PgDateTime.new,
   );
 
   /// The `timestamp without time zone` type in Postgres.
-  static const PhysicalSqlType<PgDateTime> timestampNoTimezone = DateType(
+  static const CustomSqlType<PgDateTime> timestampNoTimezone = DateType(
     pg.Type.timestampWithoutTimezone,
     'timestamp without time zone',
     PgDateTime.new,
   );
 
+  /// The `json` type in Postgres.
+  static const CustomSqlType<Object> json = PostgresType(
+    type: pg.Type.json,
+    name: 'json',
+  );
+
+  /// The `jsonb` type in Postgres.
+  static const CustomSqlType<Object> jsonb = PostgresType(
+    type: pg.Type.json,
+    name: 'jsonb',
+  );
+
   /// The `point` type in Postgres.
-  static const PhysicalSqlType<pg.Point> point = PointType();
+  static const CustomSqlType<pg.Point> point = PointType();
 
   /// A postgres array of [bool] values.
-  static const PhysicalSqlType<List<bool>> booleanArray = ArrayType(
-    pg.Type.booleanArray,
-    'boolean[]',
+  static const CustomSqlType<List<bool>> booleanArray = ArrayType(
+    type: pg.Type.booleanArray,
+    name: 'boolean[]',
   );
 
   /// A postgres array of [int] values, with each element being a 64bit integer.
-  static const PhysicalSqlType<List<int>> bigIntArray = ArrayType(
-    pg.Type.bigIntegerArray,
-    'int8[]',
+  static const CustomSqlType<List<int>> bigIntArray = ArrayType(
+    type: pg.Type.bigIntegerArray,
+    name: 'int8[]',
   );
 
   /// A postgres array of [String] values.
-  static const PhysicalSqlType<List<String>> textArray = ArrayType(
-    pg.Type.textArray,
-    'text[]',
+  static const CustomSqlType<List<String>> textArray = ArrayType(
+    type: pg.Type.textArray,
+    name: 'text[]',
   );
 
   /// A postgres array of [double] values.
-  static const PhysicalSqlType<List<double>> doubleArray = ArrayType(
-    pg.Type.doubleArray,
-    'float8[]',
+  static const CustomSqlType<List<double>> doubleArray = ArrayType(
+    type: pg.Type.doubleArray,
+    name: 'float8[]',
   );
 
   /// A postgres array of JSON values, encoded as binary values.
-  static const PhysicalSqlType<List<Object?>> jsonbArray = ArrayType(
-    pg.Type.jsonbArray,
-    'jsonb[]',
-    innerType: PhysicalPostgresType(pg.Type.jsonb, 'jsonb'),
+  static const CustomSqlType<List<Object?>> jsonbArray = ArrayType(
+    type: pg.Type.jsonbArray,
+    name: 'jsonb[]',
+    innerType: jsonb,
   );
 }
 
@@ -109,10 +119,8 @@ final class PgTypes {
 /// We can't use [DateTime] directly because drift expects to store them as
 /// unix timestamp or text.
 final class PgDateTime implements PgTimeValue, Comparable<PgDateTime> {
-  /// The underlying [DateTime] value.
   final DateTime dateTime;
 
-  /// @nodoc
   PgDateTime(this.dateTime);
 
   @override
@@ -134,7 +142,6 @@ final class PgDateTime implements PgTimeValue, Comparable<PgDateTime> {
     return dateTime.compareTo(other.dateTime);
   }
 
-  /// @nodoc
   Object? toJson() {
     return toString();
   }
@@ -143,15 +150,12 @@ final class PgDateTime implements PgTimeValue, Comparable<PgDateTime> {
 /// A wrapper for the Postgres `date` type, which stores dates (year, month,
 /// days).
 final class PgDate implements PgTimeValue, Comparable<PgDate> {
-  /// The year, month and day components making up this date value.
   final int year, month, day;
   final DateTime _dateTime;
 
-  /// @nodoc
   PgDate({required this.year, required this.month, required this.day})
     : _dateTime = DateTime(year, month, day);
 
-  /// @nodoc
   PgDate.fromDateTime(DateTime dateTime)
     : _dateTime = dateTime,
       year = dateTime.year,
@@ -183,7 +187,6 @@ final class PgDate implements PgTimeValue, Comparable<PgDate> {
     return _dateTime.compareTo(other._dateTime);
   }
 
-  /// @nodoc
   Object? toJson() {
     return toString();
   }
@@ -215,24 +218,24 @@ extension ArrayExpressions<T extends Object> on Expression<List<T?>> {
   ///
   /// See also: https://www.postgresql.org/docs/current/arrays.html#ARRAYS-ACCESSING
   Expression<T> operator [](Expression<int> index) {
-    final inner = (sqlType as ArrayType<T?>).innerType;
+    final inner = (driftSqlType as ArrayType<T?>).innerType;
 
     return ArrayAccessExpression(
       array: this,
       index: index,
-      sqlType: inner as SqlType<T>,
+      customResultType: inner as CustomSqlType<T>?,
     );
   }
 
   /// Returns an expression evaluating to the length of this array.
   Expression<int> get length {
-    return FunctionCallExpression('array_length', [this, const Literal(1)]);
+    return FunctionCallExpression('array_length', [this, const Constant(1)]);
   }
 
   /// Concatenates `this` and the [other] array into a single array.
   Expression<List<T>> operator +(Expression<List<T>> other) {
     return (dartCast<String>() + other.dartCast()).dartCast(
-      customType: sqlType as SqlType<List<T>>,
+      customType: driftSqlType as CustomSqlType<List<T>>,
     );
   }
 }

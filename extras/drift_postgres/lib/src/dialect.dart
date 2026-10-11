@@ -1,9 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:drift3_preview/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:postgres/postgres.dart';
-// ignore: implementation_imports
-import 'package:drift/src/drift3_preview/drift.dart';
 
 import 'array_access_expression.dart';
 import 'type.dart';
@@ -58,9 +57,8 @@ final class PostgresDialect extends DriftDialect {
       const PhysicalPostgresType(Type.bigInteger, 'bigint');
 
   @override
-  PhysicalSqlType<DatabaseJson> get jsonType => _options.useJsonb
-      ? const PhysicalPostgresType(Type.jsonb, 'jsonb')
-      : const PhysicalPostgresType(Type.json, 'json');
+  PhysicalSqlType<DatabaseJson> get jsonType =>
+      _options.useJsonb ? const JsonType.binary() : const JsonType.text();
 
   @override
   KnownSqlDialect get known => KnownSqlDialect.postgres;

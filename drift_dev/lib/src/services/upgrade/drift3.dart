@@ -618,6 +618,10 @@ extension on DriftOptions {
             'use_binary_json_representation': false,
             'store_date_times_as_text': storeDateTimeValuesAsText,
           },
+          SqlDialect.postgres => {
+            'dialect': 'postgres',
+            'use_binary_json_representation': false,
+          },
           _ => {'dialect': dialect.name},
         },
     ];

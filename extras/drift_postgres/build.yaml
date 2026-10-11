@@ -3,10 +3,9 @@ targets:
     builders:
       drift_dev:
         options:
-          sql:
-            dialects:
-              - sqlite # remove this line if you only need postgres
-              - postgres
+          drift3_preview: true
+          dialects:
+            - dialect: postgres
 
       source_gen:combining_builder:
         options:

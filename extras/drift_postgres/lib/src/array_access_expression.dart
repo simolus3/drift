@@ -1,4 +1,7 @@
-import 'package:drift/drift.dart';
+// ignore: implementation_imports
+import 'package:drift/src/drift3_preview/drift.dart';
+
+import 'dialect.dart';
 
 /// An array index access expression in postgres.
 ///
@@ -10,26 +13,22 @@ final class ArrayAccessExpression<T extends Object> extends Expression<T> {
   /// The index of the element to extract.
   final Expression<int> index;
 
-  final CustomSqlType<T>? customResultType;
+  @override
+  final SqlType<T> sqlType;
 
+  /// @nodoc
   ArrayAccessExpression({
     required this.array,
     required this.index,
-    this.customResultType,
+    required this.sqlType,
   });
 
   @override
   Precedence get precedence => Precedence.primary;
 
   @override
-  get driftSqlType => customResultType ?? super.driftSqlType;
-
-  @override
-  void writeInto(GenerationContext context) {
-    array.writeInto(context);
-    context.buffer.write('[');
-    index.writeInto(context);
-    context.buffer.write(']');
+  void compileWith(StatementCompiler compiler) {
+    return (compiler as PostgresSqlCompiler).addArrayAccessExpression(this);
   }
 
   @override

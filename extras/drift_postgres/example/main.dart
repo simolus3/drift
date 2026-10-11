@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:postgres/postgres.dart' as pg;
 import 'package:uuid/uuid.dart';
@@ -6,15 +6,15 @@ import 'package:uuid/uuid.dart';
 part 'main.g.dart';
 
 class Users extends Table {
-  UuidColumn get id => customType(PgTypes.uuid).withDefault(genRandomUuid())();
-  TextColumn get name => text()();
+  UuidColumn get id => col(PgTypes.uuid).withDefault(genRandomUuid());
+  TextColumn get name => text();
 
   @override
   Set<Column<Object>>? get primaryKey => {id};
 }
 
 @DriftDatabase(tables: [Users])
-class DriftPostgresDatabase extends _$DriftPostgresDatabase {
+final class DriftPostgresDatabase extends _$DriftPostgresDatabase {
   DriftPostgresDatabase(super.e);
 
   @override
@@ -22,29 +22,31 @@ class DriftPostgresDatabase extends _$DriftPostgresDatabase {
 }
 
 void main() async {
-  final database = DriftPostgresDatabase(
-    PgDatabase(
-      endpoint: pg.Endpoint(
+  final connection = DriftConnection(
+    dialect: PostgresDialect.new,
+    openConnection: (_) async {
+      final endpoint = pg.Endpoint(
         host: 'localhost',
         database: 'postgres',
         username: 'postgres',
         password: 'postgres',
-      ),
-      settings: pg.ConnectionSettings(
-        // If you expect to talk to a Postgres database over a public connection,
-        // please use SslMode.verifyFull instead.
-        sslMode: pg.SslMode.disable,
-      ),
-      logStatements: true,
-    ),
+      );
+      final connection = await PostgresSession.open(
+        endpoint,
+        settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
+      );
+      return connection;
+    },
   );
 
-  final user = await database.users.insertReturning(
+  final database = DriftPostgresDatabase(connection);
+
+  final user = await database.usersQueries.insertReturning(
     UsersCompanion.insert(name: 'Simon', id: Value(Uuid().v4obj())),
   );
   print(user);
 
-  await database.users.deleteOne(user);
+  await database.usersQueries.deleteOne(user);
 
   await database.close();
 }

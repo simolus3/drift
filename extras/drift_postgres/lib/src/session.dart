@@ -2,8 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
-// ignore: implementation_imports
-import 'package:drift/src/drift3_preview/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:postgres/postgres.dart';
 
 import 'type.dart';

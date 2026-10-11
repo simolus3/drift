@@ -226,6 +226,7 @@ targets:
               use_binary_json_representation: false
               store_date_times_as_text: true
             - dialect: postgres
+              use_binary_json_representation: false
           generate_manager: true
           drift3_preview: true
 ''').validate();

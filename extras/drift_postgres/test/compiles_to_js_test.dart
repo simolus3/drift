@@ -2,9 +2,7 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:drift_postgres/drift_postgres.dart' as drift2;
-import 'package:drift_postgres/src/drift3_preview/drift_postgres.dart'
-    as drift3;
+import 'package:drift_postgres/drift_postgres.dart';
 
 void main() {
   test('postgres package can compile with dart2js', () async {
@@ -13,7 +11,6 @@ void main() {
     // Make sure that, despite not supporting the web as a platform, this
     // package can be compiled for those setups.
     // https://github.com/simolus3/drift/pull/3030#issuecomment-2147867478
-    drift2.PgTypes.bigIntArray;
-    drift3.PgTypes.bigIntArray;
+    PgTypes.bigIntArray;
   });
 }

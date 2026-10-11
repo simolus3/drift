@@ -1,8 +1,10 @@
 @TestOn('vm')
 library;
 
-import 'package:drift/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
+import 'package:drift_postgres/src/type.dart';
+import 'package:postgres/postgres.dart' as pg;
 import 'package:test/test.dart';
 
 import '../example/main.dart';
@@ -13,7 +15,9 @@ void main() {
   final database = DriftPostgresDatabase(executor.createConnection());
 
   setUpAll(() async {
-    await database.users.insertOne(UsersCompanion.insert(name: 'test user'));
+    await database.usersQueries.insertOne(
+      UsersCompanion.insert(name: 'test user'),
+    );
   });
 
   tearDownAll(() async {
@@ -28,7 +32,7 @@ void main() {
 
   group('array', () {
     test('length', () async {
-      expect(await eval(Constant([1, 2, 3], PgTypes.bigIntArray).length), 3);
+      expect(await eval(Literal([1, 2, 3], PgTypes.bigIntArray).length), 3);
     });
 
     test('element access', () async {
@@ -37,13 +41,16 @@ void main() {
         'test',
         2,
       ], PgTypes.jsonbArray);
-      final element = array[Constant(3)];
-      expect(element.driftSqlType, PgTypes.jsonb);
+      final element = array[Literal(3)];
+      expect(
+        element.sqlType,
+        const PhysicalPostgresType(pg.Type.jsonb, 'jsonb'),
+      );
       expect(await eval(element), 2);
     });
 
     test('concatenation', () async {
-      final firstArray = Constant(['a', 'b', 'c'], PgTypes.textArray);
+      final firstArray = Literal(['a', 'b', 'c'], PgTypes.textArray);
       final secondArray = Variable(['d', 'e', 'f'], PgTypes.textArray);
 
       expect(await eval(firstArray + secondArray), [

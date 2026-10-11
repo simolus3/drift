@@ -76,3 +76,15 @@ Json? _$JsonConverterToJson<Json, Value>(
   Value? value,
   Json? Function(Value value) toJson,
 ) => value == null ? null : toJson(value);
+
+Drift3PostgresDialect _$Drift3PostgresDialectFromJson(Map json) =>
+    Drift3PostgresDialect.withOptions(
+      useBinaryJsonRepresentation:
+          json['use_binary_json_representation'] as bool? ?? true,
+    );
+
+Map<String, dynamic> _$Drift3PostgresDialectToJson(
+  Drift3PostgresDialect instance,
+) => <String, dynamic>{
+  'use_binary_json_representation': instance.useBinaryJsonRepresentation,
+};

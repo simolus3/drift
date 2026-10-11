@@ -24,6 +24,8 @@ The focus of this upgrade is a faster query interface, better support for other
 SQL dialects and changes to the generated code to prepare for augmentations.
 Most of these changes are internal and only relevant for custom drift backends,
 but some affect all apps using drift.
+In particular, this changes a few default options. `drift_dev upgrade` explicitly
+applies existing options to preserve existing behavior.
 
 To support both major versions in a transition period, drift version 3 is currently
 only available as the `drift3_preview` package.
