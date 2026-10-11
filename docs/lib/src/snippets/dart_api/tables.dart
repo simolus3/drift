@@ -24,14 +24,14 @@ class Database extends _$Database {
 
 // #docregion references
 class Albums extends Table {
-  late final id = integer().autoIncrement()();
-  late final name = text()();
-  late final artist = integer().references(Artists, #id)();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get artist => integer().references(Artists, #id)();
 }
 
 class Artists extends Table {
-  late final id = integer().autoIncrement()();
-  late final name = text()();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
 }
 // #enddocregion references
 
@@ -39,22 +39,23 @@ bool isInDarkMode() => false;
 
 class Table1 extends Table {
   // #docregion client_default
-  late final useDarkMode = boolean().clientDefault(() => false)();
+  BoolColumn get useDarkMode => boolean().clientDefault(() => false)();
   // #enddocregion client_default
   // #docregion db_default
-  late final creationTime = dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get creationTime =>
+      dateTime().withDefault(currentDateAndTime)();
   // #enddocregion db_default
   // #docregion optional_columns
-  late final age = integer().nullable()();
+  IntColumn get age => integer().nullable()();
   // #enddocregion optional_columns
   // #docregion unique_columns
-  late final username = text().unique()();
+  TextColumn get username => text().unique()();
   // #enddocregion unique_columns
   // #docregion withLength
-  late final name = text().withLength(min: 1, max: 50)();
+  TextColumn get name => text().withLength(min: 1, max: 50)();
   // #enddocregion withLength
   // #docregion named_column
-  late final isAdmin = boolean().named('admin')();
+  BoolColumn get isAdmin => boolean().named('admin')();
   // #enddocregion named_column
 }
 
@@ -66,17 +67,17 @@ class Table2 extends Table {
 
 // #docregion generated_column
 class Squares extends Table {
-  late final length = integer()();
-  late final width = integer()();
-  late final area = integer().generatedAs(length * width)();
+  IntColumn get length => integer()();
+  IntColumn get width => integer()();
+  IntColumn get area => integer().generatedAs(length * width)();
 }
 // #enddocregion generated_column
 
 // #docregion generated_column_stored
 class Boxes extends Table {
-  late final length = integer()();
-  late final width = integer()();
-  late final area = integer().generatedAs(length * width, stored: true)();
+  IntColumn get length => integer()();
+  IntColumn get width => integer()();
+  IntColumn get area => integer().generatedAs(length * width, stored: true)();
 }
 // #enddocregion generated_column_stored
 
@@ -89,8 +90,8 @@ class Products extends Table {
 
 // #docregion custom-constraint-table
 class TableWithCustomConstraints extends Table {
-  late final foo = integer()();
-  late final bar = integer()();
+  IntColumn get foo => integer()();
+  IntColumn get bar => integer()();
 
   @override
   List<String> get customConstraints => [
@@ -100,37 +101,38 @@ class TableWithCustomConstraints extends Table {
 // #enddocregion custom-constraint-table
 
 class GroupMemberships extends Table {
-  late final group = integer()();
-  late final user = integer()();
+  IntColumn get group => integer()();
+  IntColumn get user => integer()();
 }
 
 // #docregion table_mixin
 mixin TableMixin on Table {
   // Primary key column
-  late final id = integer().autoIncrement()();
+  IntColumn get id => integer().autoIncrement()();
 
   // Column for created at timestamp
-  late final createdAt = dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 class Posts extends Table with TableMixin {
-  late final content = text()();
+  TextColumn get content => text()();
 }
 // #enddocregion table_mixin
 
 class ColumnConstraint extends Table {
   // #docregion custom_column_constraint
-  late final name = text().nullable().customConstraint('COLLATE BINARY')();
+  TextColumn get name => text().nullable().customConstraint('COLLATE BINARY')();
   // #enddocregion custom_column_constraint
 
   // #docregion custom_column_constraint_not_nullable
-  late final username = text().customConstraint('NOT NULL COLLATE BINARY')();
+  TextColumn get username =>
+      text().customConstraint('NOT NULL COLLATE BINARY')();
   // #enddocregion custom_column_constraint_not_nullable
 }
 
 // #docregion custom_pk
 class Profiles extends Table {
-  late final email = text()();
+  TextColumn get email => text()();
 
   @override
   Set<Column<Object>> get primaryKey => {email};
@@ -139,10 +141,10 @@ class Profiles extends Table {
 
 // #docregion unique-table
 class Reservations extends Table {
-  late final reservationId = integer().autoIncrement()();
+  IntColumn get reservationId => integer().autoIncrement()();
 
-  late final room = text()();
-  late final onDay = dateTime()();
+  TextColumn get room => text()();
+  DateTimeColumn get onDay => dateTime()();
 
   @override
   List<Set<Column>> get uniqueKeys => [
@@ -153,8 +155,8 @@ class Reservations extends Table {
 
 // #docregion autoIncrement
 class Items extends Table {
-  late final id = integer().autoIncrement()();
-  late final title = text()();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()();
 }
 // #enddocregion autoIncrement
 

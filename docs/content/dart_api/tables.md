@@ -17,7 +17,7 @@ This page lists options available when declaring tables and columns.
 All tables defined with Drift share a common structure to define columns:
 
 - Each table is defined as a Dart class that extends `Table`.
-- In table classes, columns are defined as `late final` fields.
+- In table classes, columns are defined as getters.
 - The start of each field (like `integer()`) determines [the type](#column-types) of the column.
 
 Let's take another look at the table defined in the [getting started](../setup.md)
@@ -70,16 +70,16 @@ Each column in a table has a fixed type describing the values it can store.
 Drift offers a variety of built-in column types to suit most database needs.
 
 
-| Dart Type                                                      | Drift Column                                      | SQL Type[^1]                |
+| Dart Type                                                      | Drift Column definition                           | SQL Type[^1]                |
 | -------------------------------------------------------------- | ------------------------------------------------- | --------------------------- |
-| `int`                                                          | `late final age = integer()()`                    | `INTEGER`                   |
-| `BigInt` (as 64-bit, see [why](#when-to-use-bigint-and-int64)) | `late final age = int64()()`                      | `INTEGER`                   |
-| `String`                                                       | `late final name = text()()`                      | `TEXT`                      |
-| `bool`                                                         | `late final isAdmin = boolean()()`                | `INTEGER` (`1` or `0`)      |
-| `double`                                                       | `late final height = real()()`                    | `REAL`                      |
-| `Uint8List`                                                    | `late final image = blob()()`                     | `BLOB`                      |
-| `DriftAny`                                                     | `late final value = sqliteAny()()`                | `ANY` (for `STRICT` tables) |
-| `DateTime` (see [options](#datetime-options))                  | `late final createdAt = dateTime()()`             | `INTEGER`or `TEXT`          |
+| `int`                                                          | `integer()`                                       | `INTEGER`                   |
+| `BigInt` (as 64-bit, see [why](#when-to-use-bigint-and-int64)) | `int64()`                                         | `INTEGER`                   |
+| `String`                                                       | `text()`                                          | `TEXT`                      |
+| `bool`                                                         | `boolean()`                                       | `INTEGER` (`1` or `0`)      |
+| `double`                                                       | `real()`                                          | `REAL`                      |
+| `Uint8List`                                                    | `blob()`                                          | `BLOB`                      |
+| `DriftAny`                                                     | `sqliteAny()`                                     | `ANY` (for `STRICT` tables) |
+| `DateTime` (see [options](#datetime-options))                  | `dateTime()`                                      | `INTEGER`or `TEXT`          |
 | Your own                                                       | See [type converter docs](../type_converters.md). | Depending on type           |
 | Enums                                                          | [`intEnum` or `textEnum`](../type_converters.md#implicit-enum-converters). | `INTEGER` or `TEXT`         |
 | Postgres Types                                                 | See [postgres docs](../platforms/postgres.md).    | Depending on type           |
@@ -130,7 +130,7 @@ This above would set the `email` column as the primary key.
 
 ## Defining columns
 
-In Drift, columns are declared with `late final` fields. The start of that field's value indicates
+In Drift, columns are declared with getters returning column types. The start of that field's value indicates
 the [column's type](#column-types).
 Additional modifiers are expressed with method calls refining that column.
 Multiple modifiers can be applied to the same column by chaining method calls.

@@ -6,31 +6,31 @@ part 'dataclass.g.dart';
 
 // #docregion table
 class Users extends Table {
-  late final id = integer().autoIncrement()();
-  late final username = text()();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get username => text()();
 }
 // #enddocregion table
 
 // #docregion data-class-name
 @DataClassName('Category')
 class Categories extends Table {
-  late final id = integer().autoIncrement()();
-  late final title = text()();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()();
 }
 // #enddocregion data-class-name
 
 // #docregion default-json-keys
 class Todos extends Table {
-  late final id = integer().autoIncrement()();
-  late final title = text()();
-  late final createdAt = dateTime().withDefault(currentDateAndTime)();
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get title => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 // #enddocregion default-json-keys
 
 class Todos1 extends Table {
   // #docregion custom-json-keys
   @JsonKey('created')
-  late final createdAt = dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   // #enddocregion custom-json-keys
 }
 
