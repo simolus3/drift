@@ -11,7 +11,7 @@ dependencies:
   http: ^1.2.0
   shared:
     path: ../shared/
-  sqlite3: ^3.7.0
+  sqlite3: ^3.0.0
 
 dev_dependencies:
   lints: any # resolved by workspace, updated globally
