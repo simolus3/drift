@@ -7,7 +7,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  drift: ^2.15.0
+  drift3_preview:
   # it is important that drift_dev is a regular dependency here.
   drift_dev: ^2.15.0
 

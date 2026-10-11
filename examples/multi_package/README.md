@@ -1,3 +1,8 @@
+> [!WARNING]
+> This example has been migrated to a preview version of drift 3.0 ahead of its
+> stable release.
+> To view this example for stable drift, use [this ref](https://github.com/simolus3/drift/tree/baf8a8c825b29554be4510b68c8b1c8e04cfab57/examples/multi_package).
+
 This example shows how to use drift declarations across packages.
 It is structured as follows:
 

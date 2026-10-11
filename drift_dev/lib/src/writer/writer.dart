@@ -145,14 +145,21 @@ abstract class _NodeOrWriter {
     } else if (useDatabaseContainerOnModularBuilds &&
         writer.generationOptions.isModular) {
       final infoType = entityInfoType(element);
-
-      return AnnotatedDartCode.build(
-        (b) => b
-          ..addSymbol('ReadDatabaseContainer', modularSupport)
-          ..addText('($database).resultSet<')
-          ..addCode(infoType)
-          ..addText('>(${asDartLiteral(element.schemaName)})'),
-      );
+      if (writer.options.drift3Preview) {
+        return AnnotatedDartCode.build(
+          (b) => b
+            ..addCode(infoType)
+            ..addText('($database)'),
+        );
+      } else {
+        return AnnotatedDartCode.build(
+          (b) => b
+            ..addSymbol('ReadDatabaseContainer', modularSupport)
+            ..addText('($database).resultSet<')
+            ..addCode(infoType)
+            ..addText('>(${asDartLiteral(element.schemaName)})'),
+        );
+      }
     } else {
       final getterName = element.computeDbGetterName(writer.options);
       return AnnotatedDartCode.text('$database.$getterName');

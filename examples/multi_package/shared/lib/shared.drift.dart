@@ -1,10 +1,9 @@
 // dart format width=80
 // ignore_for_file: type=lint
-import 'package:drift/drift.dart' as i0;
-import 'package:drift/internal/modular.dart' as i1;
-import 'package:shared/src/posts.drift.dart' as i2;
+import 'package:drift3_preview/drift.dart' as i0;
+import 'package:shared/src/posts.drift.dart' as i1;
 
-class SharedDrift extends i1.ModularAccessor {
+final class SharedDrift extends i0.DatabaseAccessor {
   SharedDrift(i0.GeneratedDatabase db) : super(db);
-  i2.PostsDrift get postsDrift => this.accessor(i2.PostsDrift.new);
+  i1.PostsDrift get postsDrift => i1.PostsDrift(this.db);
 }

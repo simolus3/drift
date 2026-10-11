@@ -128,4 +128,9 @@ final class SqliteConnection implements DriftSession {
       openConnection: (_) async => SqliteConnection(open()),
     );
   }
+
+  /// Returns a [DriftConnection] backed by an in-memory SQLite database.
+  static DriftConnection inMemory(sqlite.CommonSqlite3 sqlite, {String? vfs}) {
+    return synchronous(open: () => sqlite.openInMemory(vfs: vfs));
+  }
 }

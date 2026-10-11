@@ -15,21 +15,14 @@ class PgExecutor extends TestExecutor {
 
   @override
   DriftConnection createConnection() {
-    return DriftConnection(
-      dialect: PostgresDialect.new,
-      openConnection: (_) async {
-        final endpoint = pg.Endpoint(
-          host: 'localhost',
-          database: 'postgres',
-          username: 'postgres',
-          password: 'postgres',
-        );
-        final connection = await PostgresSession.open(
-          endpoint,
-          settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
-        );
-        return connection;
-      },
+    return postgresDriftConnection(
+      pg.Endpoint(
+        host: 'localhost',
+        database: 'postgres',
+        username: 'postgres',
+        password: 'postgres',
+      ),
+      settings: pg.ConnectionSettings(sslMode: pg.SslMode.disable),
     );
   }
 

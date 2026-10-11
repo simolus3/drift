@@ -7,9 +7,8 @@ environment:
 
 dependencies:
   args: ^2.4.0
-  drift: ^2.15.0
-  # TODO: Migrate this demo to drift3
-  legacy_drift_postgres: # Outside of this repository, use the drift_postgres package
+  drift3_preview:
+  drift_postgres:
   shelf: ^1.4.0
   shelf_router: ^1.1.0
 

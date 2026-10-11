@@ -256,9 +256,18 @@ class DriftOptions {
     }
 
     if (drift3Preview) {
-      void checkRemovedOption(bool value, String name) {
+      void checkRemovedOption(bool value, String name, [String? replacement]) {
         if (value) {
-          throw ArgumentError('Option $name is no longer available in drift3');
+          final text = StringBuffer(
+            'Option $name is no longer available in drift3',
+          );
+          if (replacement != null) {
+            text
+              ..write('. ')
+              ..write(replacement);
+          }
+
+          throw ArgumentError(text);
         }
       }
 
@@ -266,12 +275,25 @@ class DriftOptions {
         generateFromJsonStringConstructor,
         'write_from_json_string_constructor',
       );
-      checkRemovedOption(dialect != null, 'sql');
-      checkRemovedOption(modules.isNotEmpty, 'sqlite_modules');
-      checkRemovedOption(sqliteAnalysisOptions != null, 'sqlite');
+      checkRemovedOption(
+        dialect != null,
+        'sql',
+        'Use the dialects option instead',
+      );
+      checkRemovedOption(
+        modules.isNotEmpty,
+        'sqlite_modules',
+        'Add a sqlite entry to the dialects option, and include modules there.',
+      );
+      checkRemovedOption(
+        sqliteAnalysisOptions != null,
+        'sqlite',
+        'Add a sqlite entry to the dialects option, and include options there.',
+      );
       checkRemovedOption(
         storeDateTimeValuesAsText,
         'store_date_time_values_as_text',
+        'Add a sqlite entry to the dialects option, and include the option there.',
       );
     } else {
       if (drift3Dialects.isNotEmpty && drift3Dialects != _defaultDialects) {

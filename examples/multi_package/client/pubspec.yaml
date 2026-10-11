@@ -6,10 +6,12 @@ environment:
   sdk: ^3.5.0
 
 dependencies:
-  drift: ^2.15.0
+  drift3_preview:
+  drift_sqlite:
   http: ^1.2.0
   shared:
     path: ../shared/
+  sqlite3: ^3.7.0
 
 dev_dependencies:
   lints: any # resolved by workspace, updated globally

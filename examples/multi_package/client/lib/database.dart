@@ -1,9 +1,9 @@
-import 'package:drift/drift.dart';
+import 'package:drift3_preview/drift.dart';
 
 import 'database.drift.dart';
 
 @DriftDatabase(include: {'package:shared/shared.drift'})
-class ClientDatabase extends $ClientDatabase {
+final class ClientDatabase extends $ClientDatabase {
   ClientDatabase(super.e);
 
   @override

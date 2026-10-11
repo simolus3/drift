@@ -6,6 +6,7 @@ export 'query_builder/clauses/order_by.dart';
 export 'query_builder/clauses/returning.dart';
 export 'query_builder/clauses/where.dart';
 export 'query_builder/clauses/from.dart';
+export 'query_builder/clauses/limit.dart';
 
 export 'query_builder/expressions/aggregate.dart';
 export 'query_builder/expressions/algebra.dart';

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drift/drift.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:postgres/postgres.dart';
 import 'package:server/database.dart';
@@ -17,8 +17,8 @@ import 'package:shelf_router/shelf_router.dart';
 void main(List<String> args) async {
   // Use any available host or container IP (usually `0.0.0.0`).
   final ip = InternetAddress.anyIPv4;
-  final database = ServerDatabase(PgDatabase(
-    endpoint: Endpoint(
+  final database = ServerDatabase(postgresDriftConnection(
+    Endpoint(
       host: 'localhost',
       database: 'postgres',
       username: 'postgres',
@@ -43,7 +43,7 @@ void main(List<String> args) async {
         return Response.unauthorized('Invalid token');
       }
 
-      database.posts.insertOne(PostsCompanion.insert(
+      database.postsQueries.insertOne(PostsCompanion.insert(
           author: user.id, content: Value(await request.readAsString())));
 
       return Response(201);

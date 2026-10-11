@@ -315,9 +315,12 @@ class DatabaseWriter {
       final getterName = entity.computeDbGetterName(dbScope.options);
 
       if (getterName != null) {
-        // In the modular generation mode, entities are generated as top-level
-        // getters instead of on the database class itself.
-        if (scope.generationOptions.isModular) {
+        // In the modular generation mode, we don't technically need to generate
+        // database getters as elements don't depend on a database instance.
+        // However, doing this for views and tables is more convenient for
+        // users.
+        if (scope.generationOptions.isModular &&
+            (entity is! DriftElementWithResultSet)) {
           final import = dbScope.generatedElement(entity, getterName);
 
           entityGetters[entity] = dbScope.dartCode(import);
@@ -573,10 +576,12 @@ extension WriteDrift3Statements on DriftElementWithResultSet {
     }
 
     final getterName = computeDbGetterName(text.writer.options);
+    final rowType = text.dartCode(text.rowType(this));
+    final entityInfoType = text.dartCode(text.entityInfoType(this));
 
     text
       ..writeDriftRef('TableOrViewStatements')
-      ..write('<${text.rowType(this)}, ${text.entityInfoType(this)}>')
+      ..write('<$rowType, $entityInfoType>')
       ..write(
         ' get ${getterName}Queries => this.$getterName.statements(this);',
       );

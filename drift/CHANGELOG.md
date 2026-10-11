@@ -1,3 +1,7 @@
+## 2.35.3 (unreleased)
+
+- Internal changes for drift3 preview.
+
 ## 2.35.2
 
 - Web: Fix OPFS file systems not supporting nested transactions (a regression introduced in version 2.34.3).

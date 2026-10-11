@@ -30,9 +30,15 @@ class ModularAccessorWriter {
     final className = scope.modularAccessor(file.ownUri);
     final generatedDatabase = scope.drift('GeneratedDatabase');
 
+    final isDrift3 = scope.drift3;
+    final superclass = isDrift3
+        ? scope.refUri(AnnotatedDartCode.drift, 'DatabaseAccessor')
+        : _modular('ModularAccessor');
+
     scope.leaf()
+      ..write(isDrift3 ? 'final ' : '')
       ..write('class $className extends ')
-      ..write(_modular('ModularAccessor'))
+      ..write(superclass)
       ..writeln('{ $className($generatedDatabase db): super(db);');
 
     final referencedElements = <DriftElement>{};
@@ -95,9 +101,18 @@ class ModularAccessorWriter {
 
         restOfClass
           ..writeDart(moduleClass)
-          ..write(' get $getterName => this.accessor(')
-          ..writeDart(moduleClass)
-          ..writeln('.new);');
+          ..write(' get $getterName => ');
+
+        if (isDrift3) {
+          restOfClass
+            ..writeDart(moduleClass)
+            ..writeln('(this.db);');
+        } else {
+          restOfClass
+            ..write('this.accessor(')
+            ..writeDart(moduleClass)
+            ..writeln('.new);');
+        }
       }
     }
 
@@ -123,15 +138,23 @@ extension WriteImplicitDaoGetter on Scope {
 
       final db = isAccessor ? 'attachedDatabase' : 'this';
 
-      leaf()
+      final writer = leaf()
         ..writeDart(type)
-        ..write(' get $getter => ')
-        ..writeUriRef(modularSupport, 'ReadDatabaseContainer')
-        ..writeln('($db).accessor<')
-        ..writeDart(type)
-        ..write('>(')
-        ..writeDart(type)
-        ..writeln('.new);');
+        ..write(' get $getter => ');
+
+      if (drift3) {
+        writer
+          ..writeDart(type)
+          ..writeln('($db);');
+      } else {
+        writer
+          ..writeUriRef(modularSupport, 'ReadDatabaseContainer')
+          ..writeln('($db).accessor<')
+          ..writeDart(type)
+          ..write('>(')
+          ..writeDart(type)
+          ..writeln('.new);');
+      }
     }
   }
 }

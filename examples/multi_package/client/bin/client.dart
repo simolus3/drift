@@ -1,13 +1,14 @@
 import 'dart:convert';
 
 import 'package:client/database.dart';
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
+import 'package:drift3_preview/drift.dart';
 import 'package:http/http.dart' as http;
+import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:shared/tables.dart';
+import 'package:sqlite3/sqlite3.dart';
 
 void main(List<String> arguments) async {
-  final database = ClientDatabase(NativeDatabase.memory());
+  final database = ClientDatabase(SqliteConnection.inMemory(sqlite3));
   final client = http.Client();
 
   // Fetch posts from server and save them in the local database.
@@ -22,7 +23,8 @@ void main(List<String> arguments) async {
       final user = User.fromJson(entry['author']);
 
       batch.insert(database.posts, post);
-      batch.insert(database.users, user, onConflict: DoUpdate((old) => user));
+      batch.insert<User, $UsersTable>(database.users, user,
+          onConflict: DoUpdate((old) => user));
     }
   });
 

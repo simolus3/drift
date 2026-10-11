@@ -11,7 +11,9 @@ import 'package:postgres/postgres.dart' as pg;
 import 'package:uuid/uuid.dart';
 
 import 'src/array_access_expression.dart';
+import 'src/dialect.dart';
 import 'src/type.dart';
+import 'src/session.dart';
 
 export 'package:uuid/uuid_value.dart' show UuidValue;
 export 'src/dialect.dart' show PostgresDialect, PostgresDialectOptions;
@@ -237,4 +239,17 @@ extension ArrayExpressions<T extends Object> on Expression<List<T?>> {
       customType: sqlType as SqlType<List<T>>,
     );
   }
+}
+
+/// Creates a [DriftConnection] based on a [PostgresSession].
+DriftConnection postgresDriftConnection(
+  pg.Endpoint endpoint, {
+  pg.ConnectionSettings? settings,
+}) {
+  return DriftConnection(
+    dialect: PostgresDialect.new,
+    openConnection: (_) async {
+      return await PostgresSession.open(endpoint, settings: settings);
+    },
+  );
 }

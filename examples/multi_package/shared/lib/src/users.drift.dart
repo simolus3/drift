@@ -1,196 +1,74 @@
 // dart format width=80
 // ignore_for_file: type=lint
-import 'package:drift/drift.dart' as i0;
+import 'package:drift3_preview/drift.dart' as i0;
 import 'package:shared/src/users.drift.dart' as i1;
 import 'package:shared/src/users.dart' as i2;
 
-typedef $$UsersTableCreateCompanionBuilder = i1.UsersCompanion Function({
-  i0.Value<int> id,
-  required String name,
-});
-typedef $$UsersTableUpdateCompanionBuilder = i1.UsersCompanion Function({
-  i0.Value<int> id,
-  i0.Value<String> name,
-});
-
-class $$UsersTableFilterComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
-  $$UsersTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnFilters(column));
-}
-
-class $$UsersTableOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
-  $$UsersTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
-
-  i0.ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
-}
-
-class $$UsersTableAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$UsersTable> {
-  $$UsersTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  i0.GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  i0.GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-}
-
-class $$UsersTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$UsersTable,
-    i1.User,
-    i1.$$UsersTableFilterComposer,
-    i1.$$UsersTableOrderingComposer,
-    i1.$$UsersTableAnnotationComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder,
-    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.$UsersTable, i1.User>),
-    i1.User,
-    i0.PrefetchHooks Function()> {
-  $$UsersTableTableManager(i0.GeneratedDatabase db, i1.$UsersTable table)
-      : super(i0.TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              i1.$$UsersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$$UsersTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$$UsersTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            i0.Value<String> name = const i0.Value.absent(),
-          }) =>
-              i1.UsersCompanion(
-            id: id,
-            name: name,
-          ),
-          createCompanionCallback: ({
-            i0.Value<int> id = const i0.Value.absent(),
-            required String name,
-          }) =>
-              i1.UsersCompanion.insert(
-            id: id,
-            name: name,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ));
-}
-
-typedef $$UsersTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$UsersTable,
-    i1.User,
-    i1.$$UsersTableFilterComposer,
-    i1.$$UsersTableOrderingComposer,
-    i1.$$UsersTableAnnotationComposer,
-    $$UsersTableCreateCompanionBuilder,
-    $$UsersTableUpdateCompanionBuilder,
-    (i1.User, i0.BaseReferences<i0.GeneratedDatabase, i1.$UsersTable, i1.User>),
-    i1.User,
-    i0.PrefetchHooks Function()>;
-
-class $UsersTable extends i2.Users with i0.TableInfo<$UsersTable, i1.User> {
+class $UsersTable extends i2.Users
+    with i0.ResultSet<i1.User, $UsersTable>
+    implements i0.GeneratedTable<i1.User, $UsersTable> {
   @override
-  final i0.GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $UsersTable(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
+  final String? alias;
+  $UsersTable([this.alias]);
   @override
-  late final i0.GeneratedColumn<int> id = i0.GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: i0.DriftSqlType.int,
+  late final i0.TableColumn<int> id = i0.TableColumn<int>(
+      name: 'id',
+      sqlType: i0.SqlType.int,
       requiredDuringInsert: false,
-      defaultConstraints:
-          i0.GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const i0.VerificationMeta _nameMeta =
-      const i0.VerificationMeta('name');
+      constraints: () => [
+            const i0.ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
+            const i0.ColumnNotNullConstraint()
+          ])
+    ..owningResultSet = this;
   @override
-  late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  late final i0.TableColumn<String> name = i0.TableColumn<String>(
+      name: 'name',
+      sqlType: i0.SqlType.text,
+      requiredDuringInsert: true,
+      constraints: () => [const i0.ColumnNotNullConstraint()])
+    ..owningResultSet = this;
   @override
-  List<i0.GeneratedColumn> get $columns => [id, name];
+  List<i0.TableColumn> get columns => [id, name];
   @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
+  String get entityName => $name;
   static const String $name = 'users';
   @override
-  i0.VerificationContext validateIntegrity(i0.Insertable<i1.User> instance,
-      {bool isInserting = false}) {
-    final context = i0.VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    return context;
+  $UsersTable asSelfType() => this;
+
+  @override
+  i1.User? Function(i0.RawRow) createMapperFromPositions(
+      i0.DriftDialect dialect, List<i0.ColumnPosition> positions) {
+    final pos$id = positions[0].index;
+    final type$0 = i0.SqlType.int.resolveIn(dialect);
+    final pos$name = positions[1].index;
+    final type$1 = i0.SqlType.text.resolveIn(dialect);
+    return (i0.RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return i1.User(
+        id: type$0.dartValue(row[pos$id]!),
+        name: type$1.dartValue(row[pos$name]!),
+      );
+    };
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {id};
-  @override
-  i1.User map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i1.User(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
-    );
-  }
-
-  @override
-  $UsersTable createAlias(String alias) {
-    return $UsersTable(attachedDatabase, alias);
+  $UsersTable withAlias(String alias) {
+    return $UsersTable(alias);
   }
 }
 
-class User extends i0.DataClass implements i0.Insertable<i1.User> {
+class User extends i0.LegacyDataClass implements i0.Insertable<i1.User> {
   final int id;
   final String name;
   const User({required this.id, required this.name});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
-    map['id'] = i0.Variable<int>(id);
-    map['name'] = i0.Variable<String>(name);
+    map['id'] = i0.Variable<int>(id, i0.SqlType.int);
+    map['name'] = i0.Variable<String>(name, i0.SqlType.text);
     return map;
   }
 
@@ -278,10 +156,10 @@ class UsersCompanion extends i0.UpdateCompanion<i1.User> {
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     if (id.present) {
-      map['id'] = i0.Variable<int>(id.value);
+      map['id'] = i0.Variable<int>(id.value, i0.SqlType.int);
     }
     if (name.present) {
-      map['name'] = i0.Variable<String>(name.value);
+      map['name'] = i0.Variable<String>(name.value, i0.SqlType.text);
     }
     return map;
   }
