@@ -65,11 +65,12 @@ String dartNameForSqlColumn(
 /// members (e.g. `text`, which is a method on `Table`) would conflict with that
 /// member. Passing these names as `reservedNames` to [dartNameForSqlColumn]
 /// avoids that.
-Set<String> tableClassMemberNames({
-  required bool drift3,
-  required bool isVirtual,
-}) {
-  return {
+///
+/// `moduleAndArgs` is only a member of the classes for virtual tables (from
+/// `VirtualTableInfo`), but it's reserved for all tables so that there is one
+/// constant set for each drift version.
+Set<String> tableClassMemberNames({required bool drift3}) {
+  const alwaysForbidden = {
     // Object
     'hashCode',
     'noSuchMethod',
@@ -93,37 +94,42 @@ Set<String> tableClassMemberNames({
     'textEnum',
     'uniqueKeys',
     'withoutRowId',
-    if (drift3) ...{
-      // Table
-      'col',
-      'json',
-      // ResultSet
-      'alias',
-      'aliasOrName',
-      'asSelfType',
-      'columns',
-      'columnsByName',
-      'createMapperFromPositions',
-      'createMapperToDart',
-      'entityName',
-      'mapFromCompanion',
-      'withAlias',
-    } else ...{
-      // Table
-      'sqliteAny',
-      // TableInfo
-      'actualTableName',
-      'aliasedName',
-      'asDslTable',
-      'attachedDatabase',
-      'columnsByName',
-      'createAlias',
-      'entityName',
-      'map',
-      'mapFromCompanion',
-      'validateIntegrity',
-    },
     // VirtualTableInfo
-    if (isVirtual) 'moduleAndArgs',
+    'moduleAndArgs',
   };
+
+  return drift3
+      ? const {
+          ...alwaysForbidden,
+          // Table
+          'col',
+          'json',
+          // ResultSet
+          'alias',
+          'aliasOrName',
+          'asSelfType',
+          'columns',
+          'columnsByName',
+          'createMapperFromPositions',
+          'createMapperToDart',
+          'entityName',
+          'mapFromCompanion',
+          'withAlias',
+        }
+      : const {
+          ...alwaysForbidden,
+          // Table
+          'sqliteAny',
+          // TableInfo
+          'actualTableName',
+          'aliasedName',
+          'asDslTable',
+          'attachedDatabase',
+          'columnsByName',
+          'createAlias',
+          'entityName',
+          'map',
+          'mapFromCompanion',
+          'validateIntegrity',
+        };
 }

@@ -54,7 +54,6 @@ final class DriftTableResolver
     // the names of its other members.
     final reservedColumnNames = tableClassMemberNames(
       drift3: resolver.driver.options.drift3Preview,
-      isVirtual: stmt is CreateVirtualTableStatement,
     );
 
     for (final column in table.resultColumns) {

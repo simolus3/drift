@@ -405,8 +405,9 @@ CREATE VIRTUAL TABLE bar USING fts5(module_and_args);
       'text\$',
       'tableName\$',
       'map\$',
-      // Only virtual tables have a `moduleAndArgs` getter.
-      'moduleAndArgs',
+      // Only virtual tables have a `moduleAndArgs` getter, but the name is
+      // reserved for all tables.
+      'moduleAndArgs\$',
       'alias',
     ]);
     expect(bar.columns.map((c) => c.nameInDart), ['moduleAndArgs\$']);
