@@ -12,10 +12,7 @@ final _leadingDigits = RegExp(r'^\d*');
 ///  - defaulting to `empty` if a column only consists of invalid names.
 ///  - changing the case of the identifier to `camelCase`.
 ///  - appending a `$` if the name is a reserved Dart keyword (e.g. `class`),
-///    which cannot be used as an identifier on its own.
-///  - appending a `$` if the name is one of the [reservedNames], e.g. because
-///    it would conflict with a member of the class the column is generated
-///    into (see [tableClassMemberNames]).
+///    or conflicts with a name defined in a super class (e.g. `text`).
 ///
 /// This transformation may map distinct SQL identifiers to the same Dart name
 /// (e.g. `dartNameForSqlColumn('1a') == dartNameForSqlColumn('2a')`). To
