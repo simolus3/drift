@@ -181,6 +181,7 @@ abstract base class _$Database extends GeneratedDatabase {
       storeDateTimesAsText: true,
       useBinaryJsonRepresentation: true,
     ),
+    KnownSqlDialect.postgres: const PostgresDialectOptions(useJsonb: true),
   };
   @override
   DatabaseSchema get schema => _$schema;

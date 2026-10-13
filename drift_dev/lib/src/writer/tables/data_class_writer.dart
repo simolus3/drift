@@ -484,21 +484,23 @@ extension WriteToColumns on TextEmitter {
       // Generated column - cannot be used for inserts or updates
       if (column.isGenerated) continue;
 
+      const locals = {'map', 'nullToAbsent', 'converter'};
+
       // We include all columns that are not null. If nullToAbsent is false, we
       // also include null columns. When generating NNBD code, we can include
       // non-nullable columns without an additional null check since we know
       // the values aren't going to be null.
       final needsNullCheck = column.nullableInDart;
       final needsScope = needsNullCheck || column.typeConverter != null;
+      final getterName = thisIfNeeded(column.nameInDart, locals);
+
       if (needsNullCheck) {
-        write('if (!nullToAbsent || ${column.nameInDart} != null)');
+        write('if (!nullToAbsent || $getterName != null)');
       }
       if (needsScope) write('{');
 
       write('map[${asDartLiteral(column.nameInSql)}] = ');
-      writeDart(
-        wrapInVariable(column, AnnotatedDartCode.text(column.nameInDart)),
-      );
+      writeDart(wrapInVariable(column, AnnotatedDartCode.text(getterName)));
       writeln(';');
 
       // This one closes the optional if from before.

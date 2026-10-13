@@ -2760,6 +2760,7 @@ abstract base class _$TodoDb extends GeneratedDatabase {
       storeDateTimesAsText: true,
       useBinaryJsonRepresentation: true,
     ),
+    KnownSqlDialect.postgres: const PostgresDialectOptions(useJsonb: true),
   };
   late final SomeDao someDao = SomeDao(this as TodoDb);
   Selectable<TodoEntry> withIn(String? var1, String? var2, List<RowId> var3) {

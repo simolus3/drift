@@ -1689,6 +1689,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       storeDateTimesAsText: true,
       useBinaryJsonRepresentation: true,
     ),
+    KnownSqlDialect.postgres: const PostgresDialectOptions(useJsonb: true),
   };
   Future<int> writeConfig({required String key, DriftAny? value}) {
     return customInsert(
