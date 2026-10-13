@@ -47,21 +47,26 @@ extension StepByStep2 on GeneratedDatabase {
         // (https://drift.simonbinder.eu/docs/advanced-features/migrations/#tips)
         await customStatement('PRAGMA foreign_keys = OFF');
 
+        final steps = migrationSteps(
+          from1To2: (m, schema) async {
+            // we added the dueDate property in the change from version 1 to
+            // version 2
+            await m.addColumn(schema.todos, schema.todos.dueDate);
+          },
+          from2To3: (m, schema) async {
+            // we added the priority property in the change from version 1 or 2
+            // to version 3
+            await m.addColumn(schema.todos, schema.todos.priority);
+          },
+        );
+
         await m.runMigrationSteps(
           from: from,
           to: to,
-          steps: migrationSteps(
-            from1To2: (m, schema) async {
-              // we added the dueDate property in the change from version 1 to
-              // version 2
-              await m.addColumn(schema.todos, schema.todos.dueDate);
-            },
-            from2To3: (m, schema) async {
-              // we added the priority property in the change from version 1 or 2
-              // to version 3
-              await m.addColumn(schema.todos, schema.todos.priority);
-            },
-          ),
+          // Running each step in a transaction ensures that a step is either
+          // applied completely or not at all.
+          steps: (currentVersion, database) =>
+              database.transaction(() => steps(currentVersion, database)),
         );
 
         if (kDebugMode) {
