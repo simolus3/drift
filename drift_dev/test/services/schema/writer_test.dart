@@ -4,9 +4,11 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build_config/build_config.dart';
 import 'package:drift/backends.dart';
 import 'package:drift_dev/src/analysis/options.dart';
+import 'package:drift_dev/src/analysis/resolver/dart/helper.dart';
 import 'package:drift_dev/src/cli/cli.dart';
 import 'package:drift_dev/src/cli/commands/schema.dart';
 import 'package:drift_dev/src/cli/commands/schema/generate_utils.dart';
@@ -608,7 +610,63 @@ class Database {}
       ]),
     );
   });
+
+  group('can run schema isolate for columns named like table members', () {
+    // Tables declared in SQL are generated as classes extending `Table`, so
+    // their columns must not conflict with members inherited from drift's
+    // classes (https://github.com/simolus3/drift/issues/2100).
+    for (final drift3 in [false, true]) {
+      test(drift3 ? 'drift3' : 'drift2', () async {
+        final options = DriftOptions.defaults(drift3Preview: drift3);
+        final dartBackend = await TestBackend.inTest(
+          const {},
+          options: options,
+        );
+        final helper = await dartBackend.readDart(
+          drift3 ? KnownDriftTypes.drift3Uri : KnownDriftTypes.drift2Uri,
+        );
+        final memberNames = {
+          for (final name in ['Table', drift3 ? 'ResultSet' : 'TableInfo'])
+            ..._instanceMemberNames(
+              helper.exportNamespace.get2(name) as InterfaceElement,
+            ),
+        };
+        expect(memberNames, containsAll(['text', 'primaryKey', 'hashCode']));
+        final columns = [for (final name in memberNames) '"$name" TEXT'];
+
+        final backend = await TestBackend.inTest({
+          'a|lib/a.drift': 'CREATE TABLE members (${columns.join(', ')});',
+        }, options: options);
+        final file = await backend.analyze('package:a/a.drift');
+        backend.expectNoErrors();
+
+        // This generates the table class and compiles it in an isolate.
+        final json = await SchemaWriter(
+          file.analyzedElements.toList(),
+          options: options,
+        ).createSchemaJson(throwOnSchemaIsolateFailure: true);
+        expect(json, contains('fixed_sql'));
+      });
+    }
+  });
 }
+
+/// The names of public, non-operator instance members of [element], including
+/// inherited ones.
+Set<String> _instanceMemberNames(InterfaceElement element) {
+  return {
+    for (final type in [element.thisType, ...element.allSupertypes])
+      for (final member in <Element>[
+        ...type.element.fields.where((e) => !e.isStatic),
+        ...type.element.getters.where((e) => !e.isStatic),
+        ...type.element.methods.where((e) => !e.isStatic),
+      ])
+        if (member.name case final name? when _publicIdentifier.hasMatch(name))
+          name,
+  };
+}
+
+final _publicIdentifier = RegExp(r'^[a-zA-Z]\w*$');
 
 const expected = r'''
 {
