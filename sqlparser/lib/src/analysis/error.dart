@@ -83,6 +83,7 @@ enum AnalysisErrorType {
   invalidTypeNameInStrictTable,
   invalidTriggerMode,
   distinctAggregateWithWrongParameterCount,
+  alterRowIdColumn,
   other,
   hint,
 }

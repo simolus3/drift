@@ -15,4 +15,25 @@ void main() {
           type: AnalysisErrorType.distinctAggregateWithWrongParameterCount,
         );
   });
+
+  group('illegal column names in alter table', () {
+    void check(String sql, String errorLexeme) {
+      engine
+          .analyze(sql)
+          .expectError(errorLexeme, type: AnalysisErrorType.alterRowIdColumn);
+    }
+
+    test('add', () {
+      check('ALTER TABLE demo ADD COLUMN _rowid_ INTEGER NOT NULL', '_rowid_');
+    });
+
+    test('drop', () {
+      check('ALTER TABLE demo DROP COLUMN oId', 'oId');
+    });
+
+    test('rename', () {
+      check('ALTER TABLE demo RENAME COLUMN id TO rowid', 'rowid');
+      check('ALTER TABLE demo RENAME COLUMN rowid TO id', 'rowid');
+    });
+  });
 }

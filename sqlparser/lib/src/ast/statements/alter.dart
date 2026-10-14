@@ -2,7 +2,8 @@ import '../../reader/tokenizer/token.dart';
 import '../ast.dart';
 
 /// An `ALTER TABLE` statement in SQLite.
-final class AlterTableStatement extends Statement {
+final class AlterTableStatement extends Statement implements HasPrimarySource {
+  @override
   TableReference table;
   AlterTableInstruction instruction;
 

@@ -11,6 +11,41 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
   LintingVisitor(this.options, this.context);
 
   @override
+  void visitAlterTableStatement(AlterTableStatement e, void arg) {
+    final (columnBefore, columnAfter) = switch (e.instruction) {
+      RenameColumnTo(:final oldName, :final newNameToken) => (
+        oldName.columnNameToken,
+        newNameToken,
+      ),
+      AddColumn(:final definition) => (null, definition.nameToken),
+      DropColumn(:final column) => (column.columnNameToken, null),
+      _ => (null, null),
+    };
+
+    // Sqlite 3.54.0+ errors when adding, dropping or renaming columns to a
+    // rowid alias. We report a warning for all versions.
+    void emitWarning(Token token) {
+      context.reportError(
+        AnalysisError(
+          type: AnalysisErrorType.alterRowIdColumn,
+          message: 'Cannor add, drop or rename column with this name.',
+          relevantNode: token,
+        ),
+      );
+    }
+
+    if (columnBefore != null &&
+        aliasesForRowId.contains(columnBefore.lexeme.toLowerCase())) {
+      emitWarning(columnBefore);
+    } else if (columnAfter is IdentifierToken &&
+        aliasesForRowId.contains(columnAfter.lexeme.toLowerCase())) {
+      emitWarning(columnAfter);
+    }
+
+    super.visitAlterTableStatement(e, arg);
+  }
+
+  @override
   void visitBaseSelectStatement(BaseSelectStatement stmt, void arg) {
     if (_isInTopLevelTriggerStatement) {
       // If this select statement is used as a subqery, we're no longer in a

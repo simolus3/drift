@@ -10,6 +10,15 @@ class ColumnResolver extends RecursiveVisitor<ColumnResolverContext, void> {
   ColumnResolver(this.context);
 
   @override
+  void visitAlterTableStatement(
+    AlterTableStatement e,
+    ColumnResolverContext arg,
+  ) {
+    _addIfResolved(e, e.table, arg);
+    super.visitAlterTableStatement(e, arg);
+  }
+
+  @override
   void visitSelectStatement(SelectStatement e, ColumnResolverContext arg) {
     e.withClause?.accept(this, arg);
     _resolveSelect(e, arg);

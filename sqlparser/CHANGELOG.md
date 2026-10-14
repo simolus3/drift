@@ -1,6 +1,7 @@
 ## 0.45.1-wip
 
 - Fix a few tokenizer crashes ([#3847](https://github.com/simolus3/drift/issues/3847)).
+- ANalysis support for SQLite 3.54.0.
 
 ## 0.45.0
 
