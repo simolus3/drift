@@ -1,6 +1,6 @@
 ## 2.35.2 (preview)
 
-- Internal changes for drift3 preview.
+- Support `package:build` versions 5.x.
 - Escape SQL column names that would conflict with members inherited by the
   generated table class (e.g. `text`) when deriving the Dart getter name
   ([#2100](https://github.com/simolus3/drift/issues/2100)).
