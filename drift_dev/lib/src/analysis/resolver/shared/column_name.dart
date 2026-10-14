@@ -12,7 +12,7 @@ final _leadingDigits = RegExp(r'^\d*');
 ///  - defaulting to `empty` if a column only consists of invalid names.
 ///  - changing the case of the identifier to `camelCase`.
 ///  - appending a `$` if the name is a reserved Dart keyword (e.g. `class`),
-///    which cannot be used as an identifier on its own.
+///    or conflicts with a name defined in a super class (e.g. `text`).
 ///
 /// This transformation may map distinct SQL identifiers to the same Dart name
 /// (e.g. `dartNameForSqlColumn('1a') == dartNameForSqlColumn('2a')`). To
@@ -22,6 +22,7 @@ final _leadingDigits = RegExp(r'^\d*');
 String dartNameForSqlColumn(
   String name, {
   Iterable<String> existingNames = const Iterable.empty(),
+  Set<String> reservedNames = const {},
 }) {
   // remove chars which cannot appear in dart identifiers, also strip away
   // leading digits
@@ -37,7 +38,10 @@ String dartNameForSqlColumn(
 
   // A reserved keyword like `class` is not a valid Dart identifier, so it can't
   // be used as a getter, field or parameter name. Append a `$` to make it one.
-  if (Keyword.keywords[escapedName]?.isReservedWord ?? false) {
+  // Names reserved by the caller (e.g. because they're already used by another
+  // member of the generated class) are escaped the same way.
+  if ((Keyword.keywords[escapedName]?.isReservedWord ?? false) ||
+      reservedNames.contains(escapedName)) {
     escapedName = '$escapedName\$';
   }
 
@@ -48,4 +52,81 @@ String dartNameForSqlColumn(
     counter++;
   }
   return escapedName;
+}
+
+/// Returns the names of members that the class generated for a table defined
+/// in SQL has in addition to the fields for its columns.
+///
+/// These classes extend drift's `Table` class and mix in `TableInfo` (or
+/// `ResultSet` with the drift3 preview), so a column named like one of their
+/// members (e.g. `text`, which is a method on `Table`) would conflict with that
+/// member. Passing these names as `reservedNames` to [dartNameForSqlColumn]
+/// avoids that.
+///
+/// `moduleAndArgs` is only a member of the classes for virtual tables (from
+/// `VirtualTableInfo`), but it's reserved for all tables so that there is one
+/// constant set for each drift version.
+Set<String> tableClassMemberNames({required bool drift3}) {
+  const alwaysForbidden = {
+    // Object
+    'hashCode',
+    'noSuchMethod',
+    'runtimeType',
+    'toString',
+    // Table
+    'blob',
+    'boolean',
+    'customConstraints',
+    'customType',
+    'dateTime',
+    'dontWriteConstraints',
+    'int64',
+    'intEnum',
+    'integer',
+    'isStrict',
+    'primaryKey',
+    'real',
+    'tableName',
+    'text',
+    'textEnum',
+    'uniqueKeys',
+    'withoutRowId',
+    // VirtualTableInfo
+    'moduleAndArgs',
+  };
+
+  return drift3
+      ? const {
+          ...alwaysForbidden,
+          // Table
+          'col',
+          'json',
+          // ResultSet
+          'alias',
+          'aliasOrName',
+          'asSelfType',
+          'columns',
+          'columnsByName',
+          'createMapperFromPositions',
+          'createMapperToDart',
+          'entityName',
+          'mapFromCompanion',
+          'withAlias',
+        }
+      : const {
+          ...alwaysForbidden,
+          // Table
+          'sqliteAny',
+          // TableInfo
+          'actualTableName',
+          'aliasedName',
+          'asDslTable',
+          'attachedDatabase',
+          'columnsByName',
+          'createAlias',
+          'entityName',
+          'map',
+          'mapFromCompanion',
+          'validateIntegrity',
+        };
 }

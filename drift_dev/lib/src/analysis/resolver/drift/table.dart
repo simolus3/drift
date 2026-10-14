@@ -50,6 +50,12 @@ final class DriftTableResolver
     final secondStageResolvers = <void Function(ResolvedDependencies)>[];
     late DriftTable driftTable;
 
+    // Columns become fields on the generated table class, so they can't reuse
+    // the names of its other members.
+    final reservedColumnNames = tableClassMemberNames(
+      drift3: resolver.driver.options.drift3Preview,
+    );
+
     for (final column in table.resultColumns) {
       String? overriddenDartName;
       var type = typeMapping.sqlTypeToDrift(column.type);
@@ -191,7 +197,12 @@ final class DriftTableResolver
           sqlType: type,
           nullable: nullable,
           nameInSql: column.name,
-          nameInDart: overriddenDartName ?? dartNameForSqlColumn(column.name),
+          nameInDart:
+              overriddenDartName ??
+              dartNameForSqlColumn(
+                column.name,
+                reservedNames: reservedColumnNames,
+              ),
           overriddenJsonName: overriddenJsonName,
           constraints: constraints,
           typeConverter: converter,

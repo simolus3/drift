@@ -173,8 +173,9 @@ statement before it runs it.
   use when serializing a row of that table to JSON.
 - Finally, `AS getterName` can be used as a column constraint to override the
   generated name of that column in Dart.
-  This can be useful when the default column name, inspired by the name of the
-  column in SQL, conflicts with another member of the generated table class.
+  The default name is inspired by the name of the column in SQL, with a `$`
+  appended if it is a reserved word in Dart or would conflict with another
+  member of the generated table class (e.g. `text$` for a column named `text`).
 
 ## Imports
 You can put import statements at the top of a `drift` file:
