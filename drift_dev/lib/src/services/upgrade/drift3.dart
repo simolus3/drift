@@ -5,6 +5,7 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -387,6 +388,20 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
         }
       }
 
+      if (element.enclosingElement == _types.tableInfo &&
+          name == 'mapFromCompanion') {
+        // The second argument of mapFromCompanion is a dialect instead of a
+        // full db now.
+        _writer.replace(
+          node.argumentList.rightParenthesis.offset,
+          0,
+          '.dialect',
+        );
+        return;
+      }
+
+      // Also replace a few methods needing a separate call for SQLite-specific
+      // insert modes.
       final modeArg = node.argumentList.arguments.singleWhereOrNull(
         (e) => e is NamedArgument && e.name.lexeme == 'mode',
       );
@@ -414,9 +429,9 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
         }
       }
 
-      if (element.readStringPragma('drift:insert-mode-replacement')
-          case final replacement?) {
-        if (modeArg != null) {
+      if (modeArg != null) {
+        if (element.readStringPragma('drift:insert-mode-replacement')
+            case final replacement?) {
           _writer.replaceNode(node.methodName, replacement);
           final mode = _lexeme(modeArg.argumentExpression);
           _writer.insertBefore(node.argumentList.arguments.first, '$mode, ');
@@ -630,6 +645,10 @@ extension on DriftOptions {
 
 extension on Element {
   String? readStringPragma(String pragma) {
+    return readPragma(pragma)?.getField('options')?.toStringValue();
+  }
+
+  DartObject? readPragma(String pragma) {
     for (final annotation in metadata.annotations) {
       final value = annotation.computeConstantValue();
       if (value == null) continue;
@@ -641,7 +660,7 @@ extension on Element {
         final name = value.getField('name')!.toStringValue()!;
 
         if (name == pragma) {
-          return value.getField('options')?.toStringValue();
+          return value;
         }
       }
     }
@@ -654,6 +673,7 @@ final class _KnownDriftImports {
   final InterfaceType databaseConnectionUser;
   final InterfaceType dslTable;
   final ClassElement insertStatement;
+  final MixinElement tableInfo;
 
   _KnownDriftImports(LibraryElement drift)
     : databaseConnectionUser =
@@ -664,7 +684,9 @@ final class _KnownDriftImports {
           .thisType,
       insertStatement =
           drift.exportNamespace.definedNames2['InsertStatement']
-              as ClassElement;
+              as ClassElement,
+      tableInfo =
+          drift.exportNamespace.definedNames2['TableInfo'] as MixinElement;
 }
 
 extension on Expression {

@@ -38,7 +38,7 @@ void main() {
   test('can convert a companion to a row class', () async {
     const companion = SharedTodosCompanion(todo: Value(3), user: Value(4));
 
-    final user = db.sharedTodos.mapFromCompanion(companion, db);
+    final user = db.sharedTodos.mapFromCompanion(companion, db.dialect);
     expect(user, const SharedTodo(todo: 3, user: 4));
   });
 

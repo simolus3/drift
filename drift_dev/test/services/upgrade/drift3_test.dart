@@ -111,6 +111,7 @@ void rawConnection(FakeGeneratedDatabase db) async {
   db.executor.dialect;
   await db.executor.ensureOpen(db);
   await db.executor.close();
+  db.users.mapFromCompanion(stub, db);
 }
 
 void insertMode(FakeGeneratedDatabase db) async {
@@ -141,6 +142,7 @@ void rawConnection(FakeGeneratedDatabase db) async {
   db.dialect.known;
   await db.initialize();
   await (await db.currentSession()).close();
+  db.users.mapFromCompanion(stub, db.dialect);
 }
 
 void insertMode(FakeGeneratedDatabase db) async {

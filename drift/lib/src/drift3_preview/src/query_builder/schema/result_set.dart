@@ -1,7 +1,6 @@
 import 'package:meta/meta.dart';
 
 import '../../connection/result_set.dart';
-import '../../database/connection_user.dart';
 import '../../database/data_class.dart';
 import '../../dsl/table.dart';
 import '../dialect.dart';
@@ -58,13 +57,10 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
   /// Converts a [companion] to the real model class, [Row].
   ///
   /// Values that are [Value.absent] in the companion will be set to `null`.
-  /// The [database] instance is used so that the raw values from the companion
-  /// can properly be interpreted as the high-level Dart values exposed by the
-  /// data class.
-  Row mapFromCompanion(
-    Insertable<Row> companion,
-    DatabaseConnectionUser database,
-  ) {
+  /// The [dialect] is used so that the raw values from the companion can
+  /// properly be interpreted as the high-level Dart values exposed by the data
+  /// class.
+  Row mapFromCompanion(Insertable<Row> companion, DriftDialect dialect) {
     final asColumnMap = companion.toColumns(false);
 
     if (asColumnMap.values.any((e) => e is! Variable)) {
@@ -78,10 +74,10 @@ mixin ResultSet<Row extends Object, Self extends ResultSet<Row, Self>>
     final structure = ResultSetStructure()..addResultSet(this);
     final values = [
       for (final value in asColumnMap.values)
-        (value as Variable).resolveValue(database.dialect),
+        (value as Variable).resolveValue(dialect),
     ];
 
-    final mapper = createMapperToDart(database.dialect, structure);
+    final mapper = createMapperToDart(dialect, structure);
     return mapper(values)!;
   }
 
