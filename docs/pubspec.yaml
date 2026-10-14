@@ -89,5 +89,3 @@ dependency_overrides:
       ref: b398ec76279b74c82f551cec99f22b25fc429a12
       path: packages/jaspr_cli
   jaspr: ^0.23.2
-  # https://github.com/google/dart_cli_pkg/pull/202
-  cli_util: ^0.5.0
