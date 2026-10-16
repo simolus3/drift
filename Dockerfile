@@ -1,32 +1,24 @@
-FROM dart
+FROM gmeligio/flutter-android:3.44.1
 
-RUN apt update
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y chromium build-essential gcc
+USER root
+
+RUN apt update && apt install -y haproxy
+
+# default name is google-chrome, so we link it
 RUN ln -s /usr/bin/chromium /usr/bin/google-chrome
-RUN chmod +x /usr/bin/google-chrome
 
-RUN useradd -ms /bin/bash developer
-RUN mkdir -p /app
+USER flutter
+ENV PATH $HOME/.pub-cache/bin:$PATH
 
-USER developer
-WORKDIR /home/developer
+RUN dart pub global activate melos
+RUN whoami
 
-RUN cd /tmp/ &&\
-  mkdir sqlite &&\
-  cd sqlite &&\
-  curl https://sqlite.org/2022/sqlite-autoconf-3380000.tar.gz --output sqlite.tar.gz &&\
-  tar zxvf sqlite.tar.gz &&\
-  cd sqlite-autoconf-3380000 &&\
-  ./configure &&\
-  make &&\
-  mkdir ../out &&\
-  cp sqlite3 ../out &&\
-  cp .libs/libsqlite3.so ../out
+COPY --chown=flutter:flutter . /app/
+WORKDIR /app
+RUN dart pub get && melos bootstrap
+RUN ./tool/upgrade_all.sh
 
-USER developer
-COPY --chown=developer:developer . /app/
-WORKDIR /app/tool
-RUN ./upgrade_all.sh
+ENTRYPOINT ["/app/tool/docker/entrypoint.sh"]
 
-CMD export LD_LIBRARY_PATH=/tmp/sqlite/out ; ./test_all.sh
+CMD export LD_LIBRARY_PATH=/tmp/sqlite/out ; ./tool/test_all.sh
 #; (cd .. && ./tool/misc_integration_test.sh)
