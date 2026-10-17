@@ -1013,10 +1013,11 @@ class $$TodoCategoriesTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (todoItemsRefs)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       TodoCategory,
                       $TodoCategoriesTable,
-                      TodoItem
+                      TodoItem,
+                      $TodoItemsTable
                     >(
                       currentTable: table,
                       referencedTable: $$TodoCategoriesTableReferences
@@ -1027,8 +1028,8 @@ class $$TodoCategoriesTableTableManager
                             table,
                             p0,
                           ).todoItemsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.categoryId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'category_id',
                       typedResults: items,
                     ),
                 ];

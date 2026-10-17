@@ -4235,10 +4235,11 @@ class $$CategoriesTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (todos)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       Category,
                       $CategoriesTable,
-                      TodoEntry
+                      TodoEntry,
+                      $TodosTableTable
                     >(
                       currentTable: table,
                       referencedTable: $$CategoriesTableReferences._todosTable(
@@ -4246,8 +4247,8 @@ class $$CategoriesTableTableManager
                       ),
                       managerFromTypedResult: (p0) =>
                           $$CategoriesTableReferences(db, table, p0).todos,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.category == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'category',
                       typedResults: items,
                     ),
                 ];
@@ -5898,10 +5899,11 @@ class $$DepartmentTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (productRefs)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       DepartmentData,
                       $DepartmentTable,
-                      ProductData
+                      ProductData,
+                      $ProductTable
                     >(
                       currentTable: table,
                       referencedTable: $$DepartmentTableReferences
@@ -5912,8 +5914,8 @@ class $$DepartmentTableTableManager
                             table,
                             p0,
                           ).productRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.department == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'department',
                       typedResults: items,
                     ),
                 ];
@@ -6264,10 +6266,11 @@ class $$ProductTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (listings)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       ProductData,
                       $ProductTable,
-                      ListingData
+                      ListingData,
+                      $ListingTable
                     >(
                       currentTable: table,
                       referencedTable: $$ProductTableReferences._listingsTable(
@@ -6275,8 +6278,8 @@ class $$ProductTableTableManager
                       ),
                       managerFromTypedResult: (p0) =>
                           $$ProductTableReferences(db, table, p0).listings,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.product == item.sku),
+                      currentColumn: 'sku',
+                      referencedColumn: 'product',
                       typedResults: items,
                     ),
                 ];
@@ -6485,10 +6488,11 @@ class $$StoreTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (listings)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       StoreData,
                       $StoreTable,
-                      ListingData
+                      ListingData,
+                      $ListingTable
                     >(
                       currentTable: table,
                       referencedTable: $$StoreTableReferences._listingsTable(
@@ -6496,8 +6500,8 @@ class $$StoreTableTableManager
                       ),
                       managerFromTypedResult: (p0) =>
                           $$StoreTableReferences(db, table, p0).listings,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.store == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'store',
                       typedResults: items,
                     ),
                 ];
