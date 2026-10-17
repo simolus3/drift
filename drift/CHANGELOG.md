@@ -2,6 +2,8 @@
 
 - Native: Make select statements faster by not converting each result row to a map and back.
 - Internal changes for drift3 preview.
+- Managers: Fix prefetching references to tables with custom row classes that
+  don't have getters for the referencing column (#3437).
 
 ## 2.35.2
 
