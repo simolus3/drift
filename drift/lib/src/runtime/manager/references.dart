@@ -579,3 +579,78 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
     });
   }
 }
+
+/// Like [$_getPrefetchedData], but matches referenced rows to the current row
+/// by comparing the raw values of the [currentColumn] and the
+/// [referencedColumn] (both given by their name in SQL).
+///
+/// Unlike [$_getPrefetchedData], this doesn't need getters for these columns
+/// on the row classes, which custom row classes might not expose.
+///
+/// This function is used by the generated code and should not be used directly.
+Future<List<MultiTypedResultEntry<$ReferencedDataclass>>>
+// ignore: non_constant_identifier_names
+$_getPrefetchedDataByColumns<
+  $CurrentDataclass,
+  $CurrentTable extends Table,
+  $ReferencedDataclass,
+  $ReferencedTable extends Table
+>({
+  required ProcessedTableManager<
+    dynamic,
+    $ReferencedTable,
+    $ReferencedDataclass,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    dynamic,
+    $ReferencedDataclass,
+    dynamic
+  >
+  Function(TypedResult)
+  managerFromTypedResult,
+  required MultiTypedResultKey referencedTable,
+  required List<TypedResult> typedResults,
+  required TableInfo<$CurrentTable, $CurrentDataclass> currentTable,
+  required String currentColumn,
+  required String referencedColumn,
+}) async {
+  if (typedResults.isEmpty) {
+    return [];
+  }
+
+  // Combine all the referenced managers into 1 large query which will return
+  // all the referenced items in one go.
+  final manager = typedResults.map(managerFromTypedResult).reduce((
+    value,
+    element,
+  ) {
+    if (element.$state.filter != null) {
+      return value._filter((_) => element.$state.filter!, _BooleanOperator.or);
+    } else {
+      return value;
+    }
+  });
+  final state = manager.$state.copyWith(distinct: true);
+  final table = state._tableAsTableInfo;
+  final referencedKey = table.columnsByName[referencedColumn]!;
+  final currentKey = currentTable.columnsByName[currentColumn]!;
+
+  final rows = await state.buildSelectStatement().get();
+  final referencedItemsByKey = <Object?, List<$ReferencedDataclass>>{};
+  for (final row in rows) {
+    referencedItemsByKey
+        .putIfAbsent(row.read(referencedKey), () => [])
+        .add(row.readTable(table));
+  }
+
+  return [
+    for (final row in typedResults)
+      MultiTypedResultEntry(
+        key: referencedTable,
+        value: [...?referencedItemsByKey[row.read(currentKey)]],
+      ),
+  ];
+}
