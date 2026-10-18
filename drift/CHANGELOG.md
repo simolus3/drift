@@ -1,5 +1,6 @@
 ## 2.35.3 (unreleased)
 
+- Native: Make select statements faster by not converting each result row to a map and back.
 - Internal changes for drift3 preview.
 
 ## 2.35.2
