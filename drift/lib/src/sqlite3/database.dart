@@ -165,7 +165,7 @@ abstract class Sqlite3Delegate<DB extends CommonDatabase>
 
     try {
       final result = stmt.select(args);
-      return QueryResult.fromRows(result.toList());
+      return QueryResult(result.columnNames, result.rows);
     } finally {
       _returnStatement(stmt, cached);
     }
