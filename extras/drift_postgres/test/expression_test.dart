@@ -74,6 +74,13 @@ void main() {
     );
   });
 
+  test('datetime comparison', () async {
+    final dartNow = DateTime.now();
+    final earlier = dartNow.subtract(const Duration(hours: 10));
+
+    expect(await eval(Variable(earlier).isLessThan(Variable(dartNow))), isTrue);
+  });
+
   test('random uuid', () async {
     final uuid = await eval(genRandomUuid());
 
