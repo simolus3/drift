@@ -1,5 +1,6 @@
 // ignore: implementation_imports
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/src/web/wasm_setup/types.dart';
@@ -62,16 +63,38 @@ void main() {
 
   for (final browser in Browser.values) {
     group(browser.name, () {
-      late Process driverProcess;
+      Process? driverProcess;
       var isStoppingProcess = false;
       final processStopped = Completer<void>();
 
       setUpAll(() async {
-        final process = driverProcess = await browser.spawnDriver();
-        // geckodriver becomes unresponsive when no one is listening on stdout.
-        unawaited(process.stdout.drain());
+        final skipBrowserSpawn =
+            bool.parse(Platform.environment['SKIP_BROWSER_SPAWN'] ?? 'false');
 
-        process.exitCode.then((code) {
+        if (skipBrowserSpawn) {
+          return;
+        }
+
+        final process = driverProcess = await browser.spawnDriver();
+
+        // Create files for stdout and stderr
+        final stdoutFile =
+            File('/tmp/dart_dbg_${browser.name}.log').openWrite();
+        final stderrFile =
+            File('/tmp/dart_dbg_${browser.name}.err.log').openWrite();
+
+        // geckodriver becomes unresponsive when no one is listening on stdout.
+        process.stdout.transform(utf8.decoder).listen(stdoutFile.write);
+
+        process.stderr.transform(utf8.decoder).listen((data) {
+          stderrFile.write(data);
+          print('ERROR: $data');
+        });
+
+        process.exitCode.then((code) async {
+          await stdoutFile.close();
+          await stderrFile.close();
+
           if (!isStoppingProcess) {
             throw 'Webdriver stopped (code $code) before tearing down tests.';
           }
@@ -81,7 +104,7 @@ void main() {
       });
       tearDownAll(() {
         isStoppingProcess = true;
-        driverProcess.kill();
+        driverProcess?.kill();
         return processStopped.future;
       });
 
