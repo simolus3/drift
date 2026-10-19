@@ -258,8 +258,10 @@ class $PostsTableManager extends i0.RootTableManager<
             content: content,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), i1.$PostsReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<i1.Posts, i1.Post>(table),
+                    i1.$PostsReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: ({author = false, likesRefs = false}) {
             return i0.PrefetchHooks(
@@ -295,15 +297,15 @@ class $PostsTableManager extends i0.RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (likesRefs)
-                    await i0.$_getPrefetchedData<i1.Post, i1.Posts, i1.Like>(
+                    await i0.$_getPrefetchedDataByColumns<i1.Post, i1.Posts,
+                            i1.Like, i1.Likes>(
                         currentTable: table,
                         referencedTable:
                             i1.$PostsReferences._likesRefsTable(db),
                         managerFromTypedResult: (p0) =>
                             i1.$PostsReferences(db, table, p0).likesRefs,
-                        referencedItemsForCurrentItem:
-                            (item, referencedItems) =>
-                                referencedItems.where((e) => e.post == item.id),
+                        currentColumn: 'id',
+                        referencedColumn: 'post',
                         typedResults: items)
                 ];
               },
@@ -580,8 +582,10 @@ class $LikesTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), i1.$LikesReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<i1.Likes, i1.Like>(table),
+                    i1.$LikesReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: ({post = false, likedBy = false}) {
             return i0.PrefetchHooks(

@@ -112,7 +112,11 @@ class $SearchInPostsTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<i1.SearchInPosts, i1.SearchInPost>(table),
+                    i0.BaseReferences<i0.GeneratedDatabase, i1.SearchInPosts,
+                        i1.SearchInPost>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));

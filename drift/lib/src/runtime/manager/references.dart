@@ -523,6 +523,7 @@ class MultiTypedResultEntry<T> {
 /// Results are returned as a list of `MultiTypedResultEntry` objects which contain the key and the list of references for each row.
 ///
 /// This function is used by the generated code and should not be used directly.
+@Deprecated('No longer used, re-run build runner')
 // ignore: non_constant_identifier_names
 Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
   $CurrentDataclass,
@@ -580,12 +581,44 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
   }
 }
 
-/// Like [$_getPrefetchedData], but matches referenced rows to the current row
-/// by comparing the raw values of the [currentColumn] and the
-/// [referencedColumn] (both given by their name in SQL).
+/// This function is used to fetch referenced data for a `List<TypedResults>`.
 ///
-/// Unlike [$_getPrefetchedData], this doesn't need getters for these columns
-/// on the row classes, which custom row classes might not expose.
+/// Here is an example.
+/// Let's say we wanted to get all the groups, with their users.
+/// We would need to:
+///   1) Then run a 2nd query to get all the users who are in the groups. (Users who arent any groups will be ignored)
+///   2) Split the users into groups
+///   3) Return these users as a `List<List<User>>` (The first list is the groups, the 2nd list is the users in the group), along with the referenced table
+///
+/// Manually this would look like:
+///
+/// ```dart
+/// final groups = await groups.get();
+/// final groupIds = groups.map((group)=> group.id);
+/// final users = await users.filter((f)=> f.group.id.isIn(groupIds)).get()
+/// final groupsWithUsers = groups.map((group)=>(group,users.where((user)=> user.group == group.id)));
+/// ```
+///
+/// This function does the same thing, but for any table and any referenced table.
+///
+/// Arguments:
+///   - [typedResults] is the raw result of the query, together with [currentTable] we can read it's results
+///   - [managerFromTypedResult] is the equivalent of:
+///     ```dart
+///     final groups = await groups.withReferences().get();
+///     for (final (group, refs) in groups){
+///         /// Manager with a filter to only get the users of this group.
+///         refs.users;
+///     }
+///     ```
+///     What we do, is collect all the filters from all of these `refs.users` and
+///     combine them with an OR operator to create a query which gets all the users
+///     [managerFromTypedResult] is the function which turns a single `group` into `refs.users`
+///   - [referencedTable] is a `MultiTypedResultKey` which is to write the results to the `TypedResult` object,
+///     This same class will be used in the `BaseReferences` class to read from the `TypedResult`.
+///   - [currentColumn] and [referencedColumn] define the columns doing the grouping / mapping.
+///
+/// Results are returned as a list of `MultiTypedResultEntry` objects which contain the key and the list of references for each row.
 ///
 /// This function is used by the generated code and should not be used directly.
 Future<List<MultiTypedResultEntry<$ReferencedDataclass>>>

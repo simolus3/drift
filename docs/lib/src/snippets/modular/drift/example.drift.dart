@@ -520,10 +520,11 @@ class $CategoriesTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (todosRefs)
-                    await i0.$_getPrefetchedData<
+                    await i0.$_getPrefetchedDataByColumns<
                       i1.Category,
                       i1.Categories,
-                      i1.Todo
+                      i1.Todo,
+                      i1.Todos
                     >(
                       currentTable: table,
                       referencedTable: i1.$CategoriesReferences._todosRefsTable(
@@ -531,8 +532,8 @@ class $CategoriesTableManager
                       ),
                       managerFromTypedResult: (p0) =>
                           i1.$CategoriesReferences(db, table, p0).todosRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.category == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'category',
                       typedResults: items,
                     ),
                 ];

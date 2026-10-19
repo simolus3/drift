@@ -2638,7 +2638,7 @@ class $$CategoriesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$CategoriesTable, Category>(table),
                   $$CategoriesTableReferences(db, table, e),
                 ),
               )
@@ -2651,10 +2651,11 @@ class $$CategoriesTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (todos)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       Category,
                       $CategoriesTable,
-                      TodoEntry
+                      TodoEntry,
+                      $TodosTableTable
                     >(
                       currentTable: table,
                       referencedTable: $$CategoriesTableReferences._todosTable(
@@ -2662,8 +2663,8 @@ class $$CategoriesTableTableManager
                       ),
                       managerFromTypedResult: (p0) =>
                           $$CategoriesTableReferences(db, table, p0).todos,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.category == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'category',
                       typedResults: items,
                     ),
                 ];
@@ -2975,7 +2976,19 @@ class $$TableWithEveryColumnTypeTableTableManager
                 aTextWithConverter: aTextWithConverter,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<
+                    $TableWithEveryColumnTypeTable,
+                    TableWithEveryColumnTypeData
+                  >(table),
+                  BaseReferences<
+                    _$TestDatabase,
+                    $TableWithEveryColumnTypeTable,
+                    TableWithEveryColumnTypeData
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -3272,7 +3285,7 @@ class $$TodosTableTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$TodosTableTable, TodoEntry>(table),
                   $$TodosTableTableReferences(db, table, e),
                 ),
               )
@@ -3506,7 +3519,16 @@ class $$UsersTableTableManager
                 creationTime: creationTime,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$UsersTable, User>(table),
+                  BaseReferences<_$TestDatabase, $UsersTable, User>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -3701,7 +3723,7 @@ class $$DepartmentTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DepartmentTable, DepartmentData>(table),
                   $$DepartmentTableReferences(db, table, e),
                 ),
               )
@@ -3714,10 +3736,11 @@ class $$DepartmentTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (productRefs)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       DepartmentData,
                       $DepartmentTable,
-                      ProductData
+                      ProductData,
+                      $ProductTable
                     >(
                       currentTable: table,
                       referencedTable: $$DepartmentTableReferences
@@ -3728,8 +3751,8 @@ class $$DepartmentTableTableManager
                             table,
                             p0,
                           ).productRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.department == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'department',
                       typedResults: items,
                     ),
                 ];
@@ -4038,7 +4061,7 @@ class $$ProductTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ProductTable, ProductData>(table),
                   $$ProductTableReferences(db, table, e),
                 ),
               )
@@ -4082,10 +4105,11 @@ class $$ProductTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (listings)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       ProductData,
                       $ProductTable,
-                      ListingData
+                      ListingData,
+                      $ListingTable
                     >(
                       currentTable: table,
                       referencedTable: $$ProductTableReferences._listingsTable(
@@ -4093,8 +4117,8 @@ class $$ProductTableTableManager
                       ),
                       managerFromTypedResult: (p0) =>
                           $$ProductTableReferences(db, table, p0).listings,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.product == item.sku),
+                      currentColumn: 'sku',
+                      referencedColumn: 'product',
                       typedResults: items,
                     ),
                 ];
@@ -4291,8 +4315,10 @@ class $$StoreTableTableManager
               }) => StoreCompanion.insert(id: id, name: name),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$StoreTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$StoreTable, StoreData>(table),
+                  $$StoreTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback: ({listings = false}) {
@@ -4303,10 +4329,11 @@ class $$StoreTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (listings)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       StoreData,
                       $StoreTable,
-                      ListingData
+                      ListingData,
+                      $ListingTable
                     >(
                       currentTable: table,
                       referencedTable: $$StoreTableReferences._listingsTable(
@@ -4314,8 +4341,8 @@ class $$StoreTableTableManager
                       ),
                       managerFromTypedResult: (p0) =>
                           $$StoreTableReferences(db, table, p0).listings,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.store == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'store',
                       typedResults: items,
                     ),
                 ];
@@ -4641,7 +4668,7 @@ class $$ListingTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ListingTable, ListingData>(table),
                   $$ListingTableReferences(db, table, e),
                 ),
               )

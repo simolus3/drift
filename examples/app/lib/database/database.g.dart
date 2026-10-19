@@ -920,7 +920,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
-                    e.readTable(table),
+                    e.readTable<$CategoriesTable, Category>(table),
                     $$CategoriesTableReferences(db, table, e)
                   ))
               .toList(),
@@ -932,17 +932,16 @@ class $$CategoriesTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (todoEntriesRefs)
-                    await $_getPrefetchedData<Category, $CategoriesTable,
-                            TodoEntry>(
+                    await $_getPrefetchedDataByColumns<Category,
+                            $CategoriesTable, TodoEntry, $TodoEntriesTable>(
                         currentTable: table,
                         referencedTable: $$CategoriesTableReferences
                             ._todoEntriesRefsTable(db),
                         managerFromTypedResult: (p0) =>
                             $$CategoriesTableReferences(db, table, p0)
                                 .todoEntriesRefs,
-                        referencedItemsForCurrentItem: (item,
-                                referencedItems) =>
-                            referencedItems.where((e) => e.category == item.id),
+                        currentColumn: 'id',
+                        referencedColumn: 'category',
                         typedResults: items)
                 ];
               },
@@ -1162,7 +1161,7 @@ class $$TodoEntriesTableTableManager extends RootTableManager<
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
-                    e.readTable(table),
+                    e.readTable<$TodoEntriesTable, TodoEntry>(table),
                     $$TodoEntriesTableReferences(db, table, e)
                   ))
               .toList(),
@@ -1302,7 +1301,11 @@ class $TextEntriesTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<TextEntries, TextEntry>(table),
+                    BaseReferences<_$AppDatabase, TextEntries, TextEntry>(
+                        db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));

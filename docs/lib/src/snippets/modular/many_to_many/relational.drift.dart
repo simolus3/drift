@@ -223,10 +223,11 @@ class $$ShoppingCartsTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (shoppingCartEntriesRefs)
-                    await i0.$_getPrefetchedData<
+                    await i0.$_getPrefetchedDataByColumns<
                       i2.ShoppingCart,
                       i2.$ShoppingCartsTable,
-                      i2.ShoppingCartEntry
+                      i2.ShoppingCartEntry,
+                      i2.$ShoppingCartEntriesTable
                     >(
                       currentTable: table,
                       referencedTable: i2.$$ShoppingCartsTableReferences
@@ -234,10 +235,8 @@ class $$ShoppingCartsTableTableManager
                       managerFromTypedResult: (p0) => i2
                           .$$ShoppingCartsTableReferences(db, table, p0)
                           .shoppingCartEntriesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where(
-                            (e) => e.shoppingCart == item.id,
-                          ),
+                      currentColumn: 'id',
+                      referencedColumn: 'shopping_cart',
                       typedResults: items,
                     ),
                 ];

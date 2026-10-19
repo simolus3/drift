@@ -493,21 +493,23 @@ class MultiTypedResultEntry<T> {
 ///     [managerFromTypedResult] is the function which turns a single `group` into `refs.users`
 ///   - [referencedTable] is a `MultiTypedResultKey` which is to write the results to the `TypedResult` object,
 ///     This same class will be used in the `BaseReferences` class to read from the `TypedResult`.
-///   - [referencedItemsForCurrentItem] is the callback which does the mapping.
-///     It is the equivalent of`users.where((user)=> user.group == group.id)`.
+///   - [currentColumn] and [referencedColumn] define the columns doing the grouping / mapping.
 ///
 /// Results are returned as a list of `MultiTypedResultEntry` objects which contain the key and the list of references for each row.
 ///
 /// This function is used by the generated code and should not be used directly.
+Future<List<MultiTypedResultEntry<$ReferencedDataclass>>>
 // ignore: non_constant_identifier_names
-Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
+$_getPrefetchedDataByColumns<
   $CurrentDataclass extends Object,
   $CurrentTable extends GeneratedTable<$CurrentDataclass, $CurrentTable>,
-  $ReferencedDataclass extends Object
+  $ReferencedDataclass extends Object,
+  $ReferencedTable
+      extends GeneratedTable<$ReferencedDataclass, $ReferencedTable>
 >({
   required ProcessedTableManager<
     dynamic,
-    dynamic,
+    $ReferencedTable,
     $ReferencedDataclass,
     dynamic,
     dynamic,
@@ -523,35 +525,46 @@ Future<List<MultiTypedResultEntry<$ReferencedDataclass>>> $_getPrefetchedData<
   required MultiTypedResultKey referencedTable,
   required List<ManagerResultRow> typedResults,
   required $CurrentTable currentTable,
-  required Iterable<$ReferencedDataclass> Function(
-    $CurrentDataclass item,
-    List<$ReferencedDataclass> referencedItems,
-  )
-  referencedItemsForCurrentItem,
+  required String currentColumn,
+  required String referencedColumn,
 }) async {
   if (typedResults.isEmpty) {
     return [];
-  } else {
-    final managers = typedResults.map(managerFromTypedResult);
-    // Combine all the referenced managers into 1 large query which will return all the
-    // referenced items in one go.
-    final manager = managers.reduce((value, element) {
-      if (element.$state.filter != null) {
-        return value.filter(
-          (_) => element.$state.filter!,
-          combineWith: BooleanOperator.or,
-        );
-      } else {
-        return value;
-      }
-    });
-
-    return manager.get(distinct: true).then((value) {
-      return typedResults.map((e) {
-        final item = e.readTable(currentTable);
-        final refs = referencedItemsForCurrentItem(item, value).toList();
-        return MultiTypedResultEntry(key: referencedTable, value: refs);
-      }).toList();
-    });
   }
+
+  // Combine all the referenced managers into 1 large query which will return
+  // all the referenced items in one go.
+  final manager = typedResults.map(managerFromTypedResult).reduce((
+    value,
+    element,
+  ) {
+    if (element.$state.filter != null) {
+      return value.filter(
+        (_) => element.$state.filter!,
+        combineWith: BooleanOperator.or,
+      );
+    } else {
+      return value;
+    }
+  });
+  final state = manager.$state.copyWith(distinct: true);
+  final table = state.table;
+  final referencedKey = table.columnsByName[referencedColumn]!;
+  final currentKey = currentTable.columnsByName[currentColumn]!;
+
+  final rows = await state.buildSelectStatement().get();
+  final referencedItemsByKey = <Object?, List<$ReferencedDataclass>>{};
+  for (final row in rows) {
+    referencedItemsByKey
+        .putIfAbsent(row.read(referencedKey), () => [])
+        .add(row.readTable(table));
+  }
+
+  return [
+    for (final row in typedResults)
+      MultiTypedResultEntry(
+        key: referencedTable,
+        value: [...?referencedItemsByKey[row.read(currentKey)]],
+      ),
+  ];
 }

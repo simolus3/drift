@@ -299,35 +299,21 @@ class _ManagerCodeTemplates {
             final referencedDataClass = leaf.dartCode(leaf.rowType(relation.referencedTable));
             final relationFieldName = relation.computeFieldName(leaf.writer.options);
 
-            final String prefetchFunction;
-            final String typeArguments;
-            final String matchReferencedItems;
-            if (_drift3) {
-              prefetchFunction = "\$_getPrefetchedData";
-              typeArguments = "$currentDataClass, $currentTable, $referencedDataClass";
-              matchReferencedItems = """
-                  referencedItemsForCurrentItem: (item, referencedItems) =>
-                      referencedItems.where((e) => e.${relation.referencedColumn.nameInDart} == item.${relation.currentColumn.nameInDart}),""";
-            } else {
-              // Match referenced rows by their column values, since custom row
-              // classes don't necessarily have getters for these columns.
-              final referencedTable = leaf.dartCode(leaf.entityInfoType(relation.referencedTable));
-              prefetchFunction = "\$_getPrefetchedDataByColumns";
-              typeArguments = "$currentDataClass, $currentTable, $referencedDataClass, $referencedTable";
-              matchReferencedItems = """
-                  currentColumn: ${asDartLiteral(relation.currentColumn.nameInSql)},
-                  referencedColumn: ${asDartLiteral(relation.referencedColumn.nameInSql)},""";
-            }
+            // Match referenced rows by their column values, since custom row
+            // classes don't necessarily have getters for these columns.
+            final referencedTable = leaf.dartCode(leaf.entityInfoType(relation.referencedTable));
+            const prefetchFunction = "\$_getPrefetchedDataByColumns";
 
             return """
           if ($relationFieldName) await ${leaf.drift(prefetchFunction)}
-            <$typeArguments>(
+            <$currentDataClass, $currentTable, $referencedDataClass, $referencedTable>(
                   currentTable: table,
                   referencedTable:
                       $referencesClassName._${relationFieldName}Table(db),
                   managerFromTypedResult: (p0) =>
                       $referencesClassName(db, table, p0).$relationFieldName,
-                  $matchReferencedItems
+                  currentColumn: ${asDartLiteral(relation.currentColumn.nameInSql)},
+                  referencedColumn: ${asDartLiteral(relation.referencedColumn.nameInSql)},
                   typedResults: items)
             """;
           }).join(',')}

@@ -153,7 +153,11 @@ class $UsersTableManager extends i0.RootTableManager<
             profilePicture: profilePicture,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<i1.Users, i1.User>(table),
+                    i0.BaseReferences<i0.GeneratedDatabase, i1.Users, i1.User>(
+                        db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -428,8 +432,10 @@ class $FollowsTableManager extends i0.RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), i1.$FollowsReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<i1.Follows, i1.Follow>(table),
+                    i1.$FollowsReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: ({followed = false, follower = false}) {
             return i0.PrefetchHooks(

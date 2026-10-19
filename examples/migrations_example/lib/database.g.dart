@@ -949,8 +949,8 @@ final class $$UsersTableReferences
     extends BaseReferences<_$Database, $UsersTable, User> {
   $$UsersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $UsersTable _nextUserTable(_$Database db) => db.users
-      .createAlias($_aliasNameGenerator(db.users.nextUser, db.users.id));
+  static $UsersTable _nextUserTable(_$Database db) =>
+      db.users.createAlias('users__next_user__users__id');
 
   $$UsersTableProcessedTableManager? get nextUser {
     final $_column = $_itemColumn<int>('next_user');
@@ -966,7 +966,7 @@ final class $$UsersTableReferences
   static MultiTypedResultKey<Groups, List<Group>> _groupsRefsTable(
           _$Database db) =>
       MultiTypedResultKey.fromTable(db.groups,
-          aliasName: $_aliasNameGenerator(db.users.id, db.groups.owner));
+          aliasName: 'users__id__groups__owner');
 
   $GroupsProcessedTableManager get groupsRefs {
     final manager = $GroupsTableManager($_db, $_db.groups)
@@ -1181,8 +1181,10 @@ class $$UsersTableTableManager extends RootTableManager<
             nextUser: nextUser,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), $$UsersTableReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$UsersTable, User>(table),
+                    $$UsersTableReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: ({nextUser = false, groupsRefs = false}) {
             return PrefetchHooks(
@@ -1216,15 +1218,15 @@ class $$UsersTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (groupsRefs)
-                    await $_getPrefetchedData<User, $UsersTable, Group>(
+                    await $_getPrefetchedDataByColumns<User, $UsersTable, Group,
+                            Groups>(
                         currentTable: table,
                         referencedTable:
                             $$UsersTableReferences._groupsRefsTable(db),
                         managerFromTypedResult: (p0) =>
                             $$UsersTableReferences(db, table, p0).groupsRefs,
-                        referencedItemsForCurrentItem: (item,
-                                referencedItems) =>
-                            referencedItems.where((e) => e.owner == item.id),
+                        currentColumn: 'id',
+                        referencedColumn: 'owner',
                         typedResults: items)
                 ];
               },
@@ -1263,7 +1265,7 @@ final class $GroupsReferences
   $GroupsReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $UsersTable _ownerTable(_$Database db) =>
-      db.users.createAlias($_aliasNameGenerator(db.groups.owner, db.users.id));
+      db.users.createAlias('groups__owner__users__id');
 
   $$UsersTableProcessedTableManager get owner {
     final $_column = $_itemColumn<int>('owner')!;
@@ -1438,7 +1440,10 @@ class $GroupsTableManager extends RootTableManager<
             owner: owner,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), $GroupsReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<Groups, Group>(table),
+                    $GroupsReferences(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: ({owner = false}) {
             return PrefetchHooks(
@@ -1602,7 +1607,10 @@ class $NotesTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<Notes, Note>(table),
+                    BaseReferences<_$Database, Notes, Note>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
