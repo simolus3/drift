@@ -13,6 +13,14 @@ class _ManagerCodeTemplates {
 
   bool get _drift3 => _scope.options.drift3Preview;
 
+  String _rt(String symbol) {
+    if (_drift3) {
+      return _scope.refUri(_drift3Import, symbol);
+    } else {
+      return _scope.drift(symbol);
+    }
+  }
+
   /// Returns the name of the manager class for a table
   ///
   /// This classes acts as container for all the table managers
@@ -241,9 +249,9 @@ class _ManagerCodeTemplates {
     final rowClass = leaf.dartCode(leaf.rowType(table));
     final dbType = databaseType(leaf, dbClassName);
 
-    return """class ${rootTableManagerName(table)} extends ${leaf.drift("RootTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)} {
+    return """class ${rootTableManagerName(table)} extends ${_rt("RootTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)} {
     ${rootTableManagerName(table)}($dbType db, ${tableClassWithPrefix(table, leaf)} table) : super(
-      ${leaf.drift("TableManagerState")}(
+      ${_rt("TableManagerState")}(
         db: db,
         table: table,
         createFilteringComposer: () => ${filterComposerNameWithPrefix(table, leaf)}(\$db: db,\$table:table),
@@ -259,7 +267,7 @@ class _ManagerCodeTemplates {
               .toList(),
         prefetchHooksCallback: ${relations.isEmpty ? 'null' : """
         (${"{${relations.map((e) => "${e.computeFieldName(leaf.writer.options)} = false").join(",")}}"}){
-          return ${leaf.drift("PrefetchHooks")}(
+          return ${_rt("PrefetchHooks")}(
             db: db,
             explicitlyWatchedTables: [
              ${reverseRelations.map((relation) {
@@ -268,7 +276,7 @@ class _ManagerCodeTemplates {
           }).join(',')}
             ],
             addJoins: ${forwardRelations.isEmpty ? 'null' : """
-<T extends ${leaf.drift("TableManagerState")}<dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic>>(state) {
+<T extends ${_rt("TableManagerState")}<dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic,dynamic>>(state) {
 
                 ${forwardRelations.map((relation) {
                   final relationFieldName = relation.computeFieldName(leaf.writer.options);
@@ -305,7 +313,7 @@ class _ManagerCodeTemplates {
             const prefetchFunction = "\$_getPrefetchedDataByColumns";
 
             return """
-          if ($relationFieldName) await ${leaf.drift(prefetchFunction)}
+          if ($relationFieldName) await ${_rt(prefetchFunction)}
             <$currentDataClass, $currentTable, $referencedDataClass, $referencedTable>(
                   currentTable: table,
                   referencedTable:
@@ -334,7 +342,7 @@ class _ManagerCodeTemplates {
     required String dbClassName,
     required List<String> columnFilters,
   }) {
-    return """class ${filterComposerName(table)} extends ${leaf.drift("Composer")}<
+    return """class ${filterComposerName(table)} extends ${_rt("Composer")}<
         ${databaseType(leaf, dbClassName)},
         ${tableClassWithPrefix(table, leaf)}> {
         ${filterComposerName(table)}({
@@ -356,7 +364,7 @@ class _ManagerCodeTemplates {
     required String dbClassName,
     required List<String> columnAnnotations,
   }) {
-    return """class ${annotationComposerName(table)} extends ${leaf.drift("Composer")}<
+    return """class ${annotationComposerName(table)} extends ${_rt("Composer")}<
         ${databaseType(leaf, dbClassName)},
         ${tableClassWithPrefix(table, leaf)}> {
         ${annotationComposerName(table)}({
@@ -378,7 +386,7 @@ class _ManagerCodeTemplates {
     required String dbClassName,
     required List<String> columnOrderings,
   }) {
-    return """class ${orderingComposerName(table)} extends ${leaf.drift("Composer")}<
+    return """class ${orderingComposerName(table)} extends ${_rt("Composer")}<
         ${databaseType(leaf, dbClassName)},
         ${tableClassWithPrefix(table, leaf)}> {
         ${orderingComposerName(table)}({
@@ -463,10 +471,10 @@ class _ManagerCodeTemplates {
     final filterName = column.nameInDart;
     final columnGetter = column.nameInDart;
 
-    return """${leaf.drift("ColumnFilters")}<$type> get $filterName => \$composableBuilder(
+    return """${_rt("ColumnFilters")}<$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,
       builder: (column) =>
-      ${leaf.drift("ColumnFilters")}(column));
+      ${_rt("ColumnFilters")}(column));
       """;
   }
 
@@ -481,10 +489,10 @@ class _ManagerCodeTemplates {
     final converterType = leaf.dartCode(leaf.writer.dartType(column));
     final nonNullableConverterType = converterType.replaceFirst("?", "");
     return """
-          ${leaf.drift("ColumnWithTypeConverterFilters")}<$converterType,$nonNullableConverterType,$type> get $filterName => \$composableBuilder(
+          ${_rt("ColumnWithTypeConverterFilters")}<$converterType,$nonNullableConverterType,$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,
       builder: (column) =>
-      ${leaf.drift("ColumnWithTypeConverterFilters")}(column));
+      ${_rt("ColumnWithTypeConverterFilters")}(column));
       """;
   }
 
@@ -522,10 +530,10 @@ class _ManagerCodeTemplates {
     final filterName = column.nameInDart;
     final columnGetter = column.nameInDart;
 
-    return """${leaf.drift("ColumnOrderings")}<$type> get $filterName => \$composableBuilder(
+    return """${_rt("ColumnOrderings")}<$type> get $filterName => \$composableBuilder(
       column: \$table.$columnGetter,
       builder: (column) =>
-      ${leaf.drift("ColumnOrderings")}(column));
+      ${_rt("ColumnOrderings")}(column));
       """;
   }
 
@@ -594,7 +602,7 @@ class _ManagerCodeTemplates {
     required TextEmitter leaf,
     required List<_Relation> relations,
   }) {
-    return """typedef ${processedTableManagerTypedefName(table, leaf, forDefinition: true)} = ${leaf.drift("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)};""";
+    return """typedef ${processedTableManagerTypedefName(table, leaf, forDefinition: true)} = ${_rt("ProcessedTableManager")}${_tableManagerTypeArguments(table, dbClassName, leaf, relations)};""";
   }
 
   /// Name of the class which is used to represent a rows references
@@ -618,9 +626,9 @@ class _ManagerCodeTemplates {
       }
     } else {
       if (withTypeArgs) {
-        return "${leaf.drift('BaseReferences')}<${databaseType(leaf, dbClassName)},${tableClassWithPrefix(table, leaf)},${rowClassWithPrefix(table, leaf)}>";
+        return "${_rt('BaseReferences')}<${databaseType(leaf, dbClassName)},${tableClassWithPrefix(table, leaf)},${rowClassWithPrefix(table, leaf)}>";
       } else {
-        return leaf.drift('BaseReferences');
+        return _rt('BaseReferences');
       }
     }
   }
@@ -632,7 +640,7 @@ class _ManagerCodeTemplates {
     required TextEmitter leaf,
     required String dbClassName,
   }) {
-    return "${leaf.drift("PrefetchHooks")} Function(${relations.isEmpty ? '' : '{${relations.map((e) {
+    return "${_rt("PrefetchHooks")} Function(${relations.isEmpty ? '' : '{${relations.map((e) {
             final relationFieldName = e.computeFieldName(leaf.writer.options);
             return 'bool $relationFieldName';
           }).join(',')}}'})";
@@ -682,13 +690,13 @@ class _ManagerCodeTemplates {
             final dataclasses =
                 'List<${rowClassWithPrefix(relation.referencedTable, leaf)}';
             final multiTypedKey = _drift3
-                ? '${leaf.drift("MultiTypedResultKey")}<$dataclasses>>'
-                : '${leaf.drift("MultiTypedResultKey")}<${tableClassWithPrefix(relation.referencedTable, leaf)}, $dataclasses>>';
+                ? '${_rt("MultiTypedResultKey")}<$dataclasses>>'
+                : '${_rt("MultiTypedResultKey")}<${tableClassWithPrefix(relation.referencedTable, leaf)}, $dataclasses>>';
 
             final aliasedTableMethod =
                 """
         static $multiTypedKey _${relationFieldName}Table($dbName db) =>
-          ${leaf.drift("MultiTypedResultKey")}.fromTable(
+          ${_rt("MultiTypedResultKey")}.fromTable(
           $referencedTable,
           aliasName: $aliasName);""";
 
@@ -705,7 +713,7 @@ class _ManagerCodeTemplates {
           );
 
           final cache = \$_typedResult.readTableOrNull(_${relationFieldName}Table(\$_db));
-          return ${leaf.drift("ProcessedTableManager")}(manager.\$state.copyWith(prefetchedData: cache));
+          return ${_rt("ProcessedTableManager")}(manager.\$state.copyWith(prefetchedData: cache));
         }
         """;
           } else {
@@ -730,7 +738,7 @@ class _ManagerCodeTemplates {
           final manager = ${rootTableManagerWithPrefix(relation.referencedTable, leaf)}(\$_db, ${leaf.dartCode(leaf.referenceElement(relation.referencedTable, r'$_db'))}).filter((f) => f.${relation.referencedColumn.nameInDart}.sqlEquals(\$_column));
           final item = \$_typedResult.readTableOrNull(_${relationFieldName}Table(\$_db));
           if (item == null) return manager;
-          return ${leaf.drift("ProcessedTableManager")}(manager.\$state.copyWith(prefetchedData: [item]));
+          return ${_rt("ProcessedTableManager")}(manager.\$state.copyWith(prefetchedData: [item]));
         }
 """;
           }
@@ -738,7 +746,7 @@ class _ManagerCodeTemplates {
         .join('\n');
 
     return """
-      final class $rowClassWithReferencesName extends ${leaf.drift("BaseReferences")}<
+      final class $rowClassWithReferencesName extends ${_rt("BaseReferences")}<
         ${databaseType(leaf, dbClassName)},
         ${tableClassWithPrefix(table, leaf)},
         ${rowClassWithPrefix(table, leaf)}> {
@@ -748,4 +756,8 @@ class _ManagerCodeTemplates {
 
       }""";
   }
+
+  static final _drift3Import = Uri.parse(
+    'package:drift_manager/drift_manager.dart',
+  );
 }

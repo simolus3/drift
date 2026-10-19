@@ -157,14 +157,7 @@ final class TestDatabase extends _$TestDatabase {
   TestDatabase(super.implementation);
 
   factory TestDatabase.inMemory() {
-    return TestDatabase(
-      DriftConnection(
-        dialect: SqliteDialect.new,
-        openConnection: (_) async {
-          return SqliteConnection(sqlite3.openInMemory());
-        },
-      ),
-    );
+    return TestDatabase(SqliteConnection.inMemory(sqlite3));
   }
 
   @override

@@ -6,3 +6,28 @@ targets:
           drift3_preview: true
           generate_manager: true
           fatal_warnings: true
+    sources:
+      exclude:
+        - test/modular/*
+
+  modular:
+    builders:
+      drift_dev:
+        # Disable the default builder in favor of the modular builders configured
+        # below.
+        enabled: false
+
+      drift_dev:analyzer:
+        enabled: true
+        options: &options
+          drift3_preview: true
+          generate_manager: true
+          fatal_warnings: true
+          preamble: '// ignore_for_file: unused_local_variable'
+      drift_dev:modular:
+        enabled: true
+        options: *options
+
+    sources:
+      include:
+        - test/modular/*
