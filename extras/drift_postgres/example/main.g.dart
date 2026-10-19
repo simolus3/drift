@@ -46,7 +46,7 @@ class $UsersTable extends Users
     final pos$id = positions[0].index;
     final type$0 = PgTypes.uuid.resolveIn(dialect);
     final pos$name = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {

@@ -543,9 +543,9 @@ class $GroupsTable extends i2.Groups
     List<i0.ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = i0.SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = i0.SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (i0.RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -715,7 +715,7 @@ class $MembersTable extends i2.Members
     List<i0.ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = i0.SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$group = positions[1].index;
     return (i0.RawRow row) {
       // Not part of row if non-nullable column "id" is missing

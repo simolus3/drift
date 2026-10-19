@@ -404,6 +404,30 @@ abstract class _NodeOrWriter {
     return dartCode(_drift3SqlType(sqlType));
   }
 
+  String drift3PhysicalSqlType(ColumnType sqlType, String dialect) {
+    final getterOnTypeProvider = switch (sqlType) {
+      ColumnDriftType(:final builtin) => switch (builtin) {
+        DriftSqlType.bool => 'boolType',
+        DriftSqlType.string => 'textType',
+        DriftSqlType.bigInt => 'int64Type',
+        DriftSqlType.int => 'intType',
+        DriftSqlType.dateTime => 'dateTimeType',
+        DriftSqlType.blob => 'byteArrayType',
+        DriftSqlType.double => 'doubleType',
+        DriftSqlType.any => null,
+      },
+      _ => null,
+    };
+
+    if (getterOnTypeProvider != null) {
+      // this essentially inlines what BuiltinSqlType.resolveIn does, but not
+      // going through the enum helps TFA.
+      return 'dialect.$getterOnTypeProvider';
+    }
+
+    return '${drift3SqlType(sqlType)}.resolveIn($dialect)';
+  }
+
   AnnotatedDartCode _drift3SqlType(ColumnType sqlType) {
     AnnotatedDartCode builtinType(String name) {
       return AnnotatedDartCode.importedSymbol(

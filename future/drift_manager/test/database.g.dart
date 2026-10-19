@@ -70,9 +70,9 @@ class $CategoriesTable extends Categories
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$description = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$priority = positions[2].index;
     final pos$descriptionInUpperCase = positions[3].index;
     return (RawRow row) {
@@ -377,20 +377,20 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$aBool = positions[1].index;
-    final type$1 = SqlType.bool.resolveIn(dialect);
+    final type$1 = dialect.boolType;
     final pos$aDateTime = positions[2].index;
-    final type$2 = SqlType.dateTime.resolveIn(dialect);
+    final type$2 = dialect.dateTimeType;
     final pos$aText = positions[3].index;
-    final type$3 = SqlType.text.resolveIn(dialect);
+    final type$3 = dialect.textType;
     final pos$anInt = positions[4].index;
     final pos$anInt64 = positions[5].index;
-    final type$4 = SqlType.int64.resolveIn(dialect);
+    final type$4 = dialect.int64Type;
     final pos$aReal = positions[6].index;
-    final type$5 = SqlType.double.resolveIn(dialect);
+    final type$5 = dialect.doubleType;
     final pos$aBlob = positions[7].index;
-    final type$6 = SqlType.byteArray.resolveIn(dialect);
+    final type$6 = dialect.byteArrayType;
     final pos$anIntEnum = positions[8].index;
     final pos$aTextWithConverter = positions[9].index;
     return (RawRow row) {
@@ -910,12 +910,12 @@ class $TodosTableTable extends TodosTable
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$title = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$content = positions[2].index;
     final pos$targetDate = positions[3].index;
-    final type$2 = SqlType.dateTime.resolveIn(dialect);
+    final type$2 = dialect.dateTimeType;
     final pos$category = positions[4].index;
     final pos$status = positions[5].index;
     return (RawRow row) {
@@ -1270,15 +1270,15 @@ class $UsersTable extends Users
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$isAwesome = positions[2].index;
-    final type$2 = SqlType.bool.resolveIn(dialect);
+    final type$2 = dialect.boolType;
     final pos$profilePicture = positions[3].index;
-    final type$3 = SqlType.byteArray.resolveIn(dialect);
+    final type$3 = dialect.byteArrayType;
     final pos$creationTime = positions[4].index;
-    final type$4 = SqlType.dateTime.resolveIn(dialect);
+    final type$4 = dialect.dateTimeType;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -1552,9 +1552,9 @@ class $DepartmentTable extends Department
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -1739,10 +1739,10 @@ class $ProductTable extends Product
     List<ColumnPosition> positions,
   ) {
     final pos$sku = positions[0].index;
-    final type$0 = SqlType.text.resolveIn(dialect);
+    final type$0 = dialect.textType;
     final pos$name = positions[1].index;
     final pos$department = positions[2].index;
-    final type$1 = SqlType.int.resolveIn(dialect);
+    final type$1 = dialect.intType;
     return (RawRow row) {
       // Not part of row if non-nullable column "sku" is missing
       if (row[pos$sku] == null) {
@@ -1962,9 +1962,9 @@ class $StoreTable extends Store
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -2157,12 +2157,12 @@ class $ListingTable extends Listing
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$product = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$store = positions[2].index;
     final pos$price = positions[3].index;
-    final type$2 = SqlType.double.resolveIn(dialect);
+    final type$2 = dialect.doubleType;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {

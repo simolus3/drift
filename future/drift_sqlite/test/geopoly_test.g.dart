@@ -224,7 +224,7 @@ abstract base class _$_GeopolyTestDatabase extends GeneratedDatabase {
       variables: [Variable<int>(var1, SqlType.int)],
       readsFrom: {GeopolyTest()},
       createMapper: (RawResultSet _) {
-        final type$0 = SqlType.double.resolveIn(dialect);
+        final type$0 = dialect.doubleType;
 
         return (RawRow row) => type$0.nullableDartValue(row[0]);
       },

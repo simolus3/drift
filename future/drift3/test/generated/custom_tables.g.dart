@@ -29,7 +29,7 @@ class NoIds extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$payload = positions[0].index;
-    final type$0 = SqlType.byteArray.resolveIn(dialect);
+    final type$0 = dialect.byteArrayType;
     return (RawRow row) {
       // Not part of row if non-nullable column "payload" is missing
       if (row[pos$payload] == null) {
@@ -117,7 +117,7 @@ class WithDefaults extends Table
     final pos$a = positions[0].index;
     final type$0 = const CustomTextType().resolveIn(dialect);
     final pos$b = positions[1].index;
-    final type$1 = SqlType.int.resolveIn(dialect);
+    final type$1 = dialect.intType;
     return (RawRow row) {
       return WithDefault(
         a: type$0.nullableDartValue(row[pos$a]),
@@ -308,11 +308,11 @@ class WithConstraints extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$a = positions[0].index;
-    final type$0 = SqlType.text.resolveIn(dialect);
+    final type$0 = dialect.textType;
     final pos$b = positions[1].index;
-    final type$1 = SqlType.int.resolveIn(dialect);
+    final type$1 = dialect.intType;
     final pos$c = positions[2].index;
-    final type$2 = SqlType.double.resolveIn(dialect);
+    final type$2 = dialect.doubleType;
     return (RawRow row) {
       // Not part of row if non-nullable column "b" is missing
       if (row[pos$b] == null) {
@@ -550,11 +550,11 @@ class ConfigTable extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$configKey = positions[0].index;
-    final type$0 = SqlType.text.resolveIn(dialect);
+    final type$0 = dialect.textType;
     final pos$configValue = positions[1].index;
     final type$1 = const AnyType().resolveIn(dialect);
     final pos$syncState = positions[2].index;
-    final type$2 = SqlType.int.resolveIn(dialect);
+    final type$2 = dialect.intType;
     final pos$syncStateImplicit = positions[3].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "configKey" is missing
@@ -864,13 +864,13 @@ class Mytable extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$someid = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$sometext = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$isInserting = positions[2].index;
-    final type$2 = SqlType.bool.resolveIn(dialect);
+    final type$2 = dialect.boolType;
     final pos$somedate = positions[3].index;
-    final type$3 = SqlType.dateTime.resolveIn(dialect);
+    final type$3 = dialect.dateTimeType;
     return (RawRow row) {
       // Not part of row if non-nullable column "someid" is missing
       if (row[pos$someid] == null) {
@@ -1122,7 +1122,7 @@ class Email extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$sender = positions[0].index;
-    final type$0 = SqlType.text.resolveIn(dialect);
+    final type$0 = dialect.textType;
     final pos$title = positions[1].index;
     final pos$body = positions[2].index;
     return (RawRow row) {
@@ -1335,9 +1335,9 @@ class WeirdTable extends Table
     List<ColumnPosition> positions,
   ) {
     final pos$sqlClass = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$textColumn = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (RawRow row) {
       // Not part of row if non-nullable column "sqlClass" is missing
       if (row[pos$sqlClass] == null) {
@@ -1598,11 +1598,11 @@ class MyView
     List<ColumnPosition> positions,
   ) {
     final pos$configKey = positions[0].index;
-    final type$0 = SqlType.text.resolveIn(dialect);
+    final type$0 = dialect.textType;
     final pos$configValue = positions[1].index;
     final type$1 = const AnyType().resolveIn(dialect);
     final pos$syncState = positions[2].index;
-    final type$2 = SqlType.int.resolveIn(dialect);
+    final type$2 = dialect.intType;
     final pos$syncStateImplicit = positions[3].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "configKey" is missing
@@ -1828,7 +1828,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       ],
       readsFrom: {ConfigTable(), ...generatedpred.watchedTables},
       createMapper: (RawResultSet _) {
-        final type$0 = SqlType.text.resolveIn(dialect);
+        final type$0 = dialect.textType;
 
         return (RawRow row) => type$0.dartValue(row[0]!);
       },
@@ -1842,7 +1842,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
-        final type$0 = SqlType.text.resolveIn(dialect);
+        final type$0 = dialect.textType;
 
         return (RawRow row) => JsonResult(
           row: row,
@@ -1859,7 +1859,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {},
       createMapper: (RawResultSet _) {
-        final type$0 = SqlType.text.resolveIn(dialect);
+        final type$0 = dialect.textType;
 
         return (RawRow row) => JsonResult(
           row: row,
@@ -1889,7 +1889,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       },
       createMapper: (RawResultSet _) {
         final type$0 = const CustomTextType().resolveIn(dialect);
-        final type$1 = SqlType.int.resolveIn(dialect);
+        final type$1 = dialect.intType;
         final map_0 = WithConstraints().createMapperFromPositions(
           dialect,
           const [ColumnPosition(2), ColumnPosition(3), ColumnPosition(4)],
@@ -1940,8 +1940,8 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [...generatedexpr.variables],
       readsFrom: {ConfigTable(), ...generatedexpr.watchedTables},
       createMapper: (RawResultSet _) {
-        final type$0 = SqlType.int.resolveIn(dialect);
-        final type$1 = SqlType.text.resolveIn(dialect);
+        final type$0 = dialect.intType;
+        final type$1 = dialect.textType;
         final type$2 = const AnyType().resolveIn(dialect);
 
         return (RawRow row) => ReadRowIdResult(
@@ -1997,7 +1997,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {},
       createMapper: (RawResultSet _) {
-        final type$0 = SqlType.int.resolveIn(dialect);
+        final type$0 = dialect.intType;
 
         return (RawRow row) => type$0.dartValue(row[0]!);
       },
@@ -2010,7 +2010,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
-        final type$0 = SqlType.int.resolveIn(dialect);
+        final type$0 = dialect.intType;
 
         return (RawRow row) => type$0.nullableDartValue(row[0]);
       },
@@ -2080,7 +2080,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
           ColumnPosition(0),
           ColumnPosition(1),
         ]);
-        final type$0 = SqlType.int.resolveIn(dialect);
+        final type$0 = dialect.intType;
 
         return (RawRow row) async => NestedResult(
           row: row,
@@ -2115,7 +2115,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
       variables: [],
       readsFrom: {WithConstraints(), ConfigTable(), NoIds()},
       createMapper: (RawResultSet _) {
-        final type$0 = SqlType.int.resolveIn(dialect);
+        final type$0 = dialect.intType;
         final map_0 = ConfigTable().createMapperFromPositions(dialect, const [
           ColumnPosition(2),
           ColumnPosition(3),
@@ -2139,7 +2139,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
             variables: [],
             readsFrom: {NoIds()},
             createMapper: (RawResultSet _) {
-              final type$0 = SqlType.byteArray.resolveIn(dialect);
+              final type$0 = dialect.byteArrayType;
 
               return (RawRow row) => Buffer(type$0.dartValue(row[0]!));
             },

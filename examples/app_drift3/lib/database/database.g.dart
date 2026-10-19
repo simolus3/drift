@@ -46,9 +46,9 @@ class $CategoriesTable extends Categories
   Category? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$color = positions[2].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
@@ -264,12 +264,12 @@ class $TodoEntriesTable extends TodoEntries
   TodoEntry? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$description = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$category = positions[2].index;
     final pos$dueDate = positions[3].index;
-    final type$2 = SqlType.dateTime.resolveIn(dialect);
+    final type$2 = dialect.dateTimeType;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -492,7 +492,7 @@ class TextEntries extends Table
   TextEntry? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$description = positions[0].index;
-    final type$0 = SqlType.text.resolveIn(dialect);
+    final type$0 = dialect.textType;
     return (RawRow row) {
       // Not part of row if non-nullable column "description" is missing
       if (row[pos$description] == null) {
@@ -656,8 +656,8 @@ abstract base class _$AppDatabase extends GeneratedDatabase {
           $CategoriesTable(),
         },
         createMapper: (RawResultSet _) {
-          final type$0 = SqlType.int.resolveIn(dialect);
-          final type$1 = SqlType.text.resolveIn(dialect);
+          final type$0 = dialect.intType;
+          final type$1 = dialect.textType;
 
           return (RawRow row) => CategoriesWithCountResult(
                 id: type$0.nullableDartValue(row[0]),

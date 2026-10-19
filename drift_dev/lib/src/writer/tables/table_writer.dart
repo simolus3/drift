@@ -201,8 +201,8 @@ abstract class TableOrViewWriter {
         final name = 'type\$${types.length}';
         emitter
           ..write('final $name = ')
-          ..write(emitter.drift3SqlType(column.sqlType))
-          ..writeln('.resolveIn(dialect);');
+          ..write(emitter.drift3PhysicalSqlType(column.sqlType, 'dialect'))
+          ..writeln(';');
         return name;
       });
       resolvedColumns[column] = (posVariable, typeVariable);

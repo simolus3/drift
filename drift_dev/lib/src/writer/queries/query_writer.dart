@@ -708,8 +708,8 @@ class _Drift3MappingCodeWriter {
       final variableName = 'type\$${_obtainedTypes.length}';
       _outerSetup
         ..write('final $variableName = ')
-        ..write(_emitter.drift3SqlType(type))
-        ..writeln('.resolveIn(dialect);');
+        ..write(_emitter.drift3PhysicalSqlType(type, 'dialect'))
+        ..writeln(';');
 
       return variableName;
     });

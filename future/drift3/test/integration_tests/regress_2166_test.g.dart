@@ -39,9 +39,9 @@ class $SomeTableTable extends SomeTable
     List<ColumnPosition> positions,
   ) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
