@@ -1,3 +1,7 @@
+import 'dart:collection';
+
+import 'package:collection/collection.dart';
+
 /// A result from an select statement.
 class QueryResult {
   /// Names of the columns returned by the select statement.
@@ -33,12 +37,35 @@ class QueryResult {
 
   /// Returns a "list of maps" representation of this result set. Each map has
   /// the same keys - the [columnNames]. The values are the actual values in
-  /// the row.
+  /// the row. The maps are read-only views on [rows].
   Iterable<Map<String, dynamic>> get asMap {
-    return rows.map((row) {
-      return {
-        for (var column in columnNames) column: row[_columnIndexes[column]!],
-      };
-    });
+    return rows.map((row) => _QueryResultRow(_columnIndexes, row));
   }
+}
+
+/// A read-only map view of one row in a [QueryResult].
+///
+/// All rows share the column index map of their [QueryResult], so creating a
+/// row does not create a new hash map.
+final class _QueryResultRow extends MapBase<String, Object?>
+    with UnmodifiableMapMixin<String, Object?> {
+  final Map<String, int> _columnIndexes;
+  final List<Object?> _row;
+
+  _QueryResultRow(this._columnIndexes, this._row);
+
+  @override
+  Object? operator [](Object? key) {
+    final index = _columnIndexes[key];
+    return index == null ? null : _row[index];
+  }
+
+  @override
+  bool containsKey(Object? key) => _columnIndexes.containsKey(key);
+
+  @override
+  Iterable<String> get keys => _columnIndexes.keys;
+
+  @override
+  int get length => _columnIndexes.length;
 }
