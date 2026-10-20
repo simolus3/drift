@@ -236,6 +236,15 @@ void main() {
     expect(rows, [
       {'a': 3, 'b': 2},
     ]);
+    expect(rows.single.keys, ['a', 'b']);
+    expect(rows.single['c'], null);
+
+    final row = rows.single;
+    expect(() => row['a'] = 0, throwsUnsupportedError);
+    expect(() => row.remove('a'), throwsUnsupportedError);
+    expect(() => row.clear(), throwsUnsupportedError);
+    expect(() => row.addAll({'c': 1}), throwsUnsupportedError);
+    expect(row, {'a': 3, 'b': 2});
   });
 
   group('can disable migrations', () {
