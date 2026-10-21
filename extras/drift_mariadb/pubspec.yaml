@@ -24,4 +24,4 @@ dev_dependencies:
   test: ^1.21.0
   drift3_testcases:
   drift_dev: ^2.35.1
-  build_runner: ^2.16.2
+  build_runner: ^2.6.0
