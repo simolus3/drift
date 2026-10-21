@@ -1,5 +1,5 @@
 import 'package:drift_mariadb/drift_mariadb.dart';
-import 'package:drift_testcases/tests.dart';
+import 'package:drift3_testcases/tests.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 class MariaDbExecutor extends TestExecutor {
@@ -10,7 +10,7 @@ class MariaDbExecutor extends TestExecutor {
   bool get supportsNestedTransactions => true;
 
   @override
-  DatabaseConnection createConnection() {
+  DriftConnection createConnection() {
     final pool = MySQLConnectionPool(
       host: 'localhost',
       port: 3306,
@@ -21,7 +21,7 @@ class MariaDbExecutor extends TestExecutor {
       secure: false,
     );
 
-    return DatabaseConnection(MariaDBDatabase(pool: pool, logStatements: true));
+    return mariaDbDriftConnection(() async => pool);
   }
 
   @override

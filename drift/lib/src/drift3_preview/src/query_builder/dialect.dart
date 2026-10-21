@@ -25,6 +25,10 @@ enum KnownSqlDialect {
 /// implementation has full control over the way high-level drift structures
 /// are mapped to SQL.
 ///
+/// Dialect implementations are provided in different packages: `drift_sqlite`
+/// for SQLite, `drift_postgres` for PostgreSQL and `drift_mariadb` for MariaDB
+/// and MySQL.
+///
 /// This class implements [TypeProvider], which is responsible for mapping
 /// values between Dart and SQL. Via [createCompiler], it's also responsible
 /// for returning a visitor generating SQL for drift statements and expressions.

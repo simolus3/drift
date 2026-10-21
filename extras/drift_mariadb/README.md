@@ -7,16 +7,14 @@ Note that the backend is currently experimental and not fully functional yet.
 For general notes on using drift, see [this guide](https://drift.simonbinder.eu/getting-started/).
 
 To use drift_mariadb, add this to your `pubspec.yaml`
+
 ```yaml
 dependencies:
-  drift: "$latest version"
-  drift_mariadb:
-   git:
-    url: https://github.com/simolus3/drift.git
-    path: extras/drift_mariadb
+  drift3_preview: "$latest version"
+  drift_mariadb: ^0.1.0
 ```
 
-To connect your drift database class to mariadb, use a `MariaDBDatabase` from `package:drift_mariadb/mariadb.dart`.
+To connect your drift database class to mariadb, use a `mariaDbDriftConnection` from `package:drift_mariadb/drift_mariadb.dart`.
 
 ## Testing
 

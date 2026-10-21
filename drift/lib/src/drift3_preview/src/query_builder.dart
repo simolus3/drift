@@ -40,6 +40,7 @@ export 'query_builder/statements/delete.dart';
 export 'query_builder/statements/insert.dart';
 export 'query_builder/statements/select.dart';
 export 'query_builder/statements/statement.dart';
+export 'query_builder/statements/transactions.dart';
 export 'query_builder/statements/update.dart';
 export 'query_builder/statements/query.dart';
 

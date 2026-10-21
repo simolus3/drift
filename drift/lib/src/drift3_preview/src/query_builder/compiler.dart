@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 import '../connection/connection.dart';
 import '../connection/streams/update_rules.dart';
@@ -219,7 +220,8 @@ abstract base class StatementCompiler {
   Precedence? _expressionPrecedence;
 
   bool _ignoreResultSet = false;
-  InsertStatement? _currentInsertStatement;
+  @protected
+  InsertStatement? currentInsertStatement;
   GeneratedView? _generatingCreateView;
 
   /// The dialect to use when compiling dialect-specific structures.
@@ -581,7 +583,7 @@ abstract base class StatementCompiler {
   }
 
   void addInsertStatement(InsertStatement insert) {
-    _currentInsertStatement = insert;
+    currentInsertStatement = insert;
     // For INSERT FROM SELECT statements, we move the select statement into a
     // CTE. This allows re-ordering columns from the select statement into the
     // right columns for the insert. The final SQL statement will look like
@@ -1094,7 +1096,7 @@ abstract base class StatementCompiler {
 
   void addDoUpdate(DoUpdate clause) {
     statement.hasMultipleTables |= clause.usesExcludedTable;
-    final table = _currentInsertStatement!.table;
+    final table = currentInsertStatement!.table;
 
     addOnConflictConstraint(
       target: clause.target,
@@ -1125,7 +1127,7 @@ abstract base class StatementCompiler {
 
     statement.buffer.write('(');
     final conflictTarget =
-        target ?? _currentInsertStatement!.table.resolvedPrimaryKey;
+        target ?? currentInsertStatement!.table.resolvedPrimaryKey;
 
     if (conflictTarget.isEmpty) {
       throw ArgumentError(
