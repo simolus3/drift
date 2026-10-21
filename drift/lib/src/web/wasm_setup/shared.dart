@@ -52,7 +52,15 @@ StorageManager? get storageManager {
 }
 
 /// The web [LockManager], if navigator locks are available.
-LockManager? get locks => _navigator.locks;
+LockManager? get locks {
+  final navigator = _navigator;
+
+  if (navigator.has('locks')) {
+    return navigator.locks;
+  }
+
+  return null;
+}
 
 /// Checks whether the OPFS API is likely to be correctly implemented in the
 /// current browser.
@@ -226,9 +234,8 @@ Future<List<String>> opfsDatabases() async {
     return const [];
   }
 
-  final entries = AsyncJavaScriptIteratable<JSArray>(
-    directory,
-  ).map((data) => data.toDart[1] as FileSystemHandle);
+  final entries = AsyncJavaScriptIteratable<JSArray>(directory)
+      .map((data) => data.toDart[1] as FileSystemHandle);
 
   final found = <String>[];
   await for (final entry in entries) {
