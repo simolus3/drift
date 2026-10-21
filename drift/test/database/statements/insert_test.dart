@@ -501,7 +501,7 @@ void main() {
         .into(db.todosTable)
         .insert(
           TodosTableCompanion.insert(content: 'my content'),
-          onConflict: DoUpdate(
+          onConflict: UpsertClause.doUpdate(
             (old) => TodosTableCompanion.insert(content: 'changed'),
             target: [db.todosTable.content],
             where: (old) => old.content.equalsExp(old.title),
@@ -523,7 +523,7 @@ void main() {
         .into(db.todosTable)
         .insert(
           TodosTableCompanion.insert(content: 'my content'),
-          onConflict: DoNothing(),
+          onConflict: UpsertClause.doNothing(),
         );
 
     verify(

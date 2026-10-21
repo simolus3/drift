@@ -381,7 +381,21 @@ sealed class UpsertClause<
   Row extends Object,
   RS extends GeneratedTable<Row, RS>
 >
-    implements SqlComponent {}
+    implements SqlComponent {
+  const UpsertClause._();
+
+  /// Creates a [DoUpdate] clause turning the insert into an update for the
+  /// conflicting row.
+  factory UpsertClause.doUpdate(
+    Insertable<Row> Function(RS old) update, {
+    List<TableColumn>? target,
+    Expression<bool> Function(RS old)? where,
+    Expression<bool> Function(RS table)? targetCondition,
+  }) = DoUpdate;
+
+  /// Creates a [DoNothing] clause.
+  const factory UpsertClause.doNothing({List<TableColumn>? target}) = DoNothing;
+}
 
 /// A [DoUpdate] upsert clause can be used to insert or update a custom
 /// companion when the underlying companion already exists.
@@ -436,7 +450,8 @@ final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
     this.targetCondition,
   }) : _creator = ((old, _) => update(old)),
        where = where == null ? null : ((old, _) => WhereClause(where(old))),
-       usesExcludedTable = false;
+       usesExcludedTable = false,
+       super._();
 
   /// Creates a `DO UPDATE` clause.
   ///
@@ -468,7 +483,8 @@ final class DoUpdate<Row extends Object, RS extends GeneratedTable<Row, RS>>
        usesExcludedTable = true,
        where = where == null
            ? null
-           : ((old, excluded) => WhereClause(where(old, excluded)));
+           : ((old, excluded) => WhereClause(where(old, excluded))),
+       super._();
 
   /// Generates the [Insertable]
   @internal
@@ -525,7 +541,7 @@ final class UpsertMultiple<
   ///
   /// This requires a fairly recent sqlite3 version (3.35.0, released on 2021-
   /// 03-12).
-  UpsertMultiple(this.clauses);
+  const UpsertMultiple(this.clauses) : super._();
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -543,7 +559,7 @@ final class DoNothing<Row extends Object, RS extends GeneratedTable<Row, RS>>
   final List<TableColumn>? target;
 
   /// Creates an upsert clause that does nothing on conflict
-  DoNothing({this.target});
+  const DoNothing({this.target}) : super._();
 
   @override
   void compileWith(StatementCompiler compiler) {

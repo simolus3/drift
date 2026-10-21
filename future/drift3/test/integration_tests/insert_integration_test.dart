@@ -402,7 +402,7 @@ void main() {
               db.categories.id: db.categories.id,
               db.categories.description: db.categories.description,
             },
-            onConflict: DoUpdate(
+            onConflict: .doUpdate(
               (row) => CategoriesCompanion(description: Value('updated')),
             ),
           );

@@ -477,7 +477,7 @@ void main() {
         .into(db.todosTable)
         .insert(
           TodosTableCompanion.insert(content: 'my content'),
-          onConflict: DoNothing(),
+          onConflict: const .doNothing(),
         );
 
     verify(

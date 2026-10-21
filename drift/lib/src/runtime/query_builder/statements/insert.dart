@@ -544,7 +544,21 @@ const _insertKeywords = <InsertMode, String>{
 /// violated during an insert.
 ///
 /// Typically, one would use [DoUpdate] to run an update instead in this case.
-abstract class UpsertClause<T extends Table, D> {}
+abstract class UpsertClause<T extends Table, D> {
+  const UpsertClause._();
+
+  /// Creates a [DoUpdate] clause turning the insert into an update for the
+  /// conflicting row.
+  factory UpsertClause.doUpdate(
+    Insertable<D> Function(T old) update, {
+    List<Column>? target,
+    Expression<bool> Function(T old)? where,
+    Expression<bool> Function(T table)? targetCondition,
+  }) = DoUpdate;
+
+  /// Creates a [DoNothing] clause.
+  factory UpsertClause.doNothing({List<Column>? target}) = DoNothing;
+}
 
 /// A [DoUpdate] upsert clause can be used to insert or update a custom
 /// companion when the underlying companion already exists.
@@ -593,7 +607,8 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
   }) : _creator = ((old, _) => update(old)),
        _where = where == null ? null : ((old, _) => Where(where(old))),
        _targetCondition = targetCondition,
-       _usesExcludedTable = false;
+       _usesExcludedTable = false,
+       super._();
 
   /// Creates a `DO UPDATE` clause.
   ///
@@ -626,7 +641,8 @@ class DoUpdate<T extends Table, D> extends UpsertClause<T, D> {
        _targetCondition = targetCondition,
        _where = where == null
            ? null
-           : ((old, excluded) => Where(where(old, excluded)));
+           : ((old, excluded) => Where(where(old, excluded))),
+       super._();
 
   Insertable<D> _createInsertable(TableInfo<T, D> table) {
     return _creator(table.asDslTable, table.createAlias('excluded').asDslTable);
@@ -648,7 +664,7 @@ class UpsertMultiple<T extends Table, D> extends UpsertClause<T, D> {
   ///
   /// This requires a fairly recent sqlite3 version (3.35.0, released on 2021-
   /// 03-12).
-  UpsertMultiple(this.clauses);
+  UpsertMultiple(this.clauses) : super._();
 }
 
 /// Upsert clause that does nothing on conflict
@@ -660,5 +676,5 @@ class DoNothing<T extends Table, D> extends UpsertClause<T, D> {
   final List<Column>? target;
 
   /// Creates an upsert clause that does nothing on conflict
-  DoNothing({this.target});
+  DoNothing({this.target}) : super._();
 }

@@ -2,9 +2,9 @@
 
 - Native: Make select statements faster by not converting each result row to a map and back.
 - Make select statements faster by not creating a new map for each result row. The maps in `QueryRow.data` and from `QueryExecutor.runSelect` are now read-only.
-- Internal changes for drift3 preview.
 - Managers: Fix prefetching references to tables with custom row classes that
   don't have getters for the referencing column (#3437).
+- Add named factories to `UpsertClause`.
 
 ## 2.35.2
 
