@@ -4,13 +4,12 @@ publish_to: none
 resolution: workspace
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.10.0
 
 dependencies:
   collection: ^1.17.2
   drift:
   build_daemon: ^4.0.0
-  webdriver: ^3.0.2
   shelf: ^1.4.1
   shelf_proxy: ^1.0.4
   path: ^1.8.3

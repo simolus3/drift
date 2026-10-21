@@ -13,11 +13,12 @@ class TestDatabase extends _$TestDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onUpgrade: (m, from, to) async {
-          await into(testTable).insert(
-              TestTableCompanion.insert(content: 'from onUpgrade migration'));
-        },
-      );
+    onUpgrade: (m, from, to) async {
+      await into(
+        testTable,
+      ).insert(TestTableCompanion.insert(content: 'from onUpgrade migration'));
+    },
+  );
 
   @override
   int schemaVersion = 1;

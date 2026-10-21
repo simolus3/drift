@@ -1,4 +1,4 @@
-import 'package:web_wasm/driver.dart';
+import '../test/driver.dart';
 
 void main() async {
   await TestAssetServer.start(fixedPort: 8080);

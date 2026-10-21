@@ -1,10 +1,22 @@
 tags:
+  manual:
+    skip: "Skipped by default, use dart test -P manual to debug"
   firefox:
   chrome:
+  safari:
+    on_platform:
+      "!mac-os":
+        skip: "Requires macOS"
   dart2js:
   dart2wasm:
 
 presets:
+  manual:
+    include_tags: manual
+    tags:
+      manual:
+        skip: false
+
   gh_actions:
     # Firefox tests with dart2wasm are currently broken
     exclude_tags: firefox && dart2wasm

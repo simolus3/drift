@@ -12,18 +12,27 @@ class $TestTableTable extends TestTable
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _contentMeta =
-      const VerificationMeta('content');
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [id, content];
   @override
@@ -32,16 +41,20 @@ class $TestTableTable extends TestTable
   String get actualTableName => $name;
   static const String $name = 'test_table';
   @override
-  VerificationContext validateIntegrity(Insertable<TestTableData> instance,
-      {bool isInserting = false}) {
+  VerificationContext validateIntegrity(
+    Insertable<TestTableData> instance, {
+    bool isInserting = false,
+  }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('content')) {
-      context.handle(_contentMeta,
-          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
@@ -54,10 +67,14 @@ class $TestTableTable extends TestTable
   TestTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TestTableData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
     );
   }
 
@@ -80,14 +97,13 @@ class TestTableData extends DataClass implements Insertable<TestTableData> {
   }
 
   TestTableCompanion toCompanion(bool nullToAbsent) {
-    return TestTableCompanion(
-      id: Value(id),
-      content: Value(content),
-    );
+    return TestTableCompanion(id: Value(id), content: Value(content));
   }
 
-  factory TestTableData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
+  factory TestTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TestTableData(
       id: serializer.fromJson<int>(json['id']),
@@ -103,10 +119,8 @@ class TestTableData extends DataClass implements Insertable<TestTableData> {
     };
   }
 
-  TestTableData copyWith({int? id, String? content}) => TestTableData(
-        id: id ?? this.id,
-        content: content ?? this.content,
-      );
+  TestTableData copyWith({int? id, String? content}) =>
+      TestTableData(id: id ?? this.id, content: content ?? this.content);
   TestTableData copyWithCompanion(TestTableCompanion data) {
     return TestTableData(
       id: data.id.present ? data.id.value : this.id,
@@ -194,14 +208,10 @@ abstract class _$TestDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [testTable];
 }
 
-typedef $$TestTableTableCreateCompanionBuilder = TestTableCompanion Function({
-  Value<int> id,
-  required String content,
-});
-typedef $$TestTableTableUpdateCompanionBuilder = TestTableCompanion Function({
-  Value<int> id,
-  Value<String> content,
-});
+typedef $$TestTableTableCreateCompanionBuilder =
+    TestTableCompanion Function({Value<int> id, required String content});
+typedef $$TestTableTableUpdateCompanionBuilder =
+    TestTableCompanion Function({Value<int> id, Value<String> content});
 
 class $$TestTableTableFilterComposer
     extends Composer<_$TestDatabase, $TestTableTable> {
@@ -213,10 +223,14 @@ class $$TestTableTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => ColumnFilters(column));
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$TestTableTableOrderingComposer
@@ -229,10 +243,14 @@ class $$TestTableTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
 
   ColumnOrderings<String> get content => $composableBuilder(
-      column: $table.content, builder: (column) => ColumnOrderings(column));
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TestTableTableAnnotationComposer
@@ -251,23 +269,27 @@ class $$TestTableTableAnnotationComposer
       $composableBuilder(column: $table.content, builder: (column) => column);
 }
 
-class $$TestTableTableTableManager extends RootTableManager<
-    _$TestDatabase,
-    $TestTableTable,
-    TestTableData,
-    $$TestTableTableFilterComposer,
-    $$TestTableTableOrderingComposer,
-    $$TestTableTableAnnotationComposer,
-    $$TestTableTableCreateCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder,
-    (
-      TestTableData,
-      BaseReferences<_$TestDatabase, $TestTableTable, TestTableData>
-    ),
-    TestTableData,
-    PrefetchHooks Function()> {
+class $$TestTableTableTableManager
+    extends
+        RootTableManager<
+          _$TestDatabase,
+          $TestTableTable,
+          TestTableData,
+          $$TestTableTableFilterComposer,
+          $$TestTableTableOrderingComposer,
+          $$TestTableTableAnnotationComposer,
+          $$TestTableTableCreateCompanionBuilder,
+          $$TestTableTableUpdateCompanionBuilder,
+          (
+            TestTableData,
+            BaseReferences<_$TestDatabase, $TestTableTable, TestTableData>,
+          ),
+          TestTableData,
+          PrefetchHooks Function()
+        > {
   $$TestTableTableTableManager(_$TestDatabase db, $TestTableTable table)
-      : super(TableManagerState(
+    : super(
+        TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -276,48 +298,50 @@ class $$TestTableTableTableManager extends RootTableManager<
               $$TestTableTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$TestTableTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> content = const Value.absent(),
-          }) =>
-              TestTableCompanion(
-            id: id,
-            content: content,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String content,
-          }) =>
-              TestTableCompanion.insert(
-            id: id,
-            content: content,
-          ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> content = const Value.absent(),
+              }) => TestTableCompanion(id: id, content: content),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String content,
+              }) => TestTableCompanion.insert(id: id, content: content),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable<$TestTableTable, TestTableData>(table),
-                    BaseReferences<_$TestDatabase, $TestTableTable,
-                        TestTableData>(db, table, e)
-                  ))
+              .map(
+                (e) => (
+                  e.readTable<$TestTableTable, TestTableData>(table),
+                  BaseReferences<
+                    _$TestDatabase,
+                    $TestTableTable,
+                    TestTableData
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
-        ));
+        ),
+      );
 }
 
-typedef $$TestTableTableProcessedTableManager = ProcessedTableManager<
-    _$TestDatabase,
-    $TestTableTable,
-    TestTableData,
-    $$TestTableTableFilterComposer,
-    $$TestTableTableOrderingComposer,
-    $$TestTableTableAnnotationComposer,
-    $$TestTableTableCreateCompanionBuilder,
-    $$TestTableTableUpdateCompanionBuilder,
-    (
+typedef $$TestTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$TestDatabase,
+      $TestTableTable,
       TestTableData,
-      BaseReferences<_$TestDatabase, $TestTableTable, TestTableData>
-    ),
-    TestTableData,
-    PrefetchHooks Function()>;
+      $$TestTableTableFilterComposer,
+      $$TestTableTableOrderingComposer,
+      $$TestTableTableAnnotationComposer,
+      $$TestTableTableCreateCompanionBuilder,
+      $$TestTableTableUpdateCompanionBuilder,
+      (
+        TestTableData,
+        BaseReferences<_$TestDatabase, $TestTableTable, TestTableData>,
+      ),
+      TestTableData,
+      PrefetchHooks Function()
+    >;
 
 class $TestDatabaseManager {
   final _$TestDatabase _db;
