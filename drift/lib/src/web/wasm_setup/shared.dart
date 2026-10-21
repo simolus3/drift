@@ -40,19 +40,17 @@ import 'protocol.dart';
 @JS('navigator')
 external Navigator get _navigator;
 
-/// The web [StorageManager], if available.
-StorageManager? get storageManager {
-  final navigator = _navigator;
-
-  if (navigator.has('storage')) {
-    return navigator.storage;
-  }
-
-  return null;
+// These are defined as non-null in `package:web`, but can be null.
+extension _NullableNavigator on Navigator {
+  external StorageManager? get storage;
+  external LockManager? get locks;
 }
 
+/// The web [StorageManager], if available.
+StorageManager? get storageManager => _NullableNavigator(_navigator).storage;
+
 /// The web [LockManager], if navigator locks are available.
-LockManager? get locks => _navigator.locks;
+LockManager? get locks => _NullableNavigator(_navigator).locks;
 
 /// Checks whether the OPFS API is likely to be correctly implemented in the
 /// current browser.
