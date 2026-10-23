@@ -52,6 +52,7 @@ final class _RemoteWebExecutor extends TestExecutor {
   final bool _newSerialization;
 
   final InMemoryFileSystem _fs = InMemoryFileSystem();
+  var _didRegisterVfs = false;
 
   _RemoteWebExecutor(this._newSerialization);
 
@@ -66,7 +67,10 @@ final class _RemoteWebExecutor extends TestExecutor {
     return DatabaseConnection.delayed(
       Future(() async {
         final sqlite = await sqlite3;
-        sqlite.registerVirtualFileSystem(_fs, makeDefault: true);
+        if (!_didRegisterVfs) {
+          sqlite.registerVirtualFileSystem(_fs, makeDefault: true);
+          _didRegisterVfs = true;
+        }
 
         final server = DriftServer(
           WasmDatabase(
