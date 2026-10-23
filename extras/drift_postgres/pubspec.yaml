@@ -19,7 +19,7 @@ environment:
 
 dependencies:
   collection: ^1.16.0
-  drift3_preview:
+  drift3_preview: ^3.0.0-alpha.1
   postgres: ^3.0.0
   meta: ^1.8.0
   uuid: ^4.2.0

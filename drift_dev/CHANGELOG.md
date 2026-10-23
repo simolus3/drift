@@ -1,4 +1,4 @@
-## 2.35.2 (preview)
+## 2.35.2
 
 - Support `package:build` versions 5.x.
 - Escape SQL column names that would conflict with members inherited by the

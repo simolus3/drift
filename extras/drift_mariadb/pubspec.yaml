@@ -15,7 +15,7 @@ environment:
   sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
-  drift3_preview: ^3.0.0-alpha.0
+  drift3_preview: ^3.0.0-alpha.1
   meta: ^1.9.1
   mysql_client: ^0.0.27
 

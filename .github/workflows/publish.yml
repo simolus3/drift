@@ -9,6 +9,8 @@ on:
       - 'drift_postgres-[0-9]+.[0-9]+.[0-9]+*'
       - 'drift_flutter-[0-9]+.[0-9]+.[0-9]+*'
       - 'drift_sqlite-[0-9]+.[0-9]+.[0-9]+*'
+      - 'drift_manager-[0-9]+.[0-9]+.[0-9]+*'
+      - 'drift_mariadb-[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   setup:
@@ -176,5 +178,47 @@ jobs:
         with:
           dart_version: ${{ needs.setup.outputs.dart_version }}
       - run: dart pub get
-      - run: flutter pub publish --dry-run
-      - run: flutter pub publish -f
+      - run: dart pub publish --dry-run
+      - run: dart pub publish -f
+
+  publish_drift_manager:
+    if: "${{ startsWith(github.ref_name, 'drift_manager-') }}"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    defaults:
+      run:
+        working-directory: future/drift_manager
+    steps:
+      - uses: actions/checkout@v7
+      # Install dart because the action installs a pub token.
+      - uses: dart-lang/setup-dart@v1
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: dart pub get
+      - run: dart pub publish --dry-run
+      - run: dart pub publish -f
+
+  publish_drift_mariadb:
+    if: "${{ startsWith(github.ref_name, 'drift_mariadb-') }}"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    defaults:
+      run:
+        working-directory: extras/drift_mariadb
+    steps:
+      - uses: actions/checkout@v7
+      # Install dart because the action installs a pub token.
+      - uses: dart-lang/setup-dart@v1
+      - uses: ./.github/actions/prepare
+        with:
+          dart_version: ${{ needs.setup.outputs.dart_version }}
+      - run: dart pub get
+      - run: dart pub publish --dry-run
+      - run: dart pub publish -f
