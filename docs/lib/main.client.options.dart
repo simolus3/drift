@@ -59,12 +59,13 @@ ClientOptions get defaultClientOptions => ClientOptions(
       loader: _client.loadLibrary,
     ),
     'jaspr_docsy:sidebar_toggle': ClientLoader(
-      (p) => _sidebar_toggle.MobileSidebarToggle(target: p['target'] as String),
+      (p) =>
+          _sidebar_toggle.MobileSidebarToggle(target: p.get<String>('target')),
       loader: _sidebar_toggle.loadLibrary,
     ),
     'jaspr_docsy:tabs': ClientLoader(
       (p) => _tabs.InternalTabHeaders(
-        items: (p['items'] as Map<String, Object?>).cast<String, String>(),
+        items: p.get<Map<String, Object?>>('items').cast<String, String>(),
       ),
       loader: _tabs.loadLibrary,
     ),

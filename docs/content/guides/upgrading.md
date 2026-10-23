@@ -30,7 +30,7 @@ applies existing options to preserve existing behavior.
 To support both major versions in a transition period, drift version 3 is currently
 only available as the `drift3_preview` package.
 SQLite support additionally requires the `drift_sqlite` package. Manager queries
-require a dependency on `drift_manager`.
+require a dependency on `drift_manager`. `drift_flutter` has not been ported yet.
 
 ### Dialect changes
 
@@ -82,14 +82,15 @@ default connections use a much faster default configuration now:
   access and update notifications, even on different Flutter engines.
 - Web support from `package:drift/wasm.dart` was moved to `package:drift_sqlite/web.dart`,
   and uses the [sqlite3_web](pub.dev/packages/sqlite3_web) package, which is faster.
-- The deprecated `package:drift/web.dart` library has been removed without replacement.
+- The deprecated `package:drift/web.dart` library based on sql.js has been removed without
+  replacement.
 
 ### Other
 
 - Generating [manager](../dart_api/manager.md) code is now opt-in and requires
   the `generate_manager: true` [builder option](../generation_options/index.md)
   as well as a dependency on the `drift_manager` package.
-- `computeWithDatabase` has been moved to the `drift_sqlite` package.
+- `computeWithDatabase` now requires the `drift_sqlite` package.
 
 ### Internal
 
@@ -159,7 +160,7 @@ hesitate to [start a new discussion](https://github.com/simolus3/drift/discussio
 or to [open an issue](https://github.com/simolus3/drift/issues).
 Thanks for using drift!
 
-## Migrating from `moor` to `drift` 
+## Migrating from `moor` to `drift`
 
 Moor has been renamed to `drift`. The reason for this is that, in some parts of the world, moor may be used as a derogatory term.
 I have not been aware of this when starting this project, but we believe that the current name does not reflect the inclusivity of the Dart and Flutter communities.
