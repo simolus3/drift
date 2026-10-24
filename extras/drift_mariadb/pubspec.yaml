@@ -1,6 +1,9 @@
 name: drift_mariadb
 description: Mariadb support for drift.
 version: 0.1.0-alpha.0
+repository: https://github.com/simolus3/drift
+#homepage: https://drift.simonbinder.eu/docs/platforms/postgres/
+issue_tracker: https://github.com/simolus3/drift/issues
 resolution: workspace
 
 topics:
