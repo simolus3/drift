@@ -1,5 +1,4 @@
 import 'package:charcode/ascii.dart';
-import 'package:drift/drift.dart' show SqlDialect;
 import 'package:drift_dev/src/analysis/dialect.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
@@ -187,7 +186,7 @@ class DriftOptions {
     this.modules = const [],
     this.sqliteAnalysisOptions,
     this.storeDateTimeValuesAsText = false,
-    this.dialect = const DialectOptions(null, [SqlDialect.sqlite], null),
+    this.dialect = const DialectOptions(null, [KnownSqlDialect.sqlite], null),
     this.caseFromDartToSql = CaseFromDartToSql.snake,
     this.preamble,
     this.writeToColumnsMixins = false,
@@ -328,7 +327,7 @@ class DriftOptions {
     return sqliteOptions?.modules ?? modules;
   }
 
-  List<SqlDialect> get supportedDialects {
+  List<KnownSqlDialect> get supportedDialects {
     if (drift3Preview) {
       return [for (final dialect in drift3Dialects) dialect.dialect];
     }
@@ -341,7 +340,7 @@ class DriftOptions {
     } else if (singleDialect != null) {
       return [singleDialect];
     } else {
-      return const [SqlDialect.sqlite];
+      return const [KnownSqlDialect.sqlite];
     }
   }
 
@@ -374,8 +373,8 @@ class DriftOptions {
 
 @JsonSerializable()
 class DialectOptions {
-  final SqlDialect? dialect;
-  final List<SqlDialect>? dialects;
+  final KnownSqlDialect? dialect;
+  final List<KnownSqlDialect>? dialects;
   final SqliteAnalysisOptions? options;
 
   const DialectOptions(this.dialect, this.dialects, this.options);

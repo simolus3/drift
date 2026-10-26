@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build_config/build_config.dart';
-import 'package:drift/backends.dart';
+import 'package:drift_dev/src/analysis/dialect.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/resolver/dart/helper.dart';
 import 'package:drift_dev/src/cli/cli.dart';
@@ -24,8 +24,8 @@ void main() {
   test('writer integration test', () async {
     const options = DriftOptions.defaults(
       dialect: DialectOptions(null, [
-        SqlDialect.sqlite,
-        SqlDialect.postgres,
+        KnownSqlDialect.sqlite,
+        KnownSqlDialect.postgres,
       ], SqliteAnalysisOptions(modules: [SqlModule.fts5])),
     );
     final state = await TestBackend.inTest({

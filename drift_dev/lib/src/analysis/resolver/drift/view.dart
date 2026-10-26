@@ -1,9 +1,9 @@
-import 'package:drift/drift.dart' show SqlDialect;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
 import '../../../writer/queries/sql_writer.dart';
+import '../../dialect.dart';
 import '../../driver/error.dart';
 import '../../driver/state.dart';
 import '../../results/results.dart';
@@ -148,7 +148,7 @@ final class DriftViewResolver
             driftTableName: null,
           ).toSqlWithoutDriftSpecificSyntax(
             resolver.driver.options,
-            SqlDialect.sqlite,
+            KnownSqlDialect.sqlite,
           );
 
       return DriftView(

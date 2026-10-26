@@ -1,11 +1,11 @@
 import 'package:analyzer/dart/element/type.dart';
-import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart'
     show Default, GeneratedAs, ReferenceAction;
 import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../../utils/string_escaper.dart';
+import '../dialect.dart';
 import '../options.dart';
 import 'dart.dart';
 import 'element.dart';
@@ -345,7 +345,7 @@ final class LimitingTextLength extends DriftColumnConstraint {
 
 final class DefaultConstraintsFromSchemaFile extends DriftColumnConstraint {
   final String? forAllDialects;
-  final Map<SqlDialect, String> dialectSpecific;
+  final Map<KnownSqlDialect, String> dialectSpecific;
 
   DefaultConstraintsFromSchemaFile(
     this.forAllDialects, {

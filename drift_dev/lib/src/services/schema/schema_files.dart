@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType, SqlDialect, UpdateKind;
+import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
 import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
@@ -10,6 +10,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
 
+import '../../analysis/dialect.dart';
 import '../../analysis/options.dart';
 import '../../analysis/resolver/shared/data_class.dart';
 import '../../analysis/results/results.dart';
@@ -58,7 +59,7 @@ class SchemaWriter {
     File? dumpStartupCode,
     @visibleForTesting bool throwOnSchemaIsolateFailure = false,
   }) async {
-    final knownStatements = <String, List<(SqlDialect, String)>>{};
+    final knownStatements = <String, List<(KnownSqlDialect, String)>>{};
     try {
       final statements = await SchemaIsolate.collectStatements(
         options: options,
@@ -122,7 +123,7 @@ class SchemaWriter {
 
   Map<String, Object?>? _entityToJson(
     DriftElement entity,
-    List<(SqlDialect, String)>? knownSql,
+    List<(KnownSqlDialect, String)>? knownSql,
   ) {
     String? type;
     Map<String, Object?>? data;
@@ -138,7 +139,9 @@ class SchemaWriter {
       // immutable schema snapshot.
       CreateTableStatement? actualTable;
       if (knownSql != null) {
-        final sql = knownSql.firstWhere((e) => e.$1 == SqlDialect.sqlite).$2;
+        final sql = knownSql
+            .firstWhere((e) => e.$1 == KnownSqlDialect.sqlite)
+            .$2;
         final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
 
         final result = engine.parse(ParserEntrypoint.statement, sql);
@@ -177,7 +180,7 @@ class SchemaWriter {
     } else if (entity is DriftView) {
       String? sql;
       if (knownSql != null) {
-        sql = knownSql.firstWhere((e) => e.$1 == SqlDialect.sqlite).$2;
+        sql = knownSql.firstWhere((e) => e.$1 == KnownSqlDialect.sqlite).$2;
       } else {
         final source = entity.source;
         if (source is! SqlViewSource) {
@@ -298,9 +301,9 @@ class SchemaWriter {
       'moor_type': type.toSerializedString(),
       'nullable': column.nullable,
       'customConstraints': column.customConstraints,
-      if (constraints[SqlDialect.sqlite]!.isNotEmpty &&
+      if (constraints[KnownSqlDialect.sqlite]!.isNotEmpty &&
           column.customConstraints == null)
-        'defaultConstraints': constraints[SqlDialect.sqlite]!,
+        'defaultConstraints': constraints[KnownSqlDialect.sqlite]!,
       if (column.customConstraints == null && dialectSpecific.isNotEmpty)
         'dialectAwareDefaultConstraints': {
           for (final MapEntry(:key, :value) in dialectSpecific.entries)
@@ -426,7 +429,7 @@ class SchemaReader {
 
     for (final entry in fixedSql) {
       for (final dialect in (entry as Map)['sql'] as List<Object?>) {
-        if ((dialect as Map)['dialect'] == SqlDialect.sqlite.name) {
+        if ((dialect as Map)['dialect'] == KnownSqlDialect.sqlite.name) {
           sql.add(dialect['sql'] as String);
         }
       }
@@ -729,7 +732,7 @@ class SchemaReader {
     );
   }
 
-  static final _dialectByName = SqlDialect.values.asNameMap();
+  static final _dialectByName = KnownSqlDialect.values.asNameMap();
 
   DriftColumn _readColumn(
     Map<String, dynamic> data, {

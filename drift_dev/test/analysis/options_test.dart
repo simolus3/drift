@@ -1,5 +1,4 @@
 import 'package:checked_yaml/checked_yaml.dart';
-import 'package:drift/drift.dart' show SqlDialect;
 import 'package:drift_dev/src/analysis/dialect.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -152,7 +151,7 @@ dialects:
       isA<ResolvedDialect>().having(
         (e) => e.dialect,
         'dialect',
-        SqlDialect.postgres,
+        KnownSqlDialect.postgres,
       ),
     ]);
     expect(options.sqliteOptions, isNotNull);

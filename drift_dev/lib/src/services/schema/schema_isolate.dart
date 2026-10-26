@@ -4,9 +4,9 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:args/args.dart';
-import 'package:drift/drift.dart' show SqlDialect;
 import 'package:path/path.dart' as p;
 
+import '../../analysis/dialect.dart';
 import '../../analysis/options.dart';
 import '../../analysis/results/file_results.dart';
 import '../../analysis/results/results.dart';
@@ -40,7 +40,7 @@ class SchemaIsolate {
         if (!driftOptions.drift3Preview)
           'sql': {
             'dialects': switch (options.dialect) {
-              null => SqlDialect.values.map((e) => e.name).toList(),
+              null => KnownSqlDialect.values.map((e) => e.name).toList(),
               var dialect => [dialect.name],
             },
           },
@@ -208,7 +208,7 @@ class SchemaIsolate {
     return (result as List<List>).map((row) {
       return (
         elementName: row[0] as String,
-        dialect: SqlDialect.values.byName(row[1] as String),
+        dialect: KnownSqlDialect.values.byName(row[1] as String),
         createStatement: row[2] as String,
       );
     }).toList();
@@ -218,13 +218,13 @@ class SchemaIsolate {
 typedef SchemaIsolateOptions = ({
   DriftOptions options,
   List<DriftElement> elements,
-  SqlDialect? dialect,
+  KnownSqlDialect? dialect,
   File? dumpStartupCode,
 });
 
 typedef CreateStatement = ({
   String elementName,
-  SqlDialect dialect,
+  KnownSqlDialect dialect,
   String createStatement,
 });
 

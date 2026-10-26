@@ -3,14 +3,15 @@ import 'package:drift/drift.dart';
 import 'package:drift/sqlite_keywords.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
+import '../../analysis/dialect.dart';
 import '../../analysis/results/results.dart';
 import '../../utils/string_escaper.dart';
 import '../writer.dart';
 
-Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
+Map<KnownSqlDialect, String> defaultConstraints(DriftColumn column) {
   final defaultConstraints = <String>[];
-  final dialectSpecificConstraints = <SqlDialect, List<String>>{
-    for (final dialect in SqlDialect.values) dialect: [],
+  final dialectSpecificConstraints = <KnownSqlDialect, List<String>>{
+    for (final dialect in KnownSqlDialect.values) dialect: [],
   };
 
   var wrotePkConstraint = false;
@@ -19,12 +20,12 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
     if (feature is PrimaryKeyColumn) {
       if (!wrotePkConstraint) {
         if (feature.isAutoIncrement) {
-          for (final dialect in SqlDialect.values) {
-            if (dialect == SqlDialect.mariadb) {
+          for (final dialect in KnownSqlDialect.values) {
+            if (dialect == KnownSqlDialect.mariadb) {
               dialectSpecificConstraints[dialect]!.add(
                 'PRIMARY KEY AUTO_INCREMENT',
               );
-            } else if (dialect == SqlDialect.duckdb) {
+            } else if (dialect == KnownSqlDialect.duckdb) {
               dialectSpecificConstraints[dialect]!.add('PRIMARY KEY');
             } else {
               dialectSpecificConstraints[dialect]!.add(
@@ -75,7 +76,7 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
 
       defaultConstraints.add(constraint);
     } else if (feature is DefaultConstraintsFromSchemaFile) {
-      String buildFor(SqlDialect dialect) {
+      String buildFor(KnownSqlDialect dialect) {
         final result = StringBuffer();
         if (feature.forAllDialects case final defaults?) {
           result.write(defaults);
@@ -90,18 +91,19 @@ Map<SqlDialect, String> defaultConstraints(DriftColumn column) {
       }
 
       return {
-        for (final dialect in SqlDialect.values) dialect: buildFor(dialect),
+        for (final dialect in KnownSqlDialect.values)
+          dialect: buildFor(dialect),
       };
     }
   }
 
   if (column.sqlType.builtin == DriftSqlType.bool) {
     final name = column.nameInSql;
-    dialectSpecificConstraints[SqlDialect.sqlite]!.add(
-      'CHECK (${SqlDialect.sqlite.escape(name)} IN (0, 1))',
+    dialectSpecificConstraints[KnownSqlDialect.sqlite]!.add(
+      'CHECK (${KnownSqlDialect.sqlite.escape(name)} IN (0, 1))',
     );
-    dialectSpecificConstraints[SqlDialect.mariadb]!.add(
-      'CHECK (${SqlDialect.mariadb.escape(name)} IN (0, 1))',
+    dialectSpecificConstraints[KnownSqlDialect.mariadb]!.add(
+      'CHECK (${KnownSqlDialect.mariadb.escape(name)} IN (0, 1))',
     );
   }
 
@@ -201,7 +203,7 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
         '${emitter.drift('ColumnGeneratedAs')}($dartCode, stored: ${feature.stored})',
       );
     } else if (feature is DefaultConstraintsFromSchemaFile) {
-      String buildFor(SqlDialect dialect) {
+      String buildFor(KnownSqlDialect dialect) {
         final result = StringBuffer();
         if (feature.forAllDialects case final defaults?) {
           result.write(defaults);

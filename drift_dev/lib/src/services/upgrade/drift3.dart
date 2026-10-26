@@ -11,7 +11,6 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_system.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show SqlDialect;
 import 'package:drift_dev/src/backends/analyzer_context_backend.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
 import 'package:logging/logging.dart';
@@ -19,6 +18,7 @@ import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
+import '../../analysis/dialect.dart';
 import '../../analysis/options.dart';
 import '../../cli/project.dart';
 import 'shared.dart';
@@ -626,14 +626,14 @@ extension on DriftOptions {
     return [
       for (final dialect in supportedDialects)
         switch (dialect) {
-          SqlDialect.sqlite => {
+          KnownSqlDialect.sqlite => {
             'dialect': 'sqlite',
             ...serializedSqliteOptions,
             'strict_tables_by_default': false,
             'use_binary_json_representation': false,
             'store_date_times_as_text': storeDateTimeValuesAsText,
           },
-          SqlDialect.postgres => {
+          KnownSqlDialect.postgres => {
             'dialect': 'postgres',
             'use_binary_json_representation': false,
           },

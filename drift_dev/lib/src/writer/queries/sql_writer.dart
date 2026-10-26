@@ -1,11 +1,11 @@
 import 'package:charcode/ascii.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show SqlDialect;
 // ignore: deprecated_member_use
 import 'package:drift/sqlite_keywords.dart';
 import 'package:sqlparser/sqlparser.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 
+import '../../analysis/dialect.dart';
 import '../../analysis/resolver/drift/element_resolver.dart';
 import '../../analysis/results/results.dart';
 import '../../analysis/options.dart';
@@ -30,7 +30,7 @@ String placeholderContextName(FoundDartPlaceholder placeholder) {
 extension ToSqlText on AstNode {
   String toSqlWithoutDriftSpecificSyntax(
     DriftOptions options,
-    SqlDialect dialect,
+    KnownSqlDialect dialect,
   ) {
     final writer = SqlWriter(options, dialect: dialect, escapeForDart: false);
     return writer.writeSql(this);
@@ -41,10 +41,10 @@ final class SqlWriter extends NodeSqlBuilder {
   final StringBuffer _out;
   final SqlQuery? query;
   final DriftOptions options;
-  final SqlDialect dialect;
+  final KnownSqlDialect dialect;
   final Map<NestedStarResultColumn, NestedResultTable> _starColumnToResolved;
 
-  bool get _isPostgres => dialect == SqlDialect.postgres;
+  bool get _isPostgres => dialect == KnownSqlDialect.postgres;
 
   SqlWriter._(
     this.query,
@@ -58,7 +58,7 @@ final class SqlWriter extends NodeSqlBuilder {
 
   factory SqlWriter(
     DriftOptions options, {
-    required SqlDialect dialect,
+    required KnownSqlDialect dialect,
     SqlQuery? query,
     bool escapeForDart = true,
     StringBuffer? buffer,
@@ -105,8 +105,8 @@ final class SqlWriter extends NodeSqlBuilder {
   bool isKeyword(String lexeme) {
     return isKeywordLexeme(lexeme) ||
         switch (dialect) {
-          SqlDialect.postgres => isPostgresKeywordLexeme(lexeme),
-          SqlDialect.mariadb => additionalMariaDBKeywords.contains(
+          KnownSqlDialect.postgres => isPostgresKeywordLexeme(lexeme),
+          KnownSqlDialect.mariadb => additionalMariaDBKeywords.contains(
             lexeme.toUpperCase(),
           ),
           _ => false,

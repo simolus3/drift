@@ -1,5 +1,5 @@
 import 'package:build_test/build_test.dart';
-import 'package:drift/drift.dart';
+import 'package:drift_dev/src/analysis/dialect.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/writer/import_manager.dart';
 import 'package:drift_dev/src/writer/queries/query_writer.dart';
@@ -572,8 +572,8 @@ query (:foo AS TEXT): SELECT :foo;
 ''',
       options: const DriftOptions.defaults(
         dialect: DialectOptions(null, [
-          SqlDialect.sqlite,
-          SqlDialect.postgres,
+          KnownSqlDialect.sqlite,
+          KnownSqlDialect.postgres,
         ], null),
       ),
     );
@@ -599,7 +599,7 @@ CREATE TABLE examples (
 query: SELECT CAST ($status AS INT) AS status FROM examples;
 ''',
       options: const DriftOptions.defaults(
-        dialect: DialectOptions(null, [SqlDialect.sqlite], null),
+        dialect: DialectOptions(null, [KnownSqlDialect.sqlite], null),
       ),
     );
 

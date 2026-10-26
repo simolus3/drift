@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:drift/drift.dart' show SqlDialect;
 
+import '../../../analysis/dialect.dart';
 import '../../../services/schema/schema_isolate.dart';
 import '../schema.dart';
 import '../../cli.dart';
@@ -16,7 +16,7 @@ class ExportSchemaCommand extends Command {
       'dialect',
       abbr: 'd',
       help: 'The dialect for which to create DDL statements.',
-      allowed: SqlDialect.values.map((e) => e.name),
+      allowed: KnownSqlDialect.values.map((e) => e.name),
       defaultsTo: 'sqlite',
     );
     argParser.registerExportSchemaStartupCodeOption();
@@ -42,7 +42,7 @@ class ExportSchemaCommand extends Command {
         'Expected input path to Dart source declaring database file.',
       );
     }
-    final dialect = SqlDialect.values.byName(
+    final dialect = KnownSqlDialect.values.byName(
       argResults!.option('dialect') ?? 'sqlite',
     );
 

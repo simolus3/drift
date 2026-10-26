@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift_dev/src/analysis/dialect.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/queries/sql_writer.dart';
@@ -10,7 +10,7 @@ void main() {
     String sql,
     String expectedDart, {
     DriftOptions options = const DriftOptions.defaults(),
-    SqlDialect dialect = SqlDialect.sqlite,
+    KnownSqlDialect dialect = KnownSqlDialect.sqlite,
   }) {
     final engine = SqlEngine();
     final context = engine.analyze(sql);
@@ -48,7 +48,7 @@ void main() {
     check(
       'SELECT * FROM user',
       "'SELECT * FROM \"user\"'",
-      dialect: SqlDialect.postgres,
+      dialect: KnownSqlDialect.postgres,
     );
   });
 }

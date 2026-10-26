@@ -299,12 +299,12 @@ DialectOptions _$DialectOptionsFromJson(Map json) =>
       final val = DialectOptions(
         $checkedConvert(
           'dialect',
-          (v) => $enumDecodeNullable(_$SqlDialectEnumMap, v),
+          (v) => $enumDecodeNullable(_$KnownSqlDialectEnumMap, v),
         ),
         $checkedConvert(
           'dialects',
           (v) => (v as List<dynamic>?)
-              ?.map((e) => $enumDecode(_$SqlDialectEnumMap, e))
+              ?.map((e) => $enumDecode(_$KnownSqlDialectEnumMap, e))
               .toList(),
         ),
         $checkedConvert(
@@ -315,20 +315,21 @@ DialectOptions _$DialectOptionsFromJson(Map json) =>
       return val;
     });
 
-Map<String, dynamic> _$DialectOptionsToJson(
-  DialectOptions instance,
-) => <String, dynamic>{
-  'dialect': _$SqlDialectEnumMap[instance.dialect],
-  'dialects': instance.dialects?.map((e) => _$SqlDialectEnumMap[e]!).toList(),
-  'options': instance.options?.toJson(),
-};
+Map<String, dynamic> _$DialectOptionsToJson(DialectOptions instance) =>
+    <String, dynamic>{
+      'dialect': _$KnownSqlDialectEnumMap[instance.dialect],
+      'dialects': instance.dialects
+          ?.map((e) => _$KnownSqlDialectEnumMap[e]!)
+          .toList(),
+      'options': instance.options?.toJson(),
+    };
 
-const _$SqlDialectEnumMap = {
-  SqlDialect.sqlite: 'sqlite',
-  SqlDialect.mysql: 'mysql',
-  SqlDialect.postgres: 'postgres',
-  SqlDialect.duckdb: 'duckdb',
-  SqlDialect.mariadb: 'mariadb',
+const _$KnownSqlDialectEnumMap = {
+  KnownSqlDialect.sqlite: 'sqlite',
+  KnownSqlDialect.mysql: 'mysql',
+  KnownSqlDialect.postgres: 'postgres',
+  KnownSqlDialect.duckdb: 'duckdb',
+  KnownSqlDialect.mariadb: 'mariadb',
 };
 
 SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>

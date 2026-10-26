@@ -1,6 +1,8 @@
+/// @docImport 'package:drift/drift.dart';
+library;
+
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
-import 'package:drift/drift.dart' show DriftView;
 import 'package:sqlparser/sqlparser.dart';
 
 import '../driver/state.dart';

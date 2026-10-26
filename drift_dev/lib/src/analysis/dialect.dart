@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show SqlDialect;
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sqlparser/sqlparser.dart' hide JsonKey;
 
@@ -7,23 +6,41 @@ import 'options.dart';
 
 part '../generated/analysis/dialect.g.dart';
 
+enum KnownSqlDialect {
+  // Names here must match those of SqlDialect in drift.
+  sqlite,
+  mysql,
+  postgres,
+  duckdb,
+  mariadb;
+
+  bool get supportsIndexedParameters => this != duckdb && this != mariadb;
+
+  String escape(String original) {
+    final escapeChar = this == mariadb ? '`' : '"';
+
+    final source = original.replaceAll(escapeChar, escapeChar * 2);
+    return '$escapeChar$source$escapeChar';
+  }
+}
+
 base class ResolvedDialect {
-  /// The matching drift2 dialect.
-  final SqlDialect dialect;
+  /// The matching dialect.
+  final KnownSqlDialect dialect;
 
   const ResolvedDialect(this.dialect);
 
   factory ResolvedDialect.fromJson(Map json) {
     return switch (json['dialect']) {
       'sqlite' => _$Drift3SqliteDialectFromJson(json),
-      'mysql' || 'mariadb' => ResolvedDialect(SqlDialect.mariadb),
+      'mysql' || 'mariadb' => ResolvedDialect(KnownSqlDialect.mariadb),
       'postgres' => _$Drift3PostgresDialectFromJson(json),
-      'duckdb' => ResolvedDialect(SqlDialect.duckdb),
+      'duckdb' => ResolvedDialect(KnownSqlDialect.duckdb),
       // TODO: Support custom dialects?
       _ => throw ArgumentError.value(
         json['dialect'],
         'dialect',
-        'Unknown dialect, use one of ${SqlDialect.values.map((e) => e.name).join(', ')}',
+        'Unknown dialect, use one of ${KnownSqlDialect.values.map((e) => e.name).join(', ')}',
       ),
     };
   }
@@ -34,11 +51,11 @@ base class ResolvedDialect {
 
   void writeDialectFactory(TextEmitter scope) {
     final dialectClass = switch (dialect) {
-      SqlDialect.sqlite => scope.refUri(
+      KnownSqlDialect.sqlite => scope.refUri(
         Uri.parse('package:drift_sqlite/drift_sqlite.dart'),
         'SqliteDialect',
       ),
-      SqlDialect.postgres => scope.refUri(
+      KnownSqlDialect.postgres => scope.refUri(
         Uri.parse(
           'package:drift_postgres/src/drift3_preview/drift_postgres.dart',
         ),
@@ -90,7 +107,7 @@ final class Drift3SqliteDialect extends ResolvedDialect
     this.strictTablesByDefault = true,
     this.storeDateTimesAsText = true,
     this.useBinaryJsonRepresentation = true,
-  }) : super(SqlDialect.sqlite);
+  }) : super(KnownSqlDialect.sqlite);
 
   @override
   Map<String, Object?> toJson() => {
@@ -123,7 +140,7 @@ final class Drift3PostgresDialect extends ResolvedDialect {
   final bool useBinaryJsonRepresentation;
 
   Drift3PostgresDialect.withOptions({this.useBinaryJsonRepresentation = true})
-    : super(SqlDialect.postgres);
+    : super(KnownSqlDialect.postgres);
 
   @override
   Map<String, Object?> toJson() => {

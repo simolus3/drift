@@ -3,6 +3,7 @@ import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 
+import '../analysis/dialect.dart';
 import '../analysis/options.dart';
 import '../analysis/results/results.dart';
 import '../utils/string_escaper.dart';
@@ -473,7 +474,7 @@ abstract class _NodeOrWriter {
     return buffer.toString();
   }
 
-  String sqlCode(sql.AstNode node, SqlDialect dialect) {
+  String sqlCode(sql.AstNode node, KnownSqlDialect dialect) {
     return SqlWriter(
       writer.options,
       dialect: dialect,
@@ -484,7 +485,7 @@ abstract class _NodeOrWriter {
   /// Builds a Dart expression writing the [node] into a Dart string.
   ///
   /// If the code for [node] depends on the dialect, the code returned evaluates
-  /// to a `Map<SqlDialect, String>`. Otherwise, the code is a direct string
+  /// to a `Map<KnownSqlDialect, String>`. Otherwise, the code is a direct string
   /// literal.
   ///
   /// The boolean component in the record describes whether the code will be
@@ -492,7 +493,7 @@ abstract class _NodeOrWriter {
   (String, bool) sqlByDialect(sql.AstNode node) {
     final dialects = writer.options.supportedDialects;
 
-    if (dialects case [SqlDialect.sqlite]) {
+    if (dialects case [KnownSqlDialect.sqlite]) {
       // Even if we only have a single dialect enabled, we should generate a
       // dialect-specific map if that dialect is not sqlite3. The reason is that
       // APIs in drift that aren't dialect-specific all assume sqlite3.
@@ -659,7 +660,7 @@ class TextEmitter extends _Node {
 
   void writeSql(
     sql.AstNode node, {
-    required SqlDialect dialect,
+    required KnownSqlDialect dialect,
     bool escapeForDartString = true,
   }) {
     SqlWriter(
