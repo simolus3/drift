@@ -6,18 +6,6 @@ import 'package:postgres/postgres.dart' as pg;
 import 'package:postgres/src/types/text_codec.dart';
 import 'package:uuid/uuid_value.dart';
 
-/// A typed value read from a Postgres result.
-final class PostgresDatabaseValue {
-  /// The column from which this value has been read.
-  final pg.ResultSchemaColumn column;
-
-  /// The raw value, decoded by the `postgres` package.
-  final Object? value;
-
-  /// @nodoc
-  PostgresDatabaseValue({required this.column, required this.value});
-}
-
 /// The supertype of all type implementations in `drift_postgres.
 base class PhysicalPostgresType<T extends Object> extends PhysicalSqlType<T> {
   static final _encoder = PostgresTextEncoder();
@@ -43,7 +31,7 @@ base class PhysicalPostgresType<T extends Object> extends PhysicalSqlType<T> {
 
   @override
   T dartValue(Object databaseValue) {
-    return (databaseValue as PostgresDatabaseValue).value as T;
+    return databaseValue as T;
   }
 }
 
@@ -65,7 +53,7 @@ final class UuidType extends PhysicalPostgresType<UuidValue> {
 
   @override
   UuidValue dartValue(Object databaseValue) {
-    final asText = (databaseValue as PostgresDatabaseValue).value as String;
+    final asText = databaseValue as String;
     return UuidValue.fromString(asText);
   }
 }
@@ -109,8 +97,7 @@ final class JsonType extends PhysicalPostgresType<DatabaseJson> {
 
   @override
   DatabaseJson dartValue(Object databaseValue) {
-    final value = (databaseValue as PostgresDatabaseValue).value;
-    return DatabaseJson(value);
+    return DatabaseJson(databaseValue);
   }
 }
 
@@ -143,9 +130,7 @@ final class DateType<T extends PgTimeValue> extends PhysicalPostgresType<T> {
 
   @override
   T dartValue(Object databaseValue) {
-    return _fromDateTime(
-      (databaseValue as PostgresDatabaseValue).value as DateTime,
-    );
+    return _fromDateTime(databaseValue as DateTime);
   }
 }
 
@@ -178,7 +163,7 @@ final class DartBigIntType extends PhysicalPostgresType<BigInt> {
 
   @override
   BigInt dartValue(Object databaseValue) {
-    return BigInt.from((databaseValue as PostgresDatabaseValue).value as int);
+    return BigInt.from(databaseValue as int);
   }
 
   @override

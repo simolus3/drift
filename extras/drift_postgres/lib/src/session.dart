@@ -5,8 +5,6 @@ import 'package:collection/collection.dart';
 import 'package:drift3_preview/drift.dart';
 import 'package:postgres/postgres.dart';
 
-import 'type.dart';
-
 abstract base class _BasePostgresSession implements DriftSession {
   final Session _session;
 
@@ -251,16 +249,7 @@ final class _PostgresRow
   _PostgresRow(this._postgresRow);
 
   @override
-  Object? operator [](int index) {
-    if (_postgresRow.isSqlNull(index)) {
-      return null;
-    }
-
-    return PostgresDatabaseValue(
-      column: _postgresRow.schema.columns[index],
-      value: _postgresRow[index],
-    );
-  }
+  Object? operator [](int index) => _postgresRow[index];
 
   @override
   void operator []=(int index, Object? value) {

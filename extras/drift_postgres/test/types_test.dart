@@ -1,6 +1,5 @@
 import 'package:drift3_preview/drift.dart';
 import 'package:drift_postgres/src/dialect.dart';
-import 'package:drift_postgres/src/type.dart';
 
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
@@ -12,8 +11,8 @@ void main() {
     final type = SqlType.bool.resolveIn(dialect);
 
     test('read', () {
-      expect(type.dartValue(fakeValue(Type.boolean, true)), true);
-      expect(type.dartValue(fakeValue(Type.boolean, false)), false);
+      expect(type.dartValue(true), true);
+      expect(type.dartValue(false), false);
     });
 
     test('to postgres constant', () {
@@ -30,11 +29,4 @@ void main() {
       expect(type.sqlParameter(false), TypedValue(Type.boolean, false));
     });
   });
-}
-
-PostgresDatabaseValue fakeValue(Type type, Object value) {
-  return PostgresDatabaseValue(
-    column: ResultSchemaColumn(typeOid: 0, type: type),
-    value: value,
-  );
 }
