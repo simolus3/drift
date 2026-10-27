@@ -405,7 +405,7 @@ abstract class TableOrViewWriter {
 
         final literalEntries = [
           for (final entry in constraints.entries)
-            '${emitter.drift('KnownSqlDialect.${entry.key.name}')}: ${asDartLiteral(entry.value)},',
+            '${emitter.drift('SqlDialect.${entry.key.name}')}: ${asDartLiteral(entry.value)},',
         ];
 
         additionalParams['defaultConstraints'] =
