@@ -10,6 +10,7 @@ import 'package:sqlite3/sqlite3.dart';
 import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
 
 import 'src/connection/pool.dart';
+import 'src/connection/pool/worker.dart';
 import 'src/dialect/dialect.dart';
 import 'src/options.dart';
 
@@ -108,7 +109,13 @@ Future<OpenedDriftConnection> _sqliteConnectionPool({
   );
 
   return OpenedDriftConnection(
-    SqlitePoolSession(pool, useBackgroundIsolates: useBackgroundIsolates),
+    SqlitePoolSession(
+      pool,
+      isolates: useBackgroundIsolates
+          // Capacity is readers plus writer
+          ? DatabaseWorkers(file.path, amountOfReaders + 1)
+          : null,
+    ),
     SqlitePoolUpdates(pool, enableCustomUpdates: updates == .drift),
   );
 }

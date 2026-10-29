@@ -6,9 +6,9 @@ import 'package:drift_sqlite/native.dart';
 import 'package:drift_sqlite/src/dialect/dialect.dart';
 
 // Run with dart run benchmark_harness:bench --flavor jit --target benchmark/native_queries.dart
-void main() {
-  QueriesBenchmark(10_000, false).report();
-  QueriesBenchmark(10_000, true).report();
+void main() async {
+  await QueriesBenchmark(10_000, false).report();
+  await QueriesBenchmark(10_000, true).report();
 }
 
 class QueriesBenchmark extends AsyncBenchmarkBase {
@@ -17,7 +17,7 @@ class QueriesBenchmark extends AsyncBenchmarkBase {
 
   QueriesBenchmark(this.dataSize, this.useBackgroundIsolates)
     : super(
-        'Running queries ($dataSize, background isolates: $useBackgroundIsolates',
+        'Running queries ($dataSize, background isolates: $useBackgroundIsolates)',
       );
 
   late Directory _tempDir;

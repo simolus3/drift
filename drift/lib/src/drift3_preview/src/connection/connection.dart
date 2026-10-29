@@ -300,9 +300,6 @@ final class StatementInfo {
 /// [DriftTransactionParent.begin] to preserve forwards-compatibility if options
 /// are introduced in the future.
 final class TransactionOptions {
-  // We might eventually use this to implement read-only transactions, which can
-  // be used to optimize connection pools.
-
   /// Whether foreign keys should only be checked at the end of the transaction
   /// instead of at each statement.
   final bool? deferForeignKeys;

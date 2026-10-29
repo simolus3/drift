@@ -60,7 +60,7 @@ Future<T> _runWithDatabase<T, DB extends GeneratedDatabase>({
               includePersistentSchemaVersion: false,
               // Since we already are on a background isolate, run queries
               // synchronously.
-              useBackgroundIsolates: false,
+              isolates: null,
             ),
             SqlitePoolUpdates(pool, enableCustomUpdates: false),
           );
