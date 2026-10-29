@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
@@ -34,7 +33,7 @@ SELECT
     expect(resultSet.singleColumn, isTrue);
     expect(resultSet.needsOwnClass, isFalse);
     expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin), [
-      DriftSqlType.int,
+      BuiltinType.int,
     ]);
   });
 
@@ -67,7 +66,7 @@ WITH RECURSIVE
     expect(resultSet.needsOwnClass, isFalse);
     expect(resultSet.columns.map(resultSet.dartNameFor), ['x']);
     expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin), [
-      DriftSqlType.int,
+      BuiltinType.int,
     ]);
   });
 

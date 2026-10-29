@@ -378,10 +378,9 @@ abstract class TableOrViewWriter {
     }
 
     switch (column.sqlType) {
-      case ColumnDriftType():
-        additionalParams['type'] = emitter.drift(
-          column.sqlType.builtin.toString(),
-        );
+      case ColumnDriftType(:final builtin):
+        final type = emitter.drift('DriftSqlType');
+        additionalParams['type'] = '$type.${builtin.name}';
       case ColumnCustomType(:final custom):
         additionalParams['type'] = emitter.dartCode(custom.expression);
     }

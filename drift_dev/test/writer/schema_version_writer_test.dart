@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' hide DriftDatabase;
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/writer/import_manager.dart';
@@ -17,7 +16,7 @@ void main() {
       DriftDeclaration(fakeUri, -1, ''),
       columns: [
         DriftColumn(
-          sqlType: ColumnType.drift(DriftSqlType.int),
+          sqlType: ColumnType.drift(BuiltinType.int),
           nullable: false,
           nameInSql: 'foo',
           nameInDart: 'foo',

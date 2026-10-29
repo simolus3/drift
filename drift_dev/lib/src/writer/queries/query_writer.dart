@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
 
@@ -693,7 +692,7 @@ class _Drift3MappingCodeWriter {
 
   _Drift3MappingCodeWriter(this._writer, this.nestedQueries);
 
-  String referenceBuiltinType(DriftSqlType type) {
+  String referenceBuiltinType(BuiltinType type) {
     return _obtainedTypes.putIfAbsent(type, () {
       final variableName = 'type\$${type.name}';
       _outerSetup.writeln(

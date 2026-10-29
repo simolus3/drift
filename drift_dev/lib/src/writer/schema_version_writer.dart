@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/utils/header.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
 import 'package:sqlparser/utils/node_to_text.dart';
@@ -24,7 +23,7 @@ final class _TableShape {
   final _ResultSetKind kind;
 
   // Map from Dart getter names to column names in SQL and the SQL type.
-  final Map<String, (String, DriftSqlType)> columnTypes;
+  final Map<String, (String, BuiltinType)> columnTypes;
 
   _TableShape(this.kind, this.columnTypes);
 
@@ -38,9 +37,9 @@ final class _TableShape {
         _equality.equals(other.columnTypes, columnTypes);
   }
 
-  static const _equality = MapEquality<String, (String, DriftSqlType)>();
+  static const _equality = MapEquality<String, (String, BuiltinType)>();
 
-  static Map<String, (String, DriftSqlType)> columnsFrom(
+  static Map<String, (String, BuiltinType)> columnsFrom(
     DriftElementWithResultSet e,
   ) {
     return {
@@ -199,7 +198,9 @@ class SchemaVersionWriter {
 
       for (final MapEntry(key: getterName, value: (sqlName, type))
           in shape.columnTypes.entries) {
-        final columnType = AnnotatedDartCode([dartTypeNames[type]!]);
+        final columnType = AnnotatedDartCode.build(
+          (b) => b.addColumnType(ColumnDriftType(type)),
+        );
 
         classWriter
           ..writeDriftRef('$columnClass<')

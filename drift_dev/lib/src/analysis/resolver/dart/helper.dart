@@ -38,6 +38,9 @@ class KnownDriftTypes {
   final InterfaceType? geopolyPolygon;
   final InterfaceElement? driftColumnDeclarationBuilder;
 
+  /// Only available for drift3.
+  final InterfaceType? databaseJson;
+
   KnownDriftTypes._({
     required this.helperLibrary,
     required this.tableElement,
@@ -54,6 +57,7 @@ class KnownDriftTypes {
     required this.uint8List,
     required this.geopolyPolygon,
     required this.driftColumnDeclarationBuilder,
+    required this.databaseJson,
   });
 
   late final TypeChecker? checkDriftColumnDeclarationBuilder =
@@ -106,6 +110,10 @@ class KnownDriftTypes {
       driftColumnDeclarationBuilder: forDrift3
           ? exportNamespace.get2('DriftColumnDeclarationBuilder')
                 as InterfaceElement
+          : null,
+      databaseJson: forDrift3
+          ? (exportNamespace.get2('DatabaseJson') as InterfaceElement)
+                .defaultInstantiation
           : null,
     );
   }

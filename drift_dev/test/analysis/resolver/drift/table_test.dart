@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/column.dart';
 import 'package:drift_dev/src/analysis/results/table.dart';
@@ -36,12 +35,12 @@ CREATE TABLE b (
     final b = results[1].result! as DriftTable;
     final bBar = b.columns[0];
 
-    expect(aFoo.sqlType.builtin, DriftSqlType.int);
+    expect(aFoo.sqlType.builtin, BuiltinType.int);
     expect(aFoo.nullable, isFalse);
     expect(aFoo.constraints, [isA<PrimaryKeyColumn>()]);
     expect(aFoo.customConstraints, 'PRIMARY KEY');
 
-    expect(aBar.sqlType.builtin, DriftSqlType.int);
+    expect(aBar.sqlType.builtin, BuiltinType.int);
     expect(aBar.nullable, isTrue);
     expect(aBar.constraints, [
       isA<ForeignKeyReference>()
@@ -55,7 +54,7 @@ CREATE TABLE b (
       'REFERENCES b(bar)DEFERRABLE INITIALLY DEFERRED',
     );
 
-    expect(bBar.sqlType.builtin, DriftSqlType.int);
+    expect(bBar.sqlType.builtin, BuiltinType.int);
     expect(bBar.nullable, isFalse);
     expect(bBar.constraints, isEmpty);
     expect(bBar.customConstraints, 'NOT NULL');
@@ -119,7 +118,7 @@ CREATE TABLE b (
       (c) => c.nameInSql == 'fruitIndex',
     );
 
-    expect(indexColumn.sqlType.builtin, DriftSqlType.int);
+    expect(indexColumn.sqlType.builtin, BuiltinType.int);
     expect(
       indexColumn.typeConverter,
       isA<AppliedTypeConverter>()
@@ -134,7 +133,7 @@ CREATE TABLE b (
     final withGenericIndexColumn = table.columns.singleWhere(
       (c) => c.nameInSql == 'fruitWithGenericIndex',
     );
-    expect(withGenericIndexColumn.sqlType.builtin, DriftSqlType.int);
+    expect(withGenericIndexColumn.sqlType.builtin, BuiltinType.int);
     expect(
       withGenericIndexColumn.typeConverter,
       isA<AppliedTypeConverter>()
@@ -154,7 +153,7 @@ CREATE TABLE b (
       (c) => c.nameInSql == 'fruitName',
     );
 
-    expect(nameColumn.sqlType.builtin, DriftSqlType.string);
+    expect(nameColumn.sqlType.builtin, BuiltinType.string);
     expect(
       nameColumn.typeConverter,
       isA<AppliedTypeConverter>()
@@ -351,7 +350,7 @@ CREATE TABLE foo (
 
     final table = file.analyzedElements.single as DriftTable;
     final column = table.columns.single;
-    expect(column.sqlType.builtin, DriftSqlType.bigInt);
+    expect(column.sqlType.builtin, BuiltinType.bigInt);
   });
 
   test('escapes reserved Dart keywords in column names', () async {

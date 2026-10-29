@@ -425,8 +425,9 @@ class RowMappingWriter {
       } else {
         final String sqlType;
         switch (column.sqlType) {
-          case ColumnDriftType():
-            sqlType = writer.drift(column.sqlType.builtin.toString());
+          case ColumnDriftType(:final builtin):
+            final type = writer.drift('DriftSqlType');
+            sqlType = '$type.${builtin.name}';
           case ColumnCustomType(:final custom):
             sqlType = writer.dartCode(custom.expression);
         }

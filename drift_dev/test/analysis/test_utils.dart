@@ -9,7 +9,6 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/file_system/overlay_file_system.dart';
 import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:build/build.dart';
-import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/backend.dart';
 import 'package:drift_dev/src/analysis/driver/driver.dart';
 import 'package:drift_dev/src/analysis/driver/error.dart';
@@ -319,7 +318,7 @@ class TestImportManager implements ImportManager {
 Matcher get hasNoErrors =>
     isA<FileState>().having((e) => e.allErrors, 'allErrors', isEmpty);
 
-Matcher returnsColumns(Map<String, DriftSqlType> columns) {
+Matcher returnsColumns(Map<String, BuiltinType> columns) {
   return _HasInferredColumnTypes(columns);
 }
 

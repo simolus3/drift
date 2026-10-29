@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:path/path.dart' show url;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -220,16 +219,9 @@ abstract class _NodeOrWriter {
   }) {
     // Write something like `TypeConverter<MyFancyObject, String>`
     return AnnotatedDartCode.build((b) {
-      AnnotatedDartCode sqlDartType;
-
-      switch (converter.sqlType) {
-        case ColumnDriftType():
-          sqlDartType = AnnotatedDartCode([
-            dartTypeNames[converter.sqlType.builtin]!,
-          ]);
-        case ColumnCustomType(:final custom):
-          sqlDartType = AnnotatedDartCode.type(custom.dartType);
-      }
+      final AnnotatedDartCode sqlDartType = AnnotatedDartCode.build((b) {
+        b.addColumnType(converter.sqlType);
+      });
 
       final className = converter.alsoAppliesToJsonConversion
           ? 'JsonTypeConverter2'
@@ -292,13 +284,7 @@ abstract class _NodeOrWriter {
   /// This type does not respect type converters or arrays.
   AnnotatedDartCode innerColumnType(ColumnType type, {bool nullable = false}) {
     return AnnotatedDartCode.build((b) {
-      switch (type) {
-        case ColumnDriftType():
-          b.addTopLevel(dartTypeNames[type.builtin]!);
-        case ColumnCustomType(:final custom):
-          b.addDartType(custom.dartType);
-      }
-
+      b.addColumnType(type);
       if (nullable) {
         b.addText('?');
       }
@@ -408,14 +394,15 @@ abstract class _NodeOrWriter {
   String drift3PhysicalSqlType(ColumnType sqlType, String dialect) {
     final getterOnTypeProvider = switch (sqlType) {
       ColumnDriftType(:final builtin) => switch (builtin) {
-        DriftSqlType.bool => 'boolType',
-        DriftSqlType.string => 'textType',
-        DriftSqlType.bigInt => 'int64Type',
-        DriftSqlType.int => 'intType',
-        DriftSqlType.dateTime => 'dateTimeType',
-        DriftSqlType.blob => 'byteArrayType',
-        DriftSqlType.double => 'doubleType',
-        DriftSqlType.any => null,
+        BuiltinType.bool => 'boolType',
+        BuiltinType.string => 'textType',
+        BuiltinType.bigInt => 'int64Type',
+        BuiltinType.int => 'intType',
+        BuiltinType.dateTime => 'dateTimeType',
+        BuiltinType.blob => 'byteArrayType',
+        BuiltinType.double => 'doubleType',
+        BuiltinType.json => 'jsonType',
+        BuiltinType.any => null,
       },
       _ => null,
     };
@@ -438,12 +425,10 @@ abstract class _NodeOrWriter {
     }
 
     return switch (sqlType) {
-      ColumnDriftType(builtin: DriftSqlType.string) => builtinType('text'),
-      ColumnDriftType(builtin: DriftSqlType.blob) => builtinType('byteArray'),
-      ColumnDriftType(builtin: DriftSqlType.bigInt) => builtinType('int64'),
-      ColumnDriftType(builtin: DriftSqlType.any) => AnnotatedDartCode.build((
-        b,
-      ) {
+      ColumnDriftType(builtin: BuiltinType.string) => builtinType('text'),
+      ColumnDriftType(builtin: BuiltinType.blob) => builtinType('byteArray'),
+      ColumnDriftType(builtin: BuiltinType.bigInt) => builtinType('int64'),
+      ColumnDriftType(builtin: BuiltinType.any) => AnnotatedDartCode.build((b) {
         b.addText('const ');
         b.addSymbol('AnyType', AnnotatedDartCode.driftSqlitePreview);
         b.addText('()');

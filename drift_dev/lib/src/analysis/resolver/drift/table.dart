@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/driver/driver.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
@@ -92,7 +91,7 @@ final class DriftTableResolver
                 DriftAnalysisError.inDriftFile(column.definition ?? stmt, msg),
               ),
               dartType,
-              type.builtin == DriftSqlType.int
+              type.builtin == BuiltinType.int
                   ? EnumType.intEnum
                   : EnumType.textEnum,
               await resolver.driver.knownTypes,

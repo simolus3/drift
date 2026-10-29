@@ -1,7 +1,21 @@
-import 'package:drift/drift.dart' show DriftSqlType;
-
 import 'column.dart';
-import 'dart.dart';
+
+/// A type supported by all dialects (DriftSqlType in drift2, BuiltinSqlType in
+/// drift3).
+enum BuiltinType {
+  bool,
+  string,
+  bigInt,
+  int,
+  dateTime,
+  blob,
+  double,
+  // SQLite-only in drift3.
+  any,
+
+  /// Only available in drift3.
+  json,
+}
 
 /// Something that has a type.
 ///
@@ -40,13 +54,13 @@ sealed class ColumnType {
   /// The builtin drift type used by this column.
   ///
   /// Even though it's unused there, custom types also have this field set -
-  /// to [DriftSqlType.any] because drift doesn't reinterpret these values at
+  /// to [BuiltinType.any] because drift doesn't reinterpret these values at
   /// all.
-  final DriftSqlType builtin;
+  final BuiltinType builtin;
 
   const ColumnType._(this.builtin);
 
-  const factory ColumnType.drift(DriftSqlType builtin) = ColumnDriftType;
+  const factory ColumnType.drift(BuiltinType builtin) = ColumnDriftType;
 
   const factory ColumnType.custom(CustomColumnType custom) = ColumnCustomType;
 }
@@ -66,12 +80,12 @@ final class ColumnDriftType extends ColumnType {
 final class ColumnCustomType extends ColumnType {
   final CustomColumnType custom;
 
-  const ColumnCustomType(this.custom) : super._(DriftSqlType.any);
+  const ColumnCustomType(this.custom) : super._(BuiltinType.any);
 }
 
 extension OperationOnTypes on HasType {
   bool get isUint8ListInDart {
-    return sqlType.builtin == DriftSqlType.blob && typeConverter == null;
+    return sqlType.builtin == BuiltinType.blob && typeConverter == null;
   }
 
   /// Whether this type is nullable in Dart
@@ -86,17 +100,3 @@ extension OperationOnTypes on HasType {
     return nullable;
   }
 }
-
-Map<DriftSqlType, DartTopLevelSymbol> dartTypeNames = Map.unmodifiable({
-  DriftSqlType.bool: DartTopLevelSymbol('bool', Uri.parse('dart:core')),
-  DriftSqlType.string: DartTopLevelSymbol('String', Uri.parse('dart:core')),
-  DriftSqlType.int: DartTopLevelSymbol('int', Uri.parse('dart:core')),
-  DriftSqlType.bigInt: DartTopLevelSymbol('BigInt', Uri.parse('dart:core')),
-  DriftSqlType.dateTime: DartTopLevelSymbol('DateTime', Uri.parse('dart:core')),
-  DriftSqlType.blob: DartTopLevelSymbol(
-    'Uint8List',
-    Uri.parse('dart:typed_data'),
-  ),
-  DriftSqlType.double: DartTopLevelSymbol('double', Uri.parse('dart:core')),
-  DriftSqlType.any: DartTopLevelSymbol('DriftAny', AnnotatedDartCode.drift),
-});

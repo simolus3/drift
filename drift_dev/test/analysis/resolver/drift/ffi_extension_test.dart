@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/drift_native_functions.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analysis/options.dart';
@@ -100,7 +99,7 @@ wrongArgs: SELECT sin(oid, foo) FROM numbers;
         const TypeMatcher<ScalarResultColumn>().having(
           (e) => e.sqlType.builtin,
           'type',
-          DriftSqlType.double,
+          BuiltinType.double,
         ),
       );
 

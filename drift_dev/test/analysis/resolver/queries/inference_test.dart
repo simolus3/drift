@@ -1,5 +1,5 @@
-import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/options.dart';
+import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
 import '../../test_utils.dart';
@@ -45,9 +45,9 @@ totalDurationByArtist:
     expect(
       totalDurationByArtist,
       returnsColumns({
-        'id': DriftSqlType.int,
-        'name': DriftSqlType.string,
-        'duration': DriftSqlType.int,
+        'id': BuiltinType.int,
+        'name': BuiltinType.string,
+        'duration': BuiltinType.int,
       }),
     );
   });

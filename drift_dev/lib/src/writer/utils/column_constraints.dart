@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 // ignore: deprecated_member_use
 import 'package:drift/sqlite_keywords.dart';
 import 'package:sqlparser/sqlparser.dart' as sql;
@@ -97,7 +96,7 @@ Map<KnownSqlDialect, String> defaultConstraints(DriftColumn column) {
     }
   }
 
-  if (column.sqlType.builtin == DriftSqlType.bool) {
+  if (column.sqlType.builtin == BuiltinType.bool) {
     final name = column.nameInSql;
     dialectSpecificConstraints[KnownSqlDialect.sqlite]!.add(
       'CHECK (${KnownSqlDialect.sqlite.escape(name)} IN (0, 1))',

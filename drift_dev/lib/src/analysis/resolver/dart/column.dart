@@ -2,7 +2,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart'
     show InitialDeferrableMode, ReferenceAction, ParserEntrypoint;
@@ -142,7 +141,7 @@ class ColumnParser {
             ? ColumnType.custom(custom)
             // Fallback if we fail to read the custom type - we'll also emit an
             // error int that case.
-            : ColumnType.drift(DriftSqlType.string);
+            : ColumnType.drift(BuiltinType.string);
       } else {
         columnType = ColumnType.drift(
           _startMethodToBuiltinColumnType(methodName),
@@ -170,7 +169,7 @@ class ColumnParser {
 
           if (builtin != null && !builtin.isNull) {
             return ColumnType.drift(
-              DriftSqlType.values.byName(
+              BuiltinType.values.byName(
                 builtin.getField('name')!.toStringValue()!,
               ),
             );
@@ -674,18 +673,18 @@ class ColumnParser {
     );
   }
 
-  DriftSqlType _startMethodToBuiltinColumnType(String name) {
+  BuiltinType _startMethodToBuiltinColumnType(String name) {
     return const {
-      _startBool: DriftSqlType.bool,
-      _startString: DriftSqlType.string,
-      _startInt: DriftSqlType.int,
-      _startInt64: DriftSqlType.bigInt,
-      _startIntEnum: DriftSqlType.int,
-      _startTextEnum: DriftSqlType.string,
-      _startDateTime: DriftSqlType.dateTime,
-      _startBlob: DriftSqlType.blob,
-      _startReal: DriftSqlType.double,
-      _startAny: DriftSqlType.any,
+      _startBool: BuiltinType.bool,
+      _startString: BuiltinType.string,
+      _startInt: BuiltinType.int,
+      _startInt64: BuiltinType.bigInt,
+      _startIntEnum: BuiltinType.int,
+      _startTextEnum: BuiltinType.string,
+      _startDateTime: BuiltinType.dateTime,
+      _startBlob: BuiltinType.blob,
+      _startReal: BuiltinType.double,
+      _startAny: BuiltinType.any,
     }[name]!;
   }
 

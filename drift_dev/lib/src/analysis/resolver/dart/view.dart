@@ -2,7 +2,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/driver/error.dart';
 import 'package:recase/recase.dart';
 
@@ -441,16 +440,18 @@ final class DartViewResolver
     return columns;
   }
 
-  DriftSqlType? _dartTypeToColumnType(String name) {
-    return const {
-      'bool': DriftSqlType.bool,
-      'String': DriftSqlType.string,
-      'int': DriftSqlType.int,
-      'BigInt': DriftSqlType.bigInt,
-      'DateTime': DriftSqlType.dateTime,
-      'Uint8List': DriftSqlType.blob,
-      'double': DriftSqlType.double,
-    }[name];
+  BuiltinType? _dartTypeToColumnType(String name) {
+    return switch (name) {
+      'bool' => BuiltinType.bool,
+      'String' => BuiltinType.string,
+      'int' => BuiltinType.int,
+      'BigInt' => BuiltinType.bigInt,
+      'DateTime' => BuiltinType.dateTime,
+      'Uint8List' => BuiltinType.blob,
+      'double' => BuiltinType.double,
+      'DatabaseJson' => BuiltinType.json,
+      _ => null,
+    };
   }
 }
 

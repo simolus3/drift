@@ -1,5 +1,4 @@
 import 'package:build_test/build_test.dart';
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
 
@@ -106,7 +105,7 @@ abstract class TodoItemWithCategoryNameView extends View {
       todoCategoryItemCount.columns[1],
       isA<DriftColumn>()
           .having((e) => e.nameInDart, 'nameInDart', 'itemCount')
-          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.int)
+          .having((e) => e.sqlType.builtin, 'sqlType', BuiltinType.int)
           .having((e) => e.nullable, 'nullable', isTrue),
     );
 
@@ -121,7 +120,7 @@ abstract class TodoItemWithCategoryNameView extends View {
       todoItemWithCategoryName.columns[1],
       isA<DriftColumn>()
           .having((e) => e.nameInDart, 'nameInDart', 'title')
-          .having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.string)
+          .having((e) => e.sqlType.builtin, 'sqlType', BuiltinType.string)
           .having((e) => e.nullable, 'nullable', isTrue),
     );
   });

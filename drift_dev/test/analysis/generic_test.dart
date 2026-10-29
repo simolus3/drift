@@ -1,7 +1,6 @@
 @Tags(['analyzer'])
 library;
 
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/driver/state.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
@@ -187,10 +186,7 @@ class ProgrammingLanguages extends Table {
               (e) => e.name == 'findLibraries',
             )
             as SqlSelectQuery;
-    expect(
-      librariesQuery.variables.single.sqlType.builtin,
-      DriftSqlType.string,
-    );
+    expect(librariesQuery.variables.single.sqlType.builtin, BuiltinType.string);
     expect(librariesQuery.declaredInDriftFile, isTrue);
   });
 

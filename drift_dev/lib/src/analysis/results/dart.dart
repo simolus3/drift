@@ -150,12 +150,7 @@ class AnnotatedDartCodeBuilder {
         addDartType(converter.dartType);
         if (nullable) addText('?');
       } else {
-        switch (hasType.sqlType) {
-          case ColumnDriftType():
-            addTopLevel(dartTypeNames[hasType.sqlType.builtin]!);
-          case ColumnCustomType(:final custom):
-            addDartType(custom.dartType);
-        }
+        addColumnType(hasType.sqlType);
         if (hasType.nullable) addText('?');
       }
     }
@@ -167,6 +162,34 @@ class AnnotatedDartCodeBuilder {
       addText('>');
     } else {
       addNonListType();
+    }
+  }
+
+  void addColumnType(ColumnType type) {
+    switch (type) {
+      case ColumnDriftType(:final builtin):
+        switch (builtin) {
+          case BuiltinType.bool:
+            addSymbol('bool', AnnotatedDartCode.dartCore);
+          case BuiltinType.string:
+            addSymbol('String', AnnotatedDartCode.dartCore);
+          case BuiltinType.bigInt:
+            addSymbol('BigInt', AnnotatedDartCode.dartCore);
+          case BuiltinType.int:
+            addSymbol('int', AnnotatedDartCode.dartCore);
+          case BuiltinType.dateTime:
+            addSymbol('DateTime', AnnotatedDartCode.dartCore);
+          case BuiltinType.blob:
+            addSymbol('Uint8List', Uri.parse('dart:typed_data'));
+          case BuiltinType.double:
+            addSymbol('double', AnnotatedDartCode.dartCore);
+          case BuiltinType.any:
+            addSymbol('DriftAny', AnnotatedDartCode.drift);
+          case BuiltinType.json:
+            addSymbol('DatabaseJson', AnnotatedDartCode.drift);
+        }
+      case ColumnCustomType(:final custom):
+        addDartType(custom.dartType);
     }
   }
 

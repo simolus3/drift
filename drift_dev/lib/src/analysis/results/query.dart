@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
+import 'package:drift/drift.dart' show UpdateKind;
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart';
 
@@ -160,7 +160,7 @@ abstract class SqlQuery {
   /// The placeholders in this query which are bound and converted to sql at
   /// runtime. For instance, in `SELECT * FROM tbl WHERE $expr`, the `expr` is
   /// going to be a [FoundDartPlaceholder] with the type
-  /// [ExpressionDartPlaceholderType] and [DriftSqlType.bool]. We will
+  /// [ExpressionDartPlaceholderType] and [BuiltinType.bool]. We will
   /// generate a method which has a `Expression<bool, BoolType> expr` parameter.
   late final List<FoundDartPlaceholder> placeholders = elements
       .whereType<FoundDartPlaceholder>()

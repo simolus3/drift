@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart' show DriftSqlType, UpdateKind;
+import 'package:drift/drift.dart' show UpdateKind;
 import 'package:drift_dev/src/analysis/resolver/drift/sqlparser/mapping.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
@@ -803,29 +803,29 @@ class SchemaReader {
 }
 
 // There used to be another enum to represent columns that has since been
-// replaced with DriftSqlType. We still need to reflect the old description in
+// replaced with BuiltinType. We still need to reflect the old description in
 // the serialized format.
-extension _SerializeSqlType on DriftSqlType {
-  static DriftSqlType deserialize(String description) {
+extension _SerializeSqlType on BuiltinType {
+  static BuiltinType deserialize(String description) {
     switch (description) {
       case 'ColumnType.boolean':
-        return DriftSqlType.bool;
+        return BuiltinType.bool;
       case 'ColumnType.text':
-        return DriftSqlType.string;
+        return BuiltinType.string;
       case 'ColumnType.bigInt':
-        return DriftSqlType.bigInt;
+        return BuiltinType.bigInt;
       case 'ColumnType.integer':
-        return DriftSqlType.int;
+        return BuiltinType.int;
       case 'ColumnType.datetime':
-        return DriftSqlType.dateTime;
+        return BuiltinType.dateTime;
       case 'ColumnType.blob':
-        return DriftSqlType.blob;
+        return BuiltinType.blob;
       case 'ColumnType.real':
-        return DriftSqlType.double;
+        return BuiltinType.double;
     }
 
     try {
-      return DriftSqlType.values.byName(description);
+      return BuiltinType.values.byName(description);
     } on ArgumentError {
       throw ArgumentError.value(
         description,

@@ -1,7 +1,6 @@
 @Tags(['analyzer'])
 library;
 
-import 'package:drift/drift.dart' as drift;
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
@@ -28,7 +27,7 @@ void main() {
       isA<DriftColumn>().having(
         (e) => e.sqlType.builtin,
         'sqlType',
-        drift.DriftSqlType.string,
+        BuiltinType.string,
       ),
     ]);
 
@@ -65,7 +64,7 @@ void main() {
       isA<DriftColumn>().having(
         (e) => e.sqlType.builtin,
         'sqlType',
-        drift.DriftSqlType.string,
+        BuiltinType.string,
       ),
     ]);
 
@@ -302,7 +301,7 @@ enum MyEnum {
   group('desugars cast', () {
     Future<void> expectView(
       String definition,
-      drift.DriftSqlType expectedType,
+      BuiltinType expectedType,
       String expectedSql,
       DriftOptions options,
     ) async {
@@ -329,7 +328,7 @@ enum MyEnum {
     test('to boolean', () async {
       await expectView(
         'CREATE VIEW x AS SELECT CAST(1 AS BOOLEAN) AS a;',
-        drift.DriftSqlType.bool,
+        BuiltinType.bool,
         'CREATE VIEW x AS SELECT CAST(1 AS INT) AS a;',
         const DriftOptions.defaults(),
       );
@@ -338,7 +337,7 @@ enum MyEnum {
     test('to datetime as int', () async {
       await expectView(
         'CREATE VIEW x AS SELECT CAST(1 AS DATETIME) AS a;',
-        drift.DriftSqlType.dateTime,
+        BuiltinType.dateTime,
         'CREATE VIEW x AS SELECT CAST(1 AS INT) AS a;',
         const DriftOptions.defaults(storeDateTimeValuesAsText: false),
       );
@@ -347,7 +346,7 @@ enum MyEnum {
     test('to datetime as text', () async {
       await expectView(
         "CREATE VIEW x AS SELECT CAST('x' AS DATETIME) AS a;",
-        drift.DriftSqlType.dateTime,
+        BuiltinType.dateTime,
         "CREATE VIEW x AS SELECT CAST('x' AS TEXT) AS a;",
         const DriftOptions.defaults(storeDateTimeValuesAsText: true),
       );

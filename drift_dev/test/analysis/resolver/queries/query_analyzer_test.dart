@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show DriftSqlType;
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:sqlparser/sqlparser.dart' hide ResultColumn;
@@ -25,8 +24,8 @@ bar(?1 AS TEXT, :foo AS BOOLEAN): SELECT ?, :foo;
     expect(resultSet.matchingTable, isNull);
     expect(resultSet.scalarColumns.map((c) => c.name), ['?', ':foo']);
     expect(resultSet.scalarColumns.map((c) => c.sqlType.builtin), [
-      DriftSqlType.string,
-      DriftSqlType.bool,
+      BuiltinType.string,
+      BuiltinType.bool,
     ]);
   });
 
@@ -195,7 +194,7 @@ q3: SELECT datetime('now');
       final q1 = queries[0];
       expect(
         q1.resultSet!.scalarColumns.single.sqlType.builtin,
-        DriftSqlType.dateTime,
+        BuiltinType.dateTime,
       );
 
       final q2 = queries[1];
@@ -204,20 +203,20 @@ q3: SELECT datetime('now');
       if (dateTimeAsText) {
         expect(
           q2.resultSet!.scalarColumns.single.sqlType.builtin,
-          DriftSqlType.int,
+          BuiltinType.int,
         );
         expect(
           q3.resultSet!.scalarColumns.single.sqlType.builtin,
-          DriftSqlType.dateTime,
+          BuiltinType.dateTime,
         );
       } else {
         expect(
           q2.resultSet!.scalarColumns.single.sqlType.builtin,
-          DriftSqlType.dateTime,
+          BuiltinType.dateTime,
         );
         expect(
           q3.resultSet!.scalarColumns.single.sqlType.builtin,
-          DriftSqlType.string,
+          BuiltinType.string,
         );
       }
     });
@@ -342,14 +341,14 @@ LEFT JOIN tableB1 AS tableB2 -- nullable
       isA<ScalarResultColumn>().having(
         (e) => e.sqlType.builtin,
         'sqlType',
-        DriftSqlType.bool,
+        BuiltinType.bool,
       ),
     ]);
 
     final args = query.variables;
     expect(args.map((e) => e.sqlType.builtin), [
-      DriftSqlType.int,
-      DriftSqlType.string,
+      BuiltinType.int,
+      BuiltinType.string,
     ]);
   });
 
@@ -384,10 +383,10 @@ a: SELECT CAST(1 AS BOOLEAN) AS a, CAST(2 AS DATETIME) as b;
     expect(resultSet.columns, [
       scalarColumn(
         'a',
-      ).having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.bool),
+      ).having((e) => e.sqlType.builtin, 'sqlType', BuiltinType.bool),
       scalarColumn(
         'b',
-      ).having((e) => e.sqlType.builtin, 'sqlType', DriftSqlType.dateTime),
+      ).having((e) => e.sqlType.builtin, 'sqlType', BuiltinType.dateTime),
     ]);
   });
 

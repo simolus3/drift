@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:drift_dev/src/analysis/options.dart';
 import 'package:drift_dev/src/analysis/results/results.dart';
 import 'package:test/test.dart';
@@ -41,15 +40,15 @@ song_fulltext_search(:match_string AS TEXT):
         ),
       ),
       [
-        ('rank', DriftSqlType.double),
-        ('uuid', DriftSqlType.string),
-        ('sourceBankId', DriftSqlType.string),
-        ('pitchField', DriftSqlType.string),
-        ('matchTitle', DriftSqlType.string),
-        ('matchLyrics', DriftSqlType.string),
-        ('matchComposer', DriftSqlType.string),
-        ('matchPoet', DriftSqlType.string),
-        ('matchTranslator', DriftSqlType.string),
+        ('rank', BuiltinType.double),
+        ('uuid', BuiltinType.string),
+        ('sourceBankId', BuiltinType.string),
+        ('pitchField', BuiltinType.string),
+        ('matchTitle', BuiltinType.string),
+        ('matchLyrics', BuiltinType.string),
+        ('matchComposer', BuiltinType.string),
+        ('matchPoet', BuiltinType.string),
+        ('matchTranslator', BuiltinType.string),
       ],
     );
   });

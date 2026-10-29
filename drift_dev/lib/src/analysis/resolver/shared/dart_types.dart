@@ -10,7 +10,6 @@ import 'package:analyzer/src/dart/element/type.dart'
         RecordTypeImpl,
         RecordTypeNamedFieldImpl,
         RecordTypePositionalFieldImpl;
-import 'package:drift/drift.dart' show DriftSqlType;
 
 import '../../driver/error.dart';
 import '../../results/results.dart';
@@ -438,9 +437,7 @@ AppliedTypeConverter readEnumConverter(
         ? typeProvider.intType
         : typeProvider.stringType,
     sqlType: ColumnType.drift(
-      columnEnumType == EnumType.intEnum
-          ? DriftSqlType.int
-          : DriftSqlType.string,
+      columnEnumType == EnumType.intEnum ? BuiltinType.int : BuiltinType.string,
     ),
     dartTypeIsNullable: false,
     sqlTypeIsNullable: false,
@@ -545,32 +542,34 @@ extension on TypeProvider {
     }
 
     switch (type.builtin) {
-      case DriftSqlType.int:
+      case BuiltinType.int:
         return intType;
-      case DriftSqlType.bigInt:
+      case BuiltinType.bigInt:
         return intElement.library
             .getClass('BigInt')!
             .instantiate(
               typeArguments: const [],
               nullabilitySuffix: NullabilitySuffix.none,
             );
-      case DriftSqlType.string:
+      case BuiltinType.string:
         return stringType;
-      case DriftSqlType.bool:
+      case BuiltinType.bool:
         return boolType;
-      case DriftSqlType.dateTime:
+      case BuiltinType.dateTime:
         return intElement.library
             .getClass('DateTime')!
             .instantiate(
               typeArguments: const [],
               nullabilitySuffix: NullabilitySuffix.none,
             );
-      case DriftSqlType.blob:
+      case BuiltinType.blob:
         return knownTypes.uint8List;
-      case DriftSqlType.double:
+      case BuiltinType.double:
         return doubleType;
-      case DriftSqlType.any:
+      case BuiltinType.any:
         return knownTypes.driftAny!;
+      case BuiltinType.json:
+        return knownTypes.databaseJson!;
     }
   }
 }
