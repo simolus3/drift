@@ -93,6 +93,7 @@ void main() {
         '"a_real" REAL,'
         '"a_blob" BLOB,'
         '"an_int_enum" INTEGER,'
+        '"a_json_value" BLOB,'
         '"insert" TEXT'
         ');',
       );

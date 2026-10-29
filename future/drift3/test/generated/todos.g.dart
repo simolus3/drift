@@ -1276,6 +1276,12 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
         )
         ..owningResultSet = this;
   @override
+  late final TableColumn<DatabaseJson> aJsonValue = TableColumn<DatabaseJson>(
+    name: 'a_json_value',
+    sqlType: SqlType.json,
+    requiredDuringInsert: false,
+  )..owningResultSet = this;
+  @override
   late final TableColumnWithTypeConverter<MyCustomObject?, String>
   aTextWithConverter =
       TableColumn<String>(
@@ -1297,6 +1303,7 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
     aReal,
     aBlob,
     anIntEnum,
+    aJsonValue,
     aTextWithConverter,
   ];
   @override
@@ -1326,7 +1333,9 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
     final pos$aBlob = positions[7].index;
     final type$6 = dialect.byteArrayType;
     final pos$anIntEnum = positions[8].index;
-    final pos$aTextWithConverter = positions[9].index;
+    final pos$aJsonValue = positions[9].index;
+    final type$7 = dialect.jsonType;
+    final pos$aTextWithConverter = positions[10].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -1346,6 +1355,7 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
         anIntEnum: $TableWithEveryColumnTypeTable.$converteranIntEnumn.fromSql(
           type$0.nullableDartValue(row[pos$anIntEnum]),
         ),
+        aJsonValue: type$7.nullableDartValue(row[pos$aJsonValue]),
         aTextWithConverter: $TableWithEveryColumnTypeTable
             .$converteraTextWithConvertern
             .fromSql(type$3.nullableDartValue(row[pos$aTextWithConverter])),
@@ -1383,6 +1393,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
   final double? aReal;
   final Uint8List? aBlob;
   final TodoStatus? anIntEnum;
+  final DatabaseJson? aJsonValue;
   final MyCustomObject? aTextWithConverter;
   const TableWithEveryColumnTypeData({
     required this.id,
@@ -1394,6 +1405,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
     this.aReal,
     this.aBlob,
     this.anIntEnum,
+    this.aJsonValue,
     this.aTextWithConverter,
   });
   @override
@@ -1431,6 +1443,9 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
         $TableWithEveryColumnTypeTable.$converteranIntEnumn.toSql(anIntEnum),
         SqlType.int,
       );
+    }
+    if (!nullToAbsent || aJsonValue != null) {
+      map['a_json_value'] = Variable<DatabaseJson>(aJsonValue, SqlType.json);
     }
     if (!nullToAbsent || aTextWithConverter != null) {
       map['insert'] = Variable<String>(
@@ -1470,6 +1485,9 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
       anIntEnum: anIntEnum == null && nullToAbsent
           ? const Value.absent()
           : Value(anIntEnum),
+      aJsonValue: aJsonValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aJsonValue),
       aTextWithConverter: aTextWithConverter == null && nullToAbsent
           ? const Value.absent()
           : Value(aTextWithConverter),
@@ -1495,6 +1513,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
       anIntEnum: $TableWithEveryColumnTypeTable.$converteranIntEnumn.fromJson(
         serializer.fromJson<int?>(json['anIntEnum']),
       ),
+      aJsonValue: serializer.fromJson<DatabaseJson?>(json['aJsonValue']),
       aTextWithConverter: $TableWithEveryColumnTypeTable
           .$converteraTextWithConvertern
           .fromJson(
@@ -1521,6 +1540,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
       'anIntEnum': serializer.toJson<int?>(
         $TableWithEveryColumnTypeTable.$converteranIntEnumn.toJson(anIntEnum),
       ),
+      'aJsonValue': serializer.toJson<DatabaseJson?>(aJsonValue),
       'aTextWithConverter': serializer.toJson<Map<String, Object?>?>(
         $TableWithEveryColumnTypeTable.$converteraTextWithConvertern.toJson(
           aTextWithConverter,
@@ -1539,6 +1559,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
     Value<double?> aReal = const Value.absent(),
     Value<Uint8List?> aBlob = const Value.absent(),
     Value<TodoStatus?> anIntEnum = const Value.absent(),
+    Value<DatabaseJson?> aJsonValue = const Value.absent(),
     Value<MyCustomObject?> aTextWithConverter = const Value.absent(),
   }) => TableWithEveryColumnTypeData(
     id: id ?? this.id,
@@ -1550,6 +1571,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
     aReal: aReal.present ? aReal.value : this.aReal,
     aBlob: aBlob.present ? aBlob.value : this.aBlob,
     anIntEnum: anIntEnum.present ? anIntEnum.value : this.anIntEnum,
+    aJsonValue: aJsonValue.present ? aJsonValue.value : this.aJsonValue,
     aTextWithConverter: aTextWithConverter.present
         ? aTextWithConverter.value
         : this.aTextWithConverter,
@@ -1567,6 +1589,9 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
       aReal: data.aReal.present ? data.aReal.value : this.aReal,
       aBlob: data.aBlob.present ? data.aBlob.value : this.aBlob,
       anIntEnum: data.anIntEnum.present ? data.anIntEnum.value : this.anIntEnum,
+      aJsonValue: data.aJsonValue.present
+          ? data.aJsonValue.value
+          : this.aJsonValue,
       aTextWithConverter: data.aTextWithConverter.present
           ? data.aTextWithConverter.value
           : this.aTextWithConverter,
@@ -1585,6 +1610,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
           ..write('aReal: $aReal, ')
           ..write('aBlob: $aBlob, ')
           ..write('anIntEnum: $anIntEnum, ')
+          ..write('aJsonValue: $aJsonValue, ')
           ..write('aTextWithConverter: $aTextWithConverter')
           ..write(')'))
         .toString();
@@ -1601,6 +1627,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
     aReal,
     $driftBlobEquality.hash(aBlob),
     anIntEnum,
+    aJsonValue,
     aTextWithConverter,
   );
   @override
@@ -1616,6 +1643,7 @@ class TableWithEveryColumnTypeData extends LegacyDataClass
           other.aReal == this.aReal &&
           $driftBlobEquality.equals(other.aBlob, this.aBlob) &&
           other.anIntEnum == this.anIntEnum &&
+          other.aJsonValue == this.aJsonValue &&
           other.aTextWithConverter == this.aTextWithConverter);
 }
 
@@ -1630,6 +1658,7 @@ class TableWithEveryColumnTypeCompanion
   final Value<double?> aReal;
   final Value<Uint8List?> aBlob;
   final Value<TodoStatus?> anIntEnum;
+  final Value<DatabaseJson?> aJsonValue;
   final Value<MyCustomObject?> aTextWithConverter;
   const TableWithEveryColumnTypeCompanion({
     this.id = const Value.absent(),
@@ -1641,6 +1670,7 @@ class TableWithEveryColumnTypeCompanion
     this.aReal = const Value.absent(),
     this.aBlob = const Value.absent(),
     this.anIntEnum = const Value.absent(),
+    this.aJsonValue = const Value.absent(),
     this.aTextWithConverter = const Value.absent(),
   });
   TableWithEveryColumnTypeCompanion.insert({
@@ -1653,6 +1683,7 @@ class TableWithEveryColumnTypeCompanion
     this.aReal = const Value.absent(),
     this.aBlob = const Value.absent(),
     this.anIntEnum = const Value.absent(),
+    this.aJsonValue = const Value.absent(),
     this.aTextWithConverter = const Value.absent(),
   });
   static Insertable<TableWithEveryColumnTypeData> custom({
@@ -1665,6 +1696,7 @@ class TableWithEveryColumnTypeCompanion
     Expression<double>? aReal,
     Expression<Uint8List>? aBlob,
     Expression<int>? anIntEnum,
+    Expression<DatabaseJson>? aJsonValue,
     Expression<String>? aTextWithConverter,
   }) {
     return RawValuesInsertable({
@@ -1677,6 +1709,7 @@ class TableWithEveryColumnTypeCompanion
       if (aReal != null) 'a_real': aReal,
       if (aBlob != null) 'a_blob': aBlob,
       if (anIntEnum != null) 'an_int_enum': anIntEnum,
+      if (aJsonValue != null) 'a_json_value': aJsonValue,
       if (aTextWithConverter != null) 'insert': aTextWithConverter,
     });
   }
@@ -1691,6 +1724,7 @@ class TableWithEveryColumnTypeCompanion
     Value<double?>? aReal,
     Value<Uint8List?>? aBlob,
     Value<TodoStatus?>? anIntEnum,
+    Value<DatabaseJson?>? aJsonValue,
     Value<MyCustomObject?>? aTextWithConverter,
   }) {
     return TableWithEveryColumnTypeCompanion(
@@ -1703,6 +1737,7 @@ class TableWithEveryColumnTypeCompanion
       aReal: aReal ?? this.aReal,
       aBlob: aBlob ?? this.aBlob,
       anIntEnum: anIntEnum ?? this.anIntEnum,
+      aJsonValue: aJsonValue ?? this.aJsonValue,
       aTextWithConverter: aTextWithConverter ?? this.aTextWithConverter,
     );
   }
@@ -1748,6 +1783,12 @@ class TableWithEveryColumnTypeCompanion
         SqlType.int,
       );
     }
+    if (aJsonValue.present) {
+      map['a_json_value'] = Variable<DatabaseJson>(
+        aJsonValue.value,
+        SqlType.json,
+      );
+    }
     if (aTextWithConverter.present) {
       map['insert'] = Variable<String>(
         $TableWithEveryColumnTypeTable.$converteraTextWithConvertern.toSql(
@@ -1771,6 +1812,7 @@ class TableWithEveryColumnTypeCompanion
           ..write('aReal: $aReal, ')
           ..write('aBlob: $aBlob, ')
           ..write('anIntEnum: $anIntEnum, ')
+          ..write('aJsonValue: $aJsonValue, ')
           ..write('aTextWithConverter: $aTextWithConverter')
           ..write(')'))
         .toString();

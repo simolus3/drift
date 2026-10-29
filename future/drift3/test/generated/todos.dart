@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:drift3_preview/drift.dart';
-import 'package:drift_postgres/drift_postgres.dart';
+import 'package:drift_postgres/drift_postgres.dart' hide JsonColumn;
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:uuid/uuid.dart' hide UuidValue;
 
@@ -166,6 +166,7 @@ class TableWithEveryColumnType extends Table with AutoIncrement {
   RealColumn get aReal => real().nullable();
   BlobColumn get aBlob => blob().nullable();
   IntColumn get anIntEnum => intEnum<TodoStatus>().nullable();
+  JsonColumn get aJsonValue => json().nullable();
   TextColumn get aTextWithConverter => text()
       .named('insert')
       .map(const CustomJsonConverter())

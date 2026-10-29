@@ -170,7 +170,7 @@ class ColumnParser {
           if (builtin != null && !builtin.isNull) {
             return ColumnType.drift(
               BuiltinType.values.byName(
-                builtin.getField('name')!.toStringValue()!,
+                builtin.getField('_name')!.toStringValue()!,
               ),
             );
           } else if (custom != null && !custom.isNull) {

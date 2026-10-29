@@ -532,4 +532,26 @@ class Preferences extends Table {
     ]);
     expect(table.strict, isTrue);
   });
+
+  test('recognizes json columns', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift3_preview/drift.dart';
+
+class Preferences extends Table {
+  TextColumn get key => text()();
+  JsonColumn get value => json().nullable();
+}
+''',
+    }, options: DriftOptions.defaults(drift3Preview: true));
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    expect(table.columns.map((c) => c.sqlType.builtin), [
+      BuiltinType.string,
+      BuiltinType.json,
+    ]);
+  });
 }
