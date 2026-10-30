@@ -1051,7 +1051,7 @@ abstract base class StatementCompiler {
       statement.buffer.write(' ON UPDATE ${onUpdate.defaultLexeme}');
     }
     if (constraint.onDelete case final onDelete?) {
-      statement.buffer.write(' ON UPDATE ${onDelete.defaultLexeme}');
+      statement.buffer.write(' ON DELETE ${onDelete.defaultLexeme}');
     }
 
     if (constraint.initiallyDeferred) {
