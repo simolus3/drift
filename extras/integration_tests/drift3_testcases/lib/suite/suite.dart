@@ -17,10 +17,10 @@ abstract class TestExecutor {
   bool get hackyVariables => false;
 
   /// Delete the data that would be written by the executor.
-  Future deleteData();
+  Future<void> deleteData();
 
   /// Clear database before close
-  Future clearDatabaseAndClose(Database db) async {
+  Future<void> clearDatabaseAndClose(Database db) async {
     await db.close();
   }
 }
