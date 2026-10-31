@@ -282,6 +282,16 @@ enum BuiltinSqlType<T extends Object>
   /// The static variants ([forType] and [forNullableType] should almost always
   /// be preferred to this because they can assign types to null values too).
   static BuiltinSqlType? forValue(Object? value) {
-    return _dartToDrift[value.runtimeType];
+    return switch (value) {
+      core.String() => .text,
+      core.int() => .int,
+      core.BigInt() => .int64,
+      core.double() => .double,
+      Uint8List() => .byteArray,
+      core.bool() => .bool,
+      core.DateTime() => .dateTime,
+      DatabaseJson() => .json,
+      _ => null,
+    };
   }
 }

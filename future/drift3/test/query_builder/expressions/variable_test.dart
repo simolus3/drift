@@ -27,6 +27,17 @@ void main() {
     expect(Variable<Object>(null), generates('?1', [null]));
   });
 
+  test('can infer type by value', () {
+    expect(Variable('hello').sqlType, SqlType.text);
+    expect(Variable(123).sqlType, SqlType.int);
+    expect(Variable(BigInt.one).sqlType, SqlType.int64);
+    expect(Variable(1.23).sqlType, SqlType.double);
+    expect(Variable(Uint8List(1)).sqlType, SqlType.byteArray);
+    expect(Variable(true).sqlType, SqlType.bool);
+    expect(Variable(DateTime.now()).sqlType, SqlType.dateTime);
+    expect(Variable(DatabaseJson({'foo': 'bar'})).sqlType, SqlType.json);
+  });
+
   group('can write variables with wrong type parameter', () {
     test('true', () {
       expect(const Variable<Object>(true), generates('?1', [1]));

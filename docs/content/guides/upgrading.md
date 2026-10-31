@@ -91,6 +91,10 @@ default connections use a much faster default configuration now:
   the `generate_manager: true` [builder option](../generation_options/index.md)
   as well as a dependency on the `drift_manager` package.
 - `computeWithDatabase` now requires the `drift_sqlite` package.
+- Raw statements (`customStatement`, `customUpdate`, `customInsert` and variants) now pass variables
+  as `Variable` instances. This allows dialects to type all values properly.
+  Using `currentSession()` followed by `DriftSession.execute()` can be used to work around this, but that
+  approach might not work across dialects.
 
 ### Internal
 
