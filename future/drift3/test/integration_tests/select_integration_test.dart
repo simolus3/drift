@@ -192,4 +192,19 @@ void main() {
     expect(b.readTable(db.todosTable).content, 'todo');
     expect(b.readTableOrNull(db.categories), isNull);
   });
+
+  test('customSelect can report as map', () async {
+    await db.categoriesQueries.insertOne(
+      CategoriesCompanion.insert(description: 'category'),
+    );
+    final results = await db.customSelect('SELECT * FROM categories').get();
+    expect(results.map((row) => row.data), [
+      {
+        'id': 1,
+        'desc': 'category',
+        'priority': 0,
+        'description_in_upper_case': 'CATEGORY',
+      },
+    ]);
+  });
 }

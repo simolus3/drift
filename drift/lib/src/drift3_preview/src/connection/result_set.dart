@@ -4,6 +4,7 @@ library;
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
 /// The result of running an SQL statement against a [DriftSession].
 final class QueryResult {
@@ -45,6 +46,8 @@ abstract base class RawResultSet
   /// Names of all columns that appear in this result set.
   final List<String> columnNames;
 
+  Map<String, int>? _nameToColumnIndex;
+
   /// @nodoc
   RawResultSet({required this.columnNames});
 
@@ -57,6 +60,12 @@ abstract base class RawResultSet
   @override
   void operator []=(int index, RawRow value) {
     throw UnsupportedError("Can't change rows from a result set");
+  }
+
+  Map<String, int> _columnIndex() {
+    return _nameToColumnIndex ??= {
+      for (final (i, name) in columnNames.indexed) name: i,
+    };
   }
 }
 
@@ -73,4 +82,43 @@ final class _ListResultSet extends RawResultSet {
 
   @override
   int get length => _rows.length;
+}
+
+@internal
+extension NameIndex on RawResultSet {
+  Map<String, Object?> rowAsMap(RawRow row) {
+    assert(row.length == columnNames.length);
+    return _RawRowAsMap(this, row);
+  }
+
+  int indexByName(String name) {
+    final index = _columnIndex()[name];
+    if (index != null) return index;
+
+    throw ArgumentError.value(name, 'name', 'No column with that name');
+  }
+}
+
+final class _RawRowAsMap extends UnmodifiableMapBase<String, Object?> {
+  final RawResultSet _rs;
+  final RawRow _row;
+
+  _RawRowAsMap(this._rs, this._row);
+
+  @override
+  Iterable<String> get keys => _rs.columnNames;
+
+  @override
+  bool containsKey(Object? key) {
+    return _rs._columnIndex().containsKey(key);
+  }
+
+  @override
+  Object? operator [](Object? key) {
+    final map = _rs._columnIndex();
+    final index = map[key];
+    if (index == null) return null;
+
+    return _row[index];
+  }
 }

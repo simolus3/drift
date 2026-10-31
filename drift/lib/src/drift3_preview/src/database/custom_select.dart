@@ -176,18 +176,19 @@ final class CustomRow {
   final RawRow row;
   final DatabaseConnectionUser _db;
 
+  Map<String, Object?>? _data;
+
   /// Wraps a raw [row] into a [CustomRow].
   CustomRow(this.resultSet, this.row, this._db);
 
-  int _indexByName(String name) {
-    for (final (i, column) in resultSet.columnNames.indexed) {
-      if (column == name) {
-        return i;
-      }
-    }
-
-    throw ArgumentError.value(name, 'name', 'No column with that name');
-  }
+  /// Raw data in this row, by column name.
+  ///
+  /// Note that the values in this map aren't mapped to Dart yet, values are
+  /// unchanged from the database. For example, a [DateTime] would be stored as
+  /// a string or timestamp on SQLite database depending on options.
+  ///
+  /// To read a value, use any of the [read] methods.
+  Map<String, Object?> get data => _data ??= resultSet.rowAsMap(row);
 
   /// Reads an arbitrary value from the row and maps it to a fitting dart type.
   ///
@@ -217,7 +218,7 @@ final class CustomRow {
   /// use [readNullableWithType] if needed.
   @optionalTypeArgs
   T readWithType<T extends Object>(SqlType<T> type, String key) {
-    final index = _indexByName(key);
+    final index = resultSet.indexByName(key);
 
     return type.resolveIn(_db.dialect).dartValue(row[index]!);
   }
@@ -239,7 +240,7 @@ final class CustomRow {
   /// the type parameter [T].
   @optionalTypeArgs
   T? readNullableWithType<T extends Object>(SqlType<T> type, String key) {
-    final index = _indexByName(key);
+    final index = resultSet.indexByName(key);
 
     return switch (row[index]) {
       null => null,
