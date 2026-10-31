@@ -177,6 +177,7 @@ extension RowIdExtension on TableInfo {
   /// the [rowId] will not be part of a drift-generated data class. In this
   /// case, the [rowId] getter can be used to refer to a table's row id in a
   /// query.
+  @pragma('drift:v3-moved-to', 'drift_sqlite')
   Expression<int> get rowId {
     if (withoutRowId) {
       throw ArgumentError('Cannot use rowId on a table without a rowid!');

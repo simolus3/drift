@@ -119,10 +119,14 @@ final class UpgradeToDrift3 {
       return;
     }
 
+    final requiredImports = _FindRequiredImports();
+    unitResult.unit.accept(requiredImports);
+
     final writer = _DartToDrift3Rewriter(
       contents,
       project.options,
       unitResult.libraryElement.typeSystem,
+      requiredImports,
       imports,
     );
     unitResult.unit.accept(writer);
@@ -269,6 +273,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   final String originalContent;
   final StringRewriter _writer;
   final TypeSystem _typeSystem;
+  final _FindRequiredImports _requiredImports;
   final _KnownDriftImports _types;
 
   var isInTableDefinition = false;
@@ -280,6 +285,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
     this.originalContent,
     this.options,
     this._typeSystem,
+    this._requiredImports,
     this._types,
   ) : _writer = StringRewriter(originalContent);
 
@@ -344,9 +350,11 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
         imports += "import 'dart:typed_data';\n";
       }
 
-      if (_writer.content.contains('@DriftDatabase')) {
+      if (_requiredImports.usesSqliteSpecificApi) {
         imports += "import 'package:drift_sqlite/drift_sqlite.dart';\n";
+      }
 
+      if (_writer.content.contains('@DriftDatabase')) {
         if (options.generateManager) {
           imports += "import 'package:drift_manager/drift_manager.dart';\n";
         }
@@ -702,5 +710,28 @@ extension on Expression {
     }
 
     return null;
+  }
+}
+
+final class _FindRequiredImports extends GeneralizingAstVisitor<void> {
+  var usesSqliteSpecificApi = false;
+
+  bool _movedToDrift3(Element element) {
+    return element.readStringPragma('drift:v3-moved-to') == 'drift_sqlite';
+  }
+
+  @override
+  void visitSimpleIdentifier(SimpleIdentifier node) {
+    var element = node.element;
+    while (!usesSqliteSpecificApi && element != null) {
+      if (_movedToDrift3(element)) {
+        usesSqliteSpecificApi = true;
+        return;
+      }
+
+      element = element.enclosingElement;
+    }
+
+    super.visitSimpleIdentifier(node);
   }
 }

@@ -41,6 +41,7 @@ const Expression<DateTime> currentDateAndTime = _DependingOnDateTimeExpression(
 
 /// Provides expressions to extract information from date time values, or to
 /// calculate the difference between datetimes.
+@pragma('drift:v3-moved-to', 'drift_sqlite')
 extension DateTimeExpressions on Expression<DateTime> {
   /// Converts a numeric expression [unixEpoch] into a date time by interpreting
   /// it as the amount of seconds since 1970-01-01 00:00:00 UTC.
@@ -369,6 +370,7 @@ class _DependingOnDateTimeExpression<D extends Object> extends Expression<D> {
 /// For another explanation of modifiers, see the [sqlite3 docs].
 ///
 /// [sqlite3 docs]: https://sqlite.org/lang_datefunc.html#modifiers
+@pragma('drift:v3-moved-to', 'drift_sqlite')
 final class DateTimeModifier extends Constant<String> {
   const DateTimeModifier._(super.value);
 

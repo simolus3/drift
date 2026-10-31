@@ -37,6 +37,31 @@ import 'package:drift_sqlite/schema_verifier.dart';
 ''').validate();
     });
 
+    test('includes drift_sqlite import where needed', () async {
+      final original = await _drift2Project([
+        d.file('database.dart', '''
+import 'package:drift/drift.dart';
+
+void foo(TableInfo tbl) {
+  // this getter has moved to drift_sqlite
+  tbl.rowId;
+}
+'''),
+      ]);
+      await original.migrateToDrift3();
+
+      await d.file('app/lib/database.dart', '''
+import 'dart:typed_data';
+import 'package:drift_sqlite/drift_sqlite.dart';
+import 'package:drift3_preview/drift.dart';
+
+void foo(TableInfo tbl) {
+  // this getter has moved to drift_sqlite
+  tbl.rowId;
+}
+''').validate();
+    });
+
     test('migrates table definitions', () async {
       final original = await _drift2Project([
         d.file('database.dart', '''

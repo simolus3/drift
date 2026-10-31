@@ -38,6 +38,7 @@ extension StringExpressionOperators on Expression<String> {
   /// Note that this function is only available when using a `NativeDatabase`.
   /// If you need to support the web or `moor_flutter`, consider using [like]
   /// instead.
+  @pragma('drift:v3-moved-to', 'drift_sqlite')
   Expression<bool> regexp(
     String regex, {
     bool multiLine = false,
