@@ -10,6 +10,8 @@ import 'package:drift3_preview/drift.dart';
 import 'package:drift3_testcases/suite/suite.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift_sqlite/native.dart';
+import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -21,10 +23,29 @@ void main() {
   group('with background isolates', () => _nativePoolTests(true));
 }
 
+var _inMemoryCounter = 0;
+
 void _nativePoolTests(bool useBackgroundIsolates) {
   declareConnectionTests(() => _openPool(useBackgroundIsolates));
 
   runAllTests(_ConnectionPoolTestExecutor(useBackgroundIsolates));
+
+  group('custom in-memory', () {
+    Future<OpenedDriftConnection> openInMemoryPool() async {
+      final name = 'memory:${_inMemoryCounter++}';
+      return await customConnectionPool(
+        identifier: name,
+        openPool: () async => SqliteConnectionPool.open(
+          name: name,
+          openConnections: () => PoolConnections(sqlite3.openInMemory(), []),
+        ),
+        workerIsolates: useBackgroundIsolates ? 1 : null,
+      ).open();
+    }
+
+    declareConnectionTests(openInMemoryPool);
+    runAllTests(_MemoryPoolTestExecutor(useBackgroundIsolates));
+  });
 
   test('returns new columns after recompilation', () async {
     // https://github.com/simolus3/drift/issues/2454
@@ -199,5 +220,52 @@ final class _ConnectionPoolTestExecutor extends TestExecutor {
   }
 
   @override
-  Future<dynamic> deleteData() async {}
+  Future<void> deleteData() async {}
+}
+
+final class _MemoryPoolTestExecutor extends TestExecutor {
+  final bool useBackgroundIsolate;
+
+  (String, SqliteConnectionPool)? _activeDatabase;
+
+  _MemoryPoolTestExecutor(this.useBackgroundIsolate);
+
+  @override
+  DriftConnection createConnection() {
+    if (_activeDatabase case (final identifier, _)) {
+      return customConnectionPool(
+        identifier: identifier,
+        openPool: () async => SqliteConnectionPool.open(
+          name: identifier,
+          openConnections: () => throw 'should already be open',
+        ),
+      );
+    }
+
+    final identifier = 'memory:${_inMemoryCounter++}';
+
+    return customConnectionPool(
+      identifier: identifier,
+      openPool: () async {
+        final pool = SqliteConnectionPool.open(
+          name: identifier,
+          openConnections: () => PoolConnections(sqlite3.openInMemory(), []),
+        );
+        final second = SqliteConnectionPool.open(
+          name: identifier,
+          openConnections: () => throw 'should already be open',
+        );
+
+        _activeDatabase = (identifier, second);
+        return pool;
+      },
+    );
+  }
+
+  @override
+  Future<void> deleteData() async {
+    // This makes it re-open a new in-memory database next.
+    await _activeDatabase?.$2.close();
+    _activeDatabase = null;
+  }
 }

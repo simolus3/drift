@@ -46,30 +46,90 @@ DriftConnection sqliteConnectionPool({
   bool useBackgroundIsolates = true,
   void Function(Database, {required bool isWriter})? configureDatabase,
 }) {
-  return DriftConnection.withImplementation(
-    dialect: SqliteDialect.new,
-    implementation: (_) => _sqliteConnectionPool(
-      file: file,
+  final path = file.absolute.path;
+
+  return customConnectionPool(
+    identifier: path,
+    openPool: () => _sqliteConnectionPool(
+      path: path,
       amountOfReaders: amountOfReaders,
       preparedStatementCacheSize: preparedStatementCacheSize,
       useBackgroundIsolates: useBackgroundIsolates,
       configureDatabase: configureDatabase,
       updates: updates,
     ),
+    updates: updates,
+    workerIsolates: useBackgroundIsolates ? amountOfReaders + 1 : null,
   );
 }
 
-Future<OpenedDriftConnection> _sqliteConnectionPool({
-  required File file,
+/// Opens a custom pool of SQLite connections for high-performance and
+/// concurrent queries.
+///
+/// Most apps would typically use [sqliteConnectionPool], which applies
+/// recommended options.
+///
+/// The [openPool] method is responsible for opening a pool from the
+/// `sqlite3_connection_pool` package. Typically, connections are configured
+/// with `PRAGMA journal_mode = WAL` to safely allow multiple concurrent
+/// readers. The pool must enable native updates when [updates] is set to
+/// [UpdateNotificationMode.native] (the default).
+///
+/// When [workerIsolates] is set to a non-null value, drift will spawn that
+/// amount of background isolates to run queries. Additional background isolates
+/// may be spawned if needed. When set to null, drift won't spawn background
+/// isolates for this connection pool.
+///
+/// For example, this can be used to configure a single-connection "pool" for an
+/// in-memory database:
+///
+/// ```dart
+/// final identifier = 'in-memory';
+/// final db = AppDatabase(customConnectionPool(
+///   identifier: identifier,
+///   openPool:() async {
+///     return SqliteConnectionPool.open(
+///       name: identifier,
+///       openConnections: () => PoolConnections(sqlite3.openInMemory(), []),
+///     );
+///   },
+///   workerIsolates: 1,
+/// ));
+/// ```
+DriftConnection customConnectionPool({
+  required String identifier,
+  UpdateNotificationMode updates = .native,
+  required Future<SqliteConnectionPool> Function() openPool,
+  int? workerIsolates,
+}) {
+  return DriftConnection.withImplementation(
+    dialect: SqliteDialect.new,
+    implementation: (_) async {
+      final pool = await openPool();
+
+      return OpenedDriftConnection(
+        SqlitePoolSession(
+          pool,
+          isolates: workerIsolates != null
+              // Capacity is readers plus writer
+              ? DatabaseWorkers(identifier, workerIsolates)
+              : null,
+        ),
+        SqlitePoolUpdates(pool, enableCustomUpdates: updates == .drift),
+      );
+    },
+  );
+}
+
+Future<SqliteConnectionPool> _sqliteConnectionPool({
+  required String path,
   required int amountOfReaders,
   required int preparedStatementCacheSize,
   required bool useBackgroundIsolates,
   required void Function(Database, {required bool isWriter})? configureDatabase,
   required UpdateNotificationMode updates,
-}) async {
-  final path = file.absolute.path;
-
-  final pool = await SqliteConnectionPool.openAsync(
+}) {
+  return SqliteConnectionPool.openAsync(
     name: path,
     openConnections: () {
       void configureConnection(Database db, bool isWriter) {
@@ -106,16 +166,5 @@ Future<OpenedDriftConnection> _sqliteConnectionPool({
         enableNativeUpdateHooks: updates == .native,
       );
     },
-  );
-
-  return OpenedDriftConnection(
-    SqlitePoolSession(
-      pool,
-      isolates: useBackgroundIsolates
-          // Capacity is readers plus writer
-          ? DatabaseWorkers(file.path, amountOfReaders + 1)
-          : null,
-    ),
-    SqlitePoolUpdates(pool, enableCustomUpdates: updates == .drift),
   );
 }

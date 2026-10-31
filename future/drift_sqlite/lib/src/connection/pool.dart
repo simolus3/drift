@@ -50,10 +50,6 @@ final class SqlitePoolSession
 
     if (_outstandingLeases > 0) {
       await _lastLeaseCompleted.future;
-    } else {
-      // We have aborted outstanding requests, so _outstandingLeases won't be
-      // incremented by concurrent requests either. We're done using the pool.
-      _lastLeaseCompleted.complete();
     }
 
     // We have awaited all outstanding leases, so all isolates must be idle at
@@ -89,7 +85,6 @@ final class SqlitePoolSession
     } on Object {
       if (acquired != null) release(acquired);
       if (isolate != null) isolates!.returnIsolateWorker(isolate);
-      _markLeaseReturned();
       _markLeaseReturned();
       rethrow;
     }
@@ -207,6 +202,7 @@ abstract class _LeasedPoolConnection implements DriftSession {
     if (!isClosed) {
       _closeDirectly();
     }
+    await closed;
   }
 
   void _closeDirectly() {
