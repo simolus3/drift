@@ -408,6 +408,30 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
         return;
       }
 
+      if (element.enclosingElement == _types.batch &&
+          name.startsWith('insert') &&
+          node.argumentList.arguments.any(
+            (a) => a is NamedArgument && a.name.lexeme == 'onConflict',
+          ) &&
+          node.typeArguments == null) {
+        // The types for onConflict can no longer be inferred due to insert
+        // methods now requiring a generated table type instead of a plain
+        // Table.
+        final tableParameter = node.argumentList.arguments.firstWhereOrNull(
+          (a) => a.correspondingParameter?.name == 'table',
+        );
+        final replacement = _findTableTypeParameters(
+          tableParameter?.argumentExpression,
+        );
+
+        if (replacement case (final row, final table)?) {
+          _writer.insertBefore(
+            node.argumentList.leftParenthesis,
+            '<${row.getDisplayString()}, ${table.getDisplayString()}>',
+          );
+        }
+      }
+
       // Also replace a few methods needing a separate call for SQLite-specific
       // insert modes.
       final modeArg = node.argumentList.arguments.singleWhereOrNull(
@@ -468,6 +492,21 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
     }
 
     super.visitPropertyAccess(node);
+  }
+
+  (DartType, DartType)? _findTableTypeParameters(Expression? expression) {
+    final staticType = expression?.staticType;
+    if (staticType is! InterfaceType) return null;
+
+    final asTableInfo = staticType.asInstanceOf(_types.tableInfo);
+    if (asTableInfo == null) return null;
+
+    final table = asTableInfo.typeArguments[0];
+    final row = asTableInfo.typeArguments[1];
+
+    // The order of types is swapped in drift3, it's the row first and then the
+    // table type.
+    return (row, table);
   }
 
   /// Whether [expr] is of the form `db.executor` or `db.connection`, where
@@ -681,6 +720,7 @@ final class _KnownDriftImports {
   final InterfaceType databaseConnectionUser;
   final InterfaceType dslTable;
   final ClassElement insertStatement;
+  final ClassElement batch;
   final MixinElement tableInfo;
 
   _KnownDriftImports(LibraryElement drift)
@@ -693,6 +733,7 @@ final class _KnownDriftImports {
       insertStatement =
           drift.exportNamespace.definedNames2['InsertStatement']
               as ClassElement,
+      batch = drift.exportNamespace.definedNames2['Batch'] as ClassElement,
       tableInfo =
           drift.exportNamespace.definedNames2['TableInfo'] as MixinElement;
 }

@@ -121,15 +121,20 @@ Expression<bool> m(Expression<int> a, Expression<int> b) {
         d.file('database.dart', '''
 import 'package:drift/drift.dart';
 
+class User {}
+class FakeUsersTable extends Table with TableInfo<FakeUsersTable, User> {}
+
 class FakeGeneratedDatabase extends GeneratedDatabase {
-  TableInfo get users => throw 'stub';
+  FakeUsersTable get users => throw 'stub';
 }
 
+Insertable<Never> get stub => throw 'stub';
+
 void queryExtension(FakeGeneratedDatabase db) {
-  db.users.insertOne('stub');
+  db.users.insertOne(stub);
   db.users.actualTableName; // not a query extension
   final x = db.users;
-  x.insertOne('stub'); // indirect, cannot be migrated
+  x.insertOne(stub); // indirect, cannot be migrated
 }
 
 void rawConnection(FakeGeneratedDatabase db) async {
@@ -144,6 +149,10 @@ void insertMode(FakeGeneratedDatabase db) async {
   await stmt.insert(stub, mode: InsertMode.replace);
   await db.users.insertOne(stub);
   await db.users.insertOne(stub, mode: InsertMode.insertOrReplace);
+
+  await db.batch((b) {
+    b.insert(db.users, stub, onConflict: DoUpdate((b) => stub));
+  });
 }
 '''),
       ]);
@@ -152,15 +161,20 @@ void insertMode(FakeGeneratedDatabase db) async {
 import 'dart:typed_data';
 import 'package:drift3_preview/drift.dart';
 
+class User {}
+class FakeUsersTable extends Table with TableInfo<FakeUsersTable, User> {}
+
 base class FakeGeneratedDatabase extends GeneratedDatabase {
-  TableInfo get users => throw 'stub';
+  FakeUsersTable get users => throw 'stub';
 }
 
+Insertable<Never> get stub => throw 'stub';
+
 void queryExtension(FakeGeneratedDatabase db) {
-  db.usersQueries.insertOne('stub');
+  db.usersQueries.insertOne(stub);
   db.users.actualTableName; // not a query extension
   final x = db.users;
-  x.insertOne('stub'); // indirect, cannot be migrated
+  x.insertOne(stub); // indirect, cannot be migrated
 }
 
 void rawConnection(FakeGeneratedDatabase db) async {
@@ -175,6 +189,10 @@ void insertMode(FakeGeneratedDatabase db) async {
   await stmt.mode(InsertMode.replace).insert(stub, );
   await db.usersQueries.insertOne(stub);
   await db.usersQueries.insertOneMode(InsertMode.insertOrReplace, stub, );
+
+  await db.batch((b) {
+    b.insert<User, FakeUsersTable>(db.users, stub, onConflict: DoUpdate((b) => stub));
+  });
 }
 ''').validate();
     });
