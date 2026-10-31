@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:drift3_preview/drift.dart';
-import 'package:drift/src/drift3_preview/src/utils/cancellation_zone.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:sqlite3/common.dart';
 import 'package:test/test.dart';
@@ -204,16 +203,14 @@ void declareConnectionTests(
     });
     await hasTransaction.future;
 
-    final token = CancellationToken<void>()..cancel();
+    final token = AbortToken()..abort();
 
-    runCancellable(() async {
-      await expectLater(
-        db.transaction(() async {
-          throw 'should not be reached';
-        }),
-        throwsA(isA<CancellationException>()),
-      );
-    }, token: token);
+    await expectLater(
+      db.transaction(abort: token, () async {
+        throw 'should not be reached';
+      }),
+      throwsA(isA<AbortException>()),
+    );
 
     finishTransaction.complete();
     await db.customSelect('SELECT 1').get();

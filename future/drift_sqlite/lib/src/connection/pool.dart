@@ -90,11 +90,11 @@ final class SqlitePoolSession
     }
   }
 
-  Future<_PlainLease> _lease(bool writer) async {
+  Future<_PlainLease> _lease(bool writer, AbortToken? abort) async {
     final (connection, isolate) = await _waitForConnection(
       writer
-          ? pool.writer(abortSignal: cancellationSignal)
-          : pool.reader(abortSignal: cancellationSignal),
+          ? pool.writer(abortSignal: abort?.aborted)
+          : pool.reader(abortSignal: abort?.aborted),
       (lease) => lease.returnLease(),
     );
 
@@ -102,8 +102,11 @@ final class SqlitePoolSession
   }
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) async {
-    final connection = await _lease(!statement.isReadOnly);
+  Future<QueryResult> execute(
+    StatementInfo statement, {
+    AbortToken? abort,
+  }) async {
+    final connection = await _lease(!statement.isReadOnly, abort);
     try {
       return await connection.execute(statement);
     } finally {
@@ -112,8 +115,11 @@ final class SqlitePoolSession
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
-    final writer = await _lease(true);
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  }) async {
+    final writer = await _lease(true, abort);
     try {
       return await writer.executeBatch(batch);
     } finally {
@@ -143,15 +149,18 @@ final class SqlitePoolSession
   DriftTransactionParent? get transactionParent => this;
 
   @override
-  Future<DriftSession> begin(TransactionOptions options) async {
-    final connection = await _lease(!options.readOnly);
+  Future<DriftSession> begin(
+    TransactionOptions options, {
+    AbortToken? abort,
+  }) async {
+    final connection = await _lease(!options.readOnly, abort);
     return await connection.beginTransaction();
   }
 
   @override
-  Future<DriftSession> exclusive() async {
+  Future<DriftSession> exclusive({AbortToken? abort}) async {
     final (access, isolate) = await _waitForConnection(
-      pool.exclusiveAccess(abortSignal: cancellationSignal),
+      pool.exclusiveAccess(abortSignal: abort?.aborted),
       (access) => access.close(),
     );
 
@@ -232,7 +241,7 @@ abstract class _LeasedPoolConnection implements DriftSession {
   bool get isClosed => _closed.isCompleted;
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) {
+  Future<QueryResult> execute(StatementInfo statement, {AbortToken? abort}) {
     return _runWithDatabase(
       _PoolConnectionStatements._runClosure(
         statement.sql,
@@ -243,7 +252,10 @@ abstract class _LeasedPoolConnection implements DriftSession {
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) {
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  }) {
     return _runWithDatabase(_PoolConnectionStatements._runBatchClosure(batch));
   }
 
@@ -400,8 +412,6 @@ extension _PoolConnectionStatements on PoolConnection {
 
 extension<T> on Future<T> {
   Future<T> poolAbortExceptionsToDrift() {
-    return onError<PoolAbortException>(
-      (_, _) => throw const CancellationException(),
-    );
+    return onError<PoolAbortException>((_, _) => throw const AbortException());
   }
 }

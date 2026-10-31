@@ -475,15 +475,10 @@ void main() {
               ),
             );
         await pumpEventQueue();
-
-        try {
-          checkIfCancelled();
-        } on CancellationException {
-          fail('Should not have been cancelled');
-        }
       }),
     );
 
-    db.select(db.users).watch().first;
+    final first = await db.select(db.users).watch().first;
+    expect(first, isEmpty);
   });
 }

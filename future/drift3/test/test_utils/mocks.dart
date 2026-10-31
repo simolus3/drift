@@ -115,13 +115,17 @@ final class MockSession extends Mock
       _nsm(Invocation.getter(#locks), this);
 
   @override
-  Future<QueryResult> execute(StatementInfo? statement) => _nsm(
-    Invocation.method(#execute, [statement]),
-    Future.value(QueryResult(resultSet: null)),
-  );
+  Future<QueryResult> execute(StatementInfo? statement, {AbortToken? abort}) =>
+      _nsm(
+        Invocation.method(#execute, [statement]),
+        Future.value(QueryResult(resultSet: null)),
+      );
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch? statement) => _nsm(
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch? statement, {
+    AbortToken? abort,
+  }) => _nsm(
     Invocation.method(#executeBatch, [statement]),
     Future.value(const <QueryResult>[]),
   );
@@ -148,11 +152,14 @@ final class MockSession extends Mock
   );
 
   @override
-  Future<DriftSession> exclusive() =>
+  Future<DriftSession> exclusive({AbortToken? abort}) =>
       _nsm(Invocation.method(#exclusive, []), _neverComplete<DriftSession>());
 
   @override
-  Future<DriftSession> begin(TransactionOptions? options) => _nsm(
+  Future<DriftSession> begin(
+    TransactionOptions? options, {
+    AbortToken? abort,
+  }) => _nsm(
     Invocation.method(#begin, [options]),
     _neverComplete<DriftSession>(),
   );

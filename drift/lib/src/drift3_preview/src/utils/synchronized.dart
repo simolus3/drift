@@ -2,52 +2,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
-/// A single asynchronous lock implemented by future-chaining.
-final class Lock {
-  Future<void>? _last;
-
-  /// Waits for previous [synchronized]-calls on this [Lock] to complete, and
-  /// then calls [block] before further [synchronized] calls are allowed.
-  Future<T> synchronized<T>(FutureOr<T> Function() block) {
-    final previous = _last;
-    // This completer may not be sync: It must complete just after
-    // callBlockAndComplete completes.
-    final blockCompleted = Completer<void>();
-    final blockReleasedLock = blockCompleted.future;
-    _last = blockReleasedLock;
-
-    Future<T> callBlockAndComplete() {
-      return Future.sync(block).whenComplete(() {
-        blockCompleted.complete();
-
-        if (identical(_last, blockReleasedLock)) {
-          // There's no subsequent waiter entering the lock now, so we can reset
-          // the entire state.
-          _last = null;
-
-          // This doesn't affect the correctness of the lock, but is helpful
-          // when drift is used in `fake_async` scenarios but then cleaned up
-          // outside of that `fake_async` scope (a very common pattern in
-          // Flutter widget tests).
-          // Waiting on `previous.then` on a completed `previous` future will
-          // schedule a microtask, so if we call synchronized in a zone outside
-          // of fake_async and the lock was previously locked in a fake_async
-          // zone, that microtask might not run if no one completes the pending
-          // fake_async microtasks.
-          // Since the lock is idle anyway, the next waiter can just call
-          // callBlockAndComplete() directly without calling `.then()` on a
-          // future that will no longer notify listeners.
-        }
-      });
-    }
-
-    if (previous != null) {
-      return previous.then((_) => callBlockAndComplete());
-    } else {
-      return callBlockAndComplete();
-    }
-  }
-}
+import 'abort.dart';
 
 @internal
 final class SharedOrExclusiveLock {
@@ -56,38 +11,50 @@ final class SharedOrExclusiveLock {
 
   final List<void Function()> _exclusiveWaiters = [];
 
-  Future<void> _scheduleExclusive(void Function() action) {
+  Future<void> _scheduleExclusive(void Function() action, AbortToken? abort) {
     final completer = Completer<void>();
-    _exclusiveWaiters.add(() {
+    var didRun = false;
+
+    void run() {
+      didRun = true;
       assert(_shared == 0 && !_hasExclusiveLock);
       action();
       assert(_shared > 0 || _hasExclusiveLock);
 
       completer.complete();
+    }
+
+    _exclusiveWaiters.add(run);
+
+    abort?.aborted.whenComplete(() {
+      if (!didRun) {
+        _exclusiveWaiters.remove(run);
+        completer.completeError(const AbortException());
+      }
     });
 
     return completer.future;
   }
 
-  Future<void> _obtainShared() {
+  Future<void> _obtainShared(AbortToken? abort) {
     if (!_hasExclusiveLock && _exclusiveWaiters.isEmpty) {
       _shared++;
       return Future.value();
     } else {
       return _scheduleExclusive(() {
         _shared++;
-      });
+      }, abort);
     }
   }
 
-  Future<void> _obtainExclusive() {
+  Future<void> _obtainExclusive(AbortToken? abort) {
     if (_shared == 0 && !_hasExclusiveLock) {
       _hasExclusiveLock = true;
       return Future.value();
     } else {
       return _scheduleExclusive(() {
         _hasExclusiveLock = true;
-      });
+      }, abort);
     }
   }
 
@@ -109,8 +76,13 @@ final class SharedOrExclusiveLock {
     }
   }
 
-  Future<T> _run<T>(bool exclusive, FutureOr<T> Function() block) async {
-    await (exclusive ? _obtainExclusive() : _obtainShared());
+  Future<T> _run<T>(
+    bool exclusive,
+    FutureOr<T> Function() block,
+    AbortToken? abort,
+  ) async {
+    abort?.checkAborted();
+    await (exclusive ? _obtainExclusive(abort) : _obtainShared(abort));
     try {
       return await block();
     } finally {
@@ -122,11 +94,11 @@ final class SharedOrExclusiveLock {
     }
   }
 
-  Future<T> shared<T>(FutureOr<T> Function() block) {
-    return _run(false, block);
+  Future<T> shared<T>(FutureOr<T> Function() block, [AbortToken? abort]) {
+    return _run(false, block, abort);
   }
 
-  Future<T> exclusive<T>(FutureOr<T> Function() block) {
-    return _run(true, block);
+  Future<T> exclusive<T>(FutureOr<T> Function() block, [AbortToken? abort]) {
+    return _run(true, block, abort);
   }
 }

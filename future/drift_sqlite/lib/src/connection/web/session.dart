@@ -7,7 +7,8 @@ import 'dart:js_interop';
 import 'package:drift3_preview/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:sqlite3_web/protocol_utils.dart' as utils;
-import 'package:sqlite3_web/sqlite3_web.dart';
+import 'package:sqlite3_web/sqlite3_web.dart' hide AbortException;
+import 'package:sqlite3_web/sqlite3_web.dart' as sqlite3_web;
 
 import '../shared.dart';
 import 'protocol.dart';
@@ -24,7 +25,10 @@ abstract base class _BaseWebSession implements DriftSession {
   });
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) async {
+  Future<QueryResult> execute(
+    StatementInfo statement, {
+    AbortToken? abort,
+  }) async {
     final (params, paramTypes) = utils.serializeParameters(statement.variables);
 
     final response = await database
@@ -38,6 +42,7 @@ abstract base class _BaseWebSession implements DriftSession {
             type: BaseRequest.typeExecute,
           ),
           token: lockToken,
+          abortTrigger: abort?.aborted,
         )
         .translateExceptions();
 
@@ -45,7 +50,10 @@ abstract base class _BaseWebSession implements DriftSession {
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  }) async {
     final sql = batch.sql.map((e) => e.toJS).toList().toJS;
     final entries = JSArray<ExecuteBatchEntry>.withLength(
       batch.statements.length,
@@ -72,6 +80,7 @@ abstract base class _BaseWebSession implements DriftSession {
             type: BaseRequest.typeExecuteBatch,
           ),
           token: lockToken,
+          abortTrigger: abort?.aborted,
         )
         .translateExceptions();
 
@@ -128,7 +137,7 @@ final class WebSession extends _BaseWebSession
   DriftTransactionParent? get transactionParent => this;
 
   @override
-  Future<DriftSession> exclusive() {
+  Future<DriftSession> exclusive({AbortToken? abort}) {
     final completer = Completer<DriftSession>.sync();
     database
         .requestLock<void>((token) {
@@ -136,7 +145,7 @@ final class WebSession extends _BaseWebSession
           completer.complete(session);
 
           return session.closed;
-        }, abortTrigger: cancellationSignal)
+        }, abortTrigger: abort?.aborted)
         .translateExceptions()
         .onError((Object error, StackTrace trace) {
           if (!completer.isCompleted) completer.completeError(error, trace);
@@ -145,7 +154,7 @@ final class WebSession extends _BaseWebSession
   }
 
   @override
-  Future<DriftSession> begin(TransactionOptions options) {
+  Future<DriftSession> begin(TransactionOptions options, {AbortToken? abort}) {
     final completer = Completer<DriftSession>.sync();
     database
         .requestLock<void>((token) async {
@@ -154,7 +163,7 @@ final class WebSession extends _BaseWebSession
           completer.complete(session);
 
           return await session.closed;
-        }, abortTrigger: cancellationSignal)
+        }, abortTrigger: abort?.aborted)
         .translateExceptions()
         .onError((Object error, StackTrace trace) {
           if (!completer.isCompleted) completer.completeError(error, trace);
@@ -252,8 +261,8 @@ final class _TransactionSession extends _InnerSession
 extension<T> on Future<T> {
   Future<T> translateExceptions() {
     return onError((Object error, StackTrace trace) {
-      if (error is AbortException) {
-        Error.throwWithStackTrace(const CancellationException(), trace);
+      if (error is sqlite3_web.AbortException) {
+        Error.throwWithStackTrace(const AbortException(), trace);
       } else if (error case RemoteException(:final exception?)) {
         Error.throwWithStackTrace(exception, trace);
       }

@@ -686,13 +686,17 @@ final class _NoLegacyAlterTable extends QueryInterceptor {
   var didPreventLegacyAlterTable = false;
 
   @override
-  Future<QueryResult> execute(DriftSession session, StatementInfo statement) {
+  Future<QueryResult> execute(
+    DriftSession session,
+    StatementInfo statement,
+    AbortToken? abort,
+  ) {
     final sql = statement.sql;
     if (sql.contains('legacy_alter_table') && sql.contains('=')) {
       didPreventLegacyAlterTable = true;
       throw 'not allowed';
     }
 
-    return super.execute(session, statement);
+    return super.execute(session, statement, abort);
   }
 }

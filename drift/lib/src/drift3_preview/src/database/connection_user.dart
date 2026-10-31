@@ -22,6 +22,7 @@ import '../query_builder/statements/insert.dart';
 import '../query_builder/statements/select.dart';
 import '../query_builder/statements/statement.dart';
 import '../query_builder/statements/update.dart';
+import '../utils/abort.dart';
 import 'batch.dart';
 import 'custom_select.dart';
 import 'data_class.dart';
@@ -137,17 +138,13 @@ abstract base class DatabaseConnectionUser {
   ///   successful or not, streams created in it will close. Writes happening
   ///   outside of this transaction will not affect the stream.
   ///
-  /// Starting from drift version 2.0, nested transactions are supported on most
-  /// database implementations (including `NativeDatabase`, `WebDatabase`,
-  /// `WasmDatabase`, `SqfliteQueryExecutor`, databases relayed through
-  /// isolates or web workers).
-  /// When calling [transaction] inside a [transaction] block on supported
-  /// database implementations, a new transaction will be started.
-  /// For backwards-compatibility, the current transaction will be re-used if
-  /// a nested transaction is started with a database implementation not
-  /// supporting nested transactions. The [requireNew] parameter can be set to
-  /// instead turn this case into a runtime error.
+  /// The optional [abort] parameter can be used to abort _starting_ the
+  /// transaction by making this method throw an [AbortException] without ever
+  /// invoking [action]. The abort token has no effect on the transaction once
+  /// started.
   ///
+  /// [transaction] blocks can be nested, which makes drift emulate an inner
+  /// transaction through `SAVEPOINT` statements.
   /// Nested transactions are conceptionally similar to regular, top-level
   /// transactions in the sense that their writes are not seen by users outside
   /// of the transaction until it is commited. However, their behavior around
@@ -168,10 +165,12 @@ abstract base class DatabaseConnectionUser {
   Future<T> transaction<T>(
     Future<T> Function() action, {
     TransactionOptions? options,
+    AbortToken? abort,
   }) async {
     final resolved = await currentSession();
     final transaction = await resolved.transactionParent!.begin(
       options ?? TransactionOptions(),
+      abort: abort,
     );
     final transactionControl = transaction.transaction!;
     final nestedStreams = ScopedStreamQueryStore(_currentStreamQueryStore());
@@ -314,9 +313,17 @@ abstract base class DatabaseConnectionUser {
   /// are atomic (either all statements in a transaction complete or none at
   /// all), whereas an error in an [exclusively] block does not roll back
   /// earlier statements.
-  Future<T> exclusively<T>(Future<T> Function() action) async {
+  ///
+  /// The optional [abort] parameter can be used to abort acquiring the lock by
+  /// making this method throw an [AbortException] without ever invoking
+  /// [action]. The abort token has no effect on the transaction once
+  /// started.
+  Future<T> exclusively<T>(
+    Future<T> Function() action, {
+    AbortToken? abort,
+  }) async {
     final resolved = await currentSession();
-    final exclusive = await resolved.locks!.exclusive();
+    final exclusive = await resolved.locks!.exclusive(abort: abort);
     final streams = ScopedStreamQueryStore(_currentStreamQueryStore());
 
     return _runConnectionZoned(

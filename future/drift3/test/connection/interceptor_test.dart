@@ -110,9 +110,10 @@ final class EmittingInterceptor extends QueryInterceptor {
   Future<DriftSession> begin(
     DriftTransactionParent parent,
     TransactionOptions options,
+    AbortToken? abort,
   ) {
     events.add('begin');
-    return super.begin(parent, options);
+    return super.begin(parent, options, abort);
   }
 
   @override
@@ -128,7 +129,11 @@ final class EmittingInterceptor extends QueryInterceptor {
   }
 
   @override
-  Future<QueryResult> execute(DriftSession session, StatementInfo statement) {
+  Future<QueryResult> execute(
+    DriftSession session,
+    StatementInfo statement,
+    AbortToken? abort,
+  ) {
     if (statement.isReadOnly) {
       events.add('read');
     } else {
@@ -138,15 +143,16 @@ final class EmittingInterceptor extends QueryInterceptor {
       events.add('write: $writes');
     }
 
-    return super.execute(session, statement);
+    return super.execute(session, statement, abort);
   }
 
   @override
   Future<List<QueryResult>> executeBatch(
     DriftSession session,
     StatementBatch batch,
+    AbortToken? abort,
   ) {
     events.add('batched');
-    return super.executeBatch(session, batch);
+    return super.executeBatch(session, batch, abort);
   }
 }

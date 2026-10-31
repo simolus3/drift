@@ -6,6 +6,7 @@ import '../../connection/streams/update_rules.dart';
 import '../../database/connection_user.dart';
 import '../../database/selectable.dart';
 import '../../dsl/table.dart';
+import '../../utils/abort.dart';
 import '../clauses/from.dart';
 import '../clauses/group_by.dart';
 import '../clauses/limit.dart';
@@ -280,11 +281,11 @@ sealed class BaseSelectStatement<
   );
 
   @override
-  Future<List<Row>> get() async {
+  Future<List<Row>> get({AbortToken? abort}) async {
     final session = await _database.currentSession();
     final query = _database.dialect.compile(this);
     final converter = createMapper(_database.dialect, structure);
-    final results = await session.execute(query);
+    final results = await session.execute(query, abort: abort);
 
     return results.resultSet!.map(converter).toList();
   }
@@ -301,9 +302,9 @@ sealed class BaseSelectStatement<
           TableUpdateQuery.onTableName(watched),
       ]),
       key: StreamKey(stmt.sql, stmt.variables),
-      fetchData: () async {
+      fetchData: (abort) async {
         final currentSession = await _database.currentSession();
-        return currentSession.execute(stmt);
+        return currentSession.execute(stmt, abort: abort);
       },
       prepare: () => _database.currentSession(),
     );

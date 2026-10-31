@@ -42,4 +42,34 @@ void main() {
       everyElement(isA<Timer>().having((e) => e.isActive, 'isActive', isFalse)),
     );
   });
+
+  test('can abort operations', () async {
+    final db = TodoDb(testInMemoryDatabase());
+    final parent = Zone.current;
+
+    await db.exclusively(() async {
+      // Leave exclusively() Zone to acquire top-level lock, which fails.
+      await parent.run(() async {
+        await expectLater(
+          db.transaction(
+            expectAsync1((_) async {}, count: 0),
+            abort: AbortToken(pumpEventQueue()),
+          ),
+          throwsA(isA<AbortException>()),
+        );
+        await expectLater(
+          db.exclusively(
+            expectAsync1((_) async {}, count: 0),
+            abort: AbortToken(pumpEventQueue()),
+          ),
+          throwsA(isA<AbortException>()),
+        );
+
+        await expectLater(
+          db.usersQueries.all().get(abort: AbortToken(pumpEventQueue())),
+          throwsA(isA<AbortException>()),
+        );
+      });
+    });
+  });
 }

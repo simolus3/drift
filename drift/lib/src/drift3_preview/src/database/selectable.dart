@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../connection/streams/store.dart';
+import '../utils/abort.dart';
 import '../utils/async_map.dart';
 import '../utils/single_transformer.dart';
 
@@ -24,7 +25,7 @@ import '../utils/single_transformer.dart';
 /// single value methods.
 abstract interface class MultiSelectable<T> {
   /// Executes this statement and returns the result.
-  Future<List<T>> get();
+  Future<List<T>> get({AbortToken? abort});
 
   /// Creates an auto-updating stream of the result that emits new items
   /// whenever any table used in this statement changes.
@@ -75,7 +76,7 @@ abstract interface class SingleSelectable<T> {
   ///
   /// See also: [Selectable.getSingleOrNull], which returns `null` instead of
   /// throwing if the query completes with no rows.
-  Future<T> getSingle();
+  Future<T> getSingle({AbortToken? abort});
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [Selectable.watch]. However, it is assumed that the query will only emit
@@ -117,7 +118,7 @@ abstract interface class SingleOrNullSelectable<T> {
   ///
   /// See also: [Selectable.getSingle], which can be used if the query will
   /// always evaluate to exactly one row.
-  Future<T?> getSingleOrNull();
+  Future<T?> getSingleOrNull({AbortToken? abort});
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [Selectable.watch]. However, it is assumed that the query will only
@@ -147,14 +148,14 @@ abstract mixin class Selectable<T>
         SingleSelectable<T>,
         SingleOrNullSelectable<T> {
   @override
-  Future<List<T>> get();
+  Future<List<T>> get({AbortToken? abort});
 
   @override
   QueryStream<List<T>> watch();
 
   @override
-  Future<T> getSingle() async {
-    return (await get()).single;
+  Future<T> getSingle({AbortToken? abort}) async {
+    return (await get(abort: abort)).single;
   }
 
   @override
@@ -163,8 +164,8 @@ abstract mixin class Selectable<T>
   }
 
   @override
-  Future<T?> getSingleOrNull() async {
-    final list = await get();
+  Future<T?> getSingleOrNull({AbortToken? abort}) async {
+    final list = await get(abort: abort);
     if (list.isEmpty) {
       return null;
     } else {
@@ -200,8 +201,8 @@ class _MappedSelectable<S, T> extends Selectable<T> {
   _MappedSelectable(this._source, this._mapper);
 
   @override
-  Future<List<T>> get() {
-    return _source.get().then(_mapResults);
+  Future<List<T>> get({AbortToken? abort}) {
+    return _source.get(abort: abort).then(_mapResults);
   }
 
   @override
@@ -220,8 +221,8 @@ class _AsyncMappedSelectable<S, T> extends Selectable<T> {
   _AsyncMappedSelectable(this._source, this._mapper);
 
   @override
-  Future<List<T>> get() {
-    return _source.get().then(_mapResults);
+  Future<List<T>> get({AbortToken? abort}) {
+    return _source.get(abort: abort).then(_mapResults);
   }
 
   @override

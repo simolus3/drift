@@ -7,6 +7,7 @@ import '../connection/streams/update_rules.dart';
 import '../query_builder/results.dart';
 import '../query_builder/schema/entities.dart';
 import '../query_builder/types.dart';
+import '../utils/abort.dart';
 import 'connection_user.dart';
 import 'selectable.dart';
 
@@ -87,10 +88,10 @@ final class CustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
   }
 
   @override
-  Future<List<T>> get() async {
+  Future<List<T>> get({AbortToken? abort}) async {
     final session = await _db.currentSession();
 
-    final result = await session.execute(_statement);
+    final result = await session.execute(_statement, abort: abort);
     return _mapResults(result);
   }
 
@@ -100,9 +101,9 @@ final class CustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
     final fetcher = QueryStreamFetcher(
       readsFrom: TableUpdateQuery.onAllTables(tables),
       key: StreamKey(query, variables),
-      fetchData: () async {
+      fetchData: (abort) async {
         final currentSession = await _db.currentSession();
-        return currentSession.execute(_statement);
+        return currentSession.execute(_statement, abort: abort);
       },
       prepare: () async => await _db.currentSession(),
     );
@@ -126,10 +127,10 @@ final class AsyncCustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
   );
 
   @override
-  Future<List<T>> get() async {
+  Future<List<T>> get({AbortToken? abort}) async {
     final session = await _db.currentSession();
 
-    final result = await session.execute(_statement);
+    final result = await session.execute(_statement, abort: abort);
     final resultSet = result.resultSet!;
     final map = mapper(resultSet);
 
@@ -144,11 +145,12 @@ final class AsyncCustomSelectStatement<T> extends BaseCustomSelectStatement<T> {
       // We want this stream to be unique since the mapper might run
       // additional queries we don't know about yet.
       key: null,
-      fetchData: () async {
+      fetchData: (abort) async {
         // Spawn a read transaction since we might need multiple queries.
         return await _db.transaction(
           options: TransactionOptions(readOnly: isReadOnly),
-          get,
+          abort: abort,
+          () => get(abort: abort),
         );
       },
       prepare: () async => await _db.currentSession(),

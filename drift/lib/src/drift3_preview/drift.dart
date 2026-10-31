@@ -26,8 +26,7 @@ export 'src/exceptions.dart';
 export 'src/query_builder.dart' hide SingleTableStatementMixin, BuiltinSqlType;
 export 'src/runtime_options.dart';
 
-export 'src/utils/cancellation_zone.dart'
-    show checkIfCancelled, cancellationSignal, CancellationException;
+export 'src/utils/abort.dart';
 
 /// A [ListEquality] instance used by generated drift code for the `==` and
 /// [Object.hashCode] implementation of generated classes if they contain lists.

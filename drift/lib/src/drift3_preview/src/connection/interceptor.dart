@@ -1,3 +1,4 @@
+import '../utils/abort.dart';
 import 'connection.dart';
 import 'connection_compat.dart';
 import 'result_set.dart';
@@ -16,16 +17,21 @@ import 'result_set.dart';
 /// documentation page: https://drift.simonbinder.eu/docs/examples/tracing/
 abstract base class QueryInterceptor {
   /// Intercept [DriftSession.execute] calls.
-  Future<QueryResult> execute(DriftSession session, StatementInfo statement) {
-    return session.execute(statement);
+  Future<QueryResult> execute(
+    DriftSession session,
+    StatementInfo statement,
+    AbortToken? abort,
+  ) {
+    return session.execute(statement, abort: abort);
   }
 
   /// Intercept [DriftSession.executeBatch] calls.
   Future<List<QueryResult>> executeBatch(
     DriftSession session,
     StatementBatch batch,
+    AbortToken? abort,
   ) {
-    return session.executeBatch(batch);
+    return session.executeBatch(batch, abort: abort);
   }
 
   /// Intercept [DriftSession.close] calls.
@@ -35,8 +41,9 @@ abstract base class QueryInterceptor {
   Future<DriftSession> begin(
     DriftTransactionParent parent,
     TransactionOptions options,
+    AbortToken? abort,
   ) {
-    return parent.begin(options);
+    return parent.begin(options, abort: abort);
   }
 
   /// Intercept [DriftTransactionSession.commit] calls.
@@ -135,13 +142,16 @@ final class _InterceptedSession
   Future<void> get closed => _original.closed;
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) {
-    return _interceptor.execute(_original, statement);
+  Future<QueryResult> execute(StatementInfo statement, {AbortToken? abort}) {
+    return _interceptor.execute(_original, statement, abort);
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) {
-    return _interceptor.executeBatch(_original, batch);
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  }) {
+    return _interceptor.executeBatch(_original, batch, abort);
   }
 
   @override
@@ -171,10 +181,14 @@ final class _InterceptedSession
   }
 
   @override
-  Future<DriftSession> begin(TransactionOptions options) async {
+  Future<DriftSession> begin(
+    TransactionOptions options, {
+    AbortToken? abort,
+  }) async {
     final inner = await _interceptor.begin(
       _original.transactionParent!,
       options,
+      abort,
     );
 
     return sticky ? _InterceptedSession(inner, _interceptor, true) : inner;
@@ -204,8 +218,8 @@ final class _InterceptedSession
   }
 
   @override
-  Future<DriftSession> exclusive() async {
-    final inner = await _original.locks!.exclusive();
+  Future<DriftSession> exclusive({AbortToken? abort}) async {
+    final inner = await _original.locks!.exclusive(abort: abort);
 
     return sticky ? _InterceptedSession(inner, _interceptor, sticky) : inner;
   }

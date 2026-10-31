@@ -7,7 +7,7 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
-import '../../utils/cancellation_zone.dart';
+import '../../utils/abort.dart';
 import 'update_rules.dart';
 
 const _listEquality = ListEquality<Object?>();
@@ -161,7 +161,7 @@ final class QueryStreamFetcher<Rows extends Object> {
   final FutureOr<void> Function() prepare;
 
   /// Function that asynchronously fetches the latest set of data.
-  final Future<Rows> Function() fetchData;
+  final Future<Rows> Function(AbortToken) fetchData;
 
   /// @nodoc
   QueryStreamFetcher({
@@ -269,7 +269,7 @@ final class _StreamImpl<Rows extends Object> {
   StreamSubscription<Set<TableUpdate>>? _tablesChangedSubscription;
 
   Rows? _lastData;
-  final List<CancellationToken<void>> _runningOperations = [];
+  final List<AbortToken> _runningOperations = [];
   bool _isClosed = false;
 
   bool get hasKey => _fetcher.key != null;
@@ -340,24 +340,26 @@ final class _StreamImpl<Rows extends Object> {
 
   void _cancelRunningQueries() {
     for (final op in _runningOperations) {
-      op.cancel();
+      op.abort();
     }
     _runningOperations.clear();
   }
 
   Future<void> fetchAndEmitData() async {
-    final operation = CancellationToken<Rows>();
-    _runningOperations.add(operation);
+    final abort = AbortToken();
+    _runningOperations.add(abort);
 
     try {
       // Make sure the database is ready to be used before running the query in
       // a cancellation zone. Opening the database should never be cancelled.
       await _fetcher.prepare();
+      if (abort.isAborted) return;
 
-      if (operation.isCancelled) return;
-      runCancellable<Rows>(_fetcher.fetchData, token: operation);
-      final data = await operation.resultOrNullIfCancelled;
-      if (data == null) return;
+      final data = await abort.catchAbortExceptions<Rows?>(
+        _fetcher.fetchData(abort),
+        () => null,
+      );
+      if (data == null || abort.isAborted) return;
 
       _lastData = data;
       for (final listener in _listeners) {
@@ -372,7 +374,7 @@ final class _StreamImpl<Rows extends Object> {
         }
       }
     } finally {
-      _runningOperations.remove(operation);
+      _runningOperations.remove(abort);
     }
   }
 

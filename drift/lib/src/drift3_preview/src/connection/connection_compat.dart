@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
+import '../utils/abort.dart';
 import 'connection.dart';
 import 'result_set.dart';
 import '../query_builder/dialect.dart';
 import '../query_builder/statements/transactions.dart';
 import '../utils/synchronized.dart';
-import '../utils/cancellation_zone.dart';
 
 /// A [DriftSession] implementation that supports all features drift expects
 /// of underlying database implementations, even if the inner session doesn't.
@@ -69,11 +69,12 @@ without awaiting every statement in it.''');
   }
 
   Future<T> _startNested<T extends DriftCompatibilitySession>(
-    FutureOr<T> Function() create,
-  ) {
+    FutureOr<T> Function() create, {
+    AbortToken? abort,
+  }) {
     final opened = Completer<T>();
 
-    _synchronized(shared: false, () async {
+    _synchronized(abort: abort, shared: false, () async {
       _checkOpen();
 
       final inner = await create();
@@ -93,16 +94,16 @@ without awaiting every statement in it.''');
 
   Future<T> _synchronized<T>(
     Future<T> Function() action, {
-    bool abortIfCancelled = true,
+    AbortToken? abort,
     bool shared = true,
   }) {
     if (_lock case final lock?) {
       final block = shared ? lock.shared : lock.exclusive;
 
       return block(() async {
-        if (abortIfCancelled) checkIfCancelled();
+        abort?.checkAborted();
         return await action();
-      });
+      }, abort);
     } else {
       return action();
     }
@@ -126,21 +127,23 @@ without awaiting every statement in it.''');
 
   @override
   Future<DriftCompatibilityTransaction> begin(
-    TransactionOptions options,
-  ) async {
+    TransactionOptions options, {
+    AbortToken? abort,
+  }) async {
     _checkOpen();
 
     if (_inner.transactionParent case final supported?) {
       return DriftCompatibilityTransaction._(
         true,
-        await supported.begin(options),
+        await supported.begin(options, abort: abort),
         _dialect,
         _transactionDepth + 1,
       );
     } else {
-      return _startNested(() async {
+      return _startNested(abort: abort, () async {
         await _inner.execute(
           _dialect.compile(BeginStatement(depth: _transactionDepth + 1)),
+          abort: abort,
         );
 
         if (options.deferForeignKeys == true) {
@@ -169,7 +172,7 @@ without awaiting every statement in it.''');
 
   @override
   Future<void> close() async {
-    await _synchronized(abortIfCancelled: false, () async {
+    await _synchronized(() async {
       if (!_isClosed) {
         _isClosed = true;
         await _closeInner();
@@ -181,17 +184,18 @@ without awaiting every statement in it.''');
   }
 
   @override
-  Future<DriftCompatibilitySession> exclusive() async {
+  Future<DriftCompatibilitySession> exclusive({AbortToken? abort}) async {
     _checkOpen();
 
     if (_inner case DriftSessionWithInternalLocks locks) {
       return DriftCompatibilitySession._(
-        await locks.exclusive(),
+        await locks.exclusive(abort: abort),
         _dialect,
         _transactionDepth,
       );
     } else {
       return await _startNested(
+        abort: abort,
         () =>
             (_DriftCompatibilityExclusive(_inner, _dialect, _transactionDepth)),
       );
@@ -199,18 +203,24 @@ without awaiting every statement in it.''');
   }
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) async {
-    return await _synchronized(() async {
+  Future<QueryResult> execute(
+    StatementInfo statement, {
+    AbortToken? abort,
+  }) async {
+    return await _synchronized(abort: abort, () async {
       _checkOpen();
-      return _inner.execute(statement);
+      return _inner.execute(statement, abort: abort);
     });
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
-    return await _synchronized(() async {
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  }) async {
+    return await _synchronized(abort: abort, () async {
       _checkOpen();
-      return _inner.executeBatch(batch);
+      return _inner.executeBatch(batch, abort: abort);
     });
   }
 

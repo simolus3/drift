@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../query_builder/dialect.dart';
 import '../query_builder/types.dart';
+import '../utils/abort.dart';
 import 'result_set.dart';
 import 'streams/in_memory_store.dart';
 import 'streams/store.dart';
@@ -104,7 +105,7 @@ abstract interface class DriftTransactionParent {
   /// The [DriftSession.transaction] of the returned session must be non-null,
   /// which allows using the [DriftTransactionSession] to commit or rollback the
   /// transaction.
-  Future<DriftSession> begin(TransactionOptions options);
+  Future<DriftSession> begin(TransactionOptions options, {AbortToken? abort});
 }
 
 /// For sessions that can provide exclusive access to the database, exposes an
@@ -116,7 +117,7 @@ abstract interface class DriftSessionWithInternalLocks {
   ///
   /// Other operations are blocked until the returned session is
   /// [DriftSession.close]d.
-  Future<DriftSession> exclusive();
+  Future<DriftSession> exclusive({AbortToken? abort});
 }
 
 /// A handle to control transaction, expanding [DriftSession.close] to suppport
@@ -156,14 +157,26 @@ abstract interface class DriftTransactionSession {
 ///    transactions to be committed or rolled back.
 abstract interface class DriftSession {
   /// Runs the given SQL [StatementInfo], returning results.
-  Future<QueryResult> execute(StatementInfo statement);
+  ///
+  /// Implementations may respect [abort] to throw an [AbortException] when the
+  /// token is aborted before results are available.
+  Future<QueryResult> execute(StatementInfo statement, {AbortToken? abort});
 
   /// A variant of [execute] that can prepare a statement once and then run it
   /// multiple times with different parameter sets.
   ///
   /// This can be more efficient than calling [execute] multiple times since
   /// the costs of parsing SQL statements is amortized across the batch.
-  Future<List<QueryResult>> executeBatch(StatementBatch batch);
+  ///
+  /// Session implementations are not required to implement this atomically
+  /// (i.e. with transactions).
+  ///
+  /// Implementations may respect [abort] to throw an [AbortException] when the
+  /// token is aborted before results are available.
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  });
 
   /// An arbitrary and user-defined tag that may be attached to sessions.
   ///

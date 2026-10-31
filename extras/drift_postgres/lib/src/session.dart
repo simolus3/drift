@@ -11,7 +11,10 @@ abstract base class _BasePostgresSession implements DriftSession {
   _BasePostgresSession(this._session);
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) async {
+  Future<QueryResult> execute(
+    StatementInfo statement, {
+    AbortToken? abort,
+  }) async {
     final parameters = statement.variables.map((e) => e as TypedValue).toList();
     final result = await _session.execute(
       statement.sql,
@@ -23,7 +26,10 @@ abstract base class _BasePostgresSession implements DriftSession {
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  }) async {
     final prepared = await Future.wait(batch.sql.map(_session.prepare));
 
     final results = <QueryResult>[];
@@ -110,7 +116,10 @@ final class PostgresSession extends _BasePostgresSession
   DriftTransactionParent? get transactionParent => this;
 
   @override
-  Future<DriftSession> begin(TransactionOptions options) async {
+  Future<DriftSession> begin(
+    TransactionOptions options, {
+    AbortToken? abort,
+  }) async {
     final transactionStarted = Completer<DriftSession>();
 
     _connection

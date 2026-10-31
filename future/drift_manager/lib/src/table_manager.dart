@@ -711,8 +711,10 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (enabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Future<$ActiveDataclass> getSingle({bool distinct = true}) async =>
-      (await get(distinct: distinct)).single;
+  Future<$ActiveDataclass> getSingle({
+    AbortToken? abort,
+    bool distinct = true,
+  }) async => (await get(distinct: distinct, abort: abort)).single;
 
   /// Creates an auto-updating stream of this statement, similar to
   /// [watch]. However, it is assumed that the query will only emit
@@ -735,19 +737,21 @@ abstract class BaseTableManager<
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
   Future<List<$ActiveDataclass>> get({
+    AbortToken? abort,
     bool distinct = false,
     int? limit,
     int? offset,
   }) async {
     return $state.db.transaction(
       options: const TransactionOptions(readOnly: true),
+      abort: abort,
       () async {
         /// Fetch the items from the database with the prefetch hooks applied
         var items = await $state.prefetchHooks
             .withJoins($state)
             .copyWith(distinct: distinct, limit: limit, offset: offset)
             .buildSelectStatement()
-            .get();
+            .get(abort: abort);
 
         /// Apply the prefetch hooks to the items
         final withPrefetchedData = await $state.prefetchHooks.addPrefetchedData(
@@ -788,8 +792,13 @@ abstract class BaseTableManager<
         for (final additional in $state.prefetchHooks.explicitlyWatchedTables)
           .onTable(additional),
       ]),
-      fetchData: () async {
-        return get(distinct: distinct, limit: limit, offset: offset);
+      fetchData: (abort) async {
+        return get(
+          abort: abort,
+          distinct: distinct,
+          limit: limit,
+          offset: offset,
+        );
       },
     );
 
@@ -809,8 +818,11 @@ abstract class BaseTableManager<
   /// The [distinct] parameter (enabled by default) controls whether to generate
   /// a `SELECT DISTINCT` query, removing duplicates from the result.
   @override
-  Future<$ActiveDataclass?> getSingleOrNull({bool distinct = true}) async {
-    final list = await get(distinct: distinct);
+  Future<$ActiveDataclass?> getSingleOrNull({
+    AbortToken? abort,
+    bool distinct = true,
+  }) async {
+    final list = await get(distinct: distinct, abort: abort);
     if (list.isEmpty) {
       return null;
     } else {

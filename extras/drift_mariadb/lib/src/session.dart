@@ -19,26 +19,27 @@ final class MariaDbSession implements DriftSession {
   }
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) async {
+  Future<QueryResult> execute(
+    StatementInfo statement, {
+    AbortToken? abort,
+  }) async {
     final IResultSet result;
 
-    try {
-      if (statement.variables.isEmpty) {
-        result = await _pool.execute(statement.sql);
-      } else {
-        final stmt = await _pool.prepare(statement.sql);
-        result = await stmt.execute(statement.variables);
-      }
-
-      return result.toDriftResult();
-    } catch (e) {
-      print('Context: ${statement.sql}');
-      rethrow;
+    if (statement.variables.isEmpty) {
+      result = await _pool.execute(statement.sql);
+    } else {
+      final stmt = await _pool.prepare(statement.sql);
+      result = await stmt.execute(statement.variables);
     }
+
+    return result.toDriftResult();
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) async {
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  }) async {
     final prepared = List<PreparedStmt?>.filled(batch.sql.length, null);
     final results = <QueryResult>[];
 

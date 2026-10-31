@@ -9,6 +9,7 @@ import '../connection/streams/update_rules.dart';
 import '../database/connection_user.dart';
 import '../database/db_base.dart';
 import '../query_builder/schema/table.dart';
+import '../utils/abort.dart';
 import 'platform_unsupported.dart' if (dart.library.io) 'platform_native.dart';
 
 import 'devtools.dart';
@@ -181,13 +182,19 @@ final class CollectCreateStatements implements DriftSession {
   bool get isClosed => _closed.isCompleted;
 
   @override
-  Future<QueryResult> execute(StatementInfo statement) async {
+  Future<QueryResult> execute(
+    StatementInfo statement, {
+    AbortToken? abort,
+  }) async {
     statements.add(statement.sql);
     return QueryResult(resultSet: null);
   }
 
   @override
-  Future<List<QueryResult>> executeBatch(StatementBatch batch) {
+  Future<List<QueryResult>> executeBatch(
+    StatementBatch batch, {
+    AbortToken? abort,
+  }) {
     throw UnimplementedError();
   }
 
