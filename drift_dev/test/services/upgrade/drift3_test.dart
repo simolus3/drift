@@ -53,7 +53,7 @@ void foo(TableInfo tbl) {
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift3_preview/drift.dart';
 
-void foo(TableInfo tbl) {
+void foo(GeneratedTable tbl) {
   // this getter has moved to drift_sqlite
   tbl.rowId;
 }
