@@ -21,6 +21,7 @@ abstract class BaseSelectStatement<Row> extends Component with Selectable<Row> {
 /// A select statement that doesn't use joins.
 ///
 /// For more information, see [DatabaseConnectionUser.select].
+@pragma('drift:v3-rename', 'SingleTableSelectStatement')
 class SimpleSelectStatement<T extends HasResultSet, D> extends Query<T, D>
     with SingleTableQueryMixin<T, D>, LimitContainerMixin<T, D>, Selectable<D>
     implements BaseSelectStatement<D> {
@@ -241,6 +242,7 @@ final class SelectWithoutTables extends BaseSelectStatement<TypedResult>
 
 /// A result row in a [JoinedSelectStatement] that can parse the result of
 /// multiple entities.
+@pragma('drift:v3-rename', 'DriftRow')
 class TypedResult {
   /// Creates the result from the parsed table data.
   TypedResult(

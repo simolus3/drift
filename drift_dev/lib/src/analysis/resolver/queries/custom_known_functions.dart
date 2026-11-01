@@ -17,8 +17,8 @@ class DriftOptionsExtension implements Extension {
     }
 
     if (knownTables != null) {
-      for (final knownTable in knownTables) {
-        engine.registerTable(knownTable);
+      for (final KnownTable(:table) in knownTables) {
+        engine.registerTable(table);
       }
     }
   }

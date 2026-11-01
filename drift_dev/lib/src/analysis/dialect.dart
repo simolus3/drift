@@ -91,9 +91,8 @@ final class Drift3SqliteDialect extends ResolvedDialect
   @override
   final Map<String, KnownSqliteFunction> knownFunctions;
 
-  @TableFromSql()
   @override
-  final List<Table> knownTables;
+  final List<KnownTable> knownTables;
 
   final bool strictTablesByDefault;
   final bool storeDateTimesAsText;

@@ -1,4 +1,5 @@
 import 'entities.dart';
+import 'table.dart';
 
 /// The resolved static schema of a drift database.
 ///
@@ -8,4 +9,7 @@ extension type const DatabaseSchema(List<DatabaseSchemaEntity> entities)
     implements Iterable<DatabaseSchemaEntity> {
   /// An empty schema with no tables.
   static const DatabaseSchema empty = DatabaseSchema([]);
+
+  /// All tables that have been added to this schema.
+  Iterable<GeneratedTable> get tables => whereType();
 }

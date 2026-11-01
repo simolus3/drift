@@ -11,6 +11,7 @@ part of '../query_builder.dart';
 /// [D] is the type of the data class generated from the table.
 ///
 /// To obtain an instance of this class, use a table getter from the database.
+@pragma('drift:v3-rename', 'GeneratedTable')
 mixin TableInfo<TableDsl extends Table, D> on Table
     implements DatabaseSchemaEntity, ResultSetImplementation<TableDsl, D> {
   @override
@@ -41,6 +42,7 @@ mixin TableInfo<TableDsl extends Table, D> on Table
 
   /// The name of the table in the database. Unlike [aliasedName], this can not
   /// be aliased.
+  @pragma('drift:v3-rename', 'entityName')
   String get actualTableName;
 
   @override

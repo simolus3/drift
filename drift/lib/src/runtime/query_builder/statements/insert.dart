@@ -473,6 +473,7 @@ class InsertStatement<T extends Table, D> {
 
 /// Enumeration of different insert behaviors. See the documentation on the
 /// individual fields for details.
+@pragma('drift:v3-moved-to', 'drift_sqlite')
 enum InsertMode implements Component {
   /// A regular `INSERT INTO` statement. When a row with the same primary or
   /// unique key already exists, the insert statement will fail and an exception

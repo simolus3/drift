@@ -27,7 +27,7 @@ Drift3SqliteDialect _$Drift3SqliteDialectFromJson(Map json) =>
           const {},
       knownTables:
           (json['known_tables'] as List<dynamic>?)
-              ?.map((e) => const TableFromSql().fromJson(e as String))
+              ?.map((e) => KnownTable.fromJson(e as String))
               .toList() ??
           const [],
       strictTablesByDefault: json['strict_tables_by_default'] as bool? ?? true,
@@ -47,9 +47,7 @@ Map<String, dynamic> _$Drift3SqliteDialectToJson(
   'known_functions': instance.knownFunctions.map(
     (k, e) => MapEntry(k, e.toJson()),
   ),
-  'known_tables': instance.knownTables
-      .map(const TableFromSql().toJson)
-      .toList(),
+  'known_tables': instance.knownTables.map((e) => e.toJson()).toList(),
   'strict_tables_by_default': instance.strictTablesByDefault,
   'store_date_times_as_text': instance.storeDateTimesAsText,
   'use_binary_json_representation': instance.useBinaryJsonRepresentation,

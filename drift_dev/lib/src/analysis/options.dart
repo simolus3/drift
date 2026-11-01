@@ -394,8 +394,7 @@ class SqliteAnalysisOptions {
 
   final Map<String, KnownSqliteFunction> knownFunctions;
 
-  @TableFromSql()
-  final List<Table> knownTables;
+  final List<KnownTable> knownTables;
 
   const SqliteAnalysisOptions({
     this.modules = const [],
@@ -411,31 +410,30 @@ class SqliteAnalysisOptions {
   Map<String, Object?> toJson() => _$SqliteAnalysisOptionsToJson(this);
 }
 
-final class TableFromSql extends JsonConverter<Table, String> {
-  const TableFromSql();
+final class KnownTable {
+  final Table table;
+  final String sql;
 
-  @override
-  Table fromJson(String json) {
+  KnownTable.fromJson(this.sql) : table = _parse(sql);
+
+  String toJson() => sql;
+
+  static Table _parse(String sql) {
     final engine = SqlEngine(EngineOptions(version: SqliteVersion.current));
-    final result = engine.parse(ParserEntrypoint.statement, json);
+    final result = engine.parse(ParserEntrypoint.statement, sql);
     if (result.errors.isNotEmpty) {
       throw ArgumentError.value(
-        json,
+        sql,
         'Not a valid CREATE TABLE statement: ${result.errors.join('\n')}',
       );
     }
 
     final root = result.rootNode;
     if (root is! TableInducingStatement) {
-      throw ArgumentError.value(json, 'Not a valid CREATE TABLE statement');
+      throw ArgumentError.value(sql, 'Not a valid CREATE TABLE statement');
     }
 
     return SchemaFromCreateTable().read(root);
-  }
-
-  @override
-  String toJson(Table object) {
-    throw UnsupportedError('Unused');
   }
 }
 

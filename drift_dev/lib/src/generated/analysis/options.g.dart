@@ -377,7 +377,7 @@ SqliteAnalysisOptions _$SqliteAnalysisOptionsFromJson(Map json) =>
             'known_tables',
             (v) =>
                 (v as List<dynamic>?)
-                    ?.map((e) => const TableFromSql().fromJson(e as String))
+                    ?.map((e) => KnownTable.fromJson(e as String))
                     .toList() ??
                 const [],
           ),
@@ -401,9 +401,7 @@ Map<String, dynamic> _$SqliteAnalysisOptionsToJson(
   'known_functions': instance.knownFunctions.map(
     (k, e) => MapEntry(k, e.toJson()),
   ),
-  'known_tables': instance.knownTables
-      .map(const TableFromSql().toJson)
-      .toList(),
+  'known_tables': instance.knownTables.map((e) => e.toJson()).toList(),
 };
 
 Value? _$JsonConverterFromJson<Json, Value>(

@@ -417,7 +417,8 @@ sealed class BaseElementResolver<T extends DiscoveredElement> {
       error: InvalidReferenceError.noElementWithSuchName,
     )) {
       final knownTables = resolver.driver.options.sqliteOptions?.knownTables;
-      if (knownTables != null && knownTables.any((e) => e.name == reference)) {
+      if (knownTables != null &&
+          knownTables.any((e) => e.table.name == reference)) {
         // This table is external, no need to emit a warning.
         return null;
       }

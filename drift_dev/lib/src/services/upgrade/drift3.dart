@@ -4,6 +4,7 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/syntactic_entity.dart';
+import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -339,15 +340,17 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
   @override
   void visitImportDirective(ImportDirective node) {
     if (node.uri.stringValue == 'package:drift/drift.dart') {
-      // Drift version 2 exports Uint8List from dart:typed_data, drift3 doesn't.
-      // Manually import that now.
       var imports = '';
 
-      if (!(libraryFragment?.importedLibraries.any(
-            (e) => e.isInSdk && e.name == 'typed_data',
-          ) ??
-          true)) {
-        imports += "import 'dart:typed_data';\n";
+      if (_requiredImports.usesUint8List) {
+        // Drift version 2 exports Uint8List from dart:typed_data, drift3
+        // doesn't. Manually import that now.
+        if (!(libraryFragment?.importedLibraries.any(
+              (e) => e.isInSdk && e.name == 'dart.typed_data',
+            ) ??
+            true)) {
+          imports += "import 'dart:typed_data';\n";
+        }
       }
 
       if (_requiredImports.usesSqliteSpecificApi) {
@@ -457,6 +460,11 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
           final mode = _lexeme(modeArg.argumentExpression);
           _writer.insertBefore(node.function, 'mode($mode).');
           _writer.replaceNode(modeArg, '');
+          if (modeArg.endToken.next case final token?
+              when token.type == TokenType.COMMA) {
+            _writer.replaceNode(token, '');
+          }
+
           return;
         }
       }
@@ -664,8 +672,7 @@ extension on DriftOptions {
       }
       if (options.knownTables.isNotEmpty) {
         serializedSqliteOptions['known_tables'] = [
-          for (final table in options.knownTables)
-            const TableFromSql().toJson(table),
+          for (final table in options.knownTables) table.toJson(),
         ];
       }
     }
@@ -756,6 +763,7 @@ extension on Expression {
 
 final class _FindRequiredImports extends GeneralizingAstVisitor<void> {
   var usesSqliteSpecificApi = false;
+  var usesUint8List = false;
 
   bool _movedToDrift3(Element element) {
     return element.readStringPragma('drift:v3-moved-to') == 'drift_sqlite';
@@ -763,6 +771,8 @@ final class _FindRequiredImports extends GeneralizingAstVisitor<void> {
 
   @override
   void visitSimpleIdentifier(SimpleIdentifier node) {
+    usesUint8List |= node.name == 'Uint8List';
+
     var element = node.element;
     while (!usesSqliteSpecificApi && element != null) {
       if (_movedToDrift3(element)) {
@@ -774,5 +784,12 @@ final class _FindRequiredImports extends GeneralizingAstVisitor<void> {
     }
 
     super.visitSimpleIdentifier(node);
+  }
+
+  @override
+  void visitNamedType(NamedType node) {
+    usesUint8List |= node.name.lexeme == 'Uint8List';
+
+    super.visitNamedType(node);
   }
 }

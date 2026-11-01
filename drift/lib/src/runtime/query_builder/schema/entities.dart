@@ -105,6 +105,7 @@ class OnCreateQuery extends DatabaseSchemaEntity {
 /// [Tbl] is the generated Dart class which implements [ResultSetImplementation]
 /// and the user-defined [Table] class. [Row] is the class used to hold a result
 /// row.
+@pragma('drift:v3-rename', 'ResultSet')
 abstract class ResultSetImplementation<Tbl, Row> extends DatabaseSchemaEntity {
   /// The generated database instance that this view or table is attached to.
   @internal

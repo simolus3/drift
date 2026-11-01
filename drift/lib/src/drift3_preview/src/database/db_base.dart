@@ -68,6 +68,17 @@ abstract base class GeneratedDatabase extends DatabaseConnectionUser {
   /// [DatabaseSchema.entities].
   DatabaseSchema get schema;
 
+  /// All tables specified in this database.
+  @Deprecated('Use schema.tables instead')
+  Iterable<GeneratedTable> get allTables => schema.tables;
+
+  /// A list of all [DatabaseSchemaEntity] that are specified in this database.
+  ///
+  /// This contains [allTables], but also advanced entities like triggers.
+  // return allTables for backwards compatibility
+  @Deprecated('Use schema instead')
+  Iterable<DatabaseSchemaEntity> get allSchemaEntities => schema;
+
   @override
   GeneratedDatabase get attachedDatabase => this;
 

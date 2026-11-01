@@ -24,5 +24,9 @@ final class UpgradeCommand extends DriftCommand {
       'Applied source changes for drift3. Run `dart run build_runner build` '
       'and `dart run drift_dev make-migrations` to generate code.',
     );
+    cli.logger.warning(
+      "This tool can't migrate every breaking change. Review remaining analysis "
+      'errors after re-generating.',
+    );
   }
 }

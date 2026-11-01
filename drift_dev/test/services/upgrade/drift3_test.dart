@@ -30,7 +30,6 @@ import 'package:drift_dev/api/migrations_native.dart';
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
-import 'dart:typed_data';
 import 'package:drift3_preview/drift.dart';
 import 'package:drift_sqlite/web.dart';
 import 'package:drift_sqlite/schema_verifier.dart';
@@ -51,7 +50,6 @@ void foo(TableInfo tbl) {
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
-import 'dart:typed_data';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift3_preview/drift.dart';
 
@@ -80,7 +78,6 @@ class TodoEntries extends Table with AutoIncrementingPrimaryKey {
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
-import 'dart:typed_data';
 import 'package:drift3_preview/drift.dart';
 
 @DataClassName('TodoEntry')
@@ -107,7 +104,6 @@ Expression<bool> m(Expression<int> a, Expression<int> b) {
       await original.migrateToDrift3();
 
       await d.file('app/lib/database.dart', '''
-import 'dart:typed_data';
 import 'package:drift3_preview/drift.dart';
 
 Expression<bool> m(Expression<int> a, Expression<int> b) {
@@ -130,7 +126,7 @@ class FakeGeneratedDatabase extends GeneratedDatabase {
 
 Insertable<Never> get stub => throw 'stub';
 
-void queryExtension(FakeGeneratedDatabase db) {
+void queryExtension(FakeGeneratedDatabase db, Uint8List a) {
   db.users.insertOne(stub);
   db.users.actualTableName; // not a query extension
   final x = db.users;
@@ -146,7 +142,7 @@ void rawConnection(FakeGeneratedDatabase db) async {
 
 void insertMode(FakeGeneratedDatabase db) async {
   final stmt = db.into(db.users);
-  await stmt.insert(stub, mode: InsertMode.replace);
+  await stmt.insert(stub, mode: InsertMode.replace,);
   await db.users.insertOne(stub);
   await db.users.insertOne(stub, mode: InsertMode.insertOrReplace);
 
@@ -159,6 +155,7 @@ void insertMode(FakeGeneratedDatabase db) async {
       await original.migrateToDrift3();
       await d.file('app/lib/database.dart', '''
 import 'dart:typed_data';
+import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift3_preview/drift.dart';
 
 class User {}
@@ -170,7 +167,7 @@ base class FakeGeneratedDatabase extends GeneratedDatabase {
 
 Insertable<Never> get stub => throw 'stub';
 
-void queryExtension(FakeGeneratedDatabase db) {
+void queryExtension(FakeGeneratedDatabase db, Uint8List a) {
   db.usersQueries.insertOne(stub);
   db.users.actualTableName; // not a query extension
   final x = db.users;
@@ -251,6 +248,8 @@ targets:
             dialects: [sqlite, postgres]
             options:
               modules: [fts5]
+              known_tables:
+                - "CREATE TABLE foo (bar TEXT)"
 '''),
         ],
       );
@@ -267,6 +266,8 @@ targets:
             - dialect: sqlite
               modules:
                 - fts5
+              known_tables:
+                - CREATE TABLE foo (bar TEXT)
               strict_tables_by_default: false
               use_binary_json_representation: false
               store_date_times_as_text: true
