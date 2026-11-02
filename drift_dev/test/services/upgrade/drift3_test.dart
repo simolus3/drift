@@ -193,6 +193,29 @@ void insertMode(FakeGeneratedDatabase db) async {
 }
 ''').validate();
     });
+
+    test('removes comma after moved insert mode', () async {
+      final original = await _drift2Project([
+        d.file('database.dart', '''
+import 'package:drift/drift.dart';
+
+void insertMode(Batch b, ResultSetImplementation<Table, Never> users) {
+  b.insertAll(users, [], mode: InsertMode.replace,);
+  b.insertAll(users, mode: InsertMode.replace, []);
+}
+'''),
+      ]);
+      await original.migrateToDrift3();
+      await d.file('app/lib/database.dart', '''
+import 'package:drift_sqlite/drift_sqlite.dart';
+import 'package:drift3_preview/drift.dart';
+
+void insertMode(Batch b, ResultSet<Table, Never> users) {
+  b.insertAllMode(InsertMode.replace, users, [], );
+  b.insertAllMode(InsertMode.replace, users,  []);
+}
+''').validate();
+    });
   });
 
   test('migrates pubspec.yaml', () async {
