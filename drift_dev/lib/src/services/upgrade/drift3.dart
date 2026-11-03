@@ -459,11 +459,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
           // Chain a .mode() before this call.
           final mode = _lexeme(modeArg.argumentExpression);
           _writer.insertBefore(node.function, 'mode($mode).');
-          _writer.replaceNode(modeArg, '');
-          if (modeArg.endToken.next case final token?
-              when token.type == TokenType.COMMA) {
-            _writer.replaceNode(token, '');
-          }
+          _removeArgument(modeArg);
 
           return;
         }
@@ -475,12 +471,20 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
           _writer.replaceNode(node.methodName, replacement);
           final mode = _lexeme(modeArg.argumentExpression);
           _writer.insertBefore(node.argumentList.arguments.first, '$mode, ');
-          _writer.replaceNode(modeArg, '');
+          _removeArgument(modeArg);
         }
       }
     }
 
     super.visitMethodInvocation(node);
+  }
+
+  void _removeArgument(Argument argument) {
+    _writer.replaceNode(argument, '');
+    if (argument.endToken.next case final token?
+        when token.type == TokenType.COMMA) {
+      _writer.replaceNode(token, '');
+    }
   }
 
   @override

@@ -159,7 +159,7 @@ import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift3_preview/drift.dart';
 
 class User {}
-class FakeUsersTable extends Table with TableInfo<FakeUsersTable, User> {}
+class FakeUsersTable extends Table with GeneratedTable<FakeUsersTable, User> {}
 
 base class FakeGeneratedDatabase extends GeneratedDatabase {
   FakeUsersTable get users => throw 'stub';
@@ -169,7 +169,7 @@ Insertable<Never> get stub => throw 'stub';
 
 void queryExtension(FakeGeneratedDatabase db, Uint8List a) {
   db.usersQueries.insertOne(stub);
-  db.users.actualTableName; // not a query extension
+  db.users.entityName; // not a query extension
   final x = db.users;
   x.insertOne(stub); // indirect, cannot be migrated
 }
@@ -190,6 +190,29 @@ void insertMode(FakeGeneratedDatabase db) async {
   await db.batch((b) {
     b.insert<User, FakeUsersTable>(db.users, stub, onConflict: DoUpdate((b) => stub));
   });
+}
+''').validate();
+    });
+
+    test('removes comma after moved insert mode', () async {
+      final original = await _drift2Project([
+        d.file('database.dart', '''
+import 'package:drift/drift.dart';
+
+void insertMode(Batch b, ResultSetImplementation<Table, Never> users) {
+  b.insertAll(users, [], mode: InsertMode.replace,);
+  b.insertAll(users, mode: InsertMode.replace, []);
+}
+'''),
+      ]);
+      await original.migrateToDrift3();
+      await d.file('app/lib/database.dart', '''
+import 'package:drift_sqlite/drift_sqlite.dart';
+import 'package:drift3_preview/drift.dart';
+
+void insertMode(Batch b, ResultSet<Table, Never> users) {
+  b.insertAllMode(InsertMode.replace, users, [], );
+  b.insertAllMode(InsertMode.replace, users,  []);
 }
 ''').validate();
     });
