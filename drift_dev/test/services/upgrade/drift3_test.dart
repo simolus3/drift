@@ -159,7 +159,7 @@ import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:drift3_preview/drift.dart';
 
 class User {}
-class FakeUsersTable extends Table with TableInfo<FakeUsersTable, User> {}
+class FakeUsersTable extends Table with GeneratedTable<FakeUsersTable, User> {}
 
 base class FakeGeneratedDatabase extends GeneratedDatabase {
   FakeUsersTable get users => throw 'stub';
@@ -169,7 +169,7 @@ Insertable<Never> get stub => throw 'stub';
 
 void queryExtension(FakeGeneratedDatabase db, Uint8List a) {
   db.usersQueries.insertOne(stub);
-  db.users.actualTableName; // not a query extension
+  db.users.entityName; // not a query extension
   final x = db.users;
   x.insertOne(stub); // indirect, cannot be migrated
 }
