@@ -115,7 +115,7 @@ Expression<bool> m(Expression<int> a, Expression<int> b) {
     test('migrates common apis', () async {
       final original = await _drift2Project([
         d.file('database.dart', '''
-import 'package:drift/drift.dart' hide QueryRow;
+import 'package:drift/drift.dart' hide SimpleSelectStatement;
 
 class User {}
 class FakeUsersTable extends Table with TableInfo<FakeUsersTable, User> {}
@@ -151,7 +151,13 @@ void insertMode(FakeGeneratedDatabase db) async {
   });
 
   innerJoin(db.users, condition);
-  crossJoin(db.users, condition, useColumns: false);
+  crossJoin(db.users, CustomExpression('x'), useColumns: false);
+}
+
+void queryRow(QueryRow row) {
+  row.read<String>('a');
+  row.read<double?>('b');
+  int? x = row.read('c');
 }
 '''),
       ]);
@@ -159,7 +165,7 @@ void insertMode(FakeGeneratedDatabase db) async {
       await d.file('app/lib/database.dart', '''
 import 'dart:typed_data';
 import 'package:drift_sqlite/drift_sqlite.dart';
-import 'package:drift3_preview/drift.dart' hide CustomRow;
+import 'package:drift3_preview/drift.dart' hide SingleTableSelectStatement;
 
 class User {}
 class FakeUsersTable extends Table with GeneratedTable<User, FakeUsersTable> {}
@@ -195,7 +201,13 @@ void insertMode(FakeGeneratedDatabase db) async {
   });
 
   Join.inner(db.users, on: condition);
-  Join.cross(db.users, on: condition, includeInResult: false);
+  Join.cross(db.users, on: Expression.custom('x'), includeInResult: false);
+}
+
+void queryRow(CustomRow row) {
+  row.read<String>('a');
+  row.readNullable<double>('b');
+  int? x = row.readNullable<int>('c');
 }
 ''').validate();
     });

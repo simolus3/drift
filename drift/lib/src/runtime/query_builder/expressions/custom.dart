@@ -7,6 +7,7 @@ part of '../query_builder.dart';
 /// See also:
 ///  - [currentDate] and [currentDateAndTime], which use a [CustomExpression]
 ///  internally.
+@pragma('drift:v3-rename', 'Expression.custom')
 class CustomExpression<D extends Object> extends Expression<D> {
   /// The SQL of this expression
   final String content;

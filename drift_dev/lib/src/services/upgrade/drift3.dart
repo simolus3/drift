@@ -412,6 +412,10 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
         return;
       }
 
+      if (element.enclosingElement == _types.queryRow && name == 'read') {
+        return _rewriteQueryRowReadCall(node);
+      }
+
       if (element.enclosingElement == _types.batch &&
           name.startsWith('insert') &&
           node.argumentList.arguments.any(
@@ -505,6 +509,24 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
 
         argumentIndex++;
       }
+    }
+  }
+
+  /// Rewrites `.read<int?>(...)` to `.readNullable<int>(...)`
+  void _rewriteQueryRowReadCall(MethodInvocation node) {
+    if (node.typeArgumentTypes case [final type]?
+        when _typeSystem.isNullable(type)) {
+      _writer.replaceNode(node.methodName, 'readNullable');
+
+      final nonNullable =
+          '<${_typeSystem.promoteToNonNull(type).getDisplayString()}>';
+      if (node.typeArguments case final typeArgs?) {
+        _writer.replaceNode(typeArgs, nonNullable);
+      } else {
+        _writer.insertAfter(node.methodName, nonNullable);
+      }
+    } else {
+      super.visitMethodInvocation(node);
     }
   }
 
@@ -780,6 +802,7 @@ final class _KnownDriftImports {
   final ClassElement insertStatement;
   final ClassElement batch;
   final MixinElement tableInfo;
+  final ClassElement queryRow;
 
   _KnownDriftImports(LibraryElement drift)
     : databaseConnectionUser =
@@ -793,7 +816,9 @@ final class _KnownDriftImports {
               as ClassElement,
       batch = drift.exportNamespace.definedNames2['Batch'] as ClassElement,
       tableInfo =
-          drift.exportNamespace.definedNames2['TableInfo'] as MixinElement;
+          drift.exportNamespace.definedNames2['TableInfo'] as MixinElement,
+      queryRow =
+          drift.exportNamespace.definedNames2['QueryRow'] as ClassElement;
 }
 
 extension on Expression {

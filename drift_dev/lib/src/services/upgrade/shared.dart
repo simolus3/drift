@@ -23,6 +23,10 @@ final class StringRewriter {
     replace(entity.offset, 0, addedContent);
   }
 
+  void insertAfter(SyntacticEntity entity, String addedContent) {
+    replace(entity.end, 0, addedContent);
+  }
+
   void swap(SyntacticEntity a, SyntacticEntity b) {
     // Assuming that content is $prefix $a $middle $b $suffix
 
