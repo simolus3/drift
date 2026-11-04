@@ -22,6 +22,27 @@ final class StringRewriter {
   void insertBefore(SyntacticEntity entity, String addedContent) {
     replace(entity.offset, 0, addedContent);
   }
+
+  void swap(SyntacticEntity a, SyntacticEntity b) {
+    // Assuming that content is $prefix $a $middle $b $suffix
+
+    // $prefix
+    final buffer = StringBuffer(content.substring(0, a.offset + _skew));
+
+    // $prefix $b
+    buffer.write(content.substring(b.offset + _skew, b.end + _skew));
+
+    // $prefix $b $middle
+    buffer.write(content.substring(a.end + _skew, b.offset + _skew));
+
+    // $prefix $b $middle $a
+    buffer.write(content.substring(a.offset + _skew, a.end + _skew));
+
+    // $prefix $b $middle $a $suffix
+    buffer.write(content.substring(b.end + _skew));
+
+    content = buffer.toString();
+  }
 }
 
 /// A regular expression matching build configuration file names.

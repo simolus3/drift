@@ -115,7 +115,7 @@ Expression<bool> m(Expression<int> a, Expression<int> b) {
     test('migrates common apis', () async {
       final original = await _drift2Project([
         d.file('database.dart', '''
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide QueryRow;
 
 class User {}
 class FakeUsersTable extends Table with TableInfo<FakeUsersTable, User> {}
@@ -149,6 +149,9 @@ void insertMode(FakeGeneratedDatabase db) async {
   await db.batch((b) {
     b.insert(db.users, stub, onConflict: DoUpdate((b) => stub));
   });
+
+  innerJoin(db.users, condition);
+  crossJoin(db.users, condition, useColumns: false);
 }
 '''),
       ]);
@@ -156,10 +159,10 @@ void insertMode(FakeGeneratedDatabase db) async {
       await d.file('app/lib/database.dart', '''
 import 'dart:typed_data';
 import 'package:drift_sqlite/drift_sqlite.dart';
-import 'package:drift3_preview/drift.dart';
+import 'package:drift3_preview/drift.dart' hide CustomRow;
 
 class User {}
-class FakeUsersTable extends Table with GeneratedTable<FakeUsersTable, User> {}
+class FakeUsersTable extends Table with GeneratedTable<User, FakeUsersTable> {}
 
 base class FakeGeneratedDatabase extends GeneratedDatabase {
   FakeUsersTable get users => throw 'stub';
@@ -190,6 +193,9 @@ void insertMode(FakeGeneratedDatabase db) async {
   await db.batch((b) {
     b.insert<User, FakeUsersTable>(db.users, stub, onConflict: DoUpdate((b) => stub));
   });
+
+  Join.inner(db.users, on: condition);
+  Join.cross(db.users, on: condition, includeInResult: false);
 }
 ''').validate();
     });

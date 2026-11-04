@@ -6,6 +6,7 @@ const VerificationResult _invalidNull = VerificationResult.failure(
 );
 
 /// Implementation for a [Column] declared on a table.
+@pragma('drift:v3-rename', 'SchemaColumn')
 class GeneratedColumn<T extends Object> extends Column<T> {
   /// The sql name of this column.
   final String $name; // todo: Remove, replace with `name`

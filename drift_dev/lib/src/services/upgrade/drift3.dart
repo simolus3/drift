@@ -367,6 +367,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
     }
 
     _rewriteImportString(node.uri);
+    node.visitChildren(this);
   }
 
   @override
@@ -474,9 +475,37 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
           _removeArgument(modeArg);
         }
       }
+
+      if (_transformIdentifier(node.function, name, element) &&
+          _joinMethods.contains(name)) {
+        return _translateJoinCall(node);
+      }
     }
 
     super.visitMethodInvocation(node);
+  }
+
+  void _translateJoinCall(MethodInvocation node) {
+    var argumentIndex = 0;
+    for (final argument in node.argumentList.arguments) {
+      if (argument case NamedArgument(:final name, :final argumentExpression)) {
+        if (name.lexeme == 'useColumns') {
+          // useColumns is called includeInResult in drift3
+          _writer.replaceNode(name, 'includeInResult');
+        }
+
+        argumentExpression.accept(this);
+      } else {
+        if (argumentIndex == 1) {
+          // The second argument has been replaced with a named on: parameter
+          // for drift3
+          _writer.insertBefore(argument, 'on: ');
+          argument.accept(this);
+        }
+
+        argumentIndex++;
+      }
+    }
   }
 
   void _removeArgument(Argument argument) {
@@ -629,11 +658,26 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
 
   @override
   void visitNamedType(NamedType node) {
-    _transformIdentifier(node.name, node.name.lexeme, node.element);
+    final didMigrate = _transformIdentifier(
+      node.name,
+      node.name.lexeme,
+      node.element,
+    );
+    if (didMigrate && _switchTypeParameters.contains(node.name.lexeme)) {
+      if (node.typeArguments case TypeArgumentList(
+        arguments: [final first, final second],
+      )) {
+        _writer.swap(first, second);
+
+        // We can't visit recursive types because we just changed offsets
+        return;
+      }
+    }
+
     super.visitNamedType(node);
   }
 
-  void _transformIdentifier(
+  bool _transformIdentifier(
     SyntacticEntity identifier,
     String name,
     Element? element,
@@ -646,11 +690,14 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
       }
     }
 
-    if (element == null) return;
+    if (element == null) return false;
 
     if (element.readStringPragma('drift:v3-rename') case final newIdentifier?) {
       _writer.replace(identifier.offset, name.length, newIdentifier);
+      return true;
     }
+
+    return false;
   }
 }
 
@@ -797,3 +844,14 @@ final class _FindRequiredImports extends GeneralizingAstVisitor<void> {
     super.visitNamedType(node);
   }
 }
+
+// Types that have switched type parameters in drift3
+const _switchTypeParameters = {'TableInfo', 'SingleTableSelectStatement'};
+
+const _joinMethods = {
+  'innerJoin',
+  'leftOuterJoin',
+  'rightOuterJoin',
+  'fullOuterJoin',
+  'crossJoin',
+};
