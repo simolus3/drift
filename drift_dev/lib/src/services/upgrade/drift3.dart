@@ -377,27 +377,15 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
 
   @override
   void visitMethodInvocation(MethodInvocation node) {
-    // Transform usages of the pattern db.table.insertOne (and other extensions
-    // defined in on_table.dart) into db.tableQueries.insertOne.
     final target = node.target;
 
     if (node.function case SimpleIdentifier(:final name, :final element?)) {
       if (element.enclosingElement case ExtensionElement(
         name: 'TableOrViewStatements' || 'TableStatements',
       )) {
-        // This needs a rewrite, which can be automated if the receiver is a
-        // getter invocation from a database.
-        if (target
-            case PrefixedIdentifier(
-              prefix: SimpleIdentifier(:final staticType?),
-              identifier: final databaseGetter,
-            )
-            when _typeSystem.isSubtypeOf(
-              staticType,
-              _types.databaseConnectionUser,
-            )) {
-          _writer.replaceNode(databaseGetter, '${databaseGetter.name}Queries');
-        }
+        // Transform usages of the pattern db.table.insertOne (and other extensions
+        // defined in on_table.dart) into db.tableQueries.insertOne.
+        _rewriteTableToQueries(target);
       }
 
       if (element.enclosingElement == _types.tableInfo &&
@@ -487,6 +475,26 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
     }
 
     super.visitMethodInvocation(node);
+  }
+
+  void _rewriteTableToQueries(Expression? target) {
+    if (target case SimpleIdentifier(
+      element: Element(enclosingElement: final InterfaceElement definingClass),
+    )) {
+      final staticType = _typeSystem.instantiateInterfaceToBounds(
+        element: definingClass,
+        nullabilitySuffix: NullabilitySuffix.none,
+      );
+
+      if (_typeSystem.isSubtypeOf(staticType, _types.databaseConnectionUser)) {
+        _writer.replaceNode(target, '${target.name}Queries');
+      }
+    } else if (target case PrefixedIdentifier(
+      prefix: SimpleIdentifier(:final staticType?),
+      identifier: final databaseGetter,
+    ) when _typeSystem.isSubtypeOf(staticType, _types.databaseConnectionUser)) {
+      _writer.replaceNode(databaseGetter, '${databaseGetter.name}Queries');
+    }
   }
 
   void _translateJoinCall(MethodInvocation node) {

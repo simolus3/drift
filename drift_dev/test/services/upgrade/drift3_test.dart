@@ -133,6 +133,10 @@ void queryExtension(FakeGeneratedDatabase db, Uint8List a) {
   x.insertOne(stub); // indirect, cannot be migrated
 }
 
+extension QueryExtensionThis on FakeGeneratedDatabase {
+  void foo() => users.insertOne(stub);
+}
+
 void rawConnection(FakeGeneratedDatabase db) async {
   db.executor.dialect;
   await db.executor.ensureOpen(db);
@@ -181,6 +185,10 @@ void queryExtension(FakeGeneratedDatabase db, Uint8List a) {
   db.users.entityName; // not a query extension
   final x = db.users;
   x.insertOne(stub); // indirect, cannot be migrated
+}
+
+extension QueryExtensionThis on FakeGeneratedDatabase {
+  void foo() => usersQueries.insertOne(stub);
 }
 
 void rawConnection(FakeGeneratedDatabase db) async {
