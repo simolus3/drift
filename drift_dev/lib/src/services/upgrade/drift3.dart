@@ -474,7 +474,7 @@ final class _DartToDrift3Rewriter extends GeneralizingAstVisitor<void> {
       }
     }
 
-    super.visitMethodInvocation(node);
+    node.argumentList.accept(this);
   }
 
   void _rewriteTableToQueries(Expression? target) {
