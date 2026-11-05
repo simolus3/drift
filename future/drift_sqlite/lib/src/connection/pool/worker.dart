@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:ffi';
 import 'dart:isolate';
 
 import 'package:meta/meta.dart';
@@ -70,11 +69,14 @@ final class DatabaseWorker {
 
   /// Makes the worker isolate run [work] on [connection].
   Future<T> execute<T>(
-    PoolConnection connection,
+    AsyncConnection connection,
     T Function(PoolConnection) work,
   ) async {
     final id = _nextRequestId++;
-    final msg = _WorkRequest(_RequestId.fromConnection(id, connection), work);
+    final msg = _WorkRequest(
+      _RequestId(id, connection.shareableConnection),
+      work,
+    );
     final completion = _inflightRequests[id] = Completer<T>();
 
     _sendCommands.send(msg);
@@ -106,10 +108,22 @@ final class DatabaseWorker {
     requests.listen((message) {
       final request = message as _WorkRequest;
       final requestId = request.requestId.requestId;
-      final connection = request.requestId.connection;
+      final connection = request.requestId.connection.obtainConnection();
 
       try {
-        parent.send([requestId, request.closure(connection)]);
+        if (connection == null) {
+          // Parent isolate sent a command but then exited and returned the
+          // connection it shared with us. This is an unavoidable race condition
+          // that can happen due to e.g. hot restarts.
+          throw StateError('Parent isolate exited unexpectedly');
+        }
+
+        // This is safe because we have exclusive access to the connection
+        // (the parent isolate waits for our result and calls this in a local
+        // mutex), and because the closure is synchronous.
+        final response = request.closure(connection.unsafeRawConnection);
+
+        parent.send([requestId, response]);
       } catch (e, s) {
         try {
           parent.send([requestId, e, s]);
@@ -118,6 +132,8 @@ final class DatabaseWorker {
           // ports.
           parent.send([requestId, Error.safeToString(e), s.toString()]);
         }
+      } finally {
+        connection?.returnLease();
       }
     });
   }
@@ -154,15 +170,9 @@ final class DatabaseWorkers {
 @pragma('vm:deeply-immutable')
 final class _RequestId {
   final int requestId;
-  final int connectionPointer;
+  final ShareableAsyncConnection connection;
 
-  _RequestId(this.requestId, this.connectionPointer);
-
-  _RequestId.fromConnection(this.requestId, PoolConnection conn)
-    : connectionPointer = conn.unsafePointer.address;
-
-  PoolConnection get connection =>
-      PoolConnection.unsafeFromPointer(Pointer.fromAddress(connectionPointer));
+  _RequestId(this.requestId, this.connection);
 }
 
 final class _WorkRequest<T> {

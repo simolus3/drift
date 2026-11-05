@@ -47,10 +47,7 @@ CREATE TABLE IF NOT EXISTS todo_categories (
         throwsA(anyOf(isA<SqliteException>())),
       );
 
-      expect(
-        db.customSelect('SELECT * FROM todo_items').get(),
-        completion(isEmpty),
-      );
+      expect(await db.customSelect('SELECT * FROM todo_items').get(), isEmpty);
     }
 
     test('sync client', () async {

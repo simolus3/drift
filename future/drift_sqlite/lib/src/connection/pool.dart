@@ -227,7 +227,7 @@ abstract class _LeasedPoolConnection implements DriftSession {
     // This is safe because the closure doesn't close the database.
     return _connection.unsafeAccess((connection) {
       if (_worker case final worker?) {
-        return worker.execute(connection, closure);
+        return worker.execute(_connection, closure);
       } else {
         return closure(connection);
       }
