@@ -424,13 +424,18 @@ final class KnownTable {
     if (result.errors.isNotEmpty) {
       throw ArgumentError.value(
         sql,
+        'sql',
         'Not a valid CREATE TABLE statement: ${result.errors.join('\n')}',
       );
     }
 
     final root = result.rootNode;
     if (root is! TableInducingStatement) {
-      throw ArgumentError.value(sql, 'Not a valid CREATE TABLE statement');
+      throw ArgumentError.value(
+        sql,
+        'sql',
+        'Not a valid CREATE TABLE statement',
+      );
     }
 
     return SchemaFromCreateTable().read(root);
