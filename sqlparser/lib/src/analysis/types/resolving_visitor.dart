@@ -635,15 +635,12 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final lowercaseName = e.name.toLowerCase();
     switch (lowercaseName) {
       case 'round':
+        // round() returns a floating point value regardless of whether the
+        // optional second argument (the number of digits) is given:
+        // `SELECT typeof(round(2.5)), typeof(round(2)), typeof(round(2.5, 1))`
+        // reports `real` for all three.
         nullableIfChildIs();
-        //if there is only one params, it rounds to int. Otherwise real
-        if (params.length == 1) {
-          return ResolveResult(_intType);
-        } else {
-          return ResolveResult(_realType);
-        }
-        // ignore: dead_code
-        throw AssertionError(); // required so that this switch compiles
+        return ResolveResult(_realType);
       case 'sum':
         checkArgumentCount(1);
 
