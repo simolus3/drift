@@ -1,4 +1,4 @@
-## 2.0.0-alpha.0
+## 2.0.0-alpha.1
 
 - Upgrade to version 3 preview of drift. See the [upgrade guide](https://drift.simonbinder.eu/guides/upgrading/) for details.
 - Remove deprecated `package:drift_postgres/postgres.dart` library. Use `package:drift_postgres/drift_postgres.dart` instead.
