@@ -240,10 +240,10 @@ void main() {
 
     test('round', () {
       // round() yields a REAL with or without the digits argument.
-      expect(resolveResultColumn('SELECT round(2.5)').type, BasicType.real);
-      expect(resolveResultColumn('SELECT round(2)').type, BasicType.real);
+      expect(resolveResultColumn('SELECT round(2.5)')!.type, BasicType.real);
+      expect(resolveResultColumn('SELECT round(2)')!.type, BasicType.real);
       expect(
-        resolveResultColumn('SELECT round(2.567, 2)').type,
+        resolveResultColumn('SELECT round(2.567, 2)')!.type,
         BasicType.real,
       );
     });
@@ -251,18 +251,18 @@ void main() {
     test('julianday', () {
       // A fractional day count, not a formatted date.
       expect(
-        resolveResultColumn("SELECT julianday('now')").type,
+        resolveResultColumn("SELECT julianday('now')")!.type,
         BasicType.real,
       );
     });
 
     test('sqlite_compileoption_get', () {
       expect(
-        resolveResultColumn('SELECT sqlite_compileoption_get(0)').type,
+        resolveResultColumn('SELECT sqlite_compileoption_get(0)')!.type,
         BasicType.text,
       );
       expect(
-        resolveResultColumn("SELECT sqlite_compileoption_used('X')").type,
+        resolveResultColumn("SELECT sqlite_compileoption_used('X')")!.type,
         BasicType.int,
       );
     });
