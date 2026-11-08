@@ -687,7 +687,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'hex':
       case 'quote':
       case 'soundex':
-      case 'sqlite_compileoption_set':
+      case 'sqlite_compileoption_get':
       case 'sqlite_version':
       case 'typeof':
       case 'timediff':
