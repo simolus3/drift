@@ -174,3 +174,8 @@ class UpdateStatement<T extends Table, D> extends Query<T, D>
     });
   }
 }
+
+@internal
+extension InternalUpdateStatement<T extends Table, D> on UpdateStatement<T, D> {
+  Map<String, Expression> get updatedFields => _updatedFields;
+}

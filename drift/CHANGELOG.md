@@ -1,3 +1,7 @@
+## 2.35.4
+
+- Fix an empty companion in `Batch.update` causing an invalid SQL statement.
+
 ## 2.35.3
 
 - Native: Make select statements faster by not converting each result row to a map and back.

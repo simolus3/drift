@@ -1,3 +1,7 @@
+## 2.35.3
+
+- Improve validation error messages for `known_tables` option.
+
 ## 2.35.2
 
 - Support `package:build` versions 5.x.

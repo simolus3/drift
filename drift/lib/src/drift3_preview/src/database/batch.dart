@@ -162,13 +162,14 @@ final class Batch {
   ///
   /// For more details on how updates work in drift, check out
   /// [UpdateStatement.write] or the [documentation with examples](https://drift.simonbinder.eu/docs/dart-api/writes/#updates-and-deletes)
-  BatchedStatement
+  BatchedStatement?
   update<Row extends Object, RS extends GeneratedTable<Row, RS>>(
     GeneratedTable<Row, RS> table,
     Insertable<Row> row, {
     Expression<bool> Function(RS table)? where,
   }) {
     final stmt = UpdateStatement(database, table)..setValues(row);
+    if (stmt.updatedColumns.isEmpty) return null;
     if (where != null) stmt.where(where);
 
     return addStatement(stmt);
@@ -180,11 +181,14 @@ final class Batch {
   /// See also:
   ///  - [UpdateStatement.replace], which is what would be used outside of a
   ///    [Batch].
-  BatchedStatement replace<
+  BatchedStatement? replace<
     Row extends Object,
     RS extends GeneratedTable<Row, RS>
   >(GeneratedTable<Row, RS> table, Insertable<Row> row) {
-    return addStatement(UpdateStatement(database, table)..prepareReplace(row));
+    final stmt = UpdateStatement(database, table)..prepareReplace(row);
+    if (stmt.updatedColumns.isEmpty) return null;
+
+    return addStatement(stmt);
   }
 
   /// Helper that calls [replace] for all [rows].

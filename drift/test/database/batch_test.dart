@@ -253,6 +253,15 @@ void main() {
     );
   });
 
+  test('does not try to run empty update statements', () async {
+    await db.batch((b) {
+      b.update(db.users, UsersCompanion());
+    });
+
+    verify(executor.transactions.runBatched(BatchedStatements([], [])));
+    verifyNever(streamQueries.handleTableUpdates(argThat(isNotEmpty)));
+  });
+
   test(
     'does not start a new transaction when running in a transaction',
     () async {

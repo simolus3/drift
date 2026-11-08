@@ -137,12 +137,14 @@ class Batch {
     Insertable<D> row, {
     Expression<bool> Function(T table)? where,
   }) {
-    _addUpdate(table, UpdateKind.update);
     final stmt = UpdateStatement(_user, table);
     if (where != null) stmt.where(where);
 
     stmt.write(row, dontExecute: true);
+    if (stmt.updatedFields.isEmpty) return;
+
     final context = stmt.constructQuery();
+    _addUpdate(table, UpdateKind.update);
     _addContext(context);
   }
 
@@ -153,8 +155,10 @@ class Batch {
   ///  - [UpdateStatement.replace], which is what would be used outside of a
   ///    [Batch].
   void replace<T extends Table, D>(TableInfo<T, D> table, Insertable<D> row) {
-    _addUpdate(table, UpdateKind.update);
     final stmt = UpdateStatement(_user, table)..replace(row, dontExecute: true);
+    if (stmt.updatedFields.isEmpty) return;
+
+    _addUpdate(table, UpdateKind.update);
     _addContext(stmt.constructQuery());
   }
 

@@ -244,6 +244,15 @@ void main() {
     verify(session.begin(any)).called(1);
   });
 
+  test('does not try to run empty update statements', () async {
+    await db.batch((b) {
+      final stmt = b.update(db.users, UsersCompanion());
+      expect(stmt, isNull);
+    });
+
+    expect(streamQueries.recordedUpdates, isEmpty);
+  });
+
   test('can get results', () async {
     late BatchedStatement stmt;
 
