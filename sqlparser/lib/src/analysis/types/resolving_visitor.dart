@@ -682,7 +682,6 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return ResolveResult(_textType.withNullable(true));
       case 'date':
       case 'time':
-      case 'julianday':
       case 'strftime':
       case 'char':
       case 'hex':
@@ -799,6 +798,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           .._addRelation(CopyEncapsulating(e, params))
           .._addRelation(HaveSameType(params));
         return const ResolveResult.needsContext();
+      case 'julianday':
+        // julianday() returns the fractional number of days since noon in
+        // Greenwich on November 24, 4714 B.C., which SQLite reports as a REAL:
+        // `SELECT typeof(julianday('now'))` is `real`, not `text`.
+        return ResolveResult(_realType);
       case 'unixepoch':
         return const ResolveResult(
           ResolvedType(
