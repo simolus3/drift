@@ -636,18 +636,15 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     switch (lowercaseName) {
       case 'round':
         nullableIfChildIs();
-        // Note that this is deliberately inaccurate: SQLite always returns a
-        // REAL from round(), even without the optional digits argument
-        // (`SELECT typeof(round(2))` reports `real`). Reporting an int for the
-        // single-argument form is more useful in Dart though, since rounding
-        // to zero digits is only ever done to obtain a whole number.
         if (params.length == 1) {
-          return ResolveResult(_intType);
+          // This is technically wrong, round(2) still returns a `real` value.
+          // But drift_dev uses this to generate Dart types, and reporting an
+          // int for round() results is helpful. We could introduce a type hint
+          // in the future if needed.
+          return const ResolveResult(_intType);
         } else {
-          return ResolveResult(_realType);
+          return const ResolveResult(_realType);
         }
-        // ignore: dead_code
-        throw AssertionError(); // required so that this switch compiles
       case 'sum':
         checkArgumentCount(1);
 
@@ -700,7 +697,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'timediff':
       case 'unistr':
       case 'unistr_quote':
-        return ResolveResult(_textType);
+        return const ResolveResult(_textType);
       case 'datetime':
         return ResolveResult(
           _textType.copyWith(hints: const [IsDateTime()], nullable: true),
@@ -806,10 +803,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           .._addRelation(HaveSameType(params));
         return const ResolveResult.needsContext();
       case 'julianday':
-        // julianday() returns the fractional number of days since noon in
-        // Greenwich on November 24, 4714 B.C., which SQLite reports as a REAL:
-        // `SELECT typeof(julianday('now'))` is `real`, not `text`.
-        return ResolveResult(_realType);
+        return const ResolveResult(_realType);
       case 'unixepoch':
         return const ResolveResult(
           ResolvedType(

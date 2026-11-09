@@ -250,7 +250,6 @@ void main() {
     });
 
     test('julianday', () {
-      // A fractional day count, not a formatted date.
       expect(
         resolveResultColumn("SELECT julianday('now')")!.type,
         BasicType.real,
