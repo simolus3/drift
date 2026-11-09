@@ -239,9 +239,10 @@ void main() {
     });
 
     test('round', () {
-      // round() yields a REAL with or without the digits argument.
-      expect(resolveResultColumn('SELECT round(2.5)')!.type, BasicType.real);
-      expect(resolveResultColumn('SELECT round(2)')!.type, BasicType.real);
+      // SQLite always returns a REAL here, but drift intentionally reports an
+      // int for the single-argument form, see TypeResolver.
+      expect(resolveResultColumn('SELECT round(2.5)')!.type, BasicType.int);
+      expect(resolveResultColumn('SELECT round(2)')!.type, BasicType.int);
       expect(
         resolveResultColumn('SELECT round(2.567, 2)')!.type,
         BasicType.real,

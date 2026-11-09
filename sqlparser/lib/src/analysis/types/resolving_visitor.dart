@@ -635,12 +635,19 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     final lowercaseName = e.name.toLowerCase();
     switch (lowercaseName) {
       case 'round':
-        // round() returns a floating point value regardless of whether the
-        // optional second argument (the number of digits) is given:
-        // `SELECT typeof(round(2.5)), typeof(round(2)), typeof(round(2.5, 1))`
-        // reports `real` for all three.
         nullableIfChildIs();
-        return ResolveResult(_realType);
+        // Note that this is deliberately inaccurate: SQLite always returns a
+        // REAL from round(), even without the optional digits argument
+        // (`SELECT typeof(round(2))` reports `real`). Reporting an int for the
+        // single-argument form is more useful in Dart though, since rounding
+        // to zero digits is only ever done to obtain a whole number.
+        if (params.length == 1) {
+          return ResolveResult(_intType);
+        } else {
+          return ResolveResult(_realType);
+        }
+        // ignore: dead_code
+        throw AssertionError(); // required so that this switch compiles
       case 'sum':
         checkArgumentCount(1);
 
