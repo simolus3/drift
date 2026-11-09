@@ -37,7 +37,7 @@ Expression<num> sqlSin(Expression<num> value) {
 
 /// Calculates the cosine of [value] in sql.
 ///
-/// This function is equivalent to [sin].
+/// This function is equivalent to [cos].
 ///
 /// This function is only available when using a `NativeDatabase`.
 Expression<num> sqlCos(Expression<num> value) {
@@ -63,7 +63,7 @@ Expression<num> sqlAsin(Expression<num> value) {
   return FunctionCallExpression('asin', [value]);
 }
 
-/// Calculates the cosine of [value] in sql.
+/// Calculates the arc cosine of [value] in sql.
 ///
 /// This function is equivalent to [acos], except that it evaluates to null
 /// instead of `NaN`.
@@ -73,7 +73,7 @@ Expression<num> sqlAcos(Expression<num> value) {
   return FunctionCallExpression('acos', [value]);
 }
 
-/// Calculates the tangent of [value] in sql.
+/// Calculates the arc tangent of [value] in sql.
 ///
 /// This function is equivalent to [atan], except that it evaluates to null
 /// instead of `NaN`.
@@ -92,10 +92,10 @@ extension DriftNativeStringExtensions on Expression<String> {
   /// insensitive for the English alphabet only. [containsCase] is implemented
   /// in Dart with better support for casing.
   /// When [caseSensitive] is false (the default), this is equivalent to the
-  /// Dart expression `this.contains(substring)`, where `this` is the string
-  /// value this expression evaluates to.
+  /// Dart expression `this.toLowerCase().contains(substring.toLowerCase())`,
+  /// where `this` is the string value this expression evaluates to.
   /// When [caseSensitive] is true, the equivalent Dart expression would be
-  /// `this.toLowerCase().contains(substring.toLowerCase())`.
+  /// `this.contains(substring)`.
   ///
   /// Note that, while Dart has better support for an international alphabet,
   /// it can still yield unexpected results like the
