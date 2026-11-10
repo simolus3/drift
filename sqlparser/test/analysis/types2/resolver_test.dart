@@ -224,7 +224,11 @@ void main() {
       final resultType = resolveResultColumn('SELECT timediff(?, ?)');
       final argType = resolveFirstVariable('SELECT timediff(?, ?)');
 
-      expect(resultType, const ResolvedType(type: BasicType.text));
+      // `timediff` returns NULL when an argument isn't a valid date or time.
+      expect(
+        resultType,
+        const ResolvedType(type: BasicType.text, nullable: true),
+      );
       expect(
         argType,
         const ResolvedType(type: BasicType.text, hints: [IsDateTime()]),
@@ -235,6 +239,11 @@ void main() {
       expect(
         resolveResultColumn('SELECT octet_length(?)'),
         equals(const ResolvedType(type: BasicType.int)),
+      );
+      // Like `length`, it returns NULL for a NULL argument.
+      expect(
+        resolveResultColumn('SELECT octet_length(NULL)'),
+        equals(const ResolvedType(type: BasicType.int, nullable: true)),
       );
     });
 
@@ -290,17 +299,6 @@ void main() {
         expect(type.type, BasicType.text, reason: expr);
         expect(type.nullable, isFalse, reason: expr);
       }
-    });
-
-    test('octet_length is nullable if its argument is', () {
-      expect(
-        resolveResultColumn("SELECT octet_length('abc')"),
-        const ResolvedType(type: BasicType.int),
-      );
-      expect(
-        resolveResultColumn('SELECT octet_length(NULL)'),
-        const ResolvedType(type: BasicType.int, nullable: true),
-      );
     });
 
     test('nth_value', () {
