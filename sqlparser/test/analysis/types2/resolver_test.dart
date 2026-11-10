@@ -250,20 +250,56 @@ void main() {
     });
 
     test('julianday', () {
-      expect(
-        resolveResultColumn("SELECT julianday('now')")!.type,
-        BasicType.real,
-      );
+      final type = resolveResultColumn("SELECT julianday('now')")!;
+      expect(type.type, BasicType.real);
+      // `julianday` returns NULL for a NULL argument or an invalid date.
+      expect(type.nullable, isTrue);
     });
 
     test('sqlite_compileoption_get', () {
+      final get = resolveResultColumn('SELECT sqlite_compileoption_get(0)')!;
+      expect(get.type, BasicType.text);
+      // NULL if there is no compile option with that index.
+      expect(get.nullable, isTrue);
+
+      final used = resolveResultColumn(
+        "SELECT sqlite_compileoption_used('X')",
+      )!;
+      expect(used.type, BasicType.int);
+      expect(used.nullable, isFalse);
+    });
+
+    test('date and time functions are nullable', () {
+      for (final expr in [
+        "date('now')",
+        "time('now')",
+        "strftime('%Y', 'now')",
+        "timediff('now', 'now')",
+      ]) {
+        final type = resolveResultColumn('SELECT $expr')!;
+        expect(type.type, BasicType.text, reason: expr);
+        // An invalid date, time or modifier string makes these return NULL,
+        // just like `datetime` and `unixepoch`, which were already nullable.
+        expect(type.nullable, isTrue, reason: expr);
+      }
+    });
+
+    test('string functions returning a non-null text', () {
+      for (final expr in ['char(65)', "hex('a')", 'quote(1)', 'typeof(1)']) {
+        final type = resolveResultColumn('SELECT $expr')!;
+        expect(type.type, BasicType.text, reason: expr);
+        expect(type.nullable, isFalse, reason: expr);
+      }
+    });
+
+    test('octet_length is nullable if its argument is', () {
       expect(
-        resolveResultColumn('SELECT sqlite_compileoption_get(0)')!.type,
-        BasicType.text,
+        resolveResultColumn("SELECT octet_length('abc')"),
+        const ResolvedType(type: BasicType.int),
       );
       expect(
-        resolveResultColumn("SELECT sqlite_compileoption_used('X')")!.type,
-        BasicType.int,
+        resolveResultColumn('SELECT octet_length(NULL)'),
+        const ResolvedType(type: BasicType.int, nullable: true),
       );
     });
 

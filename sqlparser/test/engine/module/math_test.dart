@@ -31,12 +31,26 @@ void main() {
     expect(resolveExpr('pi()').type?.type, BasicType.real);
   });
 
+  test('reports pi as non-nullable', () {
+    expect(resolveExpr('pi()').type?.nullable, isFalse);
+  });
+
   test('reports sin as double', () {
     expect(resolveExpr('sin(3)').type?.type, BasicType.real);
   });
 
   test('reports ceil as int', () {
     expect(resolveExpr('ceil(3.5)').type?.type, BasicType.int);
+  });
+
+  test('reports math functions as nullable', () {
+    // These return NULL for a NULL argument, and also for arguments outside
+    // of their domain (e.g. `sqrt(-1)` or `log(0)`).
+    for (final expr in ['sin(3)', 'sqrt(4)', 'log(10)', 'pow(2, 3)']) {
+      expect(resolveExpr(expr).type?.nullable, isTrue, reason: expr);
+    }
+
+    expect(resolveExpr('ceil(3.5)').type?.nullable, isTrue);
   });
 
   test('infers arguments as numeric', () {

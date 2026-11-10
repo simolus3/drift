@@ -3,6 +3,7 @@ part of 'types.dart';
 const _intType = ResolvedType(type: BasicType.int);
 const _realType = ResolvedType(type: BasicType.real);
 const _textType = ResolvedType(type: BasicType.text);
+const _nullableTextType = ResolvedType(type: BasicType.text, nullable: true);
 
 const _expectCondition = ExactTypeExpectation.laxly(ResolvedType.bool());
 const _expectInt = ExactTypeExpectation.laxly(_intType);
@@ -684,20 +685,25 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'group_concat':
       case 'string_agg':
         return ResolveResult(_textType.withNullable(true));
-      case 'date':
-      case 'time':
-      case 'strftime':
       case 'char':
       case 'hex':
       case 'quote':
       case 'soundex':
-      case 'sqlite_compileoption_get':
       case 'sqlite_version':
       case 'typeof':
-      case 'timediff':
       case 'unistr':
       case 'unistr_quote':
         return const ResolveResult(_textType);
+      case 'date':
+      case 'time':
+      case 'strftime':
+      case 'timediff':
+        // Like `datetime` and `unixepoch`, these return `NULL` for a `NULL`
+        // argument and for inputs that aren't a valid date, time or modifier.
+        return const ResolveResult(_nullableTextType);
+      case 'sqlite_compileoption_get':
+        // Returns `NULL` if there is no compile option with the given index.
+        return const ResolveResult(_nullableTextType);
       case 'datetime':
         return ResolveResult(
           _textType.copyWith(hints: const [IsDateTime()], nullable: true),
@@ -712,10 +718,10 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'rank':
       case 'dense_rank':
       case 'ntile':
-      case 'octet_length':
         return ResolveResult(_intType);
       case 'instr':
       case 'length':
+      case 'octet_length':
       case 'unicode':
         nullableIfChildIs();
         return ResolveResult(_intType);
@@ -803,7 +809,10 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           .._addRelation(HaveSameType(params));
         return const ResolveResult.needsContext();
       case 'julianday':
-        return const ResolveResult(_realType);
+        // `NULL` for a `NULL` argument or an invalid date string.
+        return const ResolveResult(
+          ResolvedType(type: BasicType.real, nullable: true),
+        );
       case 'unixepoch':
         return const ResolveResult(
           ResolvedType(

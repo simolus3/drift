@@ -75,11 +75,22 @@ class _MathFunctions extends FunctionHandler {
     SqlInvocation call,
     List<Typeable> expandedArgs,
   ) {
-    if (_unaryToInt.contains(call.name.toLowerCase())) {
-      return const ResolveResult(ResolvedType(type: BasicType.int));
+    final name = call.name.toLowerCase();
+
+    // `pi()` is the only one of these functions that can't return `NULL`. The
+    // others return `NULL` for a `NULL` argument, and also for arguments
+    // outside of their domain (e.g. `sqrt(-1)`, `log(0)` or `acos(2)`).
+    final nullable = !_constants.contains(name);
+
+    if (_unaryToInt.contains(name)) {
+      return ResolveResult(
+        ResolvedType(type: BasicType.int, nullable: nullable),
+      );
     }
 
-    return const ResolveResult(ResolvedType(type: BasicType.real));
+    return ResolveResult(
+      ResolvedType(type: BasicType.real, nullable: nullable),
+    );
   }
 
   @override
