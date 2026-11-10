@@ -662,6 +662,14 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           DefaultType(e, defaultType: _realType.withNullable(true)),
         );
         return const ResolveResult.needsContext();
+      case 'sign':
+        // `NULL` for a `NULL` argument, and also for arguments that aren't
+        // numeric at all (e.g. `sign('abc')`).
+        return const ResolveResult(
+          ResolvedType(type: BasicType.int, nullable: true),
+        );
+      case 'sqlite_source_id':
+        return const ResolveResult(_textType);
       case 'lower':
       case 'ltrim':
       case 'printf':
@@ -669,6 +677,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'replace':
       case 'rtrim':
       case 'substr':
+      case 'substring':
       case 'trim':
       case 'upper':
         nullableIfChildIs();

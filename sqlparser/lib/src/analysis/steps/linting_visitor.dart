@@ -413,6 +413,7 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
     // Warn when newer functions are used in an unsupported sqlite3 version.
     final minimumVersion = switch (lowerCaseName) {
+      'sign' => SqliteVersion.v3_35,
       'format' || 'unixepoch' => SqliteVersion.v3_38,
       'unhex' => SqliteVersion.v3_41,
       'timediff' || 'octet_length' => SqliteVersion.v3_43,

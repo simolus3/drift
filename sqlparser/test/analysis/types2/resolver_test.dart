@@ -287,6 +287,28 @@ void main() {
         equals(const ResolvedType(type: BasicType.text, nullable: true)),
       );
     });
+
+    test('sign', () {
+      expect(
+        resolveResultColumn('SELECT sign(-2)'),
+        // NULL for a NULL argument and for non-numeric arguments.
+        equals(const ResolvedType(type: BasicType.int, nullable: true)),
+      );
+    });
+
+    test('substring', () {
+      expect(
+        resolveResultColumn("SELECT substring('abc', 1, 1)"),
+        equals(const ResolvedType(type: BasicType.text)),
+      );
+    });
+
+    test('sqlite_source_id', () {
+      expect(
+        resolveResultColumn('SELECT sqlite_source_id()'),
+        equals(const ResolvedType(type: BasicType.text)),
+      );
+    });
   });
 
   group('case expressions', () {
