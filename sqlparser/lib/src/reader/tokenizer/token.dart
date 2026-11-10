@@ -1,8 +1,6 @@
 /// @docImport '../../engine/options.dart';
 library;
 
-import 'dart:math';
-
 import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -652,6 +650,13 @@ class NumericToken extends Token {
       return int.parse(hexDigits!, radix: 16);
     }
 
+    if (exponent != null) {
+      // A literal with an exponent is always a REAL in SQLite, even without a
+      // decimal point. toString() rebuilds the literal without any `_`
+      // separators, and double.parse rounds correctly.
+      return double.parse(toString());
+    }
+
     final beforeDecimal = digitsBeforeDecimal != null
         ? int.parse(digitsBeforeDecimal!)
         : 0;
@@ -667,9 +672,6 @@ class NumericToken extends Token {
       number = beforeDecimal.toDouble();
     }
 
-    if (exponent != null) {
-      number *= pow(10, exponent!);
-    }
     return number;
   }
 

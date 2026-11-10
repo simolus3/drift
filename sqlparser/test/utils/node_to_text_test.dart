@@ -746,6 +746,39 @@ COMMIT TRANSACTION;
     });
   });
 
+  test('writes exponent literals as REAL', () {
+    final written = engine
+        .parse(ParserEntrypoint.statement, 'SELECT 1e0 / 2')
+        .rootNode
+        .toSql();
+    final reparsed = engine.analyze(written);
+    final select = reparsed.root as SelectStatement;
+    final division =
+        (select.columns.single as ExpressionResultColumn).expression
+            as BinaryExpression;
+    final left = division.left as NumericLiteral;
+
+    expect(left.value, isA<double>());
+    expect(left.value, 1.0);
+    expect(written, isNot(contains('1 /')));
+  });
+
+  test('writes exponent literals with the exact same double', () {
+    final written = engine
+        .parse(ParserEntrypoint.statement, 'SELECT 1e23')
+        .rootNode
+        .toSql();
+    final select =
+        engine.parse(ParserEntrypoint.statement, written).rootNode
+            as SelectStatement;
+    final literal =
+        (select.columns.single as ExpressionResultColumn).expression
+            as NumericLiteral;
+
+    expect(literal.value, isA<double>());
+    expect(literal.value, 1e23);
+  });
+
   test('does not format invalid statements', () {
     expect(InvalidStatement().toSql, throwsUnsupportedError);
   });
