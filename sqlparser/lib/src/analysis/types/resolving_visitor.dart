@@ -636,14 +636,15 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
     switch (lowercaseName) {
       case 'round':
         nullableIfChildIs();
-        //if there is only one params, it rounds to int. Otherwise real
         if (params.length == 1) {
-          return ResolveResult(_intType);
+          // This is technically wrong, round(2) still returns a `real` value.
+          // But drift_dev uses this to generate Dart types, and reporting an
+          // int for round() results is helpful. We could introduce a type hint
+          // in the future if needed.
+          return const ResolveResult(_intType);
         } else {
-          return ResolveResult(_realType);
+          return const ResolveResult(_realType);
         }
-        // ignore: dead_code
-        throw AssertionError(); // required so that this switch compiles
       case 'sum':
         checkArgumentCount(1);
 
@@ -685,19 +686,18 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
         return ResolveResult(_textType.withNullable(true));
       case 'date':
       case 'time':
-      case 'julianday':
       case 'strftime':
       case 'char':
       case 'hex':
       case 'quote':
       case 'soundex':
-      case 'sqlite_compileoption_set':
+      case 'sqlite_compileoption_get':
       case 'sqlite_version':
       case 'typeof':
       case 'timediff':
       case 'unistr':
       case 'unistr_quote':
-        return ResolveResult(_textType);
+        return const ResolveResult(_textType);
       case 'datetime':
         return ResolveResult(
           _textType.copyWith(hints: const [IsDateTime()], nullable: true),
@@ -802,6 +802,8 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           .._addRelation(CopyEncapsulating(e, params))
           .._addRelation(HaveSameType(params));
         return const ResolveResult.needsContext();
+      case 'julianday':
+        return const ResolveResult(_realType);
       case 'unixepoch':
         return const ResolveResult(
           ResolvedType(
