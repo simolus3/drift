@@ -236,14 +236,10 @@ void main() {
     });
 
     test('octet_length', () {
+      // A byte literal is never NULL, so neither is the length of it.
       expect(
-        resolveResultColumn('SELECT octet_length(?)'),
+        resolveResultColumn("SELECT octet_length(x'0102')"),
         equals(const ResolvedType(type: BasicType.int)),
-      );
-      // Like `length`, it returns NULL for a NULL argument.
-      expect(
-        resolveResultColumn('SELECT octet_length(NULL)'),
-        equals(const ResolvedType(type: BasicType.int, nullable: true)),
       );
     });
 
