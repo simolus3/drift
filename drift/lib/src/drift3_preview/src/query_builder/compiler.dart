@@ -219,6 +219,10 @@ abstract base class StatementCompiler {
   late final StatementBuffer statement = StatementBuffer(dialect);
   Precedence? _expressionPrecedence;
 
+  /// The buffer length right after a prefix minus was written, used to avoid
+  /// writing `--` (an SQL comment) when a negative literal follows it.
+  int _afterMinus = -1;
+
   bool _ignoreResultSet = false;
   @protected
   InsertStatement? currentInsertStatement;
@@ -957,6 +961,9 @@ abstract base class StatementCompiler {
     writeExpression(expr, () {
       if (expr.operator.isPrefix) {
         addUnaryOperator(expr.operator);
+        if (expr.operator == UnaryOperator.minus) {
+          _afterMinus = statement.buffer.length;
+        }
         if (expr.operator.needsSpace) statement.space();
         expr.operand.compileWith(this);
       } else {
@@ -978,7 +985,11 @@ abstract base class StatementCompiler {
   void addLiteral(Literal literal) {
     if (literal.value case final value?) {
       final type = literal.sqlType.resolveIn(dialect);
-      statement.buffer.write(type.sqlLiteral(value));
+      final text = type.sqlLiteral(value);
+      if (statement.buffer.length == _afterMinus && text.startsWith('-')) {
+        statement.space();
+      }
+      statement.buffer.write(text);
     } else {
       statement.buffer.write('NULL');
     }

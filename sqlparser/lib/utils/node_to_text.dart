@@ -12,6 +12,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   /// Whether we need to insert a space before writing the next identifier.
   bool needsSpace = false;
 
+  /// Whether the last [symbol] written ends with a minus sign.
+  bool _endsWithMinus = false;
+
   NodeSqlBuilder([StringSink? buffer]) : buffer = buffer ?? StringBuffer();
 
   /// Writes a space character if [needsSpace] is set.
@@ -1652,10 +1655,14 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   }) {
     if (needsSpace && spaceBefore) {
       _space();
+    } else if (_endsWithMinus && lexeme.startsWith('-')) {
+      // Two adjacent minus signs would start a comment.
+      _space();
     }
 
     buffer.write(lexeme);
     needsSpace = spaceAfter;
+    _endsWithMinus = lexeme.endsWith('-');
   }
 
   void _where(Expression? where) {

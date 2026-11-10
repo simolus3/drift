@@ -23,6 +23,13 @@ void main() {
     expectNotEquals(i1 + i2, i2 + i1);
   });
 
+  test('negating a negative literal', () {
+    // `--` would start an SQL comment.
+    expect(-const Literal<int>(-1), generates('- -1'));
+    expect(-Literal<BigInt>(BigInt.from(-1)), generates('- -1'));
+    expect(-const Literal<int>(1), generates('-1'));
+  });
+
   test('BigInt arithmetic test', () {
     expect(b1 + b2 * b1, generates('b1 + b2 * b1'));
     expect(b1 + b2 * b1, generates('b1 + b2 * b1'));

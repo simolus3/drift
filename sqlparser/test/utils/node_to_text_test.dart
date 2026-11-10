@@ -3,6 +3,8 @@ import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
 
+import '../parser/utils.dart';
+
 void main() {
   final engine = SqlEngine(
     EngineOptions(driftOptions: const DriftSqlOptions()),
@@ -647,6 +649,11 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
 
     test('unary expression', () {
       testFormat('SELECT -(+(~3));');
+      testFormat('SELECT - -1');
+      testFormat('SELECT - - -1');
+      testFormat('SELECT 1 - -1');
+      testFormat('SELECT a > - -b');
+      testFormat('SELECT a -> -1');
     });
 
     test('references', () {
@@ -761,6 +768,48 @@ COMMIT TRANSACTION;
     check(double.nan, 'NULL');
     check(double.infinity, '1e309');
     check(-double.infinity, '-1e309');
+  });
+
+  test('minus before a negative numeric literal', () {
+    void check(Expression expr, String expected, num value, bool isInt) {
+      final sql = expr.toSql();
+      expect(sql, expected);
+
+      // `--` would start a comment, so the text must parse back to the value.
+      final result = engine.parse(ParserEntrypoint.expression, sql);
+      expect(result.errors, isEmpty, reason: sql);
+      var parsed = result.rootNode;
+      var sign = 1;
+      while (parsed is UnaryExpression) {
+        expect(parsed.operator.type, TokenType.minus);
+        sign = -sign;
+        parsed = parsed.inner;
+      }
+      final literal = parsed as NumericLiteral;
+      expect(sign * literal.value, value, reason: sql);
+      expect(literal.isInt, isInt, reason: sql);
+    }
+
+    Expression minus(Expression inner) =>
+        UnaryExpression(token(TokenType.minus), inner);
+
+    check(minus(NumericLiteral(-1, true)), '- -1', 1, true);
+    check(minus(NumericLiteral(-1.5, false)), '- -1.5', 1.5, false);
+    check(minus(NumericLiteral(-2.0, true)), '- -2', 2, true);
+    check(minus(NumericLiteral(-10, false)), '- -10.0', 10.0, false);
+    check(
+      minus(NumericLiteral(-double.infinity, false)),
+      '- -1e309',
+      double.infinity,
+      false,
+    );
+    check(minus(minus(NumericLiteral(-1, true))), '- - -1', -1, true);
+    check(
+      minus(minus(NumericLiteral(-double.infinity))),
+      '- - -1e309',
+      -double.infinity,
+      false,
+    );
   });
 
   test('does not format invalid statements', () {

@@ -26,6 +26,28 @@ void main() {
     expect(expr, generates('(???) = (???)'));
   });
 
+  test('does not write two minus signs next to each other', () {
+    // `--` would start an SQL comment.
+    expect(-const Constant(-1), generates('- -1'));
+    expect(-const Constant(-1.5), generates('- -1.5'));
+    expect(-Constant(BigInt.from(-1)), generates('- -1'));
+    expect(-const Constant(-1).dartCast<int>(), generates('- -1'));
+    expect(-const Constant(1), generates('-1'));
+    expect(-const Variable<int>(3), generates('-?', [3]));
+    expect(-(-const Variable<int>(3)), generates('-(-?)', [3]));
+    expect(const Constant(1) - const Constant(-1), generates('1 - -1'));
+  });
+
+  test('does not write two minus signs for inlined variables', () {
+    final negated = -const Variable<int>(-3);
+    expect(negated, generates('-?', [-3]));
+
+    final ctx = GenerationContext.fromDb(TodoDb(), supportsVariables: false);
+    negated.writeInto(ctx);
+    expect(ctx.sql, '- -3');
+    expect(ctx.introducedVariables, isEmpty);
+  });
+
   test('generates parentheses for OR in AND', () {
     final c = CustomExpression<String>('c', precedence: Precedence.primary);
     final expr =
