@@ -278,4 +278,38 @@ class DbNotebook$PageLayouts extends Table {
       result.writer,
     );
   });
+
+  test('inherits dontWriteConstraints from Dart tables', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class Events extends Table {
+  TextColumn get id => text()();
+
+  @override
+  bool get dontWriteConstraints => true;
+
+  @override
+  List<String> get customConstraints => ['PRIMARY KEY (id)'];
+}
+''',
+      },
+      modularBuild: true,
+    );
+
+    checkOutputs(
+      {
+        'a|lib/a.drift.dart': decodedMatches(
+          allOf(
+            contains('class \$EventsTable extends i2.Events'),
+            isNot(contains('dontWriteConstraints')),
+          ),
+        ),
+      },
+      result.dartOutputs,
+      result.writer,
+    );
+  });
 }

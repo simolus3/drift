@@ -133,7 +133,106 @@ CREATE TABLE users (
     final deserialized = await SchemaReader.readJson(serialized);
     expect(deserialized.options, containsPair('dialects', isNotNull));
   });
+
+  group('can read tables exported with two primary keys', () {
+    // Older drift_dev versions ignored `dontWriteConstraints` on Dart tables, so
+    // a table declaring its primary key in `customConstraints` was exported
+    // with drift's own primary key on top of it.
+    for (final withFixedSql in [false, true]) {
+      test(withFixedSql ? 'with fixed sql' : 'without fixed sql', () async {
+        final serialized =
+            json.decode(_exportWithTwoPrimaryKeys) as Map<String, Object?>;
+        if (!withFixedSql) {
+          serialized.remove('fixed_sql');
+        }
+
+        final reader = await SchemaReader.readJson(serialized);
+        final table = reader.entities.single as DriftTable;
+
+        expect(table.writeDefaultConstraints, isFalse);
+        expect(table.overrideTableConstraints, [
+          startsWith('PRIMARY KEY'),
+          startsWith('CHECK'),
+        ]);
+      });
+    }
+  });
 }
+
+const _exportWithTwoPrimaryKeys = r'''
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for drift.",
+    "version": "1.3.0"
+  },
+  "options": {
+    "store_date_time_values_as_text": false
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "events",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "started_at",
+            "getter_name": "startedAt",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "ended_at",
+            "getter_name": "endedAt",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "PRIMARY KEY (id)",
+          "CHECK (ended_at IS NULL OR ended_at >= started_at)"
+        ],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "events",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"events\" (\"id\" TEXT NOT NULL, \"started_at\" INTEGER NOT NULL, \"ended_at\" INTEGER NULL, PRIMARY KEY (\"id\"), PRIMARY KEY (id), CHECK (ended_at IS NULL OR ended_at >= started_at));"
+        }
+      ]
+    }
+  ]
+}
+''';
 
 Future<Map<String, Object?>> _analyzeAndSerialize(
   String source, [
