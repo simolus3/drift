@@ -662,6 +662,20 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           DefaultType(e, defaultType: _realType.withNullable(true)),
         );
         return const ResolveResult.needsContext();
+      case 'sign':
+        // `NULL` for a `NULL` argument, and also for arguments that aren't
+        // numeric at all (e.g. `sign('abc')`).
+        return const ResolveResult(
+          ResolvedType(type: BasicType.int, nullable: true),
+        );
+      case 'sqlite_source_id':
+        return const ResolveResult(_textType);
+      case 'glob':
+      case 'like':
+        // The function forms of the `LIKE` and `GLOB` operators. They return
+        // `1` or `0`, or `NULL` if an argument is `NULL`.
+        nullableIfChildIs();
+        return const ResolveResult(ResolvedType.bool());
       case 'lower':
       case 'ltrim':
       case 'printf':
@@ -669,6 +683,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
       case 'replace':
       case 'rtrim':
       case 'substr':
+      case 'substring':
       case 'trim':
       case 'upper':
         nullableIfChildIs();
@@ -838,6 +853,16 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
           final secondParam = params[1] as Expression;
           visit(secondParam, _expectInt);
           visited.add(secondParam);
+        }
+        break;
+      case 'glob':
+      case 'like':
+        // Pattern, string and (for `like`) the escape character are all text.
+        for (final param in params) {
+          if (param is Expression) {
+            visit(param, _expectString);
+            visited.add(param);
+          }
         }
         break;
       case 'unhex':

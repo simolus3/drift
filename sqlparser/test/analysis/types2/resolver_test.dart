@@ -287,6 +287,57 @@ void main() {
         equals(const ResolvedType(type: BasicType.text, nullable: true)),
       );
     });
+
+    test('sign', () {
+      expect(
+        resolveResultColumn('SELECT sign(-2)'),
+        // NULL for a NULL argument and for non-numeric arguments.
+        equals(const ResolvedType(type: BasicType.int, nullable: true)),
+      );
+    });
+
+    test('substring', () {
+      expect(
+        resolveResultColumn("SELECT substring('abc', 1, 1)"),
+        equals(const ResolvedType(type: BasicType.text)),
+      );
+    });
+
+    test('sqlite_source_id', () {
+      expect(
+        resolveResultColumn('SELECT sqlite_source_id()'),
+        equals(const ResolvedType(type: BasicType.text)),
+      );
+    });
+
+    test('like and glob', () {
+      // `LIKE` and `GLOB` are keywords, so the function forms have to be
+      // quoted to be parsed as a function call.
+      expect(
+        resolveResultColumn('SELECT "like"(\'a%\', \'abc\')'),
+        equals(const ResolvedType.bool()),
+      );
+      expect(
+        resolveResultColumn('SELECT "glob"(\'a*\', \'abc\')'),
+        equals(const ResolvedType.bool()),
+      );
+      // The optional third argument of `like` is the escape character.
+      expect(
+        resolveResultColumn('SELECT "like"(\'a%\', \'abc\', \'^\')'),
+        equals(const ResolvedType.bool()),
+      );
+    });
+
+    test('like and glob infer their arguments as text', () {
+      expect(
+        resolveFirstVariable('SELECT "like"(?, \'abc\')'),
+        equals(const ResolvedType(type: BasicType.text)),
+      );
+      expect(
+        resolveFirstVariable('SELECT "glob"(?, \'abc\')'),
+        equals(const ResolvedType(type: BasicType.text)),
+      );
+    });
   });
 
   group('case expressions', () {

@@ -145,6 +145,18 @@ void main() {
     currentEngine.analyze(sql).expectNoError();
   });
 
+  test('warns about sign before 3.35', () {
+    const sql = 'SELECT sign(-2)';
+
+    minimumEngine
+        .analyze(sql)
+        .expectError(
+          'sign',
+          type: AnalysisErrorType.notSupportedInDesiredVersion,
+        );
+    currentEngine.analyze(sql).expectNoError();
+  });
+
   test('warns about timediff before 3.43', () {
     const sql = "SELECT timediff(?, ?)";
 
