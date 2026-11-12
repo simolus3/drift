@@ -1,3 +1,10 @@
+## 2.35.4-dev
+
+- Respect `dontWriteConstraints` on Dart tables when exporting schemas and
+  generating schema test helpers. Tables declaring their primary key in
+  `customConstraints` were exported with a second primary key, which SQLite
+  rejects. Schema files exported by older versions are repaired when read.
+
 ## 2.35.3
 
 - Improve validation error messages for `known_tables` option.

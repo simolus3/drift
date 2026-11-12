@@ -9,6 +9,7 @@ import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
 import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
+import 'package:sqlparser/utils/node_to_text.dart';
 
 import '../../analysis/dialect.dart';
 import '../../analysis/options.dart';
@@ -248,6 +249,11 @@ class SchemaWriter {
             '(${table.virtualTableData!.moduleArguments.join(', ')})',
       'without_rowid': table.withoutRowId,
       'constraints': table.overrideTableConstraints,
+      // Readers already know that tables from drift files only write their
+      // own constraints.
+      if (!table.writeDefaultConstraints &&
+          !table.declaration.isDriftDeclaration)
+        'dont_write_constraints': true,
       if (table.strict) 'strict': true,
       if (primaryKeyFromTableConstraint != null)
         'explicit_pk': [
@@ -430,7 +436,7 @@ class SchemaReader {
     for (final entry in fixedSql) {
       for (final dialect in (entry as Map)['sql'] as List<Object?>) {
         if ((dialect as Map)['dialect'] == KnownSqlDialect.sqlite.name) {
-          sql.add(dialect['sql'] as String);
+          sql.add(_withoutDuplicatePrimaryKeys(dialect['sql'] as String));
         }
       }
     }
@@ -463,6 +469,35 @@ class SchemaReader {
 
       _entitiesById[i] = element;
     }
+  }
+
+  /// Removes all but the last `PRIMARY KEY` table constraint from a `CREATE
+  /// TABLE` statement.
+  ///
+  /// Older drift_dev versions ignored `dontWriteConstraints` on Dart tables, so
+  /// a table declaring its primary key in `customConstraints` was exported with
+  /// drift's own primary key in front of it. SQLite rejects that statement, and
+  /// the table the app created only had the last one.
+  String _withoutDuplicatePrimaryKeys(String createStatement) {
+    final stmt = _engine
+        .parse(ParserEntrypoint.statement, createStatement)
+        .rootNode;
+    if (stmt is! CreateTableStatement) return createStatement;
+
+    final primaryKeys = stmt.tableConstraints.where(_isPrimaryKey).toList();
+    if (primaryKeys.length < 2) return createStatement;
+
+    stmt.tableConstraints = [
+      for (final constraint in stmt.tableConstraints)
+        if (!_isPrimaryKey(constraint) ||
+            identical(constraint, primaryKeys.last))
+          constraint,
+    ];
+    return stmt.toSql();
+  }
+
+  static bool _isPrimaryKey(TableConstraint constraint) {
+    return constraint is KeyClause && constraint.isPrimaryKey;
   }
 
   void _processById(int id) {
@@ -660,6 +695,14 @@ class SchemaReader {
       };
     }
 
+    // Older exports don't record `dont_write_constraints`. A table exported
+    // with `explicit_pk` and a primary key in its own constraints must have
+    // used it though, since SQLite rejects a table with two primary keys.
+    final dontWriteConstraints =
+        content['dont_write_constraints'] == true ||
+        (explicitPk != null &&
+            (tableConstraints ?? const []).any(_declaresPrimaryKey));
+
     List<Set<DriftColumn>> uniqueKeys = [];
     if (content.containsKey('unique_keys')) {
       for (final key in content['unique_keys'] as Iterable) {
@@ -678,7 +721,8 @@ class SchemaReader {
       fixedEntityInfoName: pascalCase,
       strict: content['strict'] == true,
       nameOfRowClass: '${pascalCase}Data',
-      writeDefaultConstraints: content['was_declared_in_moor'] != true,
+      writeDefaultConstraints:
+          content['was_declared_in_moor'] != true && !dontWriteConstraints,
       withoutRowId: withoutRowId,
       overrideTableConstraints: tableConstraints ?? const [],
       tableConstraints: [
@@ -686,6 +730,13 @@ class SchemaReader {
         for (final unique in uniqueKeys) UniqueColumns(unique),
       ],
     );
+  }
+
+  bool _declaresPrimaryKey(String tableConstraint) {
+    final parsed = _engine
+        .parse(ParserEntrypoint.tableConstraint, tableConstraint)
+        .rootNode;
+    return parsed is TableConstraint && _isPrimaryKey(parsed);
   }
 
   DriftView _readView(Map<String, dynamic> content) {

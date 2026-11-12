@@ -52,6 +52,7 @@ final class DartTableResolver
         for (final uniqueKey in uniqueKeys ?? const <Set<DriftColumn>>[])
           UniqueColumns(uniqueKey),
       ],
+      writeDefaultConstraints: !(await _dontWriteConstraints(element) ?? false),
       overrideTableConstraints: tableConstraints,
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
       strict: await _isStrict(element) ?? false,
@@ -321,6 +322,10 @@ final class DartTableResolver
 
   Future<bool?> _isStrict(ClassElement element) async {
     return await _booleanGetter(element, 'isStrict');
+  }
+
+  Future<bool?> _dontWriteConstraints(ClassElement element) async {
+    return await _booleanGetter(element, 'dontWriteConstraints');
   }
 
   Future<Iterable<PendingColumnInformation>> _parseColumns(

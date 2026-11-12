@@ -441,6 +441,47 @@ class WithConstraints extends Table {
     ]);
   });
 
+  test('reads dontWriteConstraints', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class WithDefaultConstraints extends Table {
+  IntColumn get id => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class WithoutDefaultConstraints extends Table {
+  IntColumn get id => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+
+  @override
+  bool get dontWriteConstraints => true;
+
+  @override
+  List<String> get customConstraints => ['PRIMARY KEY (id)'];
+}
+''',
+    });
+
+    final state = await backend.analyze('package:a/a.dart');
+    backend.expectNoErrors();
+
+    final withDefaults =
+        state.analysis[state.id('with_default_constraints')]!.result
+            as DriftTable;
+    final withoutDefaults =
+        state.analysis[state.id('without_default_constraints')]!.result
+            as DriftTable;
+
+    expect(withDefaults.writeDefaultConstraints, isTrue);
+    expect(withoutDefaults.writeDefaultConstraints, isFalse);
+  });
+
   test('warns about foreign key references from customConstraints', () async {
     final backend = await TestBackend.inTest({
       'a|lib/a.dart': '''

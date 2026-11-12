@@ -15,6 +15,7 @@ import 'package:drift_dev/src/cli/commands/schema/generate_utils.dart';
 import 'package:drift_dev/src/cli/project.dart';
 import 'package:drift_dev/src/services/schema/schema_files.dart';
 import 'package:drift_dev/src/utils/string_escaper.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'package:test_descriptor/test_descriptor.dart';
 import 'package:test/test.dart';
 
@@ -647,6 +648,87 @@ class Database {}
         ).createSchemaJson(throwOnSchemaIsolateFailure: true);
         expect(json, contains('fixed_sql'));
       });
+    }
+  });
+
+  test('respects dontWriteConstraints on Dart tables', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class Events extends Table {
+  TextColumn get id => text()();
+  IntColumn get startedAt => integer()();
+  IntColumn get endedAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+
+  @override
+  bool get dontWriteConstraints => true;
+
+  @override
+  List<String> get customConstraints => [
+    'PRIMARY KEY (id)',
+    'CHECK (ended_at IS NULL OR ended_at >= started_at)',
+  ];
+}
+
+@DriftDatabase(tables: [Events])
+class Database {}
+''',
+    });
+
+    final file = await backend.analyze('package:a/main.dart');
+    backend.expectNoErrors();
+    final db = file.fileAnalysis!.resolvedDatabases.values.single;
+
+    final schemaJson = await SchemaWriter(
+      db.availableElements,
+    ).createSchemaJson(throwOnSchemaIsolateFailure: true);
+
+    final [serializedTable as Map] = schemaJson['entities'] as List;
+    expect(
+      serializedTable['data'],
+      containsPair('dont_write_constraints', true),
+    );
+
+    final [fixedSql as Map] = schemaJson['fixed_sql'] as List;
+    final [statement as Map] = fixedSql['sql'] as List;
+    final createTable = statement['sql'] as String;
+    expect('PRIMARY KEY'.allMatches(createTable), hasLength(1));
+
+    final database = sqlite3.openInMemory();
+    addTearDown(database.close);
+    database.execute(createTable);
+
+    for (final withFixedSql in [false, true]) {
+      final serializedSchema = Map.of(schemaJson);
+      if (!withFixedSql) {
+        serializedSchema.remove('fixed_sql');
+      }
+
+      final reader = await SchemaReader.readJson(
+        json.decode(json.encode(serializedSchema)) as Map<String, Object?>,
+      );
+      final fakeBuildConfig = runInBuildConfigZone(
+        () {
+          return BuildConfig(buildTargets: {});
+        },
+        'drift_dev',
+        [],
+      );
+      final generated = await GenerateUtils.generateSchemaCode(
+        DriftDevCli()
+          ..project = DriftProject(fakeBuildConfig, Directory(sandbox)),
+        1,
+        ExportedSchema(reader.entities.toList(), {}),
+        false,
+        false,
+      );
+
+      expect(generated, contains('bool get dontWriteConstraints => true;'));
+      expect('PRIMARY KEY'.allMatches(generated), hasLength(1));
     }
   });
 }

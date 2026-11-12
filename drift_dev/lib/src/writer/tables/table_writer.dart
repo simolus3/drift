@@ -954,9 +954,9 @@ class TableWriter extends TableOrViewWriter {
         ..write('bool get isStrict => true;\n');
     }
 
-    // For Dart tables, the user already overrides the `customConstraints`
-    // getter in the source. So, since we extend that class by default, there's
-    // no need to override them again.
+    // For Dart tables, the user already overrides the `customConstraints` and
+    // `dontWriteConstraints` getters in the source. So, since we extend that
+    // class by default, there's no need to override them again.
     final writeTableConstraints =
         table.definingDartClass == null ||
         scope.generationOptions.forSchema != null;
@@ -970,7 +970,7 @@ class TableWriter extends TableOrViewWriter {
         ..write('List<String> get customConstraints => const [$value];\n');
     }
 
-    if (!table.writeDefaultConstraints) {
+    if (writeTableConstraints && !table.writeDefaultConstraints) {
       buffer
         ..write('@override\n')
         ..write('bool get dontWriteConstraints => true;\n');
