@@ -28,15 +28,29 @@ void main() {
   });
 
   test('reports pi as double', () {
-    expect(resolveExpr('pi()').type?.type, BasicType.real);
+    expect(resolveExpr('pi()').type, const ResolvedType(type: BasicType.real));
   });
 
   test('reports sin as double', () {
-    expect(resolveExpr('sin(3)').type?.type, BasicType.real);
+    expect(
+      resolveExpr('sin(3)').type,
+      const ResolvedType(type: BasicType.real, nullable: true),
+    );
   });
 
   test('reports ceil as int', () {
-    expect(resolveExpr('ceil(3.5)').type?.type, BasicType.int);
+    expect(
+      resolveExpr('ceil(3.5)').type,
+      const ResolvedType(type: BasicType.int, nullable: true),
+    );
+  });
+
+  test('reports math functions as nullable', () {
+    // These return NULL for a NULL argument, and also for arguments outside
+    // of their domain (e.g. `sqrt(-1)` or `log(0)`).
+    for (final expr in ['sqrt(4)', 'log(10)', 'pow(2, 3)']) {
+      expect(resolveExpr(expr).type?.nullable, isTrue, reason: expr);
+    }
   });
 
   test('infers arguments as numeric', () {
