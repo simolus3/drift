@@ -152,6 +152,19 @@ final class VersionedTable extends Table
   @override
   final List<String> customConstraints;
 
+  @override
+  Set<TableColumn<Object>> get resolvedPrimaryKey => {
+    for (final column in columns)
+      if (column.constraints.any((c) => c is ColumnPrimaryKeyConstraint))
+        column,
+    // This doesn't report primary keys from table constraints, but that's okay
+    // as those are not relevant for CREATE TABLe statements (they're included
+    // as custom constraints instead).
+  };
+
+  @override
+  List<TableConstraint> get tableConstraints => const [];
+
   /// Create a table from the individual fields.
   ///
   /// [columns] is a list of functions returning a [GeneratedColumn] when given
@@ -185,9 +198,6 @@ final class VersionedTable extends Table
       column.owningResultSet = this;
     }
   }
-
-  @override
-  bool get dontWriteConstraints => true;
 
   @override
   VersionedTable asSelfType() => this;

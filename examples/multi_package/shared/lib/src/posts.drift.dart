@@ -29,12 +29,14 @@ class Posts extends i0.Table
   Posts asSelfType() => this;
 
   @override
+  Set<i0.TableColumn> get resolvedPrimaryKey => const {};
+  @override
   i1.Post? Function(i0.RawRow) createMapperFromPositions(
       i0.DriftDialect dialect, List<i0.ColumnPosition> positions) {
     final pos$author = positions[0].index;
-    final type$0 = i0.SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$content = positions[1].index;
-    final type$1 = i0.SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (i0.RawRow row) {
       // Not part of row if non-nullable column "author" is missing
       if (row[pos$author] == null) {
@@ -53,7 +55,7 @@ class Posts extends i0.Table
   }
 
   @override
-  bool get dontWriteConstraints => true;
+  List<i0.TableConstraint> get tableConstraints => [];
 }
 
 class Post extends i0.LegacyDataClass implements i0.Insertable<i1.Post> {

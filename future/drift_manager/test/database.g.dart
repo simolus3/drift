@@ -65,6 +65,8 @@ class $CategoriesTable extends Categories
   $CategoriesTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   Category? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -100,6 +102,8 @@ class $CategoriesTable extends Categories
 
   static JsonTypeConverter2<CategoryPriority, int, int> $converterpriority =
       const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class Category extends LegacyDataClass implements Insertable<Category> {
@@ -372,6 +376,8 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   $TableWithEveryColumnTypeTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   TableWithEveryColumnTypeData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -432,6 +438,8 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   $converteraTextWithConvertern = JsonTypeConverter2.asNullable(
     $converteraTextWithConverter,
   );
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class TableWithEveryColumnTypeData extends LegacyDataClass
@@ -900,10 +908,7 @@ class $TodosTableTable extends TodosTable
   $TodosTableTable asSelfType() => this;
 
   @override
-  List<Set<TableColumn>> get uniqueKeys => [
-    {title, category},
-    {title, targetDate},
-  ];
+  Set<TableColumn> get resolvedPrimaryKey => {id};
   @override
   TodoEntry? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -945,6 +950,11 @@ class $TodosTableTable extends TodosTable
       const EnumNameConverter<TodoStatus>(TodoStatus.values);
   static JsonTypeConverter2<TodoStatus?, String?, String?> $converterstatusn =
       JsonTypeConverter2.asNullable($converterstatus);
+  @override
+  List<TableConstraint> get tableConstraints => [
+    TableUniqueKeyConstraint([title, category]),
+    TableUniqueKeyConstraint([title, targetDate]),
+  ];
 }
 
 class TodoEntry extends LegacyDataClass implements Insertable<TodoEntry> {
@@ -1265,6 +1275,8 @@ class $UsersTable extends Users
   $UsersTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   User? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1298,6 +1310,9 @@ class $UsersTable extends Users
   $UsersTable withAlias(String alias) {
     return $UsersTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class User extends LegacyDataClass implements Insertable<User> {
@@ -1547,6 +1562,8 @@ class $DepartmentTable extends Department
   $DepartmentTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   DepartmentData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1571,6 +1588,9 @@ class $DepartmentTable extends Department
   $DepartmentTable withAlias(String alias) {
     return $DepartmentTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class DepartmentData extends LegacyDataClass
@@ -1734,6 +1754,8 @@ class $ProductTable extends Product
   $ProductTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   ProductData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1760,6 +1782,9 @@ class $ProductTable extends Product
   $ProductTable withAlias(String alias) {
     return $ProductTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class ProductData extends LegacyDataClass implements Insertable<ProductData> {
@@ -1957,6 +1982,8 @@ class $StoreTable extends Store
   $StoreTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   StoreData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1981,6 +2008,9 @@ class $StoreTable extends Store
   $StoreTable withAlias(String alias) {
     return $StoreTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class StoreData extends LegacyDataClass implements Insertable<StoreData> {
@@ -2152,6 +2182,8 @@ class $ListingTable extends Listing
   $ListingTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   ListingData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -2181,6 +2213,9 @@ class $ListingTable extends Listing
   $ListingTable withAlias(String alias) {
     return $ListingTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class ListingData extends LegacyDataClass implements Insertable<ListingData> {

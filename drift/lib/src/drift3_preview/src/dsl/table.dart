@@ -65,11 +65,6 @@ abstract class Table extends ResultSetDsl {
   /// statement. This is intended to be used by generated code only.
   bool get withoutRowId => false;
 
-  /// Drift will write some table constraints automatically, for instance when
-  /// you override [primaryKey]. You can turn this behavior off if you want to.
-  /// This is intended to be used by generated code only.
-  bool get dontWriteConstraints => false;
-
   /// Whether this table is `STRICT`.
   ///
   /// Strict tables enforce stronger type constraints for inserts and updates.

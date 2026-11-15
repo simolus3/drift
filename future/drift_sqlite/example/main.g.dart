@@ -35,6 +35,8 @@ class $NotesTable extends Notes
   $NotesTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   Note? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -59,6 +61,9 @@ class $NotesTable extends Notes
   $NotesTable withAlias(String alias) {
     return $NotesTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class Note extends LegacyDataClass implements Insertable<Note> {

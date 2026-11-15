@@ -35,6 +35,8 @@ class $TodoCategoriesTable extends TodoCategories
   $TodoCategoriesTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   TodoCategory? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -59,6 +61,9 @@ class $TodoCategoriesTable extends TodoCategories
   $TodoCategoriesTable withAlias(String alias) {
     return $TodoCategoriesTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class TodoCategory extends LegacyDataClass implements Insertable<TodoCategory> {

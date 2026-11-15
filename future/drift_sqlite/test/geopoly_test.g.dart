@@ -30,6 +30,8 @@ class GeopolyTest extends Table
   GeopolyTest asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   GeopolyTestData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -52,7 +54,7 @@ class GeopolyTest extends Table
   }
 
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
   @override
   String get moduleAndArgs => 'geopoly(a)';
 }

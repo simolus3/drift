@@ -42,12 +42,14 @@ class Categories extends Table
   Categories asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   CategoriesData? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$color = positions[2].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
@@ -66,6 +68,9 @@ class Categories extends Table
   Categories withAlias(String alias) {
     return Categories(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class CategoriesData extends LegacyDataClass
@@ -252,15 +257,17 @@ class TodoEntries extends Table
   TodoEntries asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   TodoEntriesData? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$description = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$category = positions[2].index;
     final pos$dueDate = positions[3].index;
-    final type$2 = SqlType.dateTime.resolveIn(dialect);
+    final type$2 = dialect.dateTimeType;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -279,6 +286,9 @@ class TodoEntries extends Table
   TodoEntries withAlias(String alias) {
     return TodoEntries(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class TodoEntriesData extends LegacyDataClass
@@ -481,10 +491,12 @@ class TextEntries extends Table
   TextEntries asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   TextEntriesData? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$description = positions[0].index;
-    final type$0 = SqlType.text.resolveIn(dialect);
+    final type$0 = dialect.textType;
     return (RawRow row) {
       // Not part of row if non-nullable column "description" is missing
       if (row[pos$description] == null) {
@@ -501,6 +513,8 @@ class TextEntries extends Table
     return TextEntries(alias);
   }
 
+  @override
+  List<TableConstraint> get tableConstraints => [];
   @override
   String get moduleAndArgs =>
       'fts5(description, content=todo_entries, content_rowid=id)';

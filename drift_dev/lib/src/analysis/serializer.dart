@@ -291,6 +291,7 @@ class ElementSerializer {
     } else if (constraint is PrimaryKeyColumns) {
       return {
         'type': 'primary_key',
+        'from_custom': constraint.fromCustomConstraints,
         'columns': [
           for (final column in constraint.primaryKey) column.nameInSql,
         ],
@@ -1041,7 +1042,7 @@ final class ElementDeserializer {
         return constraints.add(
           PrimaryKeyColumns({
             for (final ref in json.list('columns')) localColumns[ref]!,
-          }),
+          }, fromCustomConstraints: json['from_custom'] as bool),
         );
       case 'foreign':
         final otherTableDep = await _readDependency(json['table'] as Map);

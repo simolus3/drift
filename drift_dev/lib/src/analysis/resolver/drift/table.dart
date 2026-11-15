@@ -280,7 +280,9 @@ final class DriftTableResolver
           }
 
           if (constraint.isPrimaryKey) {
-            tableConstraints.add(PrimaryKeyColumns(keyColumns));
+            tableConstraints.add(
+              PrimaryKeyColumns(keyColumns, fromCustomConstraints: true),
+            );
           } else {
             tableConstraints.add(UniqueColumns(keyColumns));
           }

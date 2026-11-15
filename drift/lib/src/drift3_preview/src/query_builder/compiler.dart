@@ -424,11 +424,11 @@ abstract base class StatementCompiler {
       addTableColumnDefinition(column);
     }
 
-    if (!table.dontWriteConstraints) {
-      for (final constraint in table.constraints) {
-        statement.comma();
-        constraint.compileWith(this);
-      }
+    for (final constraint in table.tableConstraints) {
+      if (constraint.ignoreInCreateTable) continue;
+
+      statement.comma();
+      constraint.compileWith(this);
     }
 
     for (final constraint in table.customConstraints) {

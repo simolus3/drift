@@ -1203,8 +1203,6 @@ class $SharedTodosTable extends SharedTodos
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {todo, user};
-  @override
   SharedTodo map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SharedTodo(

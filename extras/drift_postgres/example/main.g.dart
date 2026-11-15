@@ -37,7 +37,7 @@ class $UsersTable extends Users
   $UsersTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {id};
+  Set<TableColumn> get resolvedPrimaryKey => {id};
   @override
   User? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -63,6 +63,11 @@ class $UsersTable extends Users
   $UsersTable withAlias(String alias) {
     return $UsersTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [
+    TablePrimaryKeyConstraint([id]),
+  ];
 }
 
 class User extends LegacyDataClass implements Insertable<User> {

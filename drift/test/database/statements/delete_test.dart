@@ -42,14 +42,20 @@ void main() {
 
     test('to delete an entity via a dataclasss', () async {
       await db
-          .delete(db.sharedTodos)
-          .delete(const SharedTodo(todo: 3, user: 2));
+          .delete(db.categories)
+          .delete(
+            const Category(
+              id: RowId(1),
+              description: '',
+              priority: .high,
+              descriptionInUpperCase: 'descriptionInUpperCase',
+            ),
+          );
 
       verify(
-        executor.runDelete(
-          'DELETE FROM "shared_todos" WHERE "todo" = ? AND "user" = ?;',
-          const [3, 2],
-        ),
+        executor.runDelete('DELETE FROM "categories" WHERE "id" = ?;', const [
+          1,
+        ]),
       );
     });
 

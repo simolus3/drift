@@ -442,6 +442,12 @@ class MultiTypedResultKey<$Dataclass extends Object> extends Table
   ) {
     throw UnsupportedError("Can't map MultiTypedResultKeys");
   }
+
+  @override
+  Set<TableColumn<Object>> get resolvedPrimaryKey => const {};
+
+  @override
+  List<TableConstraint> get tableConstraints => const [];
 }
 
 /// Class which contains a key and a list of references.

@@ -24,6 +24,8 @@ class NoIds extends Table
   NoIds asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {payload};
+  @override
   NoIdRow? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -49,7 +51,7 @@ class NoIds extends Table
   @override
   bool get isStrict => true;
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class NoIdsCompanion extends UpdateCompanion<NoIdRow> {
@@ -110,6 +112,8 @@ class WithDefaults extends Table
   WithDefaults asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   WithDefault? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -132,7 +136,7 @@ class WithDefaults extends Table
   }
 
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class WithDefault extends LegacyDataClass implements Insertable<WithDefault> {
@@ -303,6 +307,8 @@ class WithConstraints extends Table
   WithConstraints asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   WithConstraint? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -336,7 +342,7 @@ class WithConstraints extends Table
     'FOREIGN KEY(a, b)REFERENCES with_defaults(a, b)',
   ];
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class WithConstraint extends LegacyDataClass
@@ -545,6 +551,8 @@ class ConfigTable extends Table
   ConfigTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {configKey};
+  @override
   Config? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -592,7 +600,7 @@ class ConfigTable extends Table
   @override
   bool get isStrict => true;
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class Config extends LegacyDataClass implements Insertable<Config> {
@@ -853,11 +861,7 @@ class Mytable extends Table
   Mytable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {someid};
-  @override
-  List<Set<TableColumn>> get uniqueKeys => [
-    {sometext, isInserting},
-  ];
+  Set<TableColumn> get resolvedPrimaryKey => {someid};
   @override
   MytableData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -896,7 +900,7 @@ class Mytable extends Table
     'UNIQUE(sometext, is_inserting)',
   ];
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class MytableData extends LegacyDataClass implements Insertable<MytableData> {
@@ -1117,6 +1121,8 @@ class Email extends Table
   Email asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   EMail? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1144,7 +1150,7 @@ class Email extends Table
   }
 
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
   @override
   String get moduleAndArgs => 'fts5(sender, title, body)';
 }
@@ -1330,6 +1336,8 @@ class WeirdTable extends Table
   WeirdTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   WeirdData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1356,7 +1364,7 @@ class WeirdTable extends Table
   }
 
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class WeirdData extends LegacyDataClass implements Insertable<WeirdData> {

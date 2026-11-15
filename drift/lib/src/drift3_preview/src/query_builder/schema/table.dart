@@ -16,25 +16,12 @@ abstract interface class GeneratedTable<
     implements ResultSet<Row, Self>, SchemaEntityWithResultSet<Row, Self> {
   @override
   List<TableColumn> get columns;
-}
 
-/// Default methods for all generated tables.
-extension GeneratedTableExtension on GeneratedTable {
   /// The resolved primary key of this table.
   ///
   /// This is the [Table.primaryKey] when set on the table, but can also be a
   /// column with a primary key constraint on it.
-  Set<TableColumn> get resolvedPrimaryKey {
-    if (primaryKey case final fromTableConstraint?) {
-      return fromTableConstraint.cast();
-    }
-
-    return <TableColumn>{
-      for (final column in columns)
-        if (column.constraints.any((e) => e is ColumnPrimaryKeyConstraint))
-          column,
-    };
-  }
+  Set<TableColumn> get resolvedPrimaryKey;
 
   /// All table constraints that have been added to this table.
   ///
@@ -42,21 +29,7 @@ extension GeneratedTableExtension on GeneratedTable {
   /// [ColumnConstraint] on a single column) or unique keys.
   ///
   /// This does not include [customConstraints] added to the table.
-  List<TableConstraint> get constraints {
-    final pk = primaryKey;
-    final hasPkOnColumn = columns.any(
-      (e) => e.constraints.any((c) => c is ColumnPrimaryKeyConstraint),
-    );
-
-    return [
-      if (pk != null && pk.isNotEmpty && !hasPkOnColumn)
-        TablePrimaryKeyConstraint(pk.toList().cast()),
-      // ignore: invalid_use_of_visible_for_overriding_member
-      if (uniqueKeys case final uniqueKeys?)
-        for (final unique in uniqueKeys)
-          TableUniqueKeyConstraint(unique.toList().cast()),
-    ];
-  }
+  List<TableConstraint> get tableConstraints;
 }
 
 /// Additional interface for tables in a drift file that have been created with
@@ -241,7 +214,16 @@ final class RenameColumnStatement extends SqlStatement {
 }
 
 /// A table constraint supported by drift.
-sealed class TableConstraint implements SqlComponent {}
+sealed class TableConstraint implements SqlComponent {
+  /// Whether to ignore this constraint when generating `CREATE TABLE`
+  /// statements.
+  ///
+  /// This is enabled when the constraint is also mentioned in
+  /// [Table.customConstraints].
+  final bool ignoreInCreateTable;
+
+  TableConstraint._({this.ignoreInCreateTable = false});
+}
 
 /// A `PRIMARY KEY` constraint set on a table.
 ///
@@ -253,7 +235,8 @@ final class TablePrimaryKeyConstraint extends TableConstraint {
   final List<TableColumn> columns;
 
   /// @nodoc
-  TablePrimaryKeyConstraint(this.columns);
+  TablePrimaryKeyConstraint(this.columns, {super.ignoreInCreateTable})
+    : super._();
 
   @override
   void compileWith(StatementCompiler compiler) {
@@ -270,7 +253,8 @@ final class TableUniqueKeyConstraint extends TableConstraint {
   final List<TableColumn> columns;
 
   /// @nodoc
-  TableUniqueKeyConstraint(this.columns);
+  TableUniqueKeyConstraint(this.columns, {super.ignoreInCreateTable})
+    : super._();
 
   @override
   void compileWith(StatementCompiler compiler) {

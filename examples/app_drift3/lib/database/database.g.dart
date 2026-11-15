@@ -43,6 +43,8 @@ class $CategoriesTable extends Categories
   $CategoriesTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   Category? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
@@ -70,6 +72,8 @@ class $CategoriesTable extends Categories
   }
 
   static TypeConverter<Color, int> $convertercolor = const ColorConverter();
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class Category extends LegacyDataClass implements Insertable<Category> {
@@ -261,6 +265,8 @@ class $TodoEntriesTable extends TodoEntries
   $TodoEntriesTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   TodoEntry? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
@@ -288,6 +294,9 @@ class $TodoEntriesTable extends TodoEntries
   $TodoEntriesTable withAlias(String alias) {
     return $TodoEntriesTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class TodoEntry extends LegacyDataClass implements Insertable<TodoEntry> {
@@ -489,6 +498,8 @@ class TextEntries extends Table
   TextEntries asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   TextEntry? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$description = positions[0].index;
@@ -510,7 +521,7 @@ class TextEntries extends Table
   }
 
   @override
-  bool get dontWriteConstraints => true;
+  List<TableConstraint> get tableConstraints => [];
   @override
   String get moduleAndArgs =>
       'fts5(description, content=todo_entries, content_rowid=id)';

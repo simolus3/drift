@@ -441,6 +441,81 @@ class WithConstraints extends Table {
     ]);
   });
 
+  test('parses custom primary key constraint', () async {
+    final backend = await TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class FromConstraint extends Table {
+  IntColumn get id => integer()();
+
+  @override
+  List<String> get customConstraints => [
+    'PRIMARY KEY (id)'
+  ];
+}
+
+class DuplicateFromOverride extends Table {
+  IntColumn get id => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    'PRIMARY KEY (id)'
+  ];
+}
+
+class DuplicateFromColumnConstraint extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  @override
+  List<String> get customConstraints => [
+    'PRIMARY KEY (id)'
+  ];
+}
+
+class UnknownColumn extends Table {
+  IntColumn get id => integer()();
+
+  @override
+  List<String> get customConstraints => [
+    'PRIMARY KEY (missing_ref)'
+  ];
+}
+''',
+    });
+
+    final state = await backend.analyze('package:a/a.dart');
+
+    final fromConstraint = state.analysis[state.id('from_constraint')]!;
+    final duplicateOverride =
+        state.analysis[state.id('duplicate_from_override')]!;
+    final duplicateColumns =
+        state.analysis[state.id('duplicate_from_column_constraint')]!;
+    final unknownColumn = state.analysis[state.id('unknown_column')]!;
+
+    {
+      expect(fromConstraint.errorsDuringAnalysis, isEmpty);
+
+      final table = fromConstraint.result as DriftTable;
+      expect(table.fullPrimaryKey, hasLength(1));
+      expect(table.tableConstraints, [isA<PrimaryKeyColumns>()]);
+      expect(table.overrideTableConstraints, hasLength(1));
+    }
+
+    expect(duplicateOverride.errorsDuringAnalysis, [
+      isDriftError(contains('already has a primary key declaration')),
+    ]);
+    expect(duplicateColumns.errorsDuringAnalysis, [
+      isDriftError(contains('already has a primary key declaration')),
+    ]);
+    expect(unknownColumn.errorsDuringAnalysis, [
+      isDriftError(contains("Columns missing_ref don't exist locally")),
+    ]);
+  });
+
   test('warns about foreign key references from customConstraints', () async {
     final backend = await TestBackend.inTest({
       'a|lib/a.dart': '''

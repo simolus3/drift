@@ -34,6 +34,8 @@ class $SomeTableTable extends SomeTable
   $SomeTableTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   SomeTableData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -58,6 +60,9 @@ class $SomeTableTable extends SomeTable
   $SomeTableTable withAlias(String alias) {
     return $SomeTableTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class SomeTableData extends LegacyDataClass

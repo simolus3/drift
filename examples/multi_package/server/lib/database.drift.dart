@@ -70,12 +70,14 @@ class $ActiveSessionsTable extends i6.ActiveSessions
   $ActiveSessionsTable asSelfType() => this;
 
   @override
+  Set<i0.TableColumn> get resolvedPrimaryKey => const {};
+  @override
   i3.ActiveSession? Function(i0.RawRow) createMapperFromPositions(
       i0.DriftDialect dialect, List<i0.ColumnPosition> positions) {
     final pos$user = positions[0].index;
-    final type$0 = i0.SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$bearerToken = positions[1].index;
-    final type$1 = i0.SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (i0.RawRow row) {
       // Not part of row if non-nullable column "user" is missing
       if (row[pos$user] == null) {
@@ -92,6 +94,9 @@ class $ActiveSessionsTable extends i6.ActiveSessions
   $ActiveSessionsTable withAlias(String alias) {
     return $ActiveSessionsTable(alias);
   }
+
+  @override
+  List<i0.TableConstraint> get tableConstraints => [];
 }
 
 class ActiveSession extends i0.LegacyDataClass

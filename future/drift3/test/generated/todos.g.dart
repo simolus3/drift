@@ -65,6 +65,8 @@ class $CategoriesTable extends Categories
   $CategoriesTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   Category? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -104,6 +106,8 @@ class $CategoriesTable extends Categories
       TypeConverter.extensionType<RowId, int>();
   static JsonTypeConverter2<CategoryPriority, int, int> $converterpriority =
       const EnumIndexConverter<CategoryPriority>(CategoryPriority.values);
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class Category extends LegacyDataClass implements Insertable<Category> {
@@ -358,10 +362,7 @@ class $TodosTableTable extends TodosTable
   $TodosTableTable asSelfType() => this;
 
   @override
-  List<Set<TableColumn>> get uniqueKeys => [
-    {title, category},
-    {title, targetDate},
-  ];
+  Set<TableColumn> get resolvedPrimaryKey => {id};
   @override
   TodoEntry? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -413,6 +414,11 @@ class $TodosTableTable extends TodosTable
       const EnumNameConverter<TodoStatus>(TodoStatus.values);
   static JsonTypeConverter2<TodoStatus?, String?, String?> $converterstatusn =
       JsonTypeConverter2.asNullable($converterstatus);
+  @override
+  List<TableConstraint> get tableConstraints => [
+    TableUniqueKeyConstraint([title, category]),
+    TableUniqueKeyConstraint([title, targetDate]),
+  ];
 }
 
 class TodoEntry extends LegacyDataClass implements Insertable<TodoEntry> {
@@ -753,6 +759,8 @@ class $UsersTable extends Users
   $UsersTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   User? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -789,6 +797,8 @@ class $UsersTable extends Users
 
   static JsonTypeConverter2<RowId, int, int> $converterid =
       TypeConverter.extensionType<RowId, int>();
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class User extends LegacyDataClass implements Insertable<User> {
@@ -1046,7 +1056,7 @@ class $SharedTodosTable extends SharedTodos
   $SharedTodosTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {todo, user};
+  Set<TableColumn> get resolvedPrimaryKey => {todo, user};
   @override
   SharedTodo? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -1071,6 +1081,11 @@ class $SharedTodosTable extends SharedTodos
   $SharedTodosTable withAlias(String alias) {
     return $SharedTodosTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [
+    TablePrimaryKeyConstraint([todo, user], ignoreInCreateTable: true),
+  ];
 }
 
 class SharedTodo extends LegacyDataClass implements Insertable<SharedTodo> {
@@ -1313,6 +1328,8 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   $TableWithEveryColumnTypeTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   TableWithEveryColumnTypeData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1380,6 +1397,8 @@ class $TableWithEveryColumnTypeTable extends TableWithEveryColumnType
   $converteraTextWithConvertern = JsonTypeConverter2.asNullable(
     $converteraTextWithConverter,
   );
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class TableWithEveryColumnTypeData extends LegacyDataClass
@@ -1869,6 +1888,8 @@ class $TableWithoutPKTable extends TableWithoutPK
   $TableWithoutPKTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   CustomRowClass? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -1904,6 +1925,8 @@ class $TableWithoutPKTable extends TableWithoutPK
 
   static TypeConverter<MyCustomObject, String> $convertercustom =
       const CustomConverter();
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class TableWithoutPKCompanion extends UpdateCompanion<CustomRowClass> {
@@ -2039,7 +2062,7 @@ class $PureDefaultsTable extends PureDefaults
   $PureDefaultsTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {txt};
+  Set<TableColumn> get resolvedPrimaryKey => {txt};
   @override
   PureDefault? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
@@ -2065,6 +2088,10 @@ class $PureDefaultsTable extends PureDefaults
   $convertertxt = const CustomJsonConverter();
   static JsonTypeConverter2<MyCustomObject?, String?, Map<String, Object?>?>
   $convertertxtn = JsonTypeConverter2.asNullable($convertertxt);
+  @override
+  List<TableConstraint> get tableConstraints => [
+    TablePrimaryKeyConstraint([txt]),
+  ];
 }
 
 class PureDefault extends LegacyDataClass implements Insertable<PureDefault> {
@@ -2208,6 +2235,8 @@ class $WithCustomTypeTable extends WithCustomType
   $WithCustomTypeTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => const {};
+  @override
   WithCustomTypeData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -2227,6 +2256,9 @@ class $WithCustomTypeTable extends WithCustomType
   $WithCustomTypeTable withAlias(String alias) {
     return $WithCustomTypeTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class WithCustomTypeData extends LegacyDataClass
@@ -2360,6 +2392,8 @@ class $DepartmentTable extends Department
   $DepartmentTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   DepartmentData? Function(RawRow) createMapperFromPositions(
     DriftDialect dialect,
     List<ColumnPosition> positions,
@@ -2384,6 +2418,9 @@ class $DepartmentTable extends Department
   $DepartmentTable withAlias(String alias) {
     return $DepartmentTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class DepartmentData extends LegacyDataClass

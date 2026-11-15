@@ -77,10 +77,8 @@ class SharedTodos extends Table {
   IntColumn get user => integer();
 
   @override
-  Set<Column> get primaryKey => {todo, user};
-
-  @override
   List<String> get customConstraints => [
+    'PRIMARY KEY (todo, user)',
     'FOREIGN KEY (todo) REFERENCES todos(id)',
     'FOREIGN KEY (user) REFERENCES users(id)',
   ];

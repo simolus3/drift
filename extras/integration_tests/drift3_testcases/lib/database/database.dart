@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'dart:typed_data';
 import 'package:drift_sqlite/drift_sqlite.dart';
+import 'package:drift_postgres/drift_postgres.dart' show PostgresDialectOptions;
 import 'package:drift3_preview/drift.dart';
 import 'package:json_annotation/json_annotation.dart' as j;
 

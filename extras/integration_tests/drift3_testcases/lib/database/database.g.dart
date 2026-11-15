@@ -57,16 +57,18 @@ class $UsersTable extends Users
   $UsersTable asSelfType() => this;
 
   @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
   User? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$id = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     final pos$birthDate = positions[2].index;
-    final type$2 = SqlType.dateTime.resolveIn(dialect);
+    final type$2 = dialect.dateTimeType;
     final pos$profilePicture = positions[3].index;
-    final type$3 = SqlType.byteArray.resolveIn(dialect);
+    final type$3 = dialect.byteArrayType;
     final pos$preferences = positions[4].index;
     return (RawRow row) {
       // Not part of row if non-nullable column "id" is missing
@@ -91,6 +93,8 @@ class $UsersTable extends Users
 
   static TypeConverter<Preferences?, String?> $converterpreferences =
       const PreferenceConverter();
+  @override
+  List<TableConstraint> get tableConstraints => [];
 }
 
 class User extends LegacyDataClass implements Insertable<User> {
@@ -344,15 +348,15 @@ class $FriendshipsTable extends Friendships
   $FriendshipsTable asSelfType() => this;
 
   @override
-  Set<TableColumn> get primaryKey => {firstUser, secondUser};
+  Set<TableColumn> get resolvedPrimaryKey => {firstUser, secondUser};
   @override
   Friendship? Function(RawRow) createMapperFromPositions(
       DriftDialect dialect, List<ColumnPosition> positions) {
     final pos$firstUser = positions[0].index;
-    final type$0 = SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$secondUser = positions[1].index;
     final pos$reallyGoodFriends = positions[2].index;
-    final type$1 = SqlType.bool.resolveIn(dialect);
+    final type$1 = dialect.boolType;
     return (RawRow row) {
       // Not part of row if non-nullable column "firstUser" is missing
       if (row[pos$firstUser] == null) {
@@ -370,6 +374,11 @@ class $FriendshipsTable extends Friendships
   $FriendshipsTable withAlias(String alias) {
     return $FriendshipsTable(alias);
   }
+
+  @override
+  List<TableConstraint> get tableConstraints => [
+        TablePrimaryKeyConstraint([firstUser, secondUser]),
+      ];
 }
 
 class Friendship extends LegacyDataClass implements Insertable<Friendship> {
@@ -547,6 +556,9 @@ abstract base class _$Database extends GeneratedDatabase {
           storeDateTimesAsText: false,
           useBinaryJsonRepresentation: false,
         ),
+        KnownSqlDialect.postgres: const PostgresDialectOptions(
+          useJsonb: true,
+        ),
       };
   Selectable<User> mostPopularUsers(int amount) {
     return customSelectMapped<User>(
@@ -598,7 +610,7 @@ abstract base class _$Database extends GeneratedDatabase {
           $FriendshipsTable(),
         },
         createMapper: (RawResultSet _) {
-          final type$0 = SqlType.int.resolveIn(dialect);
+          final type$0 = dialect.intType;
 
           return (RawRow row) => type$0.dartValue(row[0]!);
         });
@@ -627,7 +639,7 @@ abstract base class _$Database extends GeneratedDatabase {
           $UsersTable(),
         },
         createMapper: (RawResultSet _) {
-          final type$0 = SqlType.bool.resolveIn(dialect);
+          final type$0 = dialect.boolType;
           final map_0 = $UsersTable().createMapperFromPositions(dialect, const [
             ColumnPosition(1),
             ColumnPosition(2),
@@ -651,7 +663,7 @@ abstract base class _$Database extends GeneratedDatabase {
           $UsersTable(),
         },
         createMapper: (RawResultSet _) {
-          final type$0 = SqlType.int.resolveIn(dialect);
+          final type$0 = dialect.intType;
 
           return (RawRow row) => type$0.dartValue(row[0]!);
         });
@@ -673,7 +685,7 @@ abstract base class _$Database extends GeneratedDatabase {
           $UsersTable(),
         },
         createMapper: (RawResultSet _) {
-          final type$0 = SqlType.text.resolveIn(dialect);
+          final type$0 = dialect.textType;
 
           return (RawRow row) => $UsersTable.$converterpreferences
               .fromSql(type$0.nullableDartValue(row[0]));

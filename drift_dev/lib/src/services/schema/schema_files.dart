@@ -230,6 +230,7 @@ class SchemaWriter {
   ) {
     final primaryKeyFromTableConstraint = table.tableConstraints
         .whereType<PrimaryKeyColumns>()
+        .where((e) => !e.fromCustomConstraints)
         .firstOrNull;
     final uniqueKeys = table.tableConstraints.whereType<UniqueColumns>();
 
@@ -682,7 +683,8 @@ class SchemaReader {
       withoutRowId: withoutRowId,
       overrideTableConstraints: tableConstraints ?? const [],
       tableConstraints: [
-        if (explicitPk != null) PrimaryKeyColumns(explicitPk),
+        if (explicitPk != null)
+          PrimaryKeyColumns(explicitPk, fromCustomConstraints: false),
         for (final unique in uniqueKeys) UniqueColumns(unique),
       ],
     );

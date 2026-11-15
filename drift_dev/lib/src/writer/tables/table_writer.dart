@@ -850,17 +850,20 @@ class TableWriter extends TableOrViewWriter {
 
   void _writePrimaryKeyOverride() {
     if (scope.drift3) {
-      if (!table.tableConstraints.any((e) => e is PrimaryKeyColumns)) {
-        // Don't write the implicit primary key from column constraints, in
-        // drift3 overriding the primaryKey getter always adds a table
-        // constraint.
+      buffer.write(
+        '@override\nSet<${emitter.drift('TableColumn')}> get resolvedPrimaryKey => ',
+      );
+    } else {
+      // Don't override the $primaryKey getter if the inferred PK is derived
+      // from customConstraints on tables. It makes drift emit a duplicate
+      // constraint when generating CREATE TABLE statements.
+      if (table.writeDefaultConstraints &&
+          table.tableConstraints.any(
+            (e) => e is PrimaryKeyColumns && e.fromCustomConstraints,
+          )) {
         return;
       }
 
-      buffer.write(
-        '@override\nSet<${emitter.drift('TableColumn')}> get primaryKey => ',
-      );
-    } else {
       buffer.write(
         '@override\nSet<${emitter.drift('GeneratedColumn')}> get \$primaryKey => ',
       );
@@ -887,6 +890,8 @@ class TableWriter extends TableOrViewWriter {
   }
 
   void _writeUniqueKeyOverride() {
+    if (scope.drift3) return;
+
     final uniqueKeys = table.tableConstraints
         .whereType<UniqueColumns>()
         .toList();
@@ -966,11 +971,46 @@ class TableWriter extends TableOrViewWriter {
           .join(', ');
 
       buffer
-        ..write('@override\n')
+        ..writeln('@override')
         ..write('List<String> get customConstraints => const [$value];\n');
     }
 
-    if (!table.writeDefaultConstraints) {
+    if (scope.drift3) {
+      buffer
+        ..writeln('@override')
+        ..write('List<')
+        ..write(scope.drift('TableConstraint'))
+        ..writeln('> get tableConstraints => [');
+
+      if (table.writeDefaultConstraints) {
+        for (final constraint in table.tableConstraints) {
+          switch (constraint) {
+            case PrimaryKeyColumns(:final primaryKey):
+              emitter.writeDriftRef('TablePrimaryKeyConstraint');
+              emitter.write(
+                '([${primaryKey.map((e) => e.nameInDart).join(', ')}]',
+              );
+              if (constraint.fromCustomConstraints) {
+                emitter.write(', ignoreInCreateTable: true');
+              }
+              emitter.write(')');
+            case UniqueColumns(:final uniqueSet):
+              emitter.writeDriftRef('TableUniqueKeyConstraint');
+              emitter.write(
+                '([${uniqueSet.map((e) => e.nameInDart).join(', ')}])',
+              );
+            case ForeignKeyTable():
+              throw UnsupportedError('Foreign key constraint in Dart table');
+          }
+
+          buffer.writeln(',');
+        }
+      }
+
+      buffer.writeln('];');
+    }
+
+    if (!table.writeDefaultConstraints && !scope.drift3) {
       buffer
         ..write('@override\n')
         ..write('bool get dontWriteConstraints => true;\n');

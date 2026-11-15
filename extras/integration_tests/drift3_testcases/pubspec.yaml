@@ -11,6 +11,7 @@ dependencies:
   drift3_preview:
   drift_manager:
   drift_sqlite:
+  drift_postgres:
   json_annotation: ^4.5.0
   test: ^1.22.0
 

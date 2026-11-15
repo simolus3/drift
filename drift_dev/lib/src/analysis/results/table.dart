@@ -206,7 +206,18 @@ final class UniqueColumns extends DriftTableConstraint {
 final class PrimaryKeyColumns extends DriftTableConstraint {
   final Set<DriftColumn> primaryKey;
 
-  PrimaryKeyColumns(this.primaryKey);
+  /// Whether this table constraint was parsed from the `customConstraints`
+  /// override in a table class.
+  ///
+  /// In this case, we don't override the `$primaryKey` getter when generating
+  /// code as that would lead to two `PRIMARY KEY` constraints being generated
+  /// for the `CREATE TABLE` statement at runtime.
+  ///
+  /// Drift3 fixes this issue by consistently reading primary key columns from
+  /// a constraint available at runtime.
+  final bool fromCustomConstraints;
+
+  PrimaryKeyColumns(this.primaryKey, {required this.fromCustomConstraints});
 }
 
 final class ForeignKeyTable extends DriftTableConstraint {

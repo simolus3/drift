@@ -22,6 +22,9 @@ final class DartTableResolver
 
     final pendingColumns = (await _parseColumns(element)).toList();
     final columns = [for (final column in pendingColumns) column.column];
+    final hasColumnPrimaryKey = columns.any(
+      (col) => col.constraints.any((e) => e is PrimaryKeyColumn),
+    );
     final primaryKey = await _readPrimaryKey(element, columns);
     final uniqueKeys = await _readUniqueKeys(element, columns);
 
@@ -31,8 +34,11 @@ final class DartTableResolver
       element,
     );
 
-    final (tableConstraints, validateTableConstraints) =
-        await _readCustomConstraints(columns, element);
+    final customConstraints = await _readCustomConstraints(
+      columns,
+      element,
+      primaryKey != null || hasColumnPrimaryKey,
+    );
 
     final table = DriftTable(
       resolver.ownElementId,
@@ -48,11 +54,14 @@ final class DartTableResolver
       customParentClass: dataClassInfo.extending,
       baseDartName: element.name!,
       tableConstraints: [
-        if (primaryKey != null) PrimaryKeyColumns(primaryKey),
+        if (primaryKey != null)
+          PrimaryKeyColumns(primaryKey, fromCustomConstraints: false)
+        else
+          ?customConstraints.primaryKey,
         for (final uniqueKey in uniqueKeys ?? const <Set<DriftColumn>>[])
           UniqueColumns(uniqueKey),
       ],
-      overrideTableConstraints: tableConstraints,
+      overrideTableConstraints: customConstraints.constraints,
       withoutRowId: await _overrideWithoutRowId(element) ?? false,
       strict: await _isStrict(element) ?? false,
       attachedIndices: [for (final id in discovered.attachedIndices) id.name],
@@ -64,7 +73,7 @@ final class DartTableResolver
         for (final column in pendingColumns) {
           column.completeConstraints(dependencies);
         }
-        validateTableConstraints?.call(dependencies);
+        customConstraints.validate(dependencies);
 
         final columnsWithPrimaryKeyConstraint = columns
             .where((c) => c.constraints.any((e) => e is PrimaryKeyColumn))
@@ -432,10 +441,10 @@ final class DartTableResolver
   ///
   /// Returns the custom constraints and a validation function to run once
   /// dependencies have been resolved.
-  Future<(List<String>, void Function(ResolvedDependencies)?)>
-  _readCustomConstraints(
+  Future<_ParsedTableConstraints> _readCustomConstraints(
     List<DriftColumn> localColumns,
     ClassElement element,
+    bool hasPrimaryKey,
   ) async {
     final customConstraints = element.lookUpGetter(
       name: 'customConstraints',
@@ -444,7 +453,7 @@ final class DartTableResolver
 
     if (customConstraints == null || customConstraints.isFromDefaultTable) {
       // Does not define custom constraints
-      return const (<String>[], null);
+      return const _ParsedTableConstraints.empty();
     }
 
     final ast =
@@ -458,9 +467,10 @@ final class DartTableResolver
           'This must return a list literal with the => syntax',
         ),
       );
-      return const (<String>[], null);
+      return const _ParsedTableConstraints.empty();
     }
     final expression = body.expression;
+    PrimaryKeyColumns? primaryKey;
     final foundConstraints = <String>[];
     final foundConstraintSources = <SyntacticEntity>[];
     final validators = <void Function(ResolvedDependencies)>[];
@@ -489,37 +499,82 @@ final class DartTableResolver
       );
     }
 
+    DriftColumn? findLocalColumn(sql.Reference ref) {
+      return localColumns.firstWhereOrNull(
+        (c) => c.hasEqualSqlName(ref.columnName),
+      );
+    }
+
+    void reportMissingColumns(
+      SyntacticEntity source,
+      Iterable<sql.Reference> missing,
+    ) {
+      if (missing.isNotEmpty) {
+        reportError(
+          DriftAnalysisError.inDartAst(
+            element,
+            source,
+            'Columns ${missing.join(', ')} don\'t exist locally.',
+          ),
+        );
+      }
+    }
+
     // Try to parse these constraints and emit warnings
     final engine = resolver.driver.newSqlEngine();
     for (var i = 0; i < foundConstraintSources.length; i++) {
       final parsed = engine
           .parse(sql.ParserEntrypoint.tableConstraint, foundConstraints[i])
           .rootNode;
+      final source = foundConstraintSources[i];
 
       if (parsed is sql.InvalidStatement) {
         reportError(
           DriftAnalysisError.inDartAst(
             customConstraints,
-            foundConstraintSources[i],
+            source,
             'Could not parse this table constraint',
           ),
         );
-      } else if (parsed is sql.ForeignKeyTableConstraint) {
-        final source = foundConstraintSources[i];
+      } else if (parsed is sql.KeyClause) {
+        final resolvedColumns = <DriftColumn>{};
+        final unresolvedColumns = <sql.Reference>[];
+        for (final sql.IndexedColumn(:expression) in parsed.columns) {
+          if (expression is sql.Reference) {
+            if (findLocalColumn(expression) case final driftColumn?) {
+              resolvedColumns.add(driftColumn);
+            } else {
+              unresolvedColumns.add(expression);
+            }
+          }
+        }
 
-        // Check that the columns exist locally
-        final missingLocals = parsed.columns.where(
-          (e) => localColumns.every((l) => !l.hasEqualSqlName(e.columnName)),
-        );
-        if (missingLocals.isNotEmpty) {
-          reportError(
-            DriftAnalysisError.inDartAst(
-              element,
-              source,
-              'Columns ${missingLocals.join(', ')} don\'t exist locally.',
-            ),
+        // Check that referenced columns exist locally
+        reportMissingColumns(source, unresolvedColumns);
+
+        if (parsed.isPrimaryKey) {
+          if (hasPrimaryKey) {
+            reportError(
+              DriftAnalysisError.inDartAst(
+                element,
+                source,
+                'This table already has a primary key declaration.',
+              ),
+            );
+          }
+
+          hasPrimaryKey = true;
+          primaryKey = PrimaryKeyColumns(
+            resolvedColumns,
+            fromCustomConstraints: true,
           );
         }
+      } else if (parsed is sql.ForeignKeyTableConstraint) {
+        // Check that the columns exist locally
+        final missingLocals = parsed.columns.where(
+          (e) => findLocalColumn(e) == null,
+        );
+        reportMissingColumns(source, missingLocals);
 
         // Also see if we can resolve the referenced table.
         final clause = parsed.clause;
@@ -550,13 +605,10 @@ final class DartTableResolver
       }
     }
 
-    return (
-      foundConstraints,
-      (ResolvedDependencies deps) {
-        for (final validator in validators) {
-          validator(deps);
-        }
-      },
+    return _ParsedTableConstraints(
+      constraints: foundConstraints,
+      primaryKey: primaryKey,
+      validators: validators,
     );
   }
 }
@@ -610,6 +662,32 @@ class ColumnDeclaration {
       return method!.documentationComment;
     } else {
       return variable!.documentationComment;
+    }
+  }
+}
+
+final class _ParsedTableConstraints {
+  final List<String> constraints;
+
+  /// The declared primary key constraint.
+  final PrimaryKeyColumns? primaryKey;
+
+  final List<void Function(ResolvedDependencies)> validators;
+
+  _ParsedTableConstraints({
+    required this.constraints,
+    required this.primaryKey,
+    this.validators = const [],
+  });
+
+  const _ParsedTableConstraints.empty()
+    : constraints = const [],
+      primaryKey = null,
+      validators = const [];
+
+  void validate(ResolvedDependencies dependencies) {
+    for (final validator in validators) {
+      validator(dependencies);
     }
   }
 }

@@ -36,12 +36,14 @@ class $UsersTable extends i2.Users
   $UsersTable asSelfType() => this;
 
   @override
+  Set<i0.TableColumn> get resolvedPrimaryKey => {id};
+  @override
   i1.User? Function(i0.RawRow) createMapperFromPositions(
       i0.DriftDialect dialect, List<i0.ColumnPosition> positions) {
     final pos$id = positions[0].index;
-    final type$0 = i0.SqlType.int.resolveIn(dialect);
+    final type$0 = dialect.intType;
     final pos$name = positions[1].index;
-    final type$1 = i0.SqlType.text.resolveIn(dialect);
+    final type$1 = dialect.textType;
     return (i0.RawRow row) {
       // Not part of row if non-nullable column "id" is missing
       if (row[pos$id] == null) {
@@ -58,6 +60,9 @@ class $UsersTable extends i2.Users
   $UsersTable withAlias(String alias) {
     return $UsersTable(alias);
   }
+
+  @override
+  List<i0.TableConstraint> get tableConstraints => [];
 }
 
 class User extends i0.LegacyDataClass implements i0.Insertable<i1.User> {

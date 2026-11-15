@@ -538,6 +538,8 @@ class $GroupsTable extends i2.Groups
   $GroupsTable asSelfType() => this;
 
   @override
+  Set<i0.TableColumn> get resolvedPrimaryKey => {id};
+  @override
   i1.Group? Function(i0.RawRow) createMapperFromPositions(
     i0.DriftDialect dialect,
     List<i0.ColumnPosition> positions,
@@ -562,6 +564,9 @@ class $GroupsTable extends i2.Groups
   $GroupsTable withAlias(String alias) {
     return $GroupsTable(alias);
   }
+
+  @override
+  List<i0.TableConstraint> get tableConstraints => [];
 }
 
 class Group extends i0.LegacyDataClass implements i0.Insertable<i1.Group> {
@@ -710,6 +715,8 @@ class $MembersTable extends i2.Members
   $MembersTable asSelfType() => this;
 
   @override
+  Set<i0.TableColumn> get resolvedPrimaryKey => {id};
+  @override
   i2.Member? Function(i0.RawRow) createMapperFromPositions(
     i0.DriftDialect dialect,
     List<i0.ColumnPosition> positions,
@@ -730,6 +737,9 @@ class $MembersTable extends i2.Members
   $MembersTable withAlias(String alias) {
     return $MembersTable(alias);
   }
+
+  @override
+  List<i0.TableConstraint> get tableConstraints => [];
 }
 
 class MembersCompanion extends i0.UpdateCompanion<i2.Member> {
