@@ -90,17 +90,30 @@ This section lists affected APIs and workarounds to make them work PostgreSQL.
 
 Most parts of the `Migrator` API are SQLite-specific. You will be able to create tables on PostgreSQL as well,
 but methods like `alterTable` will only work with SQLite.
+PostgreSQL supports changing column types and constraints with plain `ALTER TABLE` statements,
+so most migrations that need `alterTable` on SQLite can be written directly in SQL.
+
+In sqlite3, the current user version for migrations is stored in a header of the database file.
+Postgres doesn't have this mechanism, so drift creates a `__schema` table storing the current version.
+This migration mechanism works for simple deployments, but is unsuitable for large database setups
+with many application servers connecting to a postgres server. For those, using existing migration
+management tools is a more reliable alternative.
+If you choose to manage migrations with another tool, you can disable migrations in drift by passing.
+`enableMigrations: false` to the `PgDatabase` constructor.
+
+#### External migration tools
+
 While it's possible to use drift migrations with PostgreSQL databases, the recommended approach for now is to
 [export your drift schema](../tools/index.md#exporting) and then use dedicated migration tools for PostgreSQL.
+The exported schema is a list of `CREATE` statements. Pass `--dialect postgres` (still experimental) to
+`drift_dev schema export` to get PostgreSQL syntax. Drift doesn't integrate with any particular migration tool,
+but these work with PostgreSQL databases and can use the exported statements:
 
-In sqlite3, the current schema version is stored in the database file. To support drift's migration API
-being built on top of this mechanism in Postgres as well, drift creates a `__schema` table storing
-the current schema version.
-
-This migration mechanism works for simple deployments, but is unsuitable for large database setups
-with many application servers connecting to a postgres serve. For those, an existing migration management
-tool is a more reliable alternative. If you chose to manage migrations with another tool, you can
-disable migrations in drift by passing `enableMigrations: false` to the `PgDatabase` constructor.
+- [Atlas](https://atlasgo.io/) can read a SQL file as the desired schema, compare it with your database and
+  generate the migration. This is the closest match to what `make-migrations` does for SQLite.
+- [dbmate](https://github.com/amacneil/dbmate), [golang-migrate](https://github.com/golang-migrate/migrate)
+  and [Flyway](https://flywaydb.org/) apply versioned SQL files that you write. You can start from the exported
+  statements for the first version and write later `ALTER TABLE` migrations yourself.
 
 ### DateTime columns
 
