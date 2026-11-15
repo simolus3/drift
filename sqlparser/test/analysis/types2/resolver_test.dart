@@ -224,7 +224,11 @@ void main() {
       final resultType = resolveResultColumn('SELECT timediff(?, ?)');
       final argType = resolveFirstVariable('SELECT timediff(?, ?)');
 
-      expect(resultType, const ResolvedType(type: BasicType.text));
+      // `timediff` returns NULL when an argument isn't a valid date or time.
+      expect(
+        resultType,
+        const ResolvedType(type: BasicType.text, nullable: true),
+      );
       expect(
         argType,
         const ResolvedType(type: BasicType.text, hints: [IsDateTime()]),
@@ -232,8 +236,9 @@ void main() {
     });
 
     test('octet_length', () {
+      // A byte literal is never NULL, so neither is the length of it.
       expect(
-        resolveResultColumn('SELECT octet_length(?)'),
+        resolveResultColumn("SELECT octet_length(x'0102')"),
         equals(const ResolvedType(type: BasicType.int)),
       );
     });
@@ -250,21 +255,46 @@ void main() {
     });
 
     test('julianday', () {
-      expect(
-        resolveResultColumn("SELECT julianday('now')")!.type,
-        BasicType.real,
-      );
+      final type = resolveResultColumn("SELECT julianday('now')")!;
+      expect(type.type, BasicType.real);
+      // `julianday` returns NULL for a NULL argument or an invalid date.
+      expect(type.nullable, isTrue);
     });
 
     test('sqlite_compileoption_get', () {
-      expect(
-        resolveResultColumn('SELECT sqlite_compileoption_get(0)')!.type,
-        BasicType.text,
-      );
-      expect(
-        resolveResultColumn("SELECT sqlite_compileoption_used('X')")!.type,
-        BasicType.int,
-      );
+      final get = resolveResultColumn('SELECT sqlite_compileoption_get(0)')!;
+      expect(get.type, BasicType.text);
+      // NULL if there is no compile option with that index.
+      expect(get.nullable, isTrue);
+
+      final used = resolveResultColumn(
+        "SELECT sqlite_compileoption_used('X')",
+      )!;
+      expect(used.type, BasicType.int);
+      expect(used.nullable, isFalse);
+    });
+
+    test('date and time functions are nullable', () {
+      for (final expr in [
+        "date('now')",
+        "time('now')",
+        "strftime('%Y', 'now')",
+        "timediff('now', 'now')",
+      ]) {
+        final type = resolveResultColumn('SELECT $expr')!;
+        expect(type.type, BasicType.text, reason: expr);
+        // An invalid date, time or modifier string makes these return NULL,
+        // just like `datetime` and `unixepoch`, which were already nullable.
+        expect(type.nullable, isTrue, reason: expr);
+      }
+    });
+
+    test('string functions returning a non-null text', () {
+      for (final expr in ['char(65)', "hex('a')", 'quote(1)', 'typeof(1)']) {
+        final type = resolveResultColumn('SELECT $expr')!;
+        expect(type.type, BasicType.text, reason: expr);
+        expect(type.nullable, isFalse, reason: expr);
+      }
     });
 
     test('nth_value', () {
