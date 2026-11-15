@@ -3,7 +3,7 @@ import 'package:drift3_preview/drift.dart';
 import 'package:drift3_flutter_preview/drift_flutter.dart';
 import 'package:drift_sqlite/drift_sqlite.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:material_ui/material_ui.dart' show Colors;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod/legacy.dart';
 import 'connection/connection.dart' as impl;

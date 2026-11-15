@@ -19,6 +19,7 @@ dependencies:
   sqlite3: ^3.0.0
   drift_flutter:
   stack_trace: ^1.12.1
+  material_ui: ^1.11.0
 
 dev_dependencies:
   flutter_test:

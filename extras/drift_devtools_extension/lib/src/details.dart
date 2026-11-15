@@ -1,7 +1,7 @@
 import 'package:devtools_app_shared/utils.dart';
 import 'package:drift_devtools_extension/src/download_button.dart';
 import 'package:drift_devtools_extension/src/schema_validator.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // ignore: deprecated_member_use
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'clear_button.dart';

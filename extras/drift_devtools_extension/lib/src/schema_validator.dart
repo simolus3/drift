@@ -5,7 +5,7 @@ import 'package:drift_dev/src/services/schema/find_differences.dart';
 // ignore: implementation_imports
 import 'package:drift_dev/src/services/schema/verifier_common.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // ignore: deprecated_member_use
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sqlite3/wasm.dart' hide Row;
 import 'package:url_launcher/url_launcher.dart';

@@ -301,7 +301,7 @@ void main() {
       ).thenAnswer((_) => Future.error(rollbackException));
 
       return expectLater(
-        db.transaction(Future.value),
+        db.transaction(Future<void>.value),
         throwsA(
           isA<CouldNotRollBackException>()
               .having((e) => e.cause, 'cause', commitException)

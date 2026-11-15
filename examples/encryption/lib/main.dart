@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:stack_trace/stack_trace.dart';
 
@@ -94,12 +94,6 @@ class _AddEntryDialog extends StatefulWidget {
 
 class _AddEntryDialogState extends State<_AddEntryDialog> {
   final TextEditingController _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {

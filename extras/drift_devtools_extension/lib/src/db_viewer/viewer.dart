@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_db_viewer/drift_db_viewer.dart';
+// ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 
 import '../remote_database.dart';

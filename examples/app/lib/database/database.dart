@@ -2,7 +2,7 @@ import 'package:app/database/database.steps.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:material_ui/material_ui.dart' show Colors;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod/legacy.dart';
 import 'connection/connection.dart' as impl;

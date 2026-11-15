@@ -230,7 +230,10 @@ class SchemaWriter {
   ) {
     final primaryKeyFromTableConstraint = table.tableConstraints
         .whereType<PrimaryKeyColumns>()
-        .where((e) => !e.fromCustomConstraints)
+        .where(
+          (e) =>
+              !e.fromCustomConstraints || table.declaration.isDriftDeclaration,
+        )
         .firstOrNull;
     final uniqueKeys = table.tableConstraints.whereType<UniqueColumns>();
 

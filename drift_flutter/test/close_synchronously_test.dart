@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart' hide Table;
+import 'package:material_ui/material_ui.dart' hide Table;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
