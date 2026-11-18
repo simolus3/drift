@@ -164,7 +164,7 @@ class RunningDriftServer {
         _activeConnections++;
         server.serve(controller.foreign, serialize: serialize).whenComplete(() {
           _activeConnections--;
-          clientIsolate.removeErrorListener(sendPortForRemote);
+          clientIsolate.removeOnExitListener(sendPortForRemote);
 
           if (_activeConnections == 0 && shutDownAfterLastDisconnect) {
             server.shutdown();
