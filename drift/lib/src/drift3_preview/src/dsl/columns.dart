@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../query_builder/expressions/expression.dart';
+import '../query_builder/expressions/text.dart';
 import '../query_builder/schema/column.dart';
 import '../query_builder/type_converter.dart';
 import '../query_builder/types.dart';
@@ -399,6 +400,17 @@ extension BuildInt64Column on ColumnBuilder<BigInt> {
 /// Tells the generator to build an [TextColumn]. See the docs at
 /// [ColumnBuilder] for details.
 extension BuildTextColumn<T extends String> on ColumnBuilder<T> {
+  /// Adds a `COLLATE` constraint to this column, affecting how string values
+  /// compare.
+  ///
+  /// Values of [collate] must be a compile-time constant.
+  ///
+  /// See also:
+  ///
+  ///  - [SQLite docs]: https://www.sqlite.org/lang_createtable.html#the_collate_clause
+  ///  - [PostgreSQL docs]: https://www.postgresql.org/docs/current/collation.html
+  ColumnBuilder<T> collate(Collate collate) => isGenerated();
+
   /// Puts a constraint on the minimum and maximum length of text that can be
   /// stored in this column.
   ///

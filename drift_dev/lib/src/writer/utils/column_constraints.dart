@@ -74,6 +74,8 @@ Map<KnownSqlDialect, String> defaultConstraints(DriftColumn column) {
       }
 
       defaultConstraints.add(constraint);
+    } else if (feature is CollateConstraint) {
+      defaultConstraints.add('COLLATE ${feature.collation}');
     } else if (feature is DefaultConstraintsFromSchemaFile) {
       String buildFor(KnownSqlDialect dialect) {
         final result = StringBuffer();
@@ -200,6 +202,11 @@ List<String> columnConstraintsDrift3(TextEmitter emitter, DriftColumn column) {
       final dartCode = emitter.dartCode(feature.dartExpression);
       entries.add(
         '${emitter.drift('ColumnGeneratedAs')}($dartCode, stored: ${feature.stored})',
+      );
+    } else if (feature is CollateConstraint) {
+      final collation = asDartLiteral(feature.collation);
+      entries.add(
+        'const ${emitter.drift('ColumnCollateConstraint')}(${emitter.drift('Collate')}($collation))',
       );
     } else if (feature is DefaultConstraintsFromSchemaFile) {
       String buildFor(KnownSqlDialect dialect) {

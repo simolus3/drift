@@ -255,27 +255,33 @@ class ElementSerializer {
   Map<String, Object?> _serializeColumnConstraint(
     DriftColumnConstraint constraint,
   ) {
-    if (constraint is UniqueColumn) {
-      return {'type': 'unique'};
-    } else if (constraint is PrimaryKeyColumn) {
-      return {'type': 'primary', ...constraint.toJson()};
-    } else if (constraint is ForeignKeyReference) {
-      return {
-        'type': 'foreign_key',
-        'column': _serializeColumnReference(constraint.otherColumn),
-        'onUpdate': _serializeReferenceAction(constraint.onUpdate),
-        'onDelete': _serializeReferenceAction(constraint.onDelete),
-        'initiallyDeferred': constraint.initiallyDeferred,
-      };
-    } else if (constraint is ColumnGeneratedAs) {
-      return {'type': 'generated_as', ...constraint.toJson()};
-    } else if (constraint is DartCheckExpression) {
-      return {'type': 'check', ...constraint.toJson()};
-    } else if (constraint is LimitingTextLength) {
-      return {'type': 'limit_text_length', ...constraint.toJson()};
-    } else {
-      throw UnimplementedError('Unsupported column constraint: $constraint');
-    }
+    return switch (constraint) {
+      UniqueColumn() => {'type': 'unique'},
+      PrimaryKeyColumn() => {'type': 'primary', ...constraint.toJson()},
+      ForeignKeyReference(
+        :final otherColumn,
+        :final onUpdate,
+        :final onDelete,
+        :final initiallyDeferred,
+      ) =>
+        {
+          'type': 'foreign_key',
+          'column': _serializeColumnReference(otherColumn),
+          'onUpdate': _serializeReferenceAction(onUpdate),
+          'onDelete': _serializeReferenceAction(onDelete),
+          'initiallyDeferred': initiallyDeferred,
+        },
+      ColumnGeneratedAs() => {'type': 'generated_as', ...constraint.toJson()},
+      DartCheckExpression() => {'type': 'check', ...constraint.toJson()},
+      LimitingTextLength() => {
+        'type': 'limit_text_length',
+        ...constraint.toJson(),
+      },
+      CollateConstraint() => {'type': 'collate', ...constraint.toJson()},
+      DefaultConstraintsFromSchemaFile() => throw UnimplementedError(
+        'Unsupported column constraint: $constraint',
+      ),
+    };
   }
 
   Map<String, Object?> _serializeTableConstraint(
@@ -1019,6 +1025,8 @@ final class ElementDeserializer {
         return constraints.add(DartCheckExpression.fromJson(json));
       case 'limit_text_length':
         return constraints.add(LimitingTextLength.fromJson(json));
+      case 'collate':
+        return constraints.add(CollateConstraint.fromJson(json));
       default:
         throw UnimplementedError('Unsupported constraint: $type');
     }

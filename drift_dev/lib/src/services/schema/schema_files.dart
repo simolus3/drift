@@ -8,7 +8,8 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
-import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
+import 'package:sqlparser/sqlparser.dart'
+    hide PrimaryKeyColumn, UniqueColumn, CollateConstraint;
 
 import '../../analysis/dialect.dart';
 import '../../analysis/options.dart';
@@ -345,7 +346,7 @@ class SchemaWriter {
       LimitingTextLength() => {
         'allowed-lengths': {'min': feature.minLength, 'max': feature.maxLength},
       },
-      CustomColumnConstraint() ||
+      CollateConstraint(:final collation) => {'collate': collation},
       DefaultConstraintsFromSchemaFile() => 'unknown',
     };
   }
@@ -802,6 +803,7 @@ class SchemaReader {
           minLength: value['min'] as int?,
           maxLength: value['max'] as int?,
         ),
+      {'collate': final collation as String} => CollateConstraint(collation),
       _ => null,
     };
   }

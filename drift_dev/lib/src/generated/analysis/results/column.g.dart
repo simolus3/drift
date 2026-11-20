@@ -42,3 +42,9 @@ Map<String, dynamic> _$LimitingTextLengthToJson(LimitingTextLength instance) =>
       'min_length': instance.minLength,
       'max_length': instance.maxLength,
     };
+
+CollateConstraint _$CollateConstraintFromJson(Map json) =>
+    CollateConstraint(json['collation'] as String);
+
+Map<String, dynamic> _$CollateConstraintToJson(CollateConstraint instance) =>
+    <String, dynamic>{'collation': instance.collation};

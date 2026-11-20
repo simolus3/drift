@@ -945,8 +945,12 @@ abstract base class StatementCompiler {
     writeExpression(expr, () {
       expr.source.compileWith(this);
       statement.buffer.write(' COLLATE ');
-      statement.buffer.write(expr.collation.name);
+      addCollation(expr.collation);
     });
+  }
+
+  void addCollation(Collate collation) {
+    statement.buffer.write(collation.name);
   }
 
   void addUnaryExpression(UnaryExpression expr) {
@@ -1067,6 +1071,11 @@ abstract base class StatementCompiler {
 
   void addColumnNotNullConstraint(ColumnNotNullConstraint constraint) {
     statement.buffer.write('NOT NULL');
+  }
+
+  void addColumnCollateConstraint(ColumnCollateConstraint constraint) {
+    statement.buffer.write('COLLATE ');
+    addCollation(constraint.collate);
   }
 
   void addCustom(CustomComponent component) {

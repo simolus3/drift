@@ -279,6 +279,34 @@ class TestTable extends Table {
     }
   });
 
+  test('parses collate constraints', () async {
+    final state = await TestBackend.inTest({
+      'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+class TestTable extends Table {
+  TextColumn get name => text().collate(Collate.noCase)();
+}
+''',
+    });
+
+    final file = await state.analyze('package:a/main.dart');
+    state.expectNoErrors();
+
+    final table = file.analyzedElements.single as DriftTable;
+    final column = table.columns.single;
+    expect(
+      column.constraints,
+      contains(
+        isA<CollateConstraint>().having(
+          (e) => e.collation,
+          'collation',
+          'NOCASE',
+        ),
+      ),
+    );
+  });
+
   group('customConstraint analysis', () {
     test('reports errors', () async {
       final state = await TestBackend.inTest({
