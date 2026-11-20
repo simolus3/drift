@@ -209,6 +209,51 @@ void main() {
       );
     });
 
+    // Any literal with a decimal point or an exponent is a REAL in SQLite.
+    // https://sqlite.org/lang_expr.html#literal_values_constants_
+    test('literals with an exponent or decimal point are doubles', () {
+      void expectDouble(String lexeme, double value) {
+        final token = SqlEngine().tokenizeString(lexeme).first as NumericToken;
+        expect(token.parsedNumber, isA<double>(), reason: lexeme);
+        expect(token.parsedNumber, value, reason: lexeme);
+      }
+
+      expectDouble('1e5', 100000.0);
+      expectDouble('1E5', 100000.0);
+      expectDouble('1e+5', 100000.0);
+      expectDouble('1e-5', 0.00001);
+      expectDouble('1.0e2', 100.0);
+      expectDouble('.5e1', 5.0);
+      expectDouble('5.', 5.0);
+      expectDouble('1e0', 1.0);
+      expectDouble('1e30', 1e30);
+      expectDouble('1e23', 1e23);
+      expectDouble('1_000e2', 100000.0);
+      expectDouble('.41e24', 4.1e23);
+    });
+
+    test('literals without exponent or decimal point stay integers', () {
+      void expectInt(String lexeme, int value) {
+        final token = SqlEngine().tokenizeString(lexeme).first as NumericToken;
+        expect(token.parsedNumber, isA<int>(), reason: lexeme);
+        expect(token.parsedNumber, value, reason: lexeme);
+      }
+
+      expectInt('15', 15);
+      expectInt('0x1F', 0x1F);
+      expectInt('0', 0);
+      expectInt('0X1f', 0x1F);
+    });
+
+    test('decimal literals without exponent stay doubles', () {
+      final decimal = SqlEngine().tokenizeString('1.5').first as NumericToken;
+      expect(decimal.parsedNumber, isA<double>());
+      expect(decimal.parsedNumber, 1.5);
+      final leadingDot = SqlEngine().tokenizeString('.5').first as NumericToken;
+      expect(leadingDot.parsedNumber, isA<double>());
+      expect(leadingDot.parsedNumber, 0.5);
+    });
+
     test('missing number after exponent', () {
       expect(
         () => SqlEngine().tokenizeString('1e+'),

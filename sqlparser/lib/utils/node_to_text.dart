@@ -1042,7 +1042,22 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitNumericLiteral(NumericLiteral e, void arg) {
-    symbol(e.value.toString(), spaceBefore: true, spaceAfter: true);
+    final String repr;
+    if (e.isInt) {
+      repr = e.value.toInt().toString();
+    } else {
+      final value = e.value.toDouble();
+      if (value.isInfinite) {
+        // Infinity is not a valid number format in SQL.
+        repr = value.isNegative ? '-1e309' : '1e309';
+      } else if (value.isNaN) {
+        repr = 'NULL';
+      } else {
+        repr = value.toString();
+      }
+    }
+
+    symbol(repr, spaceBefore: true, spaceAfter: true);
   }
 
   @override

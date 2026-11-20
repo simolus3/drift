@@ -617,7 +617,8 @@ extension Parser on ParserState {
     final number =
         _consume(TokenType.numberLiteral, 'Expected a number here')
             as NumericToken;
-    return NumericLiteral(number.parsedNumber)
+
+    return NumericLiteral(number.parsedNumber, !number.isReal)
       ..token = number
       ..setSpan(number, number);
   }

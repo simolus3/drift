@@ -61,6 +61,10 @@ void main() {
       resolveResultColumn('SELECT 3.5'),
       const ResolvedType(type: BasicType.real),
     );
+    expect(
+      resolveResultColumn('SELECT 1e5'),
+      const ResolvedType(type: BasicType.real),
+    );
   });
 
   test('infers boolean type in where conditions', () {

@@ -1,3 +1,9 @@
+## 0.45.2-wip
+
+- Fix numeric literals with an exponent but no decimal point (like `1e5`) being
+  parsed and written as integers, and parse them with correct rounding. SQLite
+  treats them as `REAL`.
+
 ## 0.45.1
 
 - Fix a few tokenizer crashes ([#3847](https://github.com/simolus3/drift/issues/3847)).

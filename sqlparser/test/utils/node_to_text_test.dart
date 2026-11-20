@@ -746,6 +746,23 @@ COMMIT TRANSACTION;
     });
   });
 
+  test('numeric literal', () {
+    void check(num source, String expected, [bool? isInt]) {
+      expect(
+        NumericLiteral(source, isInt).toSql(),
+        expected,
+        reason: '$source',
+      );
+    }
+
+    check(1, '1');
+    check(0.5, '0.5');
+    check(10, '10.0', false);
+    check(double.nan, 'NULL');
+    check(double.infinity, '1e309');
+    check(-double.infinity, '-1e309');
+  });
+
   test('does not format invalid statements', () {
     expect(InvalidStatement().toSql, throwsUnsupportedError);
   });
