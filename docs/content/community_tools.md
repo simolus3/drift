@@ -42,6 +42,15 @@ Starting with Drift 2.13 and Flutter 3.16, this database viewer is also availabl
 the "Drift" tab in DevTools and select your database class to view your database in Flutter's DevTools.
 No additional dependencies are needed for this.
 
+## xRay
+
+[xRay](https://xrayinspector.dev) by [Koen Van Looveren](https://github.com/vanlooverenkoen) at [impaktfull](https://impaktfull.com)
+is a desktop app for macOS, Windows and Linux that inspects a running Flutter debug build.
+Its [xray\_drift\_inspector](https://pub.dev/packages/xray_drift_inspector) package shows a drift database in xRay's Database tab:
+tables and views with row counts, paged rows, and a SQL query view, with optional editing.
+It works through your app's own database connection, so `watch()` streams update after an edit
+and SQLCipher databases work without the key.
+
 ## moor2csv
 
 [Dhiman Seal](https://github.com/Dhi13man) wrote a package to export moor or drift databases as csv files.
