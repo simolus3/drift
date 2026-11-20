@@ -61,6 +61,12 @@ void main() {
       resolveResultColumn('SELECT 3.5'),
       const ResolvedType(type: BasicType.real),
     );
+    // A numeric literal with an exponent is a floating point value in sqlite,
+    // even when it has no decimal point (`SELECT typeof(3e2)` is `real`).
+    expect(
+      resolveResultColumn('SELECT 3e2'),
+      const ResolvedType(type: BasicType.real),
+    );
   });
 
   test('infers boolean type in where conditions', () {

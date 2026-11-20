@@ -668,7 +668,11 @@ class NumericToken extends Token {
     }
 
     if (exponent != null) {
-      number *= pow(10, exponent!);
+      // A numeric literal with an exponent is a floating point value in sqlite,
+      // even when it has no decimal point (e.g. `1e2` is the real `100.0`, not
+      // the integer `100`). Multiplying as a double keeps the result a `double`
+      // so that `NumericLiteral.isInt` reports it as a real.
+      number = number.toDouble() * pow(10, exponent!);
     }
     return number;
   }
