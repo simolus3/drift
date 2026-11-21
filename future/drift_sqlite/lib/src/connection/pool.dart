@@ -67,7 +67,7 @@ final class SqlitePoolSession
   }
 
   Future<(T, DatabaseWorker?)> _waitForConnection<T extends Object>(
-    Future<T> acquire,
+    Future<T> Function() acquire,
     void Function(T) release,
   ) async {
     if (isClosed) {
@@ -79,7 +79,7 @@ final class SqlitePoolSession
     T? acquired;
 
     try {
-      acquired = await acquire.poolAbortExceptionsToDrift();
+      acquired = await acquire().poolAbortExceptionsToDrift();
       isolate = await isolates?.acquireWorker();
       return (acquired, isolate);
     } on Object {
@@ -92,7 +92,7 @@ final class SqlitePoolSession
 
   Future<_PlainLease> _lease(bool writer, AbortToken? abort) async {
     final (connection, isolate) = await _waitForConnection(
-      writer
+      () => writer
           ? pool.writer(abortSignal: abort?.aborted)
           : pool.reader(abortSignal: abort?.aborted),
       (lease) => lease.returnLease(),
@@ -160,7 +160,7 @@ final class SqlitePoolSession
   @override
   Future<DriftSession> exclusive({AbortToken? abort}) async {
     final (access, isolate) = await _waitForConnection(
-      pool.exclusiveAccess(abortSignal: abort?.aborted),
+      () => pool.exclusiveAccess(abortSignal: abort?.aborted),
       (access) => access.close(),
     );
 
