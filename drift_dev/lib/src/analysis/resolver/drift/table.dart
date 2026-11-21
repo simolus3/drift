@@ -1,7 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:drift_dev/src/analysis/driver/driver.dart';
 import 'package:recase/recase.dart';
-import 'package:sqlparser/sqlparser.dart' hide PrimaryKeyColumn, UniqueColumn;
+import 'package:sqlparser/sqlparser.dart'
+    hide PrimaryKeyColumn, UniqueColumn, CollateConstraint;
 import 'package:sqlparser/sqlparser.dart' as sql;
 import 'package:sqlparser/utils/node_to_text.dart';
 
@@ -181,6 +182,8 @@ final class DriftTableResolver
           constraints.add(PrimaryKeyColumn(constraint.autoIncrement));
         } else if (constraint is sql.UniqueColumn) {
           constraints.add(UniqueColumn());
+        } else if (constraint case sql.CollateConstraint(:final collation)) {
+          constraints.add(CollateConstraint(collation));
         }
 
         if (writeIntoTable) {

@@ -1,6 +1,7 @@
 import '../compiler.dart';
 import '../dialect.dart';
 import '../expressions/expression.dart';
+import '../expressions/text.dart' show Collate;
 
 /// A column constraint modifies a column to add e.g. a not-null requirement,
 /// foreign keys, checks or additional information.
@@ -169,6 +170,20 @@ final class ColumnNotNullConstraint extends ColumnConstraint {
   @override
   void compileWith(StatementCompiler compiler) {
     compiler.addColumnNotNullConstraint(this);
+  }
+}
+
+/// A `COLLATE` constraint describing how text values are compared.
+final class ColumnCollateConstraint extends ColumnConstraint {
+  /// The collation to use.
+  final Collate collate;
+
+  /// @nodoc
+  const ColumnCollateConstraint(this.collate) : super._();
+
+  @override
+  void compileWith(StatementCompiler compiler) {
+    compiler.addColumnCollateConstraint(this);
   }
 }
 

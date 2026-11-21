@@ -27,7 +27,7 @@ class TodosTable extends Table with AutoIncrement {
   String get tableName => 'todos';
 
   late final title = text().withLength(min: 4, max: 16).nullable()();
-  late final content = text()();
+  late final content = text().collate(Collate.noCase)();
   @JsonKey('target_date')
   late final targetDate = dateTime().nullable().unique()();
   @ReferenceName("todos")

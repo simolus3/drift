@@ -35,9 +35,9 @@ class NumericLiteral extends Literal<num> {
   @override
   final num value;
 
-  bool get isInt => value is int;
+  final bool isInt;
 
-  NumericLiteral(this.value);
+  NumericLiteral(this.value, [bool? isInt]) : isInt = isInt ?? value is int;
 
   @override
   R accept<A, R>(AstVisitor<A, R> visitor, A arg) {

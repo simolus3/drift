@@ -1,8 +1,6 @@
 /// @docImport '../../engine/options.dart';
 library;
 
-import 'dart:math';
-
 import 'package:meta/meta.dart';
 import 'package:source_span/source_span.dart';
 import 'package:sqlparser/sqlparser.dart';
@@ -646,31 +644,26 @@ class NumericToken extends Token {
       exponent = null,
       super(TokenType.numberLiteral, span);
 
+  /// Whether this numeric token defines a `REAL` number.
+  ///
+  /// This is the case when an exponent or a decimal point is given, even if the
+  /// format specifies a whole number.
+  bool get isReal => exponent != null || hasDecimalPoint;
+
   /// The numeric literal represented by this token.
   num get parsedNumber {
     if (hexDigits != null) {
       return int.parse(hexDigits!, radix: 16);
     }
 
-    final beforeDecimal = digitsBeforeDecimal != null
-        ? int.parse(digitsBeforeDecimal!)
-        : 0;
-
-    num number;
-
-    if (!hasDecimalPoint) {
-      number = beforeDecimal;
-    } else if (digitsAfterDecimal != null) {
-      number = beforeDecimal + double.parse('.$digitsAfterDecimal');
-    } else {
-      // Is of the form 3., so just infer as double
-      number = beforeDecimal.toDouble();
+    if (isReal) {
+      // A literal with an exponent is always a REAL in SQLite, even without a
+      // decimal point. toString() rebuilds the literal without any `_`
+      // separators, and double.parse rounds correctly.
+      return double.parse(toString());
     }
 
-    if (exponent != null) {
-      number *= pow(10, exponent!);
-    }
-    return number;
+    return digitsBeforeDecimal != null ? int.parse(digitsBeforeDecimal!) : 0;
   }
 
   @visibleForTesting

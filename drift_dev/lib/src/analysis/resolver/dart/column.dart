@@ -54,6 +54,7 @@ const String _methodClientDefault = 'clientDefault';
 const String _methodMap = 'map';
 const String _methodGenerated = 'generatedAs';
 const String _methodCheck = 'check';
+const String _methodCollate = 'collate';
 const Set<String> _addsSqlConstraint = {
   _methodReferences,
   _methodAutoIncrement,
@@ -61,6 +62,7 @@ const Set<String> _addsSqlConstraint = {
   _methodDefault,
   _methodGenerated,
   _methodCheck,
+  _methodCollate,
 };
 
 const String _errorMessage =
@@ -527,6 +529,20 @@ class ColumnParser {
           final ast = _ast(expr);
 
           constraintsWithoutDependencies.add(DartCheckExpression(ast));
+        case _methodCollate:
+          final expr = remainingExpr.argumentList.arguments.first;
+          final name = _readCollation(expr.argumentExpression);
+          if (name == null) {
+            _resolver.reportError(
+              DriftAnalysisError.inDartAst(
+                element,
+                expr,
+                'Must be a constant Collate instance',
+              ),
+            );
+          } else {
+            constraintsWithoutDependencies.add(CollateConstraint(name));
+          }
       }
 
       // We're not at a starting method yet, so we need to go deeper!
@@ -720,6 +736,15 @@ class ColumnParser {
     return object.computeConstantValue()!.getField('name')!.toStringValue();
   }
 
+  String? _readCollation(Expression expr) {
+    final constant = expr.computeConstantValue();
+    final value = constant?.value;
+    if (value == null) return null;
+
+    final name = value.getField('name')?.toStringValue();
+    return name;
+  }
+
   Future<_ConstraintResolver> _driftConstraintsFromCustomConstraints({
     required bool isNullable,
     required void Function(AnnotatedDartCode) setDefault,
@@ -830,6 +855,8 @@ class ColumnParser {
         }
       } else if (constraint is sql.Default) {
         setDefault(DriftColumn.defaultFromParser(constraint));
+      } else if (constraint is sql.CollateConstraint) {
+        parsedConstraints.add(CollateConstraint(constraint.collation));
       }
     }
 

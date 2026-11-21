@@ -75,21 +75,23 @@ class BackupDialog extends ConsumerWidget {
 }
 
 Future<void> createDatabaseBackup(DatabaseConnectionUser database) async {
-  final choosenDirectory = await FilePicker.getDirectoryPath();
-  if (choosenDirectory == null) return;
-
-  final parent = Directory(choosenDirectory);
-  final file = File(p.join(choosenDirectory, 'drift_example_backup.db'));
-
-  // Make sure the directory of the file exists
-  if (!await parent.exists()) {
-    await parent.create(recursive: true);
-  }
-  // However, the file itself must not exist
-  if (await file.exists()) {
-    await file.delete();
+  final temporary = await getTemporaryDirectory();
+  if (!await temporary.exists()) {
+    await temporary.create(recursive: true);
   }
 
-  await database.customStatement(
-      'VACUUM INTO ?', [Variable.withString(file.absolute.path)]);
+  final directory = await temporary.createTemp('drift-backup');
+
+  try {
+    final file = p.join(directory.path, 'drift_example_backup.db');
+    await database
+        .customStatement('VACUUM INTO ?', [Variable.withString(file)]);
+
+    await FilePicker.saveFile(
+      fileName: 'drift_example_backup.db',
+      bytes: await File(file).readAsBytes(),
+    );
+  } finally {
+    await directory.delete(recursive: true);
+  }
 }

@@ -1,3 +1,7 @@
+## 2.36.0 (unreleased)
+
+- Add `collate` method to column builders.
+
 ## 2.35.4
 
 - Fix an empty companion in `Batch.update` causing an invalid SQL statement.

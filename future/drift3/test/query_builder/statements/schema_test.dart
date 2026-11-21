@@ -51,7 +51,7 @@ void main() {
         'CREATE TABLE IF NOT EXISTS "todos" '
         '("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
         '"title" TEXT,'
-        '"content" TEXT NOT NULL,'
+        '"content" TEXT NOT NULL COLLATE NOCASE,'
         '"target_date" TEXT UNIQUE,'
         '"category" INTEGER REFERENCES categories (id)DEFERRABLE INITIALLY DEFERRED,'
         '"status" TEXT,'

@@ -1,3 +1,7 @@
+## 2.36.0
+
+- Support `collate` method added in drift 2.36.0
+
 ## 2.35.3
 
 - Improve validation error messages for `known_tables` option.

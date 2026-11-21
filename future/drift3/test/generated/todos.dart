@@ -22,7 +22,7 @@ class TodosTable extends Table with AutoIncrement {
   String get tableName => 'todos';
 
   TextColumn get title => text().withLength(min: 4, max: 16).nullable();
-  TextColumn get content => text();
+  TextColumn get content => text().collate(.noCase);
   DateTimeColumn get targetDate => dateTime().nullable().unique();
   @ReferenceName("todos")
   IntColumn get category => integer()

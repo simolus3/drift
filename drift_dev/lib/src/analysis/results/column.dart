@@ -237,8 +237,6 @@ sealed class DriftColumnConstraint {
   const DriftColumnConstraint();
 }
 
-base class CustomColumnConstraint extends DriftColumnConstraint {}
-
 class UniqueColumn extends DriftColumnConstraint {
   const UniqueColumn();
 }
@@ -332,14 +330,33 @@ final class LimitingTextLength extends DriftColumnConstraint {
   Map<String, Object?> toJson() => _$LimitingTextLengthToJson(this);
 
   @override
-  int get hashCode => minLength.hashCode ^ maxLength.hashCode;
+  int get hashCode => Object.hash(minLength, maxLength);
 
   @override
   bool operator ==(Object other) {
-    if (other.runtimeType != runtimeType) return false;
-    final typedOther = other as LimitingTextLength;
-    return typedOther.minLength == minLength &&
-        typedOther.maxLength == maxLength;
+    return other is LimitingTextLength &&
+        other.minLength == minLength &&
+        other.maxLength == maxLength;
+  }
+}
+
+@JsonSerializable()
+final class CollateConstraint extends DriftColumnConstraint {
+  final String collation;
+
+  CollateConstraint(this.collation);
+
+  factory CollateConstraint.fromJson(Map json) =>
+      _$CollateConstraintFromJson(json);
+
+  Map<String, Object?> toJson() => _$CollateConstraintToJson(this);
+
+  @override
+  int get hashCode => collation.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is CollateConstraint && other.collation == collation;
   }
 }
 

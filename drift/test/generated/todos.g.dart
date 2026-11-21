@@ -356,6 +356,7 @@ class $TodosTableTable extends TodosTable
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('COLLATE NOCASE'),
   );
   static const VerificationMeta _targetDateMeta = const VerificationMeta(
     'targetDate',

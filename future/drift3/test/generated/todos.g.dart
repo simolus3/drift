@@ -314,7 +314,10 @@ class $TodosTableTable extends TodosTable
     name: 'content',
     sqlType: SqlType.text,
     requiredDuringInsert: true,
-    constraints: () => [const ColumnNotNullConstraint()],
+    constraints: () => [
+      const ColumnNotNullConstraint(),
+      const ColumnCollateConstraint(Collate('NOCASE')),
+    ],
   )..owningResultSet = this;
   @override
   late final TableColumn<DateTime> targetDate = TableColumn<DateTime>(
