@@ -186,4 +186,38 @@ SELECT * FROM users;
       ),
     );
   });
+
+  test('empty statement', () {
+    final engine = SqlEngine();
+    final result = engine.parse(
+      ParserEntrypoint.multiple,
+      'SELECT 1; ; SELECT 2;',
+    );
+    final ast = result.rootNode;
+
+    final statements = ast.childNodes.toList();
+    expect(statements, [
+      isA<SelectStatement>(),
+      isA<InvalidStatement>(),
+      isA<SelectStatement>(),
+    ]);
+    expect(result.errors, isEmpty);
+  });
+
+  test('syntax error at start of statement', () {
+    final engine = SqlEngine();
+    final result = engine.parse(
+      ParserEntrypoint.multiple,
+      'SELECT 1; ILLEGAL SYNTAX; SELECT 2;',
+    );
+    final ast = result.rootNode;
+
+    final statements = ast.childNodes.toList();
+    expect(statements, [
+      isA<SelectStatement>(),
+      isA<InvalidStatement>(),
+      isA<SelectStatement>(),
+    ]);
+    expect(result.errors, [isParsingError(span: 'ILLEGAL')]);
+  });
 }

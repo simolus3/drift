@@ -152,4 +152,17 @@ void main() {
     expect(parsed.sql.text, 'SELECT * FROM foo');
     expect(parsed.rootNode.span!.text, 'SELECT * FROM foo');
   });
+
+  test('empty source', () {
+    final engine = SqlEngine();
+
+    for (final source in ['', '-- comment only']) {
+      final stmt = parseStatement(source);
+      expect(stmt, isA<InvalidStatement>());
+
+      final multiple = engine.parse(.multiple, source);
+      expect(multiple.errors, isEmpty);
+      expect(multiple.rootNode.statements, isEmpty);
+    }
+  });
 }

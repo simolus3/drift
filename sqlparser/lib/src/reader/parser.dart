@@ -186,9 +186,13 @@ extension Parser on ParserState {
   /// Parses a statement without throwing when there's a parsing error.
   Statement safeStatement() {
     final first = _peek;
-    return _parseAsStatement(statement, requireSemicolon: false) ??
-          InvalidStatement()
-      ..setSpan(first, _previous);
+    final stmt =
+        _parseAsStatement(_statement, requireSemicolon: false) ??
+        InvalidStatement();
+    if (tokens.lastConsumedToken case final last?) {
+      stmt.setSpan(first, last);
+    }
+    return stmt;
   }
 
   SemicolonSeparatedStatements safeStatements() {
@@ -196,7 +200,19 @@ extension Parser on ParserState {
     final statements = <Statement>[];
     while (!_isAtEnd) {
       final firstForStatement = _peek;
-      final statement = _parseAsStatement(_statementWithoutSemicolon);
+      final statement = _parseAsStatement(() {
+        final withoutSemicolon = _statementWithoutSemicolon();
+        if (withoutSemicolon == null) {
+          if (_check(TokenType.semicolon)) {
+            // Empty statement
+            return InvalidStatement();
+          } else {
+            _error('Expected a statement to begin here');
+          }
+        }
+
+        return withoutSemicolon;
+      });
 
       if (statement != null) {
         statements.add(statement);
@@ -207,7 +223,11 @@ extension Parser on ParserState {
       }
     }
 
-    return SemicolonSeparatedStatements(statements)..setSpan(first, _previous);
+    final stmts = SemicolonSeparatedStatements(statements);
+    if (tokens.lastConsumedToken case final last?) {
+      stmts.setSpan(first, last);
+    }
+    return stmts;
   }
 
   /// Parses the remaining input as column constraints.
@@ -225,7 +245,7 @@ extension Parser on ParserState {
     return constraints;
   }
 
-  Statement _statementWithoutSemicolon() {
+  Statement? _statementWithoutSemicolon() {
     if (_checkAny(const [
       TokenType.$with,
       TokenType.select,
@@ -298,21 +318,30 @@ extension Parser on ParserState {
       }
     }
 
-    _error('Expected a sql statement to start here');
+    return null;
   }
 
-  Statement statement() {
+  Statement _statement() {
     final first = _peek;
-    final stmt = _statementWithoutSemicolon();
+    final parsed = _statementWithoutSemicolon();
+    final stmt = parsed ?? InvalidStatement();
 
     if (_matchOne(TokenType.semicolon)) {
       stmt.semicolon = _previous;
     }
 
     if (!_isAtEnd) {
-      _error('Expected the statement to finish here');
+      _error(
+        parsed == null
+            ? 'Expected a statement here'
+            : 'Expected the statement to finish here',
+      );
     }
-    return stmt..setSpan(first, _previous);
+
+    if (tokens.lastConsumedToken case final last?) {
+      stmt.setSpan(first, last);
+    }
+    return stmt;
   }
 
   DriftFile driftFile() {
@@ -500,7 +529,7 @@ extension Parser on ParserState {
   /// Invokes [parser], sets the appropriate source span and attaches a
   /// semicolon if one exists.
   T? _parseAsStatement<T extends Statement>(
-    T? Function() parser, {
+    T Function() parser, {
     bool requireSemicolon = true,
   }) {
     final first = _peek;
@@ -531,12 +560,18 @@ extension Parser on ParserState {
     final stmts = <CrudStatement>[];
 
     while (!reachedEnd()) {
-      final stmt = _parseAsStatement(_crud);
+      final stmt = _parseAsStatement(() {
+        final stmt = _crud();
+        if (stmt == null) {
+          _error(
+            'Invalid statement, expected SELECT, INSERT, UPDATE or DELETE.',
+          );
+        }
+        return stmt;
+      });
 
       if (stmt != null) {
         stmts.add(stmt);
-      } else {
-        _error('Invalid statement, expected SELECT, INSERT, UPDATE or DELETE.');
       }
     }
 
