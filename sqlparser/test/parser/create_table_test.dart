@@ -270,6 +270,21 @@ void main() {
     );
   });
 
+  test('does not split CREATE VIRTUAL TABLE arguments on nested commas', () {
+    testStatement(
+      'CREATE VIRTUAL TABLE foo USING bar(a(b, c), d, e(f(g, h), i))',
+      CreateVirtualTableStatement(
+        tableName: 'foo',
+        moduleName: 'bar',
+        arguments: [
+          fakeSpan('a(b, c)'),
+          fakeSpan('d'),
+          fakeSpan('e(f(g, h), i)'),
+        ],
+      ),
+    );
+  });
+
   test('parses CREATE VIRTUAL TABLE statement without args', () {
     testStatement(
       'CREATE VIRTUAL TABLE foo USING bar;',
@@ -352,5 +367,15 @@ void main() {
         ],
       ),
     );
+  });
+
+  test('unclosed virtual table', () {
+    final engine = SqlEngine();
+
+    final a = engine.parse(.statement, 'CREATE VIRTUAL TABLE t USING m(a');
+    expect(a.errors, [isParsingError(message: 'Expected closing parenthesis')]);
+
+    final b = engine.parse(.statement, 'CREATE VIRTUAL TABLE t USING m(;');
+    expect(b.errors, [isParsingError(message: 'Expected closing parenthesis')]);
   });
 }

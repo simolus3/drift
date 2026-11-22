@@ -1969,7 +1969,7 @@ extension Parser on ParserState {
 
     if (_matchOne(TokenType.leftParen)) {
       // args can be just about anything, so we accept any token until the right
-      // parenthesis closing it of.
+      // parenthesis closing it.
       Token? currentStart;
       var levelOfParens = 0;
 
@@ -1982,16 +1982,25 @@ extension Parser on ParserState {
         }
       }
 
+      bool atArgumentsEnd() =>
+          _isAtEnd || _peek.type == TokenType.semicolon;
+
       for (;;) {
-        // begin reading a single argument, which is stopped by a comma or
-        // maybe with a ), if the current depth is one
+        // begin reading a single argument, which is stopped by a comma at the
+        // top level or maybe with a ), if the current depth is one
         while (_peek.type != TokenType.rightParen &&
-            _peek.type != TokenType.comma) {
+            (_peek.type != TokenType.comma || levelOfParens > 0) &&
+            !atArgumentsEnd()) {
           _advance();
           if (_previous.type == TokenType.leftParen) {
             levelOfParens++;
           }
           currentStart ??= _previous;
+        }
+
+        if (atArgumentsEnd()) {
+          // The statement ended before the argument list was closed.
+          _error('Expected closing parenthesis');
         }
 
         // if we just read the last ) of the argument list, finish. Otherwise
