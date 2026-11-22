@@ -397,6 +397,71 @@ void main() {
       );
       expect(type, const ResolvedType(type: BasicType.text));
     });
+
+    group('nullability', () {
+      // SQLite returns NULL when no WHEN branch matches and there is no ELSE.
+      const nonNull = ResolvedType(type: BasicType.text);
+      const nullable = ResolvedType(type: BasicType.text, nullable: true);
+
+      test('without ELSE is nullable', () {
+        final type = resolveResultColumn(
+          'SELECT CASE WHEN id > 1 THEN content END FROM demo;',
+        );
+        expect(type, nullable);
+      });
+
+      test('with a non-null ELSE stays non-nullable', () {
+        final type = resolveResultColumn(
+          "SELECT CASE WHEN id > 1 THEN content ELSE 'x' END FROM demo;",
+        );
+        expect(type, nonNull);
+      });
+
+      test('with ELSE NULL is nullable', () {
+        final type = resolveResultColumn(
+          'SELECT CASE WHEN id > 1 THEN content ELSE NULL END FROM demo;',
+        );
+        expect(type, nullable);
+      });
+
+      test('with a nullable THEN is nullable', () {
+        final type = resolveResultColumn(
+          "SELECT CASE WHEN id > 1 THEN NULLIF(content, 'a') ELSE 'x' END "
+          'FROM demo;',
+        );
+        expect(type, nullable);
+      });
+
+      test('with base expression and without ELSE is nullable', () {
+        final type = resolveResultColumn(
+          "SELECT CASE id WHEN 1 THEN 'a' END FROM demo;",
+        );
+        expect(type, nullable);
+      });
+
+      test('with base expression and ELSE stays non-nullable', () {
+        final type = resolveResultColumn(
+          "SELECT CASE id WHEN 1 THEN 'a' ELSE 'b' END FROM demo;",
+        );
+        expect(type, nonNull);
+      });
+
+      test('nested without ELSE in a THEN is nullable', () {
+        final type = resolveResultColumn(
+          'SELECT CASE WHEN id > 1 THEN '
+          "CASE WHEN id > 2 THEN 'a' END ELSE 'b' END FROM demo;",
+        );
+        expect(type, nullable);
+      });
+
+      test('nested without ELSE in the outer CASE is nullable', () {
+        final type = resolveResultColumn(
+          'SELECT CASE WHEN id > 1 THEN '
+          "CASE WHEN id > 2 THEN 'a' ELSE 'b' END END FROM demo;",
+        );
+        expect(type, nullable);
+      });
+    });
   });
 
   test('can select columns', () {

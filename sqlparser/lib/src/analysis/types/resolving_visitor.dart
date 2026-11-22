@@ -476,6 +476,11 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitCaseExpression(CaseExpression e, TypeExpectation arg) {
+    if (e.elseExpr == null) {
+      // No branch may match, in which case the expression evaluates to NULL.
+      session._hintNullability(e, true);
+    }
+
     session._addRelation(
       CopyEncapsulating(e, [
         for (final when in e.whens) when.then,
