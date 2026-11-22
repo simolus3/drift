@@ -621,12 +621,12 @@ class NumericToken extends Token {
 
   /// The hexadecimal digits of this token, or null if this token was not in
   /// hex notation.
-  String? hexDigits;
+  (String, int)? hexDigits;
 
   /// An exponent to the base of ten.
   ///
   /// For instance, `2E-2` has an [exponent] of `-2`.
-  final int? exponent;
+  final String? exponent;
 
   NumericToken(
     FileSpan span, {
@@ -636,8 +636,9 @@ class NumericToken extends Token {
     this.exponent,
   }) : super(TokenType.numberLiteral, span);
 
-  NumericToken.hexadecimal(FileSpan span, String this.hexDigits)
+  NumericToken.hexadecimal(FileSpan span, String hexDigits, int hexValue)
     : assert(hexDigits.isNotEmpty),
+      hexDigits = (hexDigits, hexValue),
       digitsBeforeDecimal = null,
       hasDecimalPoint = false,
       digitsAfterDecimal = null,
@@ -652,8 +653,8 @@ class NumericToken extends Token {
 
   /// The numeric literal represented by this token.
   num get parsedNumber {
-    if (hexDigits != null) {
-      return int.parse(hexDigits!, radix: 16);
+    if (hexDigits case (_, final value)?) {
+      return value;
     }
 
     if (isReal) {
@@ -663,7 +664,7 @@ class NumericToken extends Token {
       return double.parse(toString());
     }
 
-    return digitsBeforeDecimal != null ? int.parse(digitsBeforeDecimal!) : 0;
+    return digitsBeforeDecimal != null ? num.parse(digitsBeforeDecimal!) : 0;
   }
 
   @visibleForTesting
@@ -678,10 +679,10 @@ class NumericToken extends Token {
   @override
   String toString() {
     final buffer = StringBuffer();
-    if (hexDigits != null) {
+    if (hexDigits case (final digits, _)?) {
       buffer
         ..write('0x')
-        ..write(hexDigits);
+        ..write(digits);
     } else {
       if (digitsBeforeDecimal != null) {
         buffer.write(digitsBeforeDecimal);

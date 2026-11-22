@@ -346,9 +346,34 @@ class Scanner {
           return TokenizerError('Expected hex codes here', _currentLocation);
         }
 
+        final hexDigits = hexDigitsBuffer.toString();
+        // Like sqlite3, ignore leading zeroes and interpret the remaining
+        // digits as a 64-bit two's complement integer.
+        var firstSignificant = 0;
+        while (firstSignificant < hexDigits.length &&
+            hexDigits.codeUnitAt(firstSignificant) == $0) {
+          firstSignificant++;
+        }
+        final significantDigits = hexDigits.length - firstSignificant;
+        if (significantDigits > 16) {
+          return TokenizerError('Hex literal too big', _currentLocation);
+        }
+
+        // Fill the buffer from the end, starting with the least significant
+        // nibble.
+        final buffer = Uint8List(8);
+        for (var i = 0; i < significantDigits; i++) {
+          final nibble = interpretHexDigit(
+            hexDigits.codeUnitAt(hexDigits.length - 1 - i),
+          );
+          final byteIndex = 7 - i ~/ 2;
+          buffer[byteIndex] |= i.isEven ? nibble : nibble << 4;
+        }
+
         return NumericToken.hexadecimal(
           _currentSpan,
-          hexDigitsBuffer.toString(),
+          hexDigits,
+          buffer.buffer.asByteData().getInt64(0, Endian.big),
         );
       }
     }
@@ -407,7 +432,7 @@ class Scanner {
       }
     }
 
-    int? parsedExponent;
+    String? exponent;
 
     // ok, we've read the first part of the number. But there's more! If it's
     // not a hexadecimal number, it could be in scientific notation.
@@ -424,19 +449,14 @@ class Scanner {
 
       final char = _nextChar();
       if (isDigit(char)) {
-        final exponent = String.fromCharCode(char) + consumeDigits();
-        parsedExponent = int.parse(exponent);
+        exponent = String.fromCharCode(char) + consumeDigits();
       } else {
         if (char == $plus || char == $minus) {
           if (requireDigit('Expected digits for the exponent')
               case final error?) {
             return error;
           }
-          final exponent = consumeDigits();
-
-          parsedExponent = char == $plus
-              ? int.parse(exponent)
-              : -int.parse(exponent);
+          exponent = char == $plus ? consumeDigits() : '-${consumeDigits()}';
         } else {
           return TokenizerError('Expected plus or minus', _currentLocation);
         }
@@ -448,7 +468,7 @@ class Scanner {
       digitsBeforeDecimal: beforeDecimal,
       digitsAfterDecimal: afterDecimal,
       hasDecimalPoint: hasDecimal,
-      exponent: parsedExponent,
+      exponent: exponent,
     );
   }
 

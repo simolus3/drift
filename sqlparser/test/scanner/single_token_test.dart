@@ -160,17 +160,54 @@ void main() {
     test('hexadecimal', () {
       checkLiteral(
         '0x123',
-        NumericToken.hexadecimal(defaultSpan, '123'),
+        NumericToken.hexadecimal(defaultSpan, '123', 0x123),
         0x123,
       );
       checkLiteral(
         '0x12_34',
-        NumericToken.hexadecimal(defaultSpan, '1234'),
+        NumericToken.hexadecimal(defaultSpan, '1234', 0x1234),
         0x1234,
+      );
+      checkLiteral(
+        '0xaBcDeF',
+        NumericToken.hexadecimal(defaultSpan, 'aBcDeF', 0xabcdef),
+        0xabcdef,
+      );
+      checkLiteral(
+        '0x7FFFFFFFFFFFFFFF',
+        NumericToken.hexadecimal(
+          defaultSpan,
+          '7FFFFFFFFFFFFFFF',
+          0x7FFFFFFFFFFFFFFF,
+        ),
+        0x7FFFFFFFFFFFFFFF,
+      );
+      checkLiteral(
+        '0xFFFFFFFFFFFFFFFF',
+        NumericToken.hexadecimal(defaultSpan, 'FFFFFFFFFFFFFFFF', -1),
+        -1,
+      );
+      checkLiteral(
+        '0x8000000000000000',
+        NumericToken.hexadecimal(
+          defaultSpan,
+          '8000000000000000',
+          -9223372036854775808,
+        ),
+        -9223372036854775808,
+      );
+      checkLiteral(
+        '0x00000000000000000001',
+        NumericToken.hexadecimal(defaultSpan, '00000000000000000001', 1),
+        1,
       );
 
       expect(
         () => SqlEngine().tokenizeString('0x'),
+        throwsA(isA<CumulatedTokenizerException>()),
+      );
+      expect(
+        () => SqlEngine().tokenizeString('0x10000000000000000'),
         throwsA(isA<CumulatedTokenizerException>()),
       );
     });
@@ -186,25 +223,41 @@ void main() {
         NumericToken(defaultSpan, digitsBeforeDecimal: '42'),
         42,
       );
+
+      checkLiteral(
+        '9223372036854775808',
+        NumericToken(defaultSpan, digitsBeforeDecimal: '9223372036854775808'),
+        9223372036854775808.0,
+      );
     });
 
     test('integer, positive exponent', () {
       checkLiteral(
         '42E1',
-        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: 1),
+        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: '1'),
         420,
+      );
+
+      checkLiteral(
+        '1e99999999999999999999',
+        NumericToken(
+          defaultSpan,
+          digitsBeforeDecimal: '1',
+          exponent: '99999999999999999999',
+        ),
+        double.infinity,
       );
     });
 
     test('integer, negative exponent', () {
       checkLiteral(
         '42E-1',
-        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -1),
+        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: '-1'),
         4.2,
       );
       checkLiteral(
         '42E-1_0',
-        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: -10),
+        NumericToken(defaultSpan, digitsBeforeDecimal: '42', exponent: '-10'),
         4.2e-9,
       );
     });
@@ -295,7 +348,7 @@ void main() {
         NumericToken(
           defaultSpan,
           digitsBeforeDecimal: '4',
-          exponent: 2,
+          exponent: '2',
           hasDecimalPoint: true,
         ),
         400.0,

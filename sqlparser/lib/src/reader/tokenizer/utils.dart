@@ -10,6 +10,15 @@ bool isHexDigit(int charCode) {
       ($0 <= charCode && charCode <= $9);
 }
 
+int interpretHexDigit(int charCode) {
+  return switch (charCode) {
+    >= $a && <= $f => 10 + charCode - $a,
+    >= $A && <= $F => 10 + charCode - $A,
+    >= $0 && <= $9 => charCode - $0,
+    _ => throw ArgumentError(),
+  };
+}
+
 bool canStartIdentifier(int charCode) {
   return charCode == $_ ||
       ($a <= charCode && charCode <= $z) ||
