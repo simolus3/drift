@@ -376,6 +376,92 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
       ''');
       });
 
+      group('window frames', () {
+        WindowDefinition windowOf(String sql) {
+          final result = engine.parse(ParserEntrypoint.statement, sql);
+          expect(result.errors, isEmpty, reason: sql);
+          return result.rootNode.allDescendants
+              .whereType<WindowDefinition>()
+              .first;
+        }
+
+        test('are not written when the query had none', () {
+          const sql = 'SELECT sum(a) OVER (PARTITION BY b ORDER BY a) FROM t';
+          final printed = engine
+              .parse(ParserEntrypoint.statement, sql)
+              .rootNode
+              .toSql();
+
+          expect(printed, isNot(contains('RANGE')));
+          expect(windowOf(printed).frameSpec.synthetic, isTrue);
+          testFormat(sql);
+        });
+
+        test('are not written for a window extending a named window', () {
+          // With a frame written on `w`, SQLite rejects the query: "cannot
+          // override frame specification of window: w".
+          const sql =
+              'SELECT sum(a) OVER (w ORDER BY a) FROM t '
+              'WINDOW w AS (PARTITION BY b)';
+          final printed = engine
+              .parse(ParserEntrypoint.statement, sql)
+              .rootNode
+              .toSql();
+
+          expect(printed, isNot(contains('RANGE')));
+          expect(printed, isNot(contains('ROWS')));
+          expect(printed, isNot(contains('GROUPS')));
+          testFormat(sql);
+
+          for (final window
+              in engine
+                  .parse(ParserEntrypoint.statement, printed)
+                  .rootNode
+                  .allDescendants
+                  .whereType<WindowDefinition>()) {
+            expect(window.frameSpec.synthetic, isTrue);
+          }
+        });
+
+        test('are kept when written', () {
+          const sql =
+              'SELECT sum(a) OVER (ORDER BY a ROWS BETWEEN 1 PRECEDING AND '
+              'CURRENT ROW) FROM t';
+          final printed = engine
+              .parse(ParserEntrypoint.statement, sql)
+              .rootNode
+              .toSql();
+
+          expect(printed, contains('ROWS'));
+          expect(windowOf(printed).frameSpec.synthetic, isFalse);
+          testFormat(sql);
+        });
+
+        test('are kept when written like the default', () {
+          const sql =
+              'SELECT sum(a) OVER (ORDER BY a RANGE BETWEEN UNBOUNDED '
+              'PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS) FROM t';
+          final printed = engine
+              .parse(ParserEntrypoint.statement, sql)
+              .rootNode
+              .toSql();
+
+          expect(printed, contains('RANGE'));
+          expect(windowOf(printed).frameSpec.synthetic, isFalse);
+          testFormat(sql);
+        });
+
+        test('references to a named window and empty windows', () {
+          const named =
+              'SELECT sum(a) OVER w FROM t WINDOW w AS (PARTITION BY b)';
+          testFormat(named, expectedOutput: named);
+          testFormat(
+            'SELECT sum(a) OVER () FROM t',
+            expectedOutput: 'SELECT sum(a) OVER () FROM t',
+          );
+        });
+      });
+
       test('aggregate', () {
         testFormat('''
           SELECT
