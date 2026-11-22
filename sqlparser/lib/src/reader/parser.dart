@@ -1030,16 +1030,16 @@ extension Parser on ParserState {
 
   Queryable? _from() {
     if (!_matchOne(TokenType.from)) return null;
+    return _queryable();
+  }
 
-    // Can either be a list of <TableOrSubquery> or a join. Joins also start
-    // with a TableOrSubquery, so let's first parse that.
+  Queryable _queryable() {
     final start = _tableOrSubquery();
-
     // parse join, if there is one
     return _joinClause(start) ?? start;
   }
 
-  TableOrSubquery _tableOrSubquery({bool allowAlias = true}) {
+  Queryable _tableOrSubquery({bool allowAlias = true}) {
     // this is what we're parsing: https://www.sqlite.org/syntax/table-or-subquery.html
     // we currently only support regular tables, table functions and nested
     // selects
@@ -1063,15 +1063,22 @@ extension Parser on ParserState {
       return tableRef;
     } else if (_matchOne(TokenType.leftParen)) {
       final first = _previous;
-      final innerStmt = _fullSelect()!;
-      _consume(
-        TokenType.rightParen,
-        'Expected a right bracket to terminate the inner select',
-      );
+      Queryable source;
 
-      final alias = allowAlias ? _as() : null;
-      return SelectStatementAsSource(statement: innerStmt, as: alias)
-        ..setSpan(first, _previous);
+      if (_fullSelect() case final subquery?) {
+        _consume(
+          TokenType.rightParen,
+          'Expected a right bracket to terminate the inner select',
+        );
+
+        final alias = allowAlias ? _as() : null;
+        source = SelectStatementAsSource(statement: subquery, as: alias);
+      } else {
+        source = _queryable();
+        _consume(TokenType.rightParen);
+      }
+
+      return source..setSpan(first, _previous);
     }
 
     _error('Expected a table name or a nested select statement');
@@ -1085,7 +1092,7 @@ extension Parser on ParserState {
     return null;
   }
 
-  JoinClause? _joinClause(TableOrSubquery start) {
+  JoinClause? _joinClause(Queryable start) {
     var operator = _optionalJoinOperator();
     if (operator == null) {
       return null;

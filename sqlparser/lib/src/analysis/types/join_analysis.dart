@@ -124,7 +124,7 @@ class _FindNonNullableJoins extends RecursiveVisitor<bool, void> {
     if (!arg) return;
 
     // All joined result sets and whether they're required to be non-nullable.
-    final joins = <(TableOrSubquery, bool)>[(e.primary, true)];
+    final joins = <(Queryable, bool)>[(e.primary, true)];
     for (final additional in e.joins) {
       final operator = additional.operator.operator;
       if (operator case JoinOperatorKind.right || JoinOperatorKind.full) {

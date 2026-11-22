@@ -12,38 +12,49 @@ void _enforceFrom(SelectStatement stmt, Queryable expected) {
 void main() {
   group('from', () {
     test('a simple table', () {
-      final stmt =
-          SqlEngine()
-                  .parse(ParserEntrypoint.statement, 'SELECT * FROM tbl')
-                  .rootNode
-              as SelectStatement;
+      final stmt = parseStatement('SELECT * FROM tbl') as SelectStatement;
 
       _enforceFrom(stmt, TableReference('tbl'));
     });
 
     test('schema name and alias', () {
       final stmt =
-          SqlEngine()
-                  .parse(
-                    ParserEntrypoint.statement,
-                    'SELECT * FROM main.tbl foo',
-                  )
-                  .rootNode
-              as SelectStatement;
+          parseStatement('SELECT * FROM main.tbl foo') as SelectStatement;
       _enforceFrom(
         stmt,
         TableReference('tbl', schemaName: 'main', as: AliasClause('foo')),
       );
     });
 
+    test('parenthesized table', () {
+      final stmt = parseStatement('SELECT * FROM (t)') as SelectStatement;
+      _enforceFrom(stmt, TableReference('t'));
+    });
+
+    test('parenthesized join', () {
+      final stmt =
+          parseStatement('SELECT * FROM (t1 JOIN t2) JOIN ((t3))')
+              as SelectStatement;
+      _enforceFrom(
+        stmt,
+
+        JoinClause(
+          primary: JoinClause(
+            primary: TableReference('t1'),
+            joins: [
+              Join(operator: JoinOperator(.none), query: TableReference('t2')),
+            ],
+          ),
+          joins: [
+            Join(operator: JoinOperator(.none), query: TableReference('t3')),
+          ],
+        ),
+      );
+    });
+
     test('from more than one table', () {
       final stmt =
-          SqlEngine()
-                  .parse(
-                    ParserEntrypoint.statement,
-                    'SELECT * FROM tbl AS test, table2',
-                  )
-                  .rootNode
+          parseStatement('SELECT * FROM tbl AS test, table2')
               as SelectStatement;
 
       _enforceFrom(
@@ -62,12 +73,7 @@ void main() {
 
     test('more than one table with ON constraint', () {
       final stmt =
-          SqlEngine()
-                  .parse(
-                    ParserEntrypoint.statement,
-                    'SELECT * FROM tbl AS test, table2 ON TRUE',
-                  )
-                  .rootNode
+          parseStatement('SELECT * FROM tbl AS test, table2 ON TRUE')
               as SelectStatement;
 
       _enforceFrom(
@@ -87,12 +93,9 @@ void main() {
 
     test('inner select statements', () {
       final stmt =
-          SqlEngine()
-                  .parse(
-                    ParserEntrypoint.statement,
-                    'SELECT * FROM table1, (SELECT * FROM table2 WHERE a) as "inner"',
-                  )
-                  .rootNode
+          parseStatement(
+                'SELECT * FROM table1, (SELECT * FROM table2 WHERE a) as "inner"',
+              )
               as SelectStatement;
 
       _enforceFrom(
@@ -118,13 +121,10 @@ void main() {
 
     test('inner compound select statements', () {
       final stmt =
-          SqlEngine()
-                  .parse(
-                    ParserEntrypoint.statement,
-                    'SELECT SUM(*) FROM (SELECT COUNT(*) FROM table1 UNION ALL '
-                    'SELECT COUNT(*) from table2)',
-                  )
-                  .rootNode
+          parseStatement(
+                'SELECT SUM(*) FROM (SELECT COUNT(*) FROM table1 UNION ALL '
+                'SELECT COUNT(*) from table2)',
+              )
               as SelectStatement;
 
       final countStar = ExpressionResultColumn(
@@ -158,14 +158,11 @@ void main() {
 
     test('from a join', () {
       final stmt =
-          SqlEngine()
-                  .parse(
-                    ParserEntrypoint.statement,
-                    'SELECT * FROM table1 '
-                    'INNER JOIN table2 USING (test) '
-                    'LEFT OUTER JOIN table3 ON TRUE',
-                  )
-                  .rootNode
+          parseStatement(
+                'SELECT * FROM table1 '
+                'INNER JOIN table2 USING (test) '
+                'LEFT OUTER JOIN table3 ON TRUE',
+              )
               as SelectStatement;
 
       _enforceFrom(

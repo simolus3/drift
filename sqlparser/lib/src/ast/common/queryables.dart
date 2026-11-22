@@ -80,7 +80,7 @@ class SelectStatementAsSource extends TableOrSubquery implements Renamable {
 
 /// https://www.sqlite.org/syntax/join-clause.html
 class JoinClause extends Queryable {
-  TableOrSubquery primary;
+  Queryable primary;
   List<Join> joins;
 
   JoinClause({required this.primary, required this.joins});
@@ -147,7 +147,7 @@ class JoinOperator extends AstNode {
 
 class Join extends AstNode {
   JoinOperator operator;
-  TableOrSubquery query;
+  Queryable query;
   final JoinConstraint? constraint;
 
   Join({required this.operator, required this.query, this.constraint});

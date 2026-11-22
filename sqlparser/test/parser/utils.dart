@@ -37,14 +37,18 @@ void testDriftFile(String driftFile, DriftFile expected) {
 }
 
 void testStatement(String sql, AstNode expected, {bool driftMode = false}) {
+  final parsed = parseStatement(sql, driftMode: driftMode);
+  enforceHasSpan(parsed);
+  enforceEqual(parsed, expected);
+}
+
+Statement parseStatement(String sql, {bool driftMode = false}) {
   final result = SqlEngine(
     EngineOptions(driftOptions: driftMode ? const DriftSqlOptions() : null),
   ).parse(ParserEntrypoint.statement, sql);
   expect(result.errors, isEmpty);
 
-  final parsed = result.rootNode;
-  enforceHasSpan(parsed);
-  enforceEqual(parsed, expected);
+  return result.rootNode;
 }
 
 void expectParseError(
