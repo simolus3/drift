@@ -9,19 +9,6 @@ import 'recovery.dart';
 import 'tokenizer/token.dart';
 import 'tokenizer/token_source.dart';
 
-const _comparisonOperators = [
-  TokenType.less,
-  TokenType.lessEqual,
-  TokenType.more,
-  TokenType.moreEqual,
-];
-const _binaryOperators = [
-  TokenType.shiftLeft,
-  TokenType.shiftRight,
-  TokenType.ampersand,
-  TokenType.pipe,
-];
-
 class ParsingError implements Exception {
   final Token token;
   final String message;
@@ -116,13 +103,6 @@ extension Parser on ParserState {
     if (_check(type)) return true;
     final (peek, next) = tokens.keywordLookahead2();
     return peek.type == TokenType.not && next?.type == type;
-  }
-
-  /// Like [_checkWithNot], but with more than one token type.
-  bool _checkAnyWithNot(List<TokenType> types) {
-    if (types.any(_check)) return true;
-    final (peek, next) = tokens.keywordLookahead2();
-    return peek.type == TokenType.not && types.contains(next?.type);
   }
 
   bool _check(TokenType type) {
@@ -604,7 +584,7 @@ extension Parser on ParserState {
 
   Expression expression() {
     final subParser = _ExpressionParser(this);
-    return subParser._or();
+    return subParser._fullExpression();
   }
 
   Literal? _literalOrNull() {
@@ -1802,7 +1782,7 @@ extension Parser on ParserState {
         optional: optional,
       );
       try {
-        expr = parser._or();
+        expr = parser._fullExpression();
       } on _ParsedResultColumn catch (e) {
         return e._resultColumn;
       } on _NoExpressionFound {
@@ -2961,233 +2941,172 @@ final class _ExpressionParser extends ParserState {
     this.optional = false,
   }) : super.fromParent();
 
-  /// Parses an expression of the form `a <T> b`, where `<T>` is in [types] and
-  /// both a and b are expressions with a higher precedence parsed from
-  /// [higherPrecedence].
-  Expression _parseSimpleBinary(
-    List<TokenType> types,
-    Expression Function() higherPrecedence,
-  ) {
-    var expression = higherPrecedence();
+  Expression _fullExpression() => _expressionWithPrecedence(_Precedence.or);
 
-    while (_match(types)) {
-      final operator = _previous;
-      final right = higherPrecedence();
-      expression = BinaryExpression(expression, operator, right)
-        ..setSpan(expression.first!, _previous);
-    }
-    return expression;
-  }
-
-  Expression _or() => _parseSimpleBinary(const [TokenType.or], _and);
-  Expression _and() => _parseSimpleBinary(const [TokenType.and], _not);
-
-  Expression _not() {
-    if (_matchOne(TokenType.not)) {
-      return _notOperand(_previous);
-    }
-
-    return _in();
-  }
-
-  /// Parses the operand of a `NOT` [operator] that has already been consumed.
-  Expression _notOperand(Token operator) {
-    final expression = _not();
-    return UnaryExpression(operator, expression)
-      ..setSpan(operator, expression.last!);
-  }
-
-  Expression _in() {
-    final left = _equals();
-
-    if (_checkWithNot(TokenType.$in)) {
-      final not = _matchOne(TokenType.not);
-      _matchOne(TokenType.$in);
-
-      InExpressionTarget inside;
-      if (_variableOrNull() case var variable?) {
-        inside = variable;
-      } else if (_check(TokenType.leftParen)) {
-        inside = _consumeTuple(orSubQuery: true) as InExpressionTarget;
-      } else {
-        final target = _tableOrSubquery(allowAlias: false);
-        // TableOrSubquery is either a table reference, a table-valued function,
-        // or a Subquery. We don't support subqueries, but they can't be parsed
-        // here because we would have entered the tuple case above.
-        assert(target is! SubQuery);
-        inside = target as InExpressionTarget;
-      }
-
-      return InExpression(left: left, inside: inside, not: not)
-        ..setSpan(left.first!, _previous);
-    }
-
-    return left;
-  }
-
-  /// Parses expressions with the "equals" precedence. This contains
-  /// comparisons, "IS (NOT) IN" expressions, between expressions, "like"
-  /// expressions and the `ISNULL` / `NOTNULL` / `NOT NULL` postfix operators.
-  Expression _equals() {
-    var expression = _comparison();
-    final first = expression.first;
-
-    const ops = [
-      TokenType.equal,
-      TokenType.doubleEqual,
-      TokenType.exclamationEqual,
-      TokenType.lessMore,
-      TokenType.$is,
-    ];
-    const stringOps = [
-      TokenType.like,
-      TokenType.glob,
-      TokenType.match,
-      TokenType.regexp,
-    ];
+  /// Parses an expression only containing operators with a precedence of at
+  /// least [minPrecedence] at the top level.
+  Expression _expressionWithPrecedence(_Precedence minPrecedence) {
+    var expression = _prefixOperatorOrOperand();
 
     for (;;) {
-      if (_checkWithNot(TokenType.between)) {
-        final not = _matchOne(TokenType.not);
-        _consume(TokenType.between, 'expected a BETWEEN');
-
-        final lower = _comparison();
-        _consume(TokenType.and, 'expected AND');
-        final upper = _comparison();
-
-        expression = BetweenExpression(
-          not: not,
-          check: expression,
-          lower: lower,
-          upper: upper,
-        )..setSpan(first!, _previous);
-      } else if (_match(ops)) {
-        final operator = _previous;
-        if (operator.type == TokenType.$is) {
-          final isToken = _previous;
-          final not = _matchOne(TokenType.not);
-          // Ansi sql `DISTINCT FROM` syntax introduced by sqlite 3.39
-          var distinctFrom = false;
-          Token? distinct, from;
-
-          if (_matchOne(TokenType.distinct)) {
-            distinct = _previous;
-            from = _consume(TokenType.from, 'Expected DISTINCT FROM');
-            distinctFrom = true;
-          }
-
-          expression =
-              IsExpression(
-                  not,
-                  expression,
-                  _comparison(),
-                  distinctFromSyntax: distinctFrom,
-                )
-                ..setSpan(first!, _previous)
-                ..$is = isToken
-                ..distinct = distinct
-                ..from = from;
-        } else {
-          expression = BinaryExpression(expression, operator, _comparison())
-            ..setSpan(first!, _previous);
-        }
-      } else if (_match(const [TokenType.isNull, TokenType.notNull])) {
-        expression = IsNullExpression(
-          expression,
-          _previous.type == TokenType.notNull,
-        )..setSpan(first!, _previous);
-      } else if (_checkWithNot(TokenType.$null)) {
-        // `x NOT NULL`, the two-token form of NOTNULL
-        _consume(TokenType.not);
-        _consume(TokenType.$null);
-        expression = IsNullExpression(expression, true)
-          ..setSpan(first!, _previous);
-      } else if (_checkAnyWithNot(stringOps)) {
-        final not = _matchOne(TokenType.not);
-        _match(stringOps); // will consume, existence was verified with check
-        final operator = _previous;
-
-        final right = _comparison();
-        Expression? escape;
-        if (_matchOne(TokenType.escape)) {
-          escape = _comparison();
-        }
-
-        expression = StringComparisonExpression(
-          not: not,
-          left: expression,
-          operator: operator,
-          right: right,
-          escape: escape,
-        )..setSpan(first!, _previous);
-      } else {
-        break; // no matching operator with this precedence was found
+      if (_reportAutoComplete) {
+        _suggestHintForTokens(const [
+          TokenType.or,
+          TokenType.and,
+          TokenType.not,
+          TokenType.$is,
+          TokenType.between,
+          TokenType.$in,
+          TokenType.match,
+          TokenType.like,
+          TokenType.regexp,
+          TokenType.glob,
+          TokenType.isNull,
+          TokenType.notNull,
+          TokenType.collate,
+        ]);
       }
+
+      final precedence = _Precedence.peekBinaryOrPostfixOperator(this);
+      if (precedence == null || precedence < minPrecedence) {
+        return expression;
+      }
+
+      expression = _infixOperator(expression, precedence);
+    }
+  }
+
+  /// Parses the binary or postfix operator with the given [precedence]
+  /// following the [left] expression.
+  Expression _infixOperator(Expression left, _Precedence precedence) {
+    final first = left.first!;
+
+    if (precedence == _Precedence.postgresqlCast) {
+      _advance(); // the :: token
+      final type = _typeName() ?? _error('Expected a type here');
+      return CastExpression(left, type.lexeme)..setSpan(first, type.last);
     }
 
-    return expression;
-  }
-
-  Expression _comparison() {
-    return _parseSimpleBinary(_comparisonOperators, _binaryOperation);
-  }
-
-  Expression _binaryOperation() {
-    return _parseSimpleBinary(_binaryOperators, _addition);
-  }
-
-  Expression _addition() {
-    return _parseSimpleBinary(const [
-      TokenType.plus,
-      TokenType.minus,
-    ], _multiplication);
-  }
-
-  Expression _multiplication() {
-    return _parseSimpleBinary(const [
-      TokenType.star,
-      TokenType.slash,
-      TokenType.percent,
-    ], _concatenation);
-  }
-
-  Expression _concatenation() {
-    return _parseSimpleBinary(const [
-      TokenType.doublePipe,
-      TokenType.dashRangle,
-      TokenType.dashRangleRangle,
-    ], _collate);
-  }
-
-  Expression _collate() {
-    var expression = _unary();
-    final first = expression.first;
-
-    while (_matchOne(TokenType.collate)) {
-      final collateOp = _previous;
+    if (precedence == _Precedence.collate) {
+      final collateOp = _advance();
       final collateFun =
           _consume(TokenType.identifier, 'Expected a collating sequence')
               as IdentifierToken;
-      expression = CollateExpression(
-        inner: expression,
+      return CollateExpression(
+        inner: left,
         operator: collateOp,
         collateFunction: collateFun,
-      )..setSpan(first ?? collateOp, _previous);
+      )..setSpan(first, _previous);
     }
 
-    return expression;
+    Expression rightOperand() {
+      return _expressionWithPrecedence(precedence.nextHigher);
+    }
+
+    if (precedence != _Precedence.equals) {
+      // All other operators are simple left-associative binary operators.
+      final operator = _advance();
+      final right = rightOperand();
+      return BinaryExpression(left, operator, right)..setSpan(first, _previous);
+    }
+
+    final not = _matchOne(TokenType.not);
+    final operator = _advance();
+
+    switch (operator.type) {
+      case TokenType.$in:
+        InExpressionTarget inside;
+        if (_variableOrNull() case var variable?) {
+          inside = variable;
+        } else if (_check(TokenType.leftParen)) {
+          inside = _consumeTuple(orSubQuery: true) as InExpressionTarget;
+        } else {
+          final target = _tableOrSubquery(allowAlias: false);
+          // TableOrSubquery is either a table reference, a table-valued
+          // function, or a Subquery. We don't support subqueries, but they
+          // can't be parsed here because we would have entered the tuple case
+          // above.
+          assert(target is! SubQuery);
+          inside = target as InExpressionTarget;
+        }
+
+        return InExpression(left: left, inside: inside, not: not)
+          ..setSpan(first, _previous);
+      case TokenType.between:
+        final lower = _expressionWithPrecedence(_Precedence.not);
+        _consume(TokenType.and, 'expected AND');
+        final upper = rightOperand();
+
+        return BetweenExpression(
+          not: not,
+          check: left,
+          lower: lower,
+          upper: upper,
+        )..setSpan(first, _previous);
+      case TokenType.$is:
+        final not = _matchOne(TokenType.not);
+        // Ansi sql `DISTINCT FROM` syntax introduced by sqlite 3.39
+        var distinctFrom = false;
+        Token? distinct, from;
+
+        if (_matchOne(TokenType.distinct)) {
+          distinct = _previous;
+          from = _consume(TokenType.from, 'Expected DISTINCT FROM');
+          distinctFrom = true;
+        }
+
+        return IsExpression(
+            not,
+            left,
+            rightOperand(),
+            distinctFromSyntax: distinctFrom,
+          )
+          ..setSpan(first, _previous)
+          ..$is = operator
+          ..distinct = distinct
+          ..from = from;
+      case TokenType.isNull:
+        return IsNullExpression(left)..setSpan(first, _previous);
+      case TokenType.notNull:
+      // `x NOT NULL`, the two-token form of NOTNULL
+      case TokenType.$null:
+        return IsNullExpression(left, true)..setSpan(first, _previous);
+      case TokenType.like ||
+          TokenType.glob ||
+          TokenType.match ||
+          TokenType.regexp:
+        final right = rightOperand();
+        Expression? escape;
+        if (_matchOne(TokenType.escape)) {
+          escape = rightOperand();
+        }
+
+        return StringComparisonExpression(
+          not: not,
+          left: left,
+          operator: operator,
+          right: right,
+          escape: escape,
+        )..setSpan(first, _previous);
+      default:
+        // Remaining operators (`=`, `==`, `!=`, `<>`) are binary operators.
+        assert(!not);
+        return BinaryExpression(left, operator, rightOperand())
+          ..setSpan(first, _previous);
+    }
   }
 
-  Expression _unary() {
-    if (_matchOne(TokenType.not)) {
-      return _notOperand(_previous);
-    } else if (_match(const [
+  Expression _prefixOperatorOrOperand() {
+    if (_match(const [
+      TokenType.not,
       TokenType.minus,
       TokenType.plus,
       TokenType.tilde,
     ])) {
       final operator = _previous;
-      final expression = _unary();
+      final expression = _expressionWithPrecedence(
+        operator.type == TokenType.not ? _Precedence.not : _Precedence.unary,
+      );
       return UnaryExpression(operator, expression)
         ..setSpan(operator, expression.last!);
     } else if (_matchOne(TokenType.exists)) {
@@ -3205,21 +3124,7 @@ final class _ExpressionParser extends ParserState {
         ..setSpan(existsToken, _previous);
     }
 
-    return _postgresqlCast();
-  }
-
-  Expression _postgresqlCast() {
-    final expression = _prefix();
-
-    // The `::` token for PostgreSQL-style casts is only scanned with
-    // compatibility options, so we don't need a check here.
-    if (_matchOne(TokenType.colonColon)) {
-      final type = _typeName() ?? _error('Expected a type here');
-      return CastExpression(expression, type.lexeme)
-        ..setSpan(expression.first!, type.last);
-    }
-
-    return expression;
+    return _prefix();
   }
 
   Expression _prefix() {
@@ -3233,7 +3138,7 @@ final class _ExpressionParser extends ParserState {
       while (_matchOne(TokenType.when)) {
         final whenToken = _previous;
 
-        final whenExpr = _or();
+        final whenExpr = _fullExpression();
         _consume(TokenType.then, 'Expected THEN');
         final then = expression();
         whens.add(
@@ -3522,6 +3427,85 @@ final class _ExpressionParser extends ParserState {
         ..setSpan(name, _previous)
         ..schemaNameToken = schemaName;
     }
+  }
+}
+
+/// Operator precedence, as defined in https://sqlite.org/lang_expr.html#operators_and_parse_affecting_attributes.
+enum _Precedence implements Comparable<_Precedence> {
+  or,
+  and,
+  not,
+  equals,
+  comparison,
+  bitwise,
+  addition,
+  multiplication,
+  concatenation,
+  collate,
+  unary,
+  postgresqlCast;
+
+  @override
+  int compareTo(_Precedence other) {
+    return index.compareTo(other.index);
+  }
+
+  bool operator <(_Precedence other) {
+    return index < other.index;
+  }
+
+  _Precedence get nextHigher =>
+      this == postgresqlCast ? this : values[index + 1];
+
+  /// If the parser is at a token defining a binary or postfix operator, returns
+  /// its precedence.
+  static _Precedence? peekBinaryOrPostfixOperator(ParserState state) {
+    return switch (state._peek.type) {
+      TokenType.or => _Precedence.or,
+      TokenType.and => _Precedence.and,
+      TokenType.equal ||
+      TokenType.doubleEqual ||
+      TokenType.lessMore ||
+      TokenType.exclamationEqual ||
+      TokenType.$is ||
+      TokenType.between ||
+      TokenType.$in ||
+      TokenType.match ||
+      TokenType.like ||
+      TokenType.regexp ||
+      TokenType.glob ||
+      TokenType.isNull ||
+      TokenType.notNull => _Precedence.equals,
+      TokenType.not => switch (state.tokens.keywordLookahead2().$2?.type) {
+        TokenType.$in ||
+        TokenType.$null ||
+        TokenType.between ||
+        TokenType.match ||
+        TokenType.like ||
+        TokenType.regexp ||
+        TokenType.glob => _Precedence.equals,
+        _ => null,
+      },
+      TokenType.less ||
+      TokenType.more ||
+      TokenType.lessEqual ||
+      TokenType.moreEqual => _Precedence.comparison,
+      TokenType.ampersand ||
+      TokenType.pipe ||
+      TokenType.shiftLeft ||
+      TokenType.shiftRight => _Precedence.bitwise,
+      TokenType.plus || TokenType.minus => _Precedence.addition,
+      TokenType.star ||
+      TokenType.slash ||
+      TokenType.percent => _Precedence.multiplication,
+      TokenType.doublePipe ||
+      TokenType.dashRangle ||
+      TokenType.dashRangleRangle => _Precedence.concatenation,
+      TokenType.collate => _Precedence.collate,
+      // Only scanned with compatibility options PostgreSQL support enabled.
+      TokenType.colonColon => _Precedence.postgresqlCast,
+      _ => null,
+    };
   }
 }
 

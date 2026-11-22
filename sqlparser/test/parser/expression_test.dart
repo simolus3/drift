@@ -19,6 +19,26 @@ final Map<String, Expression> _testCases = {
     lower: NumericLiteral(31),
     upper: NumericLiteral(74),
   ),
+  '2 BETWEEN 1 = 1 AND 3 ISNULL': IsNullExpression(
+    BetweenExpression(
+      check: NumericLiteral(2),
+      lower: BinaryExpression(
+        NumericLiteral(1),
+        token(TokenType.equal),
+        NumericLiteral(1),
+      ),
+      upper: NumericLiteral(3),
+    ),
+  ),
+  'a BETWEEN b BETWEEN c AND d AND e': BetweenExpression(
+    check: Reference(columnName: 'a'),
+    lower: BetweenExpression(
+      check: Reference(columnName: 'b'),
+      lower: Reference(columnName: 'c'),
+      upper: Reference(columnName: 'd'),
+    ),
+    upper: Reference(columnName: 'e'),
+  ),
   '3 * 4 + 5 == COUNT(*)': BinaryExpression(
     BinaryExpression(
       BinaryExpression(
@@ -244,6 +264,49 @@ final Map<String, Expression> _testCases = {
     operator: token(TokenType.collate),
     collateFunction: token(TokenType.identifier),
   ),
+  '- NOT 1 ISNULL COLLATE y': UnaryExpression(
+    token(TokenType.minus),
+    UnaryExpression(
+      token(TokenType.not),
+      CollateExpression(
+        inner: IsNullExpression(NumericLiteral(1)),
+        operator: token(TokenType.collate),
+        collateFunction: token(TokenType.identifier),
+      ),
+    ),
+  ),
+  '- 1 ISNULL': IsNullExpression(
+    UnaryExpression(token(TokenType.minus), NumericLiteral(1)),
+  ),
+  '1 ISNULL + 2': BinaryExpression(
+    IsNullExpression(NumericLiteral(1)),
+    token(TokenType.plus),
+    NumericLiteral(2),
+  ),
+  'NOT 1 ISNULL + 3': UnaryExpression(
+    token(TokenType.not),
+    BinaryExpression(
+      IsNullExpression(NumericLiteral(1)),
+      token(TokenType.plus),
+      NumericLiteral(3),
+    ),
+  ),
+  'x IN (1) = 1': BinaryExpression(
+    InExpression(
+      left: Reference(columnName: 'x'),
+      inside: Tuple(expressions: [NumericLiteral(1)]),
+    ),
+    token(TokenType.equal),
+    NumericLiteral(1),
+  ),
+  '1 = 2 IN (3)': InExpression(
+    left: BinaryExpression(
+      NumericLiteral(1),
+      token(TokenType.equal),
+      NumericLiteral(2),
+    ),
+    inside: Tuple(expressions: [NumericLiteral(3)]),
+  ),
   'a COLLATE NOCASE ISNULL': IsNullExpression(
     CollateExpression(
       inner: Reference(columnName: 'a'),
@@ -288,6 +351,22 @@ final Map<String, Expression> _testCases = {
     Reference(columnName: 'foo'),
     Reference(columnName: 'bar'),
     distinctFromSyntax: true,
+  ),
+  // Reported in https://github.com/simolus3/drift/issues/3912
+  '?iSnUlL + null': BinaryExpression(
+    IsNullExpression(NumberedVariable(null)),
+    token(.plus),
+    NullLiteral(),
+  ),
+  '?iSnUlL coLlAtE x': CollateExpression(
+    operator: token(TokenType.collate),
+    inner: IsNullExpression(NumberedVariable(null)),
+    collateFunction: token(TokenType.identifier),
+  ),
+  'null beTwEeN ?iSnUlL and null': BetweenExpression(
+    check: NullLiteral(),
+    lower: IsNullExpression(NumberedVariable(null)),
+    upper: NullLiteral(),
   ),
 };
 
@@ -385,5 +464,22 @@ void main() {
         .rootNode;
     enforceHasSpan(parsed);
     enforceEqual(parsed, CastExpression(Reference(columnName: 'foo'), 'text'));
+
+    final chained = engine.parse(
+      ParserEntrypoint.expression,
+      '-foo::int::text',
+    );
+    expect(chained.errors, isEmpty);
+    enforceHasSpan(chained.rootNode);
+    enforceEqual(
+      chained.rootNode,
+      UnaryExpression(
+        token(TokenType.minus),
+        CastExpression(
+          CastExpression(Reference(columnName: 'foo'), 'int'),
+          'text',
+        ),
+      ),
+    );
   });
 }
