@@ -1982,8 +1982,7 @@ extension Parser on ParserState {
         }
       }
 
-      bool atArgumentsEnd() =>
-          _isAtEnd || _peek.type == TokenType.semicolon;
+      bool atArgumentsEnd() => _isAtEnd || _peek.type == TokenType.semicolon;
 
       for (;;) {
         // begin reading a single argument, which is stopped by a comma at the
@@ -2981,7 +2980,22 @@ final class _ExpressionParser extends ParserState {
   }
 
   Expression _or() => _parseSimpleBinary(const [TokenType.or], _and);
-  Expression _and() => _parseSimpleBinary(const [TokenType.and], _in);
+  Expression _and() => _parseSimpleBinary(const [TokenType.and], _not);
+
+  Expression _not() {
+    if (_matchOne(TokenType.not)) {
+      return _notOperand(_previous);
+    }
+
+    return _in();
+  }
+
+  /// Parses the operand of a `NOT` [operator] that has already been consumed.
+  Expression _notOperand(Token operator) {
+    final expression = _not();
+    return UnaryExpression(operator, expression)
+      ..setSpan(operator, expression.last!);
+  }
 
   Expression _in() {
     final left = _equals();
@@ -3012,8 +3026,8 @@ final class _ExpressionParser extends ParserState {
   }
 
   /// Parses expressions with the "equals" precedence. This contains
-  /// comparisons, "IS (NOT) IN" expressions, between expressions and "like"
-  /// expressions.
+  /// comparisons, "IS (NOT) IN" expressions, between expressions, "like"
+  /// expressions and the `ISNULL` / `NOTNULL` / `NOT NULL` postfix operators.
   Expression _equals() {
     var expression = _comparison();
     final first = expression.first;
@@ -3077,6 +3091,17 @@ final class _ExpressionParser extends ParserState {
           expression = BinaryExpression(expression, operator, _comparison())
             ..setSpan(first!, _previous);
         }
+      } else if (_match(const [TokenType.isNull, TokenType.notNull])) {
+        expression = IsNullExpression(
+          expression,
+          _previous.type == TokenType.notNull,
+        )..setSpan(first!, _previous);
+      } else if (_checkWithNot(TokenType.$null)) {
+        // `x NOT NULL`, the two-token form of NOTNULL
+        _consume(TokenType.not);
+        _consume(TokenType.$null);
+        expression = IsNullExpression(expression, true)
+          ..setSpan(first!, _previous);
       } else if (_checkAnyWithNot(stringOps)) {
         final not = _matchOne(TokenType.not);
         _match(stringOps); // will consume, existence was verified with check
@@ -3131,15 +3156,35 @@ final class _ExpressionParser extends ParserState {
       TokenType.doublePipe,
       TokenType.dashRangle,
       TokenType.dashRangleRangle,
-    ], _unary);
+    ], _collate);
+  }
+
+  Expression _collate() {
+    var expression = _unary();
+    final first = expression.first;
+
+    while (_matchOne(TokenType.collate)) {
+      final collateOp = _previous;
+      final collateFun =
+          _consume(TokenType.identifier, 'Expected a collating sequence')
+              as IdentifierToken;
+      expression = CollateExpression(
+        inner: expression,
+        operator: collateOp,
+        collateFunction: collateFun,
+      )..setSpan(first ?? collateOp, _previous);
+    }
+
+    return expression;
   }
 
   Expression _unary() {
-    if (_match(const [
+    if (_matchOne(TokenType.not)) {
+      return _notOperand(_previous);
+    } else if (_match(const [
       TokenType.minus,
       TokenType.plus,
       TokenType.tilde,
-      TokenType.not,
     ])) {
       final operator = _previous;
       final expression = _unary();
@@ -3160,51 +3205,18 @@ final class _ExpressionParser extends ParserState {
         ..setSpan(existsToken, _previous);
     }
 
-    return _postfix();
+    return _postgresqlCast();
   }
 
-  Expression _postfix() {
-    var expression = _prefix();
-    final firstToken = expression.first;
+  Expression _postgresqlCast() {
+    final expression = _prefix();
 
-    // todo we don't currently parse "NOT NULL" (2 tokens) because of ambiguity
-    // with NOT BETWEEN / NOT IN / ... expressions
-    const matchedTokens = [
-      TokenType.collate,
-      TokenType.notNull,
-      TokenType.isNull,
-      // `::` token for casts, this is only scanned with compatibility options.
-      TokenType.colonColon,
-    ];
-
-    while (_match(matchedTokens)) {
-      final operator = _previous;
-      switch (operator.type) {
-        case TokenType.collate:
-          final collateOp = _previous;
-          final collateFun =
-              _consume(TokenType.identifier, 'Expected a collating sequence')
-                  as IdentifierToken;
-          expression = CollateExpression(
-            inner: expression,
-            operator: collateOp,
-            collateFunction: collateFun,
-          );
-        case TokenType.isNull:
-          expression = IsNullExpression(expression);
-        case TokenType.notNull:
-          expression = IsNullExpression(expression, true);
-        case TokenType.colonColon:
-          final type = _typeName() ?? _error('Expected a type here');
-          final typeName = type.lexeme;
-
-          return CastExpression(expression, typeName)
-            ..setSpan(expression.first!, type.last);
-        default:
-          // we checked with _match, this may never happen
-          throw AssertionError();
-      }
-      expression.setSpan(firstToken ?? operator, _previous);
+    // The `::` token for PostgreSQL-style casts is only scanned with
+    // compatibility options, so we don't need a check here.
+    if (_matchOne(TokenType.colonColon)) {
+      final type = _typeName() ?? _error('Expected a type here');
+      return CastExpression(expression, type.lexeme)
+        ..setSpan(expression.first!, type.last);
     }
 
     return expression;

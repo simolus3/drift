@@ -104,6 +104,41 @@ final Map<String, Expression> _testCases = {
       ),
     ),
   ),
+  'NOT 1 = 2': UnaryExpression(
+    token(TokenType.not),
+    BinaryExpression(
+      NumericLiteral(1),
+      token(TokenType.equal),
+      NumericLiteral(2),
+    ),
+  ),
+  'NOT NOT x IN (1)': UnaryExpression(
+    token(TokenType.not),
+    UnaryExpression(
+      token(TokenType.not),
+      InExpression(
+        left: Reference(columnName: 'x'),
+        inside: Tuple(expressions: [NumericLiteral(1)]),
+      ),
+    ),
+  ),
+  'NOT a AND b': BinaryExpression(
+    UnaryExpression(token(TokenType.not), Reference(columnName: 'a')),
+    token(TokenType.and),
+    Reference(columnName: 'b'),
+  ),
+  '1 = NOT 2 + 3': BinaryExpression(
+    NumericLiteral(1),
+    token(TokenType.equal),
+    UnaryExpression(
+      token(TokenType.not),
+      BinaryExpression(
+        NumericLiteral(2),
+        token(TokenType.plus),
+        NumericLiteral(3),
+      ),
+    ),
+  ),
   '(SELECT x)': SubQuery(
     select: SelectStatement(
       columns: [ExpressionResultColumn(expression: Reference(columnName: 'x'))],
@@ -170,6 +205,52 @@ final Map<String, Expression> _testCases = {
   'CAST(1 AS)': CastExpression(NumericLiteral(1.0), ''),
   'foo ISNULL': IsNullExpression(Reference(columnName: 'foo')),
   'foo NOTNULL': IsNullExpression(Reference(columnName: 'foo'), true),
+  '1 + NULL ISNULL': IsNullExpression(
+    BinaryExpression(NumericLiteral(1), token(TokenType.plus), NullLiteral()),
+  ),
+  'a = b NOTNULL': IsNullExpression(
+    BinaryExpression(
+      Reference(columnName: 'a'),
+      token(TokenType.equal),
+      Reference(columnName: 'b'),
+    ),
+    true,
+  ),
+  'a ISNULL = 0': BinaryExpression(
+    IsNullExpression(Reference(columnName: 'a')),
+    token(TokenType.equal),
+    NumericLiteral(0),
+  ),
+  'a NOT NULL': IsNullExpression(Reference(columnName: 'a'), true),
+  '1 + NULL NOT NULL': IsNullExpression(
+    BinaryExpression(NumericLiteral(1), token(TokenType.plus), NullLiteral()),
+    true,
+  ),
+  'NOT a NOT NULL': UnaryExpression(
+    token(TokenType.not),
+    IsNullExpression(Reference(columnName: 'a'), true),
+  ),
+  "- 'a' COLLATE nocase": CollateExpression(
+    inner: UnaryExpression(token(TokenType.minus), StringLiteral('a')),
+    operator: token(TokenType.collate),
+    collateFunction: token(TokenType.identifier),
+  ),
+  "~ 'a' COLLATE x COLLATE y": CollateExpression(
+    inner: CollateExpression(
+      inner: UnaryExpression(token(TokenType.tilde), StringLiteral('a')),
+      operator: token(TokenType.collate),
+      collateFunction: token(TokenType.identifier),
+    ),
+    operator: token(TokenType.collate),
+    collateFunction: token(TokenType.identifier),
+  ),
+  'a COLLATE NOCASE ISNULL': IsNullExpression(
+    CollateExpression(
+      inner: Reference(columnName: 'a'),
+      operator: token(TokenType.collate),
+      collateFunction: token(TokenType.identifier),
+    ),
+  ),
   'CURRENT_TIME': TimeConstantLiteral(TimeConstantKind.currentTime),
   'CURRENT_TIMESTAMP': TimeConstantLiteral(TimeConstantKind.currentTimestamp),
   'CURRENT_DATE': TimeConstantLiteral(TimeConstantKind.currentDate),
