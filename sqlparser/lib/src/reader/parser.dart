@@ -3272,9 +3272,9 @@ final class _ExpressionParser extends ParserState {
       _consume(TokenType.leftParen, 'Expected opening parenthesis after CAST');
       final operand = expression();
       _consume(TokenType.as, 'Expected AS operator here');
-      final type = _typeName()!;
-      final typeName = type.lexeme;
-      _consume(TokenType.rightParen, 'Expected closing bracket here');
+      final type = _typeName();
+      final typeName = type?.lexeme ?? '';
+      _consume(TokenType.rightParen, 'Expected closing parenthesis here');
 
       return CastExpression(operand, typeName)..setSpan(first, _previous);
     } else if (_checkIdentifier()) {

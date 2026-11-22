@@ -167,6 +167,7 @@ final Map<String, Expression> _testCases = {
     ),
     'TEXT',
   ),
+  'CAST(1 AS)': CastExpression(NumericLiteral(1.0), ''),
   'foo ISNULL': IsNullExpression(Reference(columnName: 'foo')),
   'foo NOTNULL': IsNullExpression(Reference(columnName: 'foo'), true),
   'CURRENT_TIME': TimeConstantLiteral(TimeConstantKind.currentTime),

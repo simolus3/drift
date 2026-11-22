@@ -71,6 +71,16 @@ void main() {
       isParsingError(message: 'Expected a result column here.', span: 'FROM'),
     ]);
   });
+
+  test('cast syntax errors', () {
+    // Part of https://github.com/simolus3/drift/issues/3911, we used to crash.
+    expectError("SELECT CAST(1 AS 'text')", [
+      isParsingError(
+        message: contains('closing parenthesis here'),
+        span: "'text'",
+      ),
+    ]);
+  });
 }
 
 void expectError(String sql, errorsMatcher) {
