@@ -204,4 +204,34 @@ void main() {
       isEmpty,
     );
   });
+
+  test('two references to the same table keep their own prefetched rows', () {
+    // https://github.com/simolus3/drift/issues/3909
+    final first = MultiTypedResultKey.fromTable(
+      db.listing,
+      aliasName: 'store__id__listing__first',
+    );
+    final second = MultiTypedResultKey.fromTable(
+      db.listing,
+      aliasName: 'store__id__listing__second',
+    );
+    final sameAsFirst = MultiTypedResultKey.fromTable(
+      db.listing,
+      aliasName: 'store__id__listing__first',
+    );
+
+    expect(first, isNot(second));
+    expect(first, sameAsFirst);
+    expect(first.hashCode, sameAsFirst.hashCode);
+
+    const firstRows = [ListingData(id: 1, product: '1')];
+    const secondRows = [ListingData(id: 2, product: '2')];
+    final result = TypedResult({
+      first: firstRows,
+      second: secondRows,
+    }, QueryRow({}, db));
+
+    expect(result.readTable(first), firstRows);
+    expect(result.readTable(second), secondRows);
+  });
 }
