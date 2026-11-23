@@ -3,6 +3,8 @@ import 'package:sqlparser/src/utils/ast_equality.dart';
 import 'package:sqlparser/utils/node_to_text.dart';
 import 'package:test/test.dart';
 
+import '../parser/utils.dart';
+
 void main() {
   final engine = SqlEngine(
     EngineOptions(driftOptions: const DriftSqlOptions()),
@@ -761,6 +763,33 @@ COMMIT TRANSACTION;
     check(double.nan, 'NULL');
     check(double.infinity, '1e309');
     check(-double.infinity, '-1e309');
+  });
+
+  test('does not merge operators into comments', () {
+    UnaryExpression unary(TokenType type, Expression inner) {
+      return UnaryExpression(Token(type, fakeSpan('-')), inner);
+    }
+
+    expect(unary(TokenType.minus, NumericLiteral(-1)).toSql(), '- -1');
+    expect(
+      unary(TokenType.minus, NumericLiteral(double.negativeInfinity)).toSql(),
+      '- -1e309',
+    );
+    expect(
+      unary(TokenType.minus, unary(TokenType.minus, NumericLiteral(1))).toSql(),
+      '- -1',
+    );
+    expect(unary(TokenType.minus, NumericLiteral(1)).toSql(), '-1');
+    expect(
+      BinaryExpression(
+        Reference(columnName: 'a'),
+        Token(TokenType.minus, fakeSpan('-')),
+        NumericLiteral(-1),
+      ).toSql(),
+      'a - -1',
+    );
+
+    testFormat('- - - - - - -1', entrypoint: .expression);
   });
 
   test('does not format invalid statements', () {

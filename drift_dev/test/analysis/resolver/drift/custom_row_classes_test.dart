@@ -71,7 +71,7 @@ class ExistingForView {
       isA<SqlViewSource>().having(
         (e) => e.sqlCreateViewStmt,
         'sqlCreateViewStmt',
-        'CREATE VIEW existing_view (foo,bar) AS SELECT 1, 2;',
+        'CREATE VIEW existing_view (foo, bar) AS SELECT 1, 2;',
       ),
     );
   });

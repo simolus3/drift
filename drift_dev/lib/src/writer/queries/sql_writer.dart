@@ -126,21 +126,26 @@ final class SqlWriter extends NodeSqlBuilder {
 
   void _writeAnalyzedVariable(FoundVariable variable) {
     if (variable.isArray) {
-      _writeRawInSpaces('(\$${expandedName(variable)})');
+      openParen(attached: false);
+      _raw('\$${expandedName(variable)}', .word);
+      closeParen();
     } else {
       final mark = _isPostgres ? '\\\$' : '?';
       final syntax = dialect.supportsIndexedParameters
           ? '$mark${variable.index}'
           : mark;
 
-      _writeRawInSpaces(syntax);
+      _raw(syntax, .word);
     }
   }
 
-  void _writeRawInSpaces(String str) {
-    spaceIfNeeded();
-    _out.write(str);
-    needsSpace = true;
+  void _raw(String lexeme, FormattingToken kind) {
+    if (FormattingToken.needsSpaceBetween(lastToken, kind)) {
+      buffer.writeCharCode($space);
+    }
+
+    _out.write(lexeme);
+    lastToken = kind;
   }
 
   @override
@@ -169,11 +174,11 @@ final class SqlWriter extends NodeSqlBuilder {
 
     if (overriddenTypeName != null) {
       keyword(TokenType.cast);
-      symbol('(');
+      openParen(attached: true);
       visit(e.operand, arg);
       keyword(TokenType.as);
-      symbol(overriddenTypeName, spaceBefore: true);
-      symbol(')', spaceAfter: true);
+      symbol(overriddenTypeName, .word);
+      closeParen();
     } else {
       super.visitCastExpression(e, arg);
     }
@@ -250,11 +255,9 @@ final class SqlWriter extends NodeSqlBuilder {
       );
 
       if (options.drift3Preview) {
-        _writeRawInSpaces(
-          '\${${placeholderContextName(moorPlaceholder)}.buffer}',
-        );
+        _raw('\${${placeholderContextName(moorPlaceholder)}.buffer}', .word);
       } else {
-        _writeRawInSpaces('\${${placeholderContextName(moorPlaceholder)}.sql}');
+        _raw('\${${placeholderContextName(moorPlaceholder)}.sql}', .word);
       }
     } else if (e is NestedQueryColumn) {
       assert(
