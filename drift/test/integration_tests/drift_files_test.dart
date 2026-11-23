@@ -17,7 +17,7 @@ const _createWithDefaults =
 const _createWithConstraints =
     'CREATE TABLE IF NOT EXISTS "with_constraints" ('
     '"a" TEXT, "b" INTEGER NOT NULL, "c" REAL, '
-    'FOREIGN KEY(a, b)REFERENCES with_defaults(a, b)'
+    'FOREIGN KEY (a, b) REFERENCES with_defaults(a, b)'
     ');';
 
 const _createConfig =
@@ -33,8 +33,8 @@ const _createMyTable =
     '"sometext" TEXT, '
     '"is_inserting" INTEGER, '
     '"somedate" TEXT, '
-    'PRIMARY KEY(someid DESC), '
-    'UNIQUE(sometext, is_inserting)'
+    'PRIMARY KEY (someid DESC), '
+    'UNIQUE (sometext, is_inserting)'
     ');';
 
 const _createEmail =
@@ -44,7 +44,7 @@ const _createEmail =
 const _createMyTrigger =
     'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN '
     'INSERT INTO with_defaults '
-    'VALUES (new.config_key, LENGTH(new.config_value));'
+    'VALUES (new.config_key, LENGTH(new.config_value)); '
     'END';
 
 const _createValueIndex =
@@ -244,7 +244,7 @@ void main() {
 
     verify(
       mock.runSelect(
-        'SELECT config_key FROM config WHERE (TRUE) AND(sync_state = ?1 '
+        'SELECT config_key FROM config WHERE (TRUE) AND (sync_state = ?1 '
         'OR sync_state_implicit IN (?2, ?3))',
         [0, 1, 2],
       ),
