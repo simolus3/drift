@@ -155,6 +155,21 @@ void _nativePoolTests(bool useBackgroundIsolates) {
     await db.close();
   });
 
+  test('a closed session refuses a lease without an uncaught error', () async {
+    final session = (await _openPool(useBackgroundIsolates)).session;
+    await session.close();
+
+    await expectLater(
+      (session as DriftTransactionParent).begin(TransactionOptions()),
+      throwsStateError,
+    );
+    await expectLater(
+      (session as DriftSessionWithInternalLocks).exclusive(),
+      throwsStateError,
+    );
+    await pumpEventQueue();
+  });
+
   for (final mode in UpdateNotificationMode.values) {
     group('with update mode ${mode.name}', () {
       test('can watch changes from other isolate', () async {
