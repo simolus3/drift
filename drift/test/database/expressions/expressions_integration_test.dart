@@ -56,6 +56,13 @@ void main() {
       expect(eval(db.users.rowId, onTable: db.users), completion(1));
     });
 
+    test('negating a negative constant', () {
+      expect(eval(-const Constant<int>(-1)), completion(1));
+      expect(eval(-const Constant<double>(-1.5)), completion(1.5));
+      expect(eval(-Constant(BigInt.from(-1))), completion(BigInt.one));
+      expect(eval(-const Constant<int>(-1).dartCast<int>()), completion(1));
+    });
+
     group('aggregate', () {
       setUp(() => db.delete(db.users).go());
 

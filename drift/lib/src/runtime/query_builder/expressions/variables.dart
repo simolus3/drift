@@ -133,9 +133,10 @@ final class Constant<T extends Object> extends Expression<T> {
 
   @override
   void writeInto(GenerationContext context) {
-    return context.buffer.write(
-      BaseSqlType.mapToSqlLiteral(context, _customType, value),
-    );
+    final literal = BaseSqlType.mapToSqlLiteral(context, _customType, value);
+    // A space avoids writing `--` (an SQL comment) after a minus.
+    if (literal.startsWith('-')) context.writeWhitespace();
+    context.buffer.write(literal);
   }
 
   @override

@@ -978,7 +978,10 @@ abstract base class StatementCompiler {
   void addLiteral(Literal literal) {
     if (literal.value case final value?) {
       final type = literal.sqlType.resolveIn(dialect);
-      statement.buffer.write(type.sqlLiteral(value));
+      final text = type.sqlLiteral(value);
+      // A space avoids writing `--` (an SQL comment) after a minus.
+      if (text.startsWith('-')) statement.space();
+      statement.buffer.write(text);
     } else {
       statement.buffer.write('NULL');
     }
