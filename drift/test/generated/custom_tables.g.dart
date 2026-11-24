@@ -407,7 +407,7 @@ class WithConstraints extends Table
 
   @override
   List<String> get customConstraints => const [
-    'FOREIGN KEY(a, b)REFERENCES with_defaults(a, b)',
+    'FOREIGN KEY (a, b) REFERENCES with_defaults(a, b)',
   ];
   @override
   bool get dontWriteConstraints => true;
@@ -1068,8 +1068,8 @@ class Mytable extends Table with TableInfo<Mytable, MytableData> {
 
   @override
   List<String> get customConstraints => const [
-    'PRIMARY KEY(someid DESC)',
-    'UNIQUE(sometext, is_inserting)',
+    'PRIMARY KEY (someid DESC)',
+    'UNIQUE (sometext, is_inserting)',
   ];
   @override
   bool get dontWriteConstraints => true;
@@ -1946,7 +1946,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
   late final Email email = Email(this);
   late final WeirdTable weirdTable = WeirdTable(this);
   late final Trigger myTrigger = Trigger(
-    'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
+    'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value)); END',
     'my_trigger',
   );
   late final MyView myView = MyView(this);
@@ -2023,7 +2023,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
-      'SELECT config_key FROM config WHERE ${generatedpred.sql} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
+      'SELECT config_key FROM config WHERE ${generatedpred.sql} AND (sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
       variables: [
         Variable<int>(ConfigTable.$convertersyncStaten.toSql(var1)),
         ...generatedpred.introducedVariables,
@@ -2036,7 +2036,7 @@ abstract class _$CustomTablesDb extends GeneratedDatabase {
 
   Selectable<JsonResult> tableValued() {
     return customSelect(
-      'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
+      'SELECT "key", value FROM config, json_each(config.config_value) WHERE json_valid(config_value)',
       variables: [],
       readsFrom: {this.config},
     ).map(

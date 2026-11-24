@@ -4,28 +4,19 @@
 library;
 
 import 'package:charcode/charcode.dart';
+import 'package:meta/meta.dart';
 import 'package:sqlparser/sqlparser.dart';
 
 base class NodeSqlBuilder extends AstVisitor<void, void> {
   final StringSink buffer;
 
-  /// Whether we need to insert a space before writing the next identifier.
-  bool needsSpace = false;
-
-  /// Whether the last [symbol] written ends with a minus sign.
-  bool _endsWithMinus = false;
+  /// The kind of the formatting token written last.
+  ///
+  /// This is used to decide whether a space is needed before the next token,
+  /// see [FormattingToken.needsSpaceBetween].
+  FormattingToken lastToken = .none;
 
   NodeSqlBuilder([StringSink? buffer]) : buffer = buffer ?? StringBuffer();
-
-  /// Writes a space character if [needsSpace] is set.
-  ///
-  /// This also resets [needsSpace] to `false`.
-  void spaceIfNeeded() {
-    if (needsSpace) {
-      needsSpace = false;
-      _space();
-    }
-  }
 
   bool isKeyword(String lexeme) {
     return isKeywordLexeme(lexeme);
@@ -40,19 +31,19 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     AggregateFunctionInvocation e,
     void arg,
   ) {
-    symbol(e.name, spaceBefore: true);
+    identifier(e.name);
 
-    symbol('(');
+    openParen(attached: true);
     visit(e.parameters, arg);
     visitNullable(e.orderBy, arg);
-    symbol(')');
+    closeParen();
 
     if (e.filter != null) {
       keyword(TokenType.filter);
-      symbol('(', spaceBefore: true);
+      openParen(attached: false);
       keyword(TokenType.where);
       visit(e.filter!, arg);
-      symbol(')', spaceAfter: true);
+      closeParen();
     }
   }
 
@@ -130,7 +121,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     }[e.operator.type];
 
     if (operatorSymbol != null) {
-      symbol(operatorSymbol, spaceBefore: true, spaceAfter: true);
+      symbol(operatorSymbol, .binaryOperator);
     } else {
       keyword(e.operator.type);
     }
@@ -141,7 +132,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   void _writeStatements(Iterable<Statement> statements) {
     for (final stmt in statements) {
       visit(stmt, null);
-      symbol(';');
+      symbol(';', .semicolon);
     }
   }
 
@@ -175,11 +166,11 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitCastExpression(CastExpression e, void arg) {
     keyword(TokenType.cast);
-    symbol('(');
+    openParen(attached: true);
     visit(e.operand, arg);
     keyword(TokenType.as);
-    symbol(e.typeName, spaceBefore: true);
-    symbol(')', spaceAfter: true);
+    symbol(e.typeName, .word);
+    closeParen();
   }
 
   @override
@@ -218,9 +209,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       },
       check: (check) {
         keyword(TokenType.check);
-        symbol('(', spaceBefore: true);
+        openParen(attached: false);
         visit(check.expression, arg);
-        symbol(')', spaceAfter: true);
+        closeParen();
       },
       isDefault: (def) {
         keyword(TokenType.$default);
@@ -228,9 +219,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
         if (expr is Literal) {
           visit(expr, arg);
         } else {
-          symbol('(', spaceBefore: true);
+          openParen(attached: false);
           visit(expr, arg);
-          symbol(')', spaceAfter: true);
+          closeParen();
         }
       },
       collate: (collate) {
@@ -245,9 +236,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
         keyword(TokenType.always);
         keyword(TokenType.as);
 
-        symbol('(', spaceBefore: true);
+        openParen(attached: false);
         visit(generatedAs.expression, arg);
-        symbol(')', spaceAfter: true);
+        closeParen();
 
         if (generatedAs.stored) {
           keyword(TokenType.stored);
@@ -267,7 +258,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitColumnDefinition(ColumnDefinition e, void arg) {
     identifier(e.columnName);
     if (e.typeName != null) {
-      symbol(e.typeName!, spaceAfter: true, spaceBefore: true);
+      symbol(e.typeName!, .word);
     }
 
     visitList(e.constraints, arg);
@@ -282,20 +273,20 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitCommonTableExpression(CommonTableExpression e, void arg) {
     identifier(e.cteTableName);
     if (e.columnNames != null) {
-      symbol('(', spaceBefore: true);
+      openParen(attached: false);
 
       var first = true;
       for (final columnName in e.columnNames!) {
         if (!first) {
-          symbol(',', spaceAfter: true);
+          comma();
         }
 
-        identifier(columnName, spaceBefore: !first, spaceAfter: false);
+        identifier(columnName);
 
         first = false;
       }
 
-      symbol(')', spaceAfter: true);
+      closeParen();
     }
 
     keyword(TokenType.as);
@@ -311,9 +302,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
         break;
     }
 
-    symbol('(', spaceBefore: true);
+    openParen(attached: false);
     visit(e.as, arg);
-    symbol(')', spaceAfter: true);
+    closeParen();
   }
 
   @override
@@ -357,9 +348,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     keyword(TokenType.on);
     visit(e.on, arg);
 
-    symbol('(', spaceBefore: true);
-    _join(e.columns, ',');
-    symbol(')', spaceAfter: true);
+    openParen(attached: false);
+    _join(e.columns);
+    closeParen();
 
     _where(e.where);
   }
@@ -371,9 +362,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     _ifNotExists(e.ifNotExists);
 
     identifier(e.tableName);
-    symbol('(');
-    _join([...e.columns, ...e.tableConstraints], ',');
-    symbol(')');
+    openParen(attached: true);
+    _join([...e.columns, ...e.tableConstraints]);
+    closeParen();
 
     if (e.withoutRowId) {
       keyword(TokenType.without);
@@ -381,7 +372,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     if (e.isStrict) {
-      if (e.withoutRowId) symbol(',');
+      if (e.withoutRowId) comma();
 
       keyword(TokenType.strict);
     }
@@ -433,9 +424,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     e.driftTableName?.accept(this, arg);
 
     if (e.columns != null) {
-      symbol('(', spaceBefore: true);
-      symbol(e.columns!.join(','));
-      symbol(')', spaceAfter: true);
+      openParen(attached: false);
+      _joinSymbols(e.columns!);
+      closeParen();
     }
 
     keyword(TokenType.as);
@@ -456,7 +447,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     keyword(TokenType.using);
     identifier(e.moduleName);
 
-    symbol('(${e.argumentContent.join(', ')})');
+    openParen(attached: true);
+    symbol(e.argumentContent.join(', '), .word);
+    closeParen();
   }
 
   @override
@@ -474,31 +467,29 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
           break;
       }
 
-      symbol(r'$', spaceBefore: true);
-      symbol(e.name, spaceAfter: true);
+      symbol('\$${e.name}', .word);
     } else if (e is DeclaredStatement) {
       identifier(e.identifier.name);
 
       if (e.parameters.isNotEmpty) {
-        symbol('(');
-        _join(e.parameters, ',');
-        symbol(')');
+        openParen(attached: true);
+        _join(e.parameters);
+        closeParen();
       }
 
       visitNullable(e.as, arg);
-      symbol(':', spaceAfter: true);
+      symbol(':', .colon);
       visit(e.statement, arg);
-      symbol(';');
+      symbol(';', .semicolon);
     } else if (e is DriftFile) {
       for (final stmt in e.statements) {
         visit(stmt, arg);
-        buffer.write('\n');
-        needsSpace = false;
+        lineBreak();
       }
     } else if (e is ImportStatement) {
       keyword(TokenType.import);
       _stringLiteral(e.importedFile);
-      symbol(';', spaceAfter: true);
+      symbol(';', .semicolon);
     } else if (e is StatementParameter) {
       if (e is VariableTypeHint) {
         if (e.isRequired) keyword(TokenType.required);
@@ -507,7 +498,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
         final typeName = e.typeName;
         if (typeName != null) {
           keyword(TokenType.as);
-          symbol(typeName, spaceBefore: true, spaceAfter: true);
+          symbol(typeName, .word);
         }
 
         if (e.orNull) {
@@ -515,8 +506,8 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
           keyword(TokenType.$null);
         }
       } else if (e is DartPlaceholderDefaultValue) {
-        symbol('\$${e.variableName}', spaceAfter: true);
-        symbol('=', spaceBefore: true, spaceAfter: true);
+        symbol('\$${e.variableName}', .word);
+        symbol('=', .binaryOperator);
         visit(e.defaultValue, arg);
       } else {
         throw AssertionError('Unknown StatementParameter: $e');
@@ -526,16 +517,18 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       identifier(e.overriddenDataClassName);
       final constructor = e.constructorName;
       if (constructor != null) {
-        symbol('.');
+        dot();
         identifier(constructor);
       }
     } else if (e is NestedStarResultColumn) {
       identifier(e.tableName);
-      symbol('.**', spaceAfter: true);
+      dot();
+      symbol('**', .word);
     } else if (e is NestedQueryColumn) {
-      symbol('LIST(', spaceBefore: true);
+      symbol('LIST', .word);
+      openParen(attached: true);
       visit(e.select, arg);
-      symbol(')', spaceAfter: true);
+      closeParen();
       visitNullable(e.as, arg);
     } else if (e is TransactionBlock) {
       visit(e.begin, arg);
@@ -559,20 +552,20 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     if (e.schemaName != null) {
-      identifier(e.schemaName!, spaceAfter: false);
-      symbol('.');
+      identifier(e.schemaName!);
+      dot();
     }
-    identifier(e.elementName, spaceBefore: e.schemaName == null);
+    identifier(e.elementName);
   }
 
   @override
   void visitReindexStatement(ReindexStatement e, void arg) {
     keyword(TokenType.reindex);
     if (e.schemaName != null) {
-      identifier(e.schemaName!, spaceAfter: false);
-      symbol('.');
+      identifier(e.schemaName!);
+      dot();
     }
-    identifier(e.elementName, spaceBefore: e.schemaName == null);
+    identifier(e.elementName);
   }
 
   @override
@@ -606,7 +599,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     keyword(TokenType.analyze);
     if (e.schemaName case final schema?) {
       identifier(schema);
-      symbol('.');
+      dot();
     }
     if (e.elementName case final element?) {
       identifier(element);
@@ -618,11 +611,11 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     keyword(TokenType.pragma);
     if (e.schemaName case final schema?) {
       identifier(schema);
-      symbol('.');
+      dot();
     }
     identifier(e.pragmaName);
     if (e.value case final value?) {
-      symbol('=', spaceBefore: true, spaceAfter: true);
+      symbol('=', .binaryOperator);
       value.accept(this, arg);
     }
   }
@@ -700,16 +693,16 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   void visitDoUpdate(DoUpdate e, void arg) {
     keyword(TokenType.update);
     keyword(TokenType.set);
-    _join(e.set, ',');
+    _join(e.set);
     _where(e.where);
   }
 
   @override
   void visitExists(ExistsExpression e, void arg) {
     keyword(TokenType.exists);
-    symbol('(', spaceBefore: true);
+    openParen(attached: false);
     visit(e.select, null);
-    symbol(')', spaceAfter: true);
+    closeParen();
   }
 
   @override
@@ -717,7 +710,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     if (e.distinct) {
       keyword(TokenType.distinct);
     }
-    _join(e.parameters, ',');
+    _join(e.parameters);
   }
 
   @override
@@ -733,9 +726,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     visit(e.foreignTable, arg);
 
     if (e.columnNames.isNotEmpty) {
-      symbol('(');
-      _join(e.columnNames, ',');
-      symbol(')');
+      openParen(attached: true);
+      _join(e.columnNames);
+      closeParen();
     }
 
     void referenceAction(ReferenceAction action) {
@@ -835,17 +828,13 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitFunction(FunctionExpression e, void arg) {
     if (e.schemaName != null) {
-      identifier(
-        e.schemaName!,
-        fromToken: e.schemaNameToken,
-        spaceAfter: false,
-      );
-      symbol('.');
+      identifier(e.schemaName!, fromToken: e.schemaNameToken);
+      dot();
     }
     identifier(e.name);
-    symbol('(');
+    openParen(attached: true);
     visit(e.parameters, arg);
-    symbol(')', spaceAfter: true);
+    closeParen();
   }
 
   @override
@@ -853,7 +842,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     keyword(TokenType.group);
     keyword(TokenType.by);
 
-    _join(e.by, ',');
+    _join(e.by);
 
     if (e.having != null) {
       keyword(TokenType.having);
@@ -907,9 +896,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     visit(e.table, arg);
 
     if (e.targetColumns.isNotEmpty) {
-      symbol('(', spaceBefore: true);
-      _join(e.targetColumns, ',');
-      symbol(')', spaceAfter: true);
+      openParen(attached: false);
+      _join(e.targetColumns);
+      closeParen();
     }
 
     visit(e.source, arg);
@@ -966,14 +955,16 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       visit(constraint.expression, arg);
     } else if (constraint is UsingConstraint) {
       keyword(TokenType.using);
-      symbol('(${constraint.columnNames.join(', ')})');
+      openParen(attached: false);
+      _joinSymbols(constraint.columnNames);
+      closeParen();
     }
   }
 
   @override
   void visitJoinOperator(JoinOperator e, void arg) {
     if (e.operator == JoinOperatorKind.comma) {
-      symbol(',');
+      comma();
     } else {
       if (e.natural) {
         keyword(TokenType.natural);
@@ -1027,7 +1018,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitNamedVariable(NamedVariable e, void arg) {
-    symbol(e.fullName, spaceBefore: true, spaceAfter: true);
+    symbol(e.fullName, .word);
   }
 
   @override
@@ -1037,10 +1028,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitNumberedVariable(NumberedVariable e, void arg) {
-    symbol('?', spaceBefore: true, spaceAfter: e.explicitIndex == null);
-    if (e.explicitIndex != null) {
-      symbol(e.explicitIndex.toString(), spaceAfter: true);
-    }
+    symbol('?${e.explicitIndex ?? ''}', .word);
   }
 
   @override
@@ -1060,14 +1048,14 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       }
     }
 
-    symbol(repr, spaceBefore: true, spaceAfter: true);
+    symbol(repr, repr.startsWith('-') ? .negativeNumber : .word);
   }
 
   @override
   void visitOrderBy(OrderBy e, void arg) {
     keyword(TokenType.order);
     keyword(TokenType.by);
-    _join(e.terms, ',');
+    _join(e.terms);
   }
 
   @override
@@ -1089,15 +1077,15 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitParentheses(Parentheses e, void arg) {
-    symbol('(');
+    openParen(attached: false);
     visit(e.expression, arg);
-    symbol(')');
+    closeParen();
   }
 
   @override
   void visitRaiseExpression(RaiseExpression e, void arg) {
     keyword(TokenType.raise);
-    symbol('(', spaceBefore: true);
+    openParen(attached: false);
     keyword(
       const {
         RaiseKind.ignore: TokenType.ignore,
@@ -1108,42 +1096,24 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     );
 
     if (e.errorMessage != null) {
-      symbol(',', spaceAfter: true);
+      comma();
       _stringLiteral(e.errorMessage!);
     }
-    symbol(')', spaceAfter: true);
+    closeParen();
   }
 
   @override
   void visitReference(Reference e, void arg) {
-    var didWriteSpaceBefore = false;
-
-    if (e.schemaName != null) {
-      identifier(
-        e.schemaName!,
-        fromToken: e.schemaNameToken,
-        spaceAfter: false,
-      );
-      symbol('.');
-      didWriteSpaceBefore = true;
+    if (e.schemaName case final schemaName?) {
+      identifier(schemaName, fromToken: e.schemaNameToken);
+      dot();
     }
-    if (e.entityName != null) {
-      identifier(
-        e.entityName!,
-        spaceAfter: false,
-        fromToken: e.entityNameToken,
-        spaceBefore: !didWriteSpaceBefore,
-      );
-      symbol('.');
-      didWriteSpaceBefore = true;
+    if (e.entityName case final entityName?) {
+      identifier(entityName, fromToken: e.entityNameToken);
+      dot();
     }
 
-    identifier(
-      e.columnName,
-      fromToken: e.columnNameToken,
-      spaceAfter: true,
-      spaceBefore: !didWriteSpaceBefore,
-    );
+    identifier(e.columnName, fromToken: e.columnNameToken);
   }
 
   @override
@@ -1155,7 +1125,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitReturning(Returning e, void arg) {
     keyword(TokenType.returning);
-    _join(e.columns, ',');
+    _join(e.columns);
   }
 
   @override
@@ -1171,7 +1141,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       keyword(TokenType.distinct);
     }
 
-    _join(e.columns, ',');
+    _join(e.columns);
 
     _from(e.from);
     _where(e.where);
@@ -1179,7 +1149,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     if (e.windowDeclarations.isNotEmpty) {
       keyword(TokenType.window);
 
-      _join(e.windowDeclarations, ',');
+      _join(e.windowDeclarations);
     }
     visitNullable(e.orderBy, arg);
     visitNullable(e.limit, arg);
@@ -1187,9 +1157,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitSelectStatementAsSource(SelectStatementAsSource e, void arg) {
-    symbol('(', spaceBefore: true);
+    openParen(attached: false);
     visit(e.statement, arg);
-    symbol(')', spaceAfter: true);
+    closeParen();
     visitNullable(e.as, arg);
   }
 
@@ -1200,40 +1170,40 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   ) {
     for (final stmt in e.statements) {
       visit(stmt, arg);
-      buffer.writeln(';');
-      needsSpace = false;
+      symbol(';', .semicolon);
+      lineBreak();
     }
   }
 
   @override
   void visitSingleColumnSetComponent(SingleColumnSetComponent e, void arg) {
     visit(e.column, arg);
-    symbol('=', spaceBefore: true, spaceAfter: true);
+    symbol('=', .binaryOperator);
     visit(e.expression, arg);
   }
 
   @override
   void visitMultiColumnSetComponent(MultiColumnSetComponent e, void arg) {
-    symbol('(', spaceBefore: true);
-    _join(e.columns, ',');
-    symbol(')');
-    symbol('=', spaceBefore: true, spaceAfter: true);
+    openParen(attached: false);
+    _join(e.columns);
+    closeParen();
+    symbol('=', .binaryOperator);
     visit(e.rowValue, arg);
   }
 
   @override
   void visitStarFunctionParameter(StarFunctionParameter e, void arg) {
-    symbol('*', spaceAfter: true);
+    symbol('*', .word);
   }
 
   @override
   void visitStarResultColumn(StarResultColumn e, void arg) {
     if (e.tableName != null) {
       identifier(e.tableName!, fromToken: e.tableNameToken);
-      symbol('.');
+      dot();
     }
 
-    symbol('*', spaceAfter: true, spaceBefore: e.tableName == null);
+    symbol('*', .word);
   }
 
   @override
@@ -1254,17 +1224,14 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitStringLiteral(StringLiteral e, void arg) {
-    if (e.isBinary) {
-      symbol('X', spaceBefore: true);
-    }
-    _stringLiteral(e.value);
+    _stringLiteral(e.value, isBinary: e.isBinary);
   }
 
   @override
   void visitSubQuery(SubQuery e, void arg) {
-    symbol('(', spaceBefore: true);
+    openParen(attached: false);
     visit(e.select, arg);
-    symbol(')', spaceAfter: true);
+    closeParen();
   }
 
   @override
@@ -1282,21 +1249,21 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
         keyword(TokenType.unique);
       }
 
-      symbol('(');
-      _join(e.columns, ',');
-      symbol(')');
+      openParen(attached: false);
+      _join(e.columns);
+      closeParen();
       _conflictClause(e.onConflict);
     } else if (e is CheckTable) {
       keyword(TokenType.check);
-      symbol('(');
+      openParen(attached: false);
       visit(e.expression, arg);
-      symbol(')');
+      closeParen();
     } else if (e is ForeignKeyTableConstraint) {
       keyword(TokenType.foreign);
       keyword(TokenType.key);
-      symbol('(');
-      _join(e.columns, ',');
-      symbol(')');
+      openParen(attached: false);
+      _join(e.columns);
+      closeParen();
       visit(e.clause, arg);
     }
   }
@@ -1304,27 +1271,19 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitTableReference(TableReference e, void arg) {
     if (e.schemaName != null) {
-      identifier(
-        e.schemaName!,
-        fromToken: e.schemaNameToken,
-        spaceAfter: false,
-      );
-      symbol('.');
+      identifier(e.schemaName!, fromToken: e.schemaNameToken);
+      dot();
     }
-    identifier(
-      e.tableName,
-      fromToken: e.tableNameToken,
-      spaceBefore: e.schemaName == null,
-    );
+    identifier(e.tableName, fromToken: e.tableNameToken);
     visitNullable(e.as, arg);
   }
 
   @override
   void visitTableValuedFunction(TableValuedFunction e, void arg) {
     identifier(e.name);
-    symbol('(');
+    openParen(attached: true);
     visit(e.parameters, arg);
-    symbol(')');
+    closeParen();
     visitNullable(e.as, arg);
   }
 
@@ -1345,22 +1304,22 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitTuple(Tuple e, void arg) {
-    symbol('(', spaceBefore: true);
-    _join(e.expressions, ',');
-    symbol(')', spaceAfter: true);
+    openParen(attached: false);
+    _join(e.expressions);
+    closeParen();
   }
 
   @override
   void visitUnaryExpression(UnaryExpression e, void arg) {
     switch (e.operator.type) {
       case TokenType.minus:
-        symbol('-', spaceBefore: true);
+        symbol('-', .prefixOperator);
         break;
       case TokenType.plus:
-        symbol('+', spaceBefore: true);
+        symbol('+', .prefixOperator);
         break;
       case TokenType.tilde:
-        symbol('~', spaceBefore: true);
+        symbol('~', .prefixOperator);
         break;
       case TokenType.not:
         keyword(TokenType.not);
@@ -1393,7 +1352,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
     visit(e.table, arg);
     keyword(TokenType.set);
-    _join(e.set, ',');
+    _join(e.set);
     _from(e.from);
     _where(e.where);
     visitNullable(e.returning, arg);
@@ -1404,13 +1363,13 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     keyword(TokenType.update);
     if (e.columnNames.isNotEmpty) {
       keyword(TokenType.of);
-      _join(e.columnNames, ',');
+      _join(e.columnNames);
     }
   }
 
   @override
   void visitUpsertClause(UpsertClause e, void arg) {
-    _join(e.entries, '');
+    _join(e.entries, commaSeparated: false);
   }
 
   @override
@@ -1419,9 +1378,9 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     keyword(TokenType.conflict);
 
     if (e.onColumns != null) {
-      symbol('(', spaceBefore: true);
-      _join(e.onColumns!, ',');
-      symbol(')', spaceAfter: true);
+      openParen(attached: false);
+      _join(e.onColumns!);
+      closeParen();
 
       _where(e.where);
     }
@@ -1433,13 +1392,13 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
   @override
   void visitValuesSelectStatement(ValuesSelectStatement e, void arg) {
     keyword(TokenType.$values);
-    _join(e.values, ',');
+    _join(e.values);
   }
 
   @override
   void visitValuesSource(ValuesSource e, void arg) {
     keyword(TokenType.$values);
-    _join(e.values, ',');
+    _join(e.values);
   }
 
   @override
@@ -1459,7 +1418,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
 
   @override
   void visitWindowDefinition(WindowDefinition e, void arg) {
-    symbol('(', spaceBefore: true);
+    openParen(attached: false);
 
     if (e.baseWindowName != null) {
       identifier(e.baseWindowName!);
@@ -1468,13 +1427,13 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     if (e.partitionBy.isNotEmpty) {
       keyword(TokenType.partition);
       keyword(TokenType.by);
-      _join(e.partitionBy, ',');
+      _join(e.partitionBy);
     }
 
     visitNullable(e.orderBy, arg);
     visitNullable(e.frameSpec, arg);
 
-    symbol(')', spaceAfter: true);
+    closeParen();
   }
 
   @override
@@ -1484,7 +1443,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       keyword(TokenType.recursive);
     }
 
-    _join(e.ctes, ',');
+    _join(e.ctes);
   }
 
   @override
@@ -1582,26 +1541,31 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     }
   }
 
+  @protected
+  void comma() => symbol(',', .comma);
+
+  @protected
+  void dot() => symbol('.', .dot);
+
+  @protected
+  void openParen({required bool attached}) {
+    symbol('(', attached ? .attachedOpenParen : .openParen);
+  }
+
+  @protected
+  void closeParen() => symbol(')', .closeParen);
+
   /// Writes an identifier, escaping it if necessary.
-  void identifier(
-    String identifier, {
-    IdentifierToken? fromToken,
-    bool spaceBefore = true,
-    bool spaceAfter = true,
-  }) {
+  void identifier(String identifier, {IdentifierToken? fromToken}) {
     if (isKeyword(identifier) || _notAKeywordRegex.hasMatch(identifier)) {
       identifier = escapeIdentifier(identifier);
     }
 
-    symbol(identifier, spaceBefore: spaceBefore, spaceAfter: spaceAfter);
+    symbol(identifier, .word);
   }
 
-  void dartCode(
-    String code, {
-    bool spaceBefore = true,
-    bool spaceAfter = true,
-  }) {
-    symbol('`$code`', spaceBefore: spaceBefore, spaceAfter: spaceAfter);
+  void dartCode(String code) {
+    symbol('`$code`', .word);
   }
 
   void _ifNotExists(bool ifNotExists) {
@@ -1612,12 +1576,12 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     }
   }
 
-  void _join(Iterable<AstNode> nodes, String separatingSymbol) {
+  void _join(Iterable<AstNode> nodes, {bool commaSeparated = true}) {
     var isFirst = true;
 
     for (final node in nodes) {
-      if (!isFirst) {
-        symbol(separatingSymbol, spaceAfter: true);
+      if (!isFirst && commaSeparated) {
+        comma();
       }
 
       visit(node, null);
@@ -1625,8 +1589,17 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     }
   }
 
+  void _joinSymbols(Iterable<String> symbols) {
+    var first = true;
+    for (final id in symbols) {
+      if (!first) comma();
+      identifier(id);
+      first = false;
+    }
+  }
+
   void keyword(TokenType type) {
-    symbol(reverseKeywords[type]!, spaceAfter: true, spaceBefore: true);
+    symbol(reverseKeywords[type]!, .word);
   }
 
   void _orderingMode(OrderingMode? mode) {
@@ -1640,29 +1613,30 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     }
   }
 
-  void _space() => buffer.writeCharCode($space);
-
-  void _stringLiteral(String content) {
+  void _stringLiteral(String content, {bool isBinary = false}) {
     final escapedChars = content.replaceAll("'", "''");
-    symbol("'$escapedChars'", spaceBefore: true, spaceAfter: true);
+    symbol("${isBinary ? 'X' : ''}'$escapedChars'", .word);
   }
 
-  /// Writes the [lexeme], unchanged.
-  void symbol(
-    String lexeme, {
-    bool spaceBefore = false,
-    bool spaceAfter = false,
-  }) {
-    if (needsSpace && spaceBefore) {
-      _space();
-    } else if (_endsWithMinus && lexeme.startsWith('-')) {
-      // Two adjacent minus signs would start a comment.
-      _space();
+  /// Writes the [lexeme] of a token with the given [kind], unchanged.
+  ///
+  /// A space is inserted before the [lexeme] if required by
+  /// [FormattingToken.needsSpaceBetween].
+  void symbol(String lexeme, FormattingToken kind) {
+    if (FormattingToken.needsSpaceBetween(lastToken, kind)) {
+      buffer.writeCharCode($space);
     }
 
     buffer.write(lexeme);
-    needsSpace = spaceAfter;
-    _endsWithMinus = lexeme.endsWith('-');
+    lastToken = kind;
+  }
+
+  /// Writes a line break.
+  ///
+  /// The next token is written without leading whitespace.
+  void lineBreak() {
+    buffer.writeCharCode($lf);
+    lastToken = .none;
   }
 
   void _where(Expression? where) {
@@ -1670,6 +1644,67 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
       keyword(TokenType.where);
       visit(where, null);
     }
+  }
+}
+
+/// A formatting token, used to decide whether a space should appear between
+/// symbols emitted by [NodeSqlBuilder].
+enum FormattingToken {
+  /// The start of the output, or the start of a new line.
+  none,
+
+  /// A token consisting of a single word that doesn't start with an operator
+  /// character.
+  ///
+  /// This includes keywords, identifiers, string literals, non-negative
+  /// numbers, variables and type names.
+  word,
+
+  negativeNumber,
+  binaryOperator,
+  prefixOperator,
+
+  /// An opening parenthesis written after a space, like in `IN (1, 2, 3)`.
+  openParen,
+
+  /// An opening parenthesis attached to the previous token, like in a function
+  /// call `foo(1, 2, 3)`.
+  attachedOpenParen,
+
+  closeParen,
+  comma,
+  dot,
+  semicolon,
+
+  /// Used for drift statement declarations
+  colon;
+
+  /// Whether a space must be written between a token of kind [previous] and
+  /// a token of kind [next].
+  ///
+  /// This returns `true` for all combinations not explicitly known to be safe
+  /// without a space.
+  static bool needsSpaceBetween(
+    FormattingToken previous,
+    FormattingToken next,
+  ) {
+    return switch ((previous, next)) {
+      // Nothing to separate from.
+      (none, _) => false,
+      // Punctuation attached to the previous token.
+      (
+        _,
+        attachedOpenParen || closeParen || comma || dot || colon || semicolon,
+      ) =>
+        false,
+      // Punctuation attached to the next token.
+      (openParen || attachedOpenParen || dot, _) => false,
+      // Prefix operators are written without a space, unless the next token
+      // starts with an operator character too (`- -1` or `- -x`, but not `--1`
+      // which would start a comment).
+      (prefixOperator, word || openParen) => false,
+      _ => true,
+    };
   }
 }
 

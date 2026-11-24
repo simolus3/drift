@@ -738,7 +738,7 @@ const expected = r'''
         "is_virtual": false,
         "without_rowid": false,
         "constraints": [
-          "UNIQUE(name)"
+          "UNIQUE (name)"
         ],
         "unique_keys": [
           [
@@ -941,7 +941,7 @@ const expected = r'''
         "is_virtual": false,
         "without_rowid": false,
         "constraints": [
-          "PRIMARY KEY(\"group\", user)ON CONFLICT REPLACE"
+          "PRIMARY KEY (\"group\", user) ON CONFLICT REPLACE"
         ],
         "explicit_pk": [
           "group",
@@ -1039,11 +1039,11 @@ const expected = r'''
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"groups\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" TEXT NOT NULL, \"name2\" TEXT NOT NULL GENERATED ALWAYS AS (upper(name)) VIRTUAL, UNIQUE(name));"
+          "sql": "CREATE TABLE IF NOT EXISTS \"groups\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" TEXT NOT NULL, \"name2\" TEXT NOT NULL GENERATED ALWAYS AS (upper(name)) VIRTUAL, UNIQUE (name));"
         },
         {
           "dialect": "postgres",
-          "sql": "CREATE TABLE IF NOT EXISTS \"groups\" (\"id\" bigserial PRIMARY KEY NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" text NOT NULL, \"name2\" text NOT NULL GENERATED ALWAYS AS (upper(name)) VIRTUAL, UNIQUE(name));"
+          "sql": "CREATE TABLE IF NOT EXISTS \"groups\" (\"id\" bigserial PRIMARY KEY NOT NULL NOT NULL PRIMARY KEY AUTOINCREMENT, \"name\" text NOT NULL, \"name2\" text NOT NULL GENERATED ALWAYS AS (upper(name)) VIRTUAL, UNIQUE (name));"
         }
       ]
     },
@@ -1078,11 +1078,11 @@ const expected = r'''
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"group_members\" (\"group\" INTEGER NOT NULL REFERENCES \"groups\"(id), \"user\" INTEGER NOT NULL REFERENCES users(id), \"is_admin\" INTEGER NOT NULL DEFAULT FALSE, PRIMARY KEY(\"group\", user)ON CONFLICT REPLACE);"
+          "sql": "CREATE TABLE IF NOT EXISTS \"group_members\" (\"group\" INTEGER NOT NULL REFERENCES \"groups\"(id), \"user\" INTEGER NOT NULL REFERENCES users(id), \"is_admin\" INTEGER NOT NULL DEFAULT FALSE, PRIMARY KEY (\"group\", user) ON CONFLICT REPLACE);"
         },
         {
           "dialect": "postgres",
-          "sql": "CREATE TABLE IF NOT EXISTS \"group_members\" (\"group\" bigint NOT NULL REFERENCES \"groups\"(id), \"user\" bigint NOT NULL REFERENCES users(id), \"is_admin\" boolean NOT NULL DEFAULT FALSE, PRIMARY KEY(\"group\", user)ON CONFLICT REPLACE);"
+          "sql": "CREATE TABLE IF NOT EXISTS \"group_members\" (\"group\" bigint NOT NULL REFERENCES \"groups\"(id), \"user\" bigint NOT NULL REFERENCES users(id), \"is_admin\" boolean NOT NULL DEFAULT FALSE, PRIMARY KEY (\"group\", user) ON CONFLICT REPLACE);"
         }
       ]
     },
@@ -1091,11 +1091,11 @@ const expected = r'''
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN DELETE FROM \"groups\" WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id);END"
+          "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN DELETE FROM \"groups\" WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id); END"
         },
         {
           "dialect": "postgres",
-          "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN DELETE FROM \"groups\" WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id);END"
+          "sql": "CREATE TRIGGER delete_empty_groups AFTER DELETE ON group_members BEGIN DELETE FROM \"groups\" WHERE NOT EXISTS (SELECT * FROM group_members WHERE \"group\" = \"groups\".id); END"
         }
       ]
     },
@@ -1130,11 +1130,11 @@ const expected = r'''
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN UPDATE \"groups\" SET id = old.id;END"
+          "sql": "CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN UPDATE \"groups\" SET id = old.id; END"
         },
         {
           "dialect": "postgres",
-          "sql": "CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN UPDATE \"groups\" SET id = old.id;END"
+          "sql": "CREATE TRIGGER my_view_trigger INSTEAD OF UPDATE ON my_view BEGIN UPDATE \"groups\" SET id = old.id; END"
         }
       ]
     },

@@ -157,7 +157,7 @@ void main() {
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TRIGGER to_upper AFTER UPDATE ON users BEGIN UPDATE users SET name = upper(new.name) WHERE id = new.id;END"
+          "sql": "CREATE TRIGGER to_upper AFTER UPDATE ON users BEGIN UPDATE users SET name = upper(new.name) WHERE id = new.id; END"
         }
       ]
     },

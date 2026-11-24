@@ -339,7 +339,7 @@ class WithConstraints extends Table
 
   @override
   List<String> get customConstraints => const [
-    'FOREIGN KEY(a, b)REFERENCES with_defaults(a, b)',
+    'FOREIGN KEY (a, b) REFERENCES with_defaults(a, b)',
   ];
   @override
   List<TableConstraint> get tableConstraints => [];
@@ -896,8 +896,8 @@ class Mytable extends Table
 
   @override
   List<String> get customConstraints => const [
-    'PRIMARY KEY(someid DESC)',
-    'UNIQUE(sometext, is_inserting)',
+    'PRIMARY KEY (someid DESC)',
+    'UNIQUE (sometext, is_inserting)',
   ];
   @override
   List<TableConstraint> get tableConstraints => [];
@@ -1818,9 +1818,9 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
     return customSelectMapped<String>(
       query: switch (dialect.known) {
         KnownSqlDialect.sqlite =>
-          'SELECT config_key FROM config WHERE ${generatedpred.buffer} AND(sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
+          'SELECT config_key FROM config WHERE ${generatedpred.buffer} AND (sync_state = ?1 OR sync_state_implicit IN ($expandedvar2))',
         KnownSqlDialect.postgres || _ =>
-          'SELECT config_key FROM config WHERE ${generatedpred.buffer} AND(sync_state = \$1 OR sync_state_implicit IN ($expandedvar2))',
+          'SELECT config_key FROM config WHERE ${generatedpred.buffer} AND (sync_state = \$1 OR sync_state_implicit IN ($expandedvar2))',
       },
       variables: [
         Variable<int>(
@@ -1846,7 +1846,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   Selectable<JsonResult> tableValued() {
     return customSelectMapped<JsonResult>(
       query:
-          'SELECT "key", value FROM config,json_each(config.config_value)WHERE json_valid(config_value)',
+          'SELECT "key", value FROM config, json_each(config.config_value) WHERE json_valid(config_value)',
       variables: [],
       readsFrom: {ConfigTable()},
       createMapper: (RawResultSet _) {
@@ -2179,7 +2179,7 @@ abstract base class _$CustomTablesDb extends GeneratedDatabase {
   static final _$myTrigger = Trigger(
     'my_trigger',
     CustomComponent(
-      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value));END',
+      'CREATE TRIGGER my_trigger AFTER INSERT ON config BEGIN INSERT INTO with_defaults VALUES (new.config_key, LENGTH(new.config_value)); END',
       dialectSpecificSql: {},
     ),
   );

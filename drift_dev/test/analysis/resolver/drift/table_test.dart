@@ -51,7 +51,7 @@ CREATE TABLE b (
     ]);
     expect(
       aBar.customConstraints,
-      'REFERENCES b(bar)DEFERRABLE INITIALLY DEFERRED',
+      'REFERENCES b(bar) DEFERRABLE INITIALLY DEFERRED',
     );
 
     expect(bBar.sqlType.builtin, BuiltinType.int);

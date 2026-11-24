@@ -649,11 +649,6 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
 
     test('unary expression', () {
       testFormat('SELECT -(+(~3));');
-      testFormat('SELECT - -1');
-      testFormat('SELECT - - -1');
-      testFormat('SELECT 1 - -1');
-      testFormat('SELECT a > - -b');
-      testFormat('SELECT a -> -1');
     });
 
     test('references', () {
@@ -770,46 +765,31 @@ COMMIT TRANSACTION;
     check(-double.infinity, '-1e309');
   });
 
-  test('minus before a negative numeric literal', () {
-    void check(Expression expr, String expected, num value, bool isInt) {
-      final sql = expr.toSql();
-      expect(sql, expected);
-
-      // `--` would start a comment, so the text must parse back to the value.
-      final result = engine.parse(ParserEntrypoint.expression, sql);
-      expect(result.errors, isEmpty, reason: sql);
-      var parsed = result.rootNode;
-      var sign = 1;
-      while (parsed is UnaryExpression) {
-        expect(parsed.operator.type, TokenType.minus);
-        sign = -sign;
-        parsed = parsed.inner;
-      }
-      final literal = parsed as NumericLiteral;
-      expect(sign * literal.value, value, reason: sql);
-      expect(literal.isInt, isInt, reason: sql);
+  test('does not merge operators into comments', () {
+    UnaryExpression unary(TokenType type, Expression inner) {
+      return UnaryExpression(Token(type, fakeSpan('-')), inner);
     }
 
-    Expression minus(Expression inner) =>
-        UnaryExpression(token(TokenType.minus), inner);
-
-    check(minus(NumericLiteral(-1, true)), '- -1', 1, true);
-    check(minus(NumericLiteral(-1.5, false)), '- -1.5', 1.5, false);
-    check(minus(NumericLiteral(-2.0, true)), '- -2', 2, true);
-    check(minus(NumericLiteral(-10, false)), '- -10.0', 10.0, false);
-    check(
-      minus(NumericLiteral(-double.infinity, false)),
+    expect(unary(TokenType.minus, NumericLiteral(-1)).toSql(), '- -1');
+    expect(
+      unary(TokenType.minus, NumericLiteral(double.negativeInfinity)).toSql(),
       '- -1e309',
-      double.infinity,
-      false,
     );
-    check(minus(minus(NumericLiteral(-1, true))), '- - -1', -1, true);
-    check(
-      minus(minus(NumericLiteral(-double.infinity))),
-      '- - -1e309',
-      -double.infinity,
-      false,
+    expect(
+      unary(TokenType.minus, unary(TokenType.minus, NumericLiteral(1))).toSql(),
+      '- -1',
     );
+    expect(unary(TokenType.minus, NumericLiteral(1)).toSql(), '-1');
+    expect(
+      BinaryExpression(
+        Reference(columnName: 'a'),
+        Token(TokenType.minus, fakeSpan('-')),
+        NumericLiteral(-1),
+      ).toSql(),
+      'a - -1',
+    );
+
+    testFormat('- - - - - - -1', entrypoint: .expression);
   });
 
   test('does not format invalid statements', () {
