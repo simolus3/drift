@@ -1,0 +1,11 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        # These options change how drift generates code
+        options:
+          dialects:
+            - dialect: sqlite
+              version: "3.38"
+              modules: [fts5]
+          drift3_preview: true

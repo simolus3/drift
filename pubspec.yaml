@@ -26,6 +26,7 @@ workspace:
 
   - examples/app
   - examples/app_drift3
+  - examples/drift3_remote
   - examples/flutter_web_worker_example
   - examples/migrations_example
   - examples/modular

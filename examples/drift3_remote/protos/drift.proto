@@ -1,0 +1,150 @@
+syntax = "proto3";
+
+package driftremote;
+
+service DatabaseService {
+  // Opens the outermost session.
+  rpc Connect (ConnectRequest) returns (CreatedSession) {}
+
+  rpc Execute (ExecuteRequest) returns (QueryResult) {}
+  rpc ExecuteBatch (ExecuteBatchRequest) returns (BatchResult) {}
+  rpc Close (SessionRequest) returns (Empty) {}
+  rpc AwaitClosed (SessionRequest) returns (Empty) {}
+
+  rpc SchemaVersionGet (GetSchemaVersion) returns (GetSchemaVersionResult) {}
+  rpc SchemaVersionSet (SetSchemaVersion) returns (Empty) {}
+
+  rpc Begin (BeginRequest) returns (CreatedSession) {}
+  rpc Commit (SessionRequest) returns (Empty) {}
+  rpc Rollback (SessionRequest) returns (Empty) {}
+
+  rpc Exclusive (SessionRequest) returns (CreatedSession) {}
+
+  rpc DispatchTableUpdates (TableUpdates) returns (Empty) {}
+  rpc TableUpdateNotifications (Empty) returns (stream TableUpdates) {}
+}
+
+message Empty {}
+
+message ConnectRequest {}
+
+// A session opened on the server, along with its optional capabilities.
+message CreatedSession {
+  int32 id = 1;
+  // Whether `DriftSession.persistentSchemaVersion` is non-null.
+  bool persistent_schema_version = 2;
+  // Whether `DriftSession.transaction` is non-null.
+  bool transaction = 3;
+  // Whether `DriftSession.transactionParent` is non-null.
+  bool transaction_parent = 4;
+  // Whether `DriftSession.locks` is non-null.
+  bool locks = 5;
+}
+
+// A request referring to a session without further arguments.
+message SessionRequest {
+  int32 session = 1;
+}
+
+message GetSchemaVersion {
+  int32 session = 1;
+}
+
+message GetSchemaVersionResult {
+  int64 schema_version = 1;
+}
+
+message SetSchemaVersion {
+  int32 session = 1;
+  int64 schema_version = 2;
+}
+
+message BeginRequest {
+  int32 session = 1;
+  TransactionOptions options = 2;
+}
+
+message TransactionOptions {
+  optional bool defer_foreign_keys = 1;
+  bool read_only = 2;
+}
+
+message ExecuteRequest {
+  int32 session = 1;
+  StatementInfo statement = 2;
+}
+
+message ExecuteBatchRequest {
+  int32 session = 1;
+  StatementBatch batch = 2;
+}
+
+message StatementBatch {
+  repeated string sql = 1;
+  repeated StatementInBatch statements = 2;
+}
+
+message StatementInBatch {
+  // Index into `StatementBatch.sql`.
+  int32 sql_index = 1;
+  StatementInfo info = 2;
+}
+
+message StatementInfo {
+  string sql = 1;
+  bool needs_result_set = 2;
+  repeated SqlValue variables = 3;
+  repeated string watched_tables = 4;
+  repeated TableUpdate expected_writes = 5;
+  bool is_read_only = 6;
+}
+
+// A value bound to a statement or returned in a result set.
+//
+// This covers the values used by the SQLite dialect.
+message SqlValue {
+  oneof value {
+    int64 int_value = 1;
+    double double_value = 2;
+    string text_value = 3;
+    bytes blob_value = 4;
+  }
+}
+
+enum UpdateKind {
+  // The kind of update is not known (a `null` `TableUpdate.kind`).
+  UPDATE_KIND_UNKNOWN = 0;
+  UPDATE_KIND_INSERT = 1;
+  UPDATE_KIND_UPDATE = 2;
+  UPDATE_KIND_DELETE = 3;
+}
+
+message TableUpdate {
+  string table = 1;
+  UpdateKind kind = 2;
+}
+
+// A set of updates handled together, mirroring `Set<TableUpdate>`.
+message TableUpdates {
+  repeated TableUpdate updates = 1;
+}
+
+message QueryResult {
+  optional int64 affected_rows = 1;
+  optional int64 last_insert_row_id = 2;
+  // Only set if `StatementInfo.needs_result_set` was enabled.
+  ResultSet result_set = 3;
+}
+
+message BatchResult {
+  repeated QueryResult results = 1;
+}
+
+message ResultSet {
+  repeated string column_names = 1;
+  repeated Row rows = 2;
+}
+
+message Row {
+  repeated SqlValue values = 1;
+}

@@ -1,0 +1,17 @@
+name: drift3_remote
+description: Example demonstrating how to access a drift database over a network.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.14.0
+
+dependencies:
+  drift3_preview:
+  drift_sqlite:
+  fixnum: ^1.1.1
+  grpc: ^5.2.0
+  protobuf: ^6.1.0
+
+dev_dependencies:
+  drift_dev:
