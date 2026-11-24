@@ -477,22 +477,6 @@ class _UnaryMinus<DT extends Object> extends Expression<DT> {
   @override
   void writeInto(GenerationContext context) {
     context.buffer.write('-');
-    Expression operand = inner;
-    while (operand is _DartCastExpression) {
-      operand = operand.inner;
-    }
-    // Variables are written as constants if the context has no variables.
-    final startsWithMinus = switch (operand) {
-      Constant(value: num(isNegative: true) || BigInt(isNegative: true)) =>
-        true,
-      Variable(value: num(isNegative: true) || BigInt(isNegative: true)) =>
-        !context.supportsVariables,
-      _ => false,
-    };
-    if (startsWithMinus) {
-      // `--` would start an SQL comment.
-      context.buffer.write(' ');
-    }
     writeInner(context, inner);
   }
 

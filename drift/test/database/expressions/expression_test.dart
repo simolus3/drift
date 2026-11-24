@@ -35,7 +35,7 @@ void main() {
     expect(-const Constant(1), generates('-1'));
     expect(-const Variable<int>(3), generates('-?', [3]));
     expect(-(-const Variable<int>(3)), generates('-(-?)', [3]));
-    expect(const Constant(1) - const Constant(-1), generates('1 - -1'));
+    expect(const Constant(1) - const Constant(-1), generates('1 -  -1'));
   });
 
   test('does not write two minus signs for inlined variables', () {
