@@ -141,6 +141,21 @@ class Store extends Table {
   TextColumn get name => text().nullable();
 }
 
+class Players extends Table {
+  IntColumn get id => integer().autoIncrement();
+  TextColumn get name => text();
+}
+
+class Games extends Table {
+  IntColumn get id => integer().autoIncrement();
+
+  @ReferenceName('gamesAsWhite')
+  IntColumn get whiteId => integer().references(Players, #id);
+
+  @ReferenceName('gamesAsBlack')
+  IntColumn get blackId => integer().references(Players, #id);
+}
+
 @DriftDatabase(
   tables: [
     Categories,
@@ -151,6 +166,8 @@ class Store extends Table {
     Product,
     Listing,
     Store,
+    Players,
+    Games,
   ],
 )
 final class TestDatabase extends _$TestDatabase {
