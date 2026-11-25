@@ -2397,6 +2397,402 @@ class ListingCompanion extends UpdateCompanion<ListingData> {
   }
 }
 
+class $PlayersTable extends Players
+    with ResultSet<Player, $PlayersTable>
+    implements GeneratedTable<Player, $PlayersTable> {
+  @override
+  final String? alias;
+  $PlayersTable([this.alias]);
+  @override
+  late final TableColumn<int> id = TableColumn<int>(
+    name: 'id',
+    sqlType: SqlType.int,
+    requiredDuringInsert: false,
+    constraints: () => [
+      const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
+      const ColumnNotNullConstraint(),
+    ],
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<String> name = TableColumn<String>(
+    name: 'name',
+    sqlType: SqlType.text,
+    requiredDuringInsert: true,
+    constraints: () => [const ColumnNotNullConstraint()],
+  )..owningResultSet = this;
+  @override
+  List<TableColumn> get columns => [id, name];
+  @override
+  String get entityName => $name;
+  static const String $name = 'players';
+  @override
+  $PlayersTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
+  Player? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$id = positions[0].index;
+    final type$0 = dialect.intType;
+    final pos$name = positions[1].index;
+    final type$1 = dialect.textType;
+    return (RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return Player(
+        id: type$0.dartValue(row[pos$id]!),
+        name: type$1.dartValue(row[pos$name]!),
+      );
+    };
+  }
+
+  @override
+  $PlayersTable withAlias(String alias) {
+    return $PlayersTable(alias);
+  }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
+}
+
+class Player extends LegacyDataClass implements Insertable<Player> {
+  final int id;
+  final String name;
+  const Player({required this.id, required this.name});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id, SqlType.int);
+    map['name'] = Variable<String>(name, SqlType.text);
+    return map;
+  }
+
+  PlayersCompanion toCompanion(bool nullToAbsent) {
+    return PlayersCompanion(id: Value(id), name: Value(name));
+  }
+
+  factory Player.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Player(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  Player copyWith({int? id, String? name}) =>
+      Player(id: id ?? this.id, name: name ?? this.name);
+  Player copyWithCompanion(PlayersCompanion data) {
+    return Player(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Player(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Player && other.id == this.id && other.name == this.name);
+}
+
+class PlayersCompanion extends UpdateCompanion<Player> {
+  final Value<int> id;
+  final Value<String> name;
+  const PlayersCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+  });
+  PlayersCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+  }) : name = Value(name);
+  static Insertable<Player> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+    });
+  }
+
+  PlayersCompanion copyWith({Value<int>? id, Value<String>? name}) {
+    return PlayersCompanion(id: id ?? this.id, name: name ?? this.name);
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value, SqlType.int);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value, SqlType.text);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlayersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $GamesTable extends Games
+    with ResultSet<Game, $GamesTable>
+    implements GeneratedTable<Game, $GamesTable> {
+  @override
+  final String? alias;
+  $GamesTable([this.alias]);
+  @override
+  late final TableColumn<int> id = TableColumn<int>(
+    name: 'id',
+    sqlType: SqlType.int,
+    requiredDuringInsert: false,
+    constraints: () => [
+      const ColumnPrimaryKeyConstraint(isAutoIncrementing: true),
+      const ColumnNotNullConstraint(),
+    ],
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<int> whiteId = TableColumn<int>(
+    name: 'white_id',
+    sqlType: SqlType.int,
+    requiredDuringInsert: true,
+    constraints: () => [
+      const ColumnNotNullConstraint(),
+      const ColumnForeignKeyConstraint(
+        otherTableName: 'players',
+        otherColumnName: 'id',
+      ),
+    ],
+  )..owningResultSet = this;
+  @override
+  late final TableColumn<int> blackId = TableColumn<int>(
+    name: 'black_id',
+    sqlType: SqlType.int,
+    requiredDuringInsert: true,
+    constraints: () => [
+      const ColumnNotNullConstraint(),
+      const ColumnForeignKeyConstraint(
+        otherTableName: 'players',
+        otherColumnName: 'id',
+      ),
+    ],
+  )..owningResultSet = this;
+  @override
+  List<TableColumn> get columns => [id, whiteId, blackId];
+  @override
+  String get entityName => $name;
+  static const String $name = 'games';
+  @override
+  $GamesTable asSelfType() => this;
+
+  @override
+  Set<TableColumn> get resolvedPrimaryKey => {id};
+  @override
+  Game? Function(RawRow) createMapperFromPositions(
+    DriftDialect dialect,
+    List<ColumnPosition> positions,
+  ) {
+    final pos$id = positions[0].index;
+    final type$0 = dialect.intType;
+    final pos$whiteId = positions[1].index;
+    final pos$blackId = positions[2].index;
+    return (RawRow row) {
+      // Not part of row if non-nullable column "id" is missing
+      if (row[pos$id] == null) {
+        return null;
+      }
+      return Game(
+        id: type$0.dartValue(row[pos$id]!),
+        whiteId: type$0.dartValue(row[pos$whiteId]!),
+        blackId: type$0.dartValue(row[pos$blackId]!),
+      );
+    };
+  }
+
+  @override
+  $GamesTable withAlias(String alias) {
+    return $GamesTable(alias);
+  }
+
+  @override
+  List<TableConstraint> get tableConstraints => [];
+}
+
+class Game extends LegacyDataClass implements Insertable<Game> {
+  final int id;
+  final int whiteId;
+  final int blackId;
+  const Game({required this.id, required this.whiteId, required this.blackId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id, SqlType.int);
+    map['white_id'] = Variable<int>(whiteId, SqlType.int);
+    map['black_id'] = Variable<int>(blackId, SqlType.int);
+    return map;
+  }
+
+  GamesCompanion toCompanion(bool nullToAbsent) {
+    return GamesCompanion(
+      id: Value(id),
+      whiteId: Value(whiteId),
+      blackId: Value(blackId),
+    );
+  }
+
+  factory Game.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Game(
+      id: serializer.fromJson<int>(json['id']),
+      whiteId: serializer.fromJson<int>(json['whiteId']),
+      blackId: serializer.fromJson<int>(json['blackId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'whiteId': serializer.toJson<int>(whiteId),
+      'blackId': serializer.toJson<int>(blackId),
+    };
+  }
+
+  Game copyWith({int? id, int? whiteId, int? blackId}) => Game(
+    id: id ?? this.id,
+    whiteId: whiteId ?? this.whiteId,
+    blackId: blackId ?? this.blackId,
+  );
+  Game copyWithCompanion(GamesCompanion data) {
+    return Game(
+      id: data.id.present ? data.id.value : this.id,
+      whiteId: data.whiteId.present ? data.whiteId.value : this.whiteId,
+      blackId: data.blackId.present ? data.blackId.value : this.blackId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Game(')
+          ..write('id: $id, ')
+          ..write('whiteId: $whiteId, ')
+          ..write('blackId: $blackId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, whiteId, blackId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Game &&
+          other.id == this.id &&
+          other.whiteId == this.whiteId &&
+          other.blackId == this.blackId);
+}
+
+class GamesCompanion extends UpdateCompanion<Game> {
+  final Value<int> id;
+  final Value<int> whiteId;
+  final Value<int> blackId;
+  const GamesCompanion({
+    this.id = const Value.absent(),
+    this.whiteId = const Value.absent(),
+    this.blackId = const Value.absent(),
+  });
+  GamesCompanion.insert({
+    this.id = const Value.absent(),
+    required int whiteId,
+    required int blackId,
+  }) : whiteId = Value(whiteId),
+       blackId = Value(blackId);
+  static Insertable<Game> custom({
+    Expression<int>? id,
+    Expression<int>? whiteId,
+    Expression<int>? blackId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (whiteId != null) 'white_id': whiteId,
+      if (blackId != null) 'black_id': blackId,
+    });
+  }
+
+  GamesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? whiteId,
+    Value<int>? blackId,
+  }) {
+    return GamesCompanion(
+      id: id ?? this.id,
+      whiteId: whiteId ?? this.whiteId,
+      blackId: blackId ?? this.blackId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value, SqlType.int);
+    }
+    if (whiteId.present) {
+      map['white_id'] = Variable<int>(whiteId.value, SqlType.int);
+    }
+    if (blackId.present) {
+      map['black_id'] = Variable<int>(blackId.value, SqlType.int);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GamesCompanion(')
+          ..write('id: $id, ')
+          ..write('whiteId: $whiteId, ')
+          ..write('blackId: $blackId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract base class _$TestDatabase extends GeneratedDatabase {
   _$TestDatabase(super.implementation);
   $TestDatabaseManager get managers => $TestDatabaseManager(this);
@@ -2409,6 +2805,8 @@ abstract base class _$TestDatabase extends GeneratedDatabase {
   $ProductTable get product => $ProductTable();
   $StoreTable get store => $StoreTable();
   $ListingTable get listing => $ListingTable();
+  $PlayersTable get players => $PlayersTable();
+  $GamesTable get games => $GamesTable();
   TableOrViewStatements<Category, $CategoriesTable> get categoriesQueries =>
       this.categories.statements(this);
   TableOrViewStatements<
@@ -2429,6 +2827,10 @@ abstract base class _$TestDatabase extends GeneratedDatabase {
       this.store.statements(this);
   TableOrViewStatements<ListingData, $ListingTable> get listingQueries =>
       this.listing.statements(this);
+  TableOrViewStatements<Player, $PlayersTable> get playersQueries =>
+      this.players.statements(this);
+  TableOrViewStatements<Game, $GamesTable> get gamesQueries =>
+      this.games.statements(this);
   @override
   Map<KnownSqlDialect, Object> get dialectOptions => {
     KnownSqlDialect.sqlite: const SqliteOptions(
@@ -2448,6 +2850,8 @@ abstract base class _$TestDatabase extends GeneratedDatabase {
     $ProductTable(),
     $StoreTable(),
     $ListingTable(),
+    $PlayersTable(),
+    $GamesTable(),
   ]);
 }
 
@@ -4780,6 +5184,679 @@ typedef $$ListingTableProcessedTableManager =
       ListingData,
       PrefetchHooks Function({bool product, bool store})
     >;
+typedef $$PlayersTableCreateCompanionBuilder =
+    PlayersCompanion Function({Value<int> id, required String name});
+typedef $$PlayersTableUpdateCompanionBuilder =
+    PlayersCompanion Function({Value<int> id, Value<String> name});
+
+final class $$PlayersTableReferences
+    extends BaseReferences<_$TestDatabase, $PlayersTable, Player> {
+  $$PlayersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<List<Game>> _gamesAsWhiteTable(
+    _$TestDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    $GamesTable(),
+    aliasName: 'players__id__games__white_id',
+  );
+
+  $$GamesTableProcessedTableManager get gamesAsWhite {
+    final manager = $$GamesTableTableManager(
+      $_db,
+      $GamesTable(),
+    ).filter((f) => f.whiteId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_gamesAsWhiteTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<List<Game>> _gamesAsBlackTable(
+    _$TestDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    $GamesTable(),
+    aliasName: 'players__id__games__black_id',
+  );
+
+  $$GamesTableProcessedTableManager get gamesAsBlack {
+    final manager = $$GamesTableTableManager(
+      $_db,
+      $GamesTable(),
+    ).filter((f) => f.blackId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_gamesAsBlackTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$PlayersTableFilterComposer
+    extends Composer<_$TestDatabase, $PlayersTable> {
+  $$PlayersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> gamesAsWhite(
+    Expression<bool> Function($$GamesTableFilterComposer f) f,
+  ) {
+    final $$GamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $GamesTable(),
+      getReferencedColumn: (t) => t.whiteId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableFilterComposer(
+            $db: $db,
+            $table: $GamesTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> gamesAsBlack(
+    Expression<bool> Function($$GamesTableFilterComposer f) f,
+  ) {
+    final $$GamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $GamesTable(),
+      getReferencedColumn: (t) => t.blackId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableFilterComposer(
+            $db: $db,
+            $table: $GamesTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PlayersTableOrderingComposer
+    extends Composer<_$TestDatabase, $PlayersTable> {
+  $$PlayersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlayersTableAnnotationComposer
+    extends Composer<_$TestDatabase, $PlayersTable> {
+  $$PlayersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  TableColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  TableColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  Expression<T> gamesAsWhite<T extends Object>(
+    Expression<T> Function($$GamesTableAnnotationComposer a) f,
+  ) {
+    final $$GamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $GamesTable(),
+      getReferencedColumn: (t) => t.whiteId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableAnnotationComposer(
+            $db: $db,
+            $table: $GamesTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> gamesAsBlack<T extends Object>(
+    Expression<T> Function($$GamesTableAnnotationComposer a) f,
+  ) {
+    final $$GamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $GamesTable(),
+      getReferencedColumn: (t) => t.blackId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableAnnotationComposer(
+            $db: $db,
+            $table: $GamesTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PlayersTableTableManager
+    extends
+        RootTableManager<
+          _$TestDatabase,
+          $PlayersTable,
+          Player,
+          $$PlayersTableFilterComposer,
+          $$PlayersTableOrderingComposer,
+          $$PlayersTableAnnotationComposer,
+          $$PlayersTableCreateCompanionBuilder,
+          $$PlayersTableUpdateCompanionBuilder,
+          (Player, $$PlayersTableReferences),
+          Player,
+          PrefetchHooks Function({bool gamesAsWhite, bool gamesAsBlack})
+        > {
+  $$PlayersTableTableManager(_$TestDatabase db, $PlayersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlayersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlayersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlayersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+              }) => PlayersCompanion(id: id, name: name),
+          createCompanionCallback:
+              ({Value<int> id = const Value.absent(), required String name}) =>
+                  PlayersCompanion.insert(id: id, name: name),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PlayersTable, Player>(table),
+                  $$PlayersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({gamesAsWhite = false, gamesAsBlack = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (gamesAsWhite) $GamesTable(),
+                    if (gamesAsBlack) $GamesTable(),
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (gamesAsWhite)
+                        await $_getPrefetchedDataByColumns<
+                          Player,
+                          $PlayersTable,
+                          Game,
+                          $GamesTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PlayersTableReferences
+                              ._gamesAsWhiteTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PlayersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).gamesAsWhite,
+                          currentColumn: 'id',
+                          referencedColumn: 'white_id',
+                          typedResults: items,
+                        ),
+                      if (gamesAsBlack)
+                        await $_getPrefetchedDataByColumns<
+                          Player,
+                          $PlayersTable,
+                          Game,
+                          $GamesTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PlayersTableReferences
+                              ._gamesAsBlackTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PlayersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).gamesAsBlack,
+                          currentColumn: 'id',
+                          referencedColumn: 'black_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$PlayersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$TestDatabase,
+      $PlayersTable,
+      Player,
+      $$PlayersTableFilterComposer,
+      $$PlayersTableOrderingComposer,
+      $$PlayersTableAnnotationComposer,
+      $$PlayersTableCreateCompanionBuilder,
+      $$PlayersTableUpdateCompanionBuilder,
+      (Player, $$PlayersTableReferences),
+      Player,
+      PrefetchHooks Function({bool gamesAsWhite, bool gamesAsBlack})
+    >;
+typedef $$GamesTableCreateCompanionBuilder =
+    GamesCompanion Function({
+      Value<int> id,
+      required int whiteId,
+      required int blackId,
+    });
+typedef $$GamesTableUpdateCompanionBuilder =
+    GamesCompanion Function({
+      Value<int> id,
+      Value<int> whiteId,
+      Value<int> blackId,
+    });
+
+final class $$GamesTableReferences
+    extends BaseReferences<_$TestDatabase, $GamesTable, Game> {
+  $$GamesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PlayersTable _whiteIdTable(_$TestDatabase db) =>
+      $PlayersTable().withAlias('games__white_id__players__id');
+
+  $$PlayersTableProcessedTableManager get whiteId {
+    final $_column = $_itemColumn<int>('white_id')!;
+
+    final manager = $$PlayersTableTableManager(
+      $_db,
+      $PlayersTable(),
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_whiteIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PlayersTable _blackIdTable(_$TestDatabase db) =>
+      $PlayersTable().withAlias('games__black_id__players__id');
+
+  $$PlayersTableProcessedTableManager get blackId {
+    final $_column = $_itemColumn<int>('black_id')!;
+
+    final manager = $$PlayersTableTableManager(
+      $_db,
+      $PlayersTable(),
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_blackIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$GamesTableFilterComposer extends Composer<_$TestDatabase, $GamesTable> {
+  $$GamesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PlayersTableFilterComposer get whiteId {
+    final $$PlayersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.whiteId,
+      referencedTable: $PlayersTable(),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableFilterComposer(
+            $db: $db,
+            $table: $PlayersTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlayersTableFilterComposer get blackId {
+    final $$PlayersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.blackId,
+      referencedTable: $PlayersTable(),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableFilterComposer(
+            $db: $db,
+            $table: $PlayersTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$GamesTableOrderingComposer
+    extends Composer<_$TestDatabase, $GamesTable> {
+  $$GamesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PlayersTableOrderingComposer get whiteId {
+    final $$PlayersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.whiteId,
+      referencedTable: $PlayersTable(),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableOrderingComposer(
+            $db: $db,
+            $table: $PlayersTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlayersTableOrderingComposer get blackId {
+    final $$PlayersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.blackId,
+      referencedTable: $PlayersTable(),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableOrderingComposer(
+            $db: $db,
+            $table: $PlayersTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$GamesTableAnnotationComposer
+    extends Composer<_$TestDatabase, $GamesTable> {
+  $$GamesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  TableColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  $$PlayersTableAnnotationComposer get whiteId {
+    final $$PlayersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.whiteId,
+      referencedTable: $PlayersTable(),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableAnnotationComposer(
+            $db: $db,
+            $table: $PlayersTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlayersTableAnnotationComposer get blackId {
+    final $$PlayersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.blackId,
+      referencedTable: $PlayersTable(),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableAnnotationComposer(
+            $db: $db,
+            $table: $PlayersTable(),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$GamesTableTableManager
+    extends
+        RootTableManager<
+          _$TestDatabase,
+          $GamesTable,
+          Game,
+          $$GamesTableFilterComposer,
+          $$GamesTableOrderingComposer,
+          $$GamesTableAnnotationComposer,
+          $$GamesTableCreateCompanionBuilder,
+          $$GamesTableUpdateCompanionBuilder,
+          (Game, $$GamesTableReferences),
+          Game,
+          PrefetchHooks Function({bool whiteId, bool blackId})
+        > {
+  $$GamesTableTableManager(_$TestDatabase db, $GamesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GamesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GamesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GamesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> whiteId = const Value.absent(),
+                Value<int> blackId = const Value.absent(),
+              }) => GamesCompanion(id: id, whiteId: whiteId, blackId: blackId),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int whiteId,
+                required int blackId,
+              }) => GamesCompanion.insert(
+                id: id,
+                whiteId: whiteId,
+                blackId: blackId,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$GamesTable, Game>(table),
+                  $$GamesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({whiteId = false, blackId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (whiteId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.whiteId,
+                                referencedTable: $$GamesTableReferences
+                                    ._whiteIdTable(db),
+                                referencedColumn: $$GamesTableReferences
+                                    ._whiteIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (blackId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.blackId,
+                                referencedTable: $$GamesTableReferences
+                                    ._blackIdTable(db),
+                                referencedColumn: $$GamesTableReferences
+                                    ._blackIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$GamesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$TestDatabase,
+      $GamesTable,
+      Game,
+      $$GamesTableFilterComposer,
+      $$GamesTableOrderingComposer,
+      $$GamesTableAnnotationComposer,
+      $$GamesTableCreateCompanionBuilder,
+      $$GamesTableUpdateCompanionBuilder,
+      (Game, $$GamesTableReferences),
+      Game,
+      PrefetchHooks Function({bool whiteId, bool blackId})
+    >;
 
 class $TestDatabaseManager {
   final _$TestDatabase _db;
@@ -4803,4 +5880,8 @@ class $TestDatabaseManager {
       $$StoreTableTableManager(_db, _db.store);
   $$ListingTableTableManager get listing =>
       $$ListingTableTableManager(_db, _db.listing);
+  $$PlayersTableTableManager get players =>
+      $$PlayersTableTableManager(_db, _db.players);
+  $$GamesTableTableManager get games =>
+      $$GamesTableTableManager(_db, _db.games);
 }

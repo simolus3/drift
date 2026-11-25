@@ -203,4 +203,43 @@ void main() {
       isEmpty,
     );
   });
+
+  test(
+    'two references to the same table keep their own prefetched rows',
+    () async {
+      // https://github.com/simolus3/drift/issues/3909
+      final anna = await db
+          .into(db.players)
+          .insert(PlayersCompanion.insert(name: 'Anna'));
+      final ben = await db
+          .into(db.players)
+          .insert(PlayersCompanion.insert(name: 'Ben'));
+      final game1 = await db
+          .into(db.games)
+          .insert(GamesCompanion.insert(whiteId: anna, blackId: ben));
+      final game2 = await db
+          .into(db.games)
+          .insert(GamesCompanion.insert(whiteId: ben, blackId: anna));
+
+      final player = db.managers.players.filter((p) => p.id(anna));
+      final (_, direct) = await player.withReferences().getSingle();
+      final (_, cached) = await player
+          .withReferences((p) => p(gamesAsWhite: true, gamesAsBlack: true))
+          .getSingle();
+
+      void check(List<Game> white, List<Game> black) {
+        final whiteIds = white.map((g) => g.id).toList();
+        final blackIds = black.map((g) => g.id).toList();
+
+        expect(whiteIds, [game1]);
+        expect(blackIds, [game2]);
+      }
+
+      check(await direct.gamesAsWhite.get(), await direct.gamesAsBlack.get());
+      check(
+        cached.gamesAsWhite.prefetchedData!,
+        cached.gamesAsBlack.prefetchedData!,
+      );
+    },
+  );
 }

@@ -1,6 +1,7 @@
 ## 2.36.0 (unreleased)
 
 - Add `collate` method to column builders.
+- Fix `withReferences` mixing up prefetched rows when a table references the same table more than once.
 
 ## 2.35.4
 

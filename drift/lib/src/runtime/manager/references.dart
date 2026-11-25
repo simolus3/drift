@@ -456,14 +456,15 @@ class MultiTypedResultKey<$Table extends Table, $Dataclass>
     );
   }
 
-  /// Only use the entity name as the hashcode
+  /// A table can be referenced more than once (for instance, two foreign keys
+  /// to the same table), so the alias is part of the key as well.
   @override
-  int get hashCode => entityName.hashCode;
+  int get hashCode => Object.hash(entityName, aliasedName);
 
   @override
   bool operator ==(Object other) {
     if (other is MultiTypedResultKey<$Table, $Dataclass>) {
-      return other.entityName == entityName;
+      return other.entityName == entityName && other.aliasedName == aliasedName;
     }
     return false;
   }

@@ -416,7 +416,7 @@ class MultiTypedResultKey<$Dataclass extends Object> extends Table
 
   /// Only use the entity name as the hashcode
   @override
-  int get hashCode => entityName.hashCode;
+  int get hashCode => Object.hash(entityName, alias);
 
   @override
   MultiTypedResultKey<$Dataclass> withAlias(String alias) {
