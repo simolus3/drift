@@ -127,6 +127,18 @@ If you need a different column (or set of columns) as the primary key, override 
 
 This above would set the `email` column as the primary key.
 
+!!! note "Column order"
+    A primary key can have more than one column. Drift uses the columns in the
+    same order as you write them in the set. For example, `{groupId, itemId}`
+    becomes `PRIMARY KEY ("group_id", "item_id")`.
+
+    This order can change how fast your queries are. SQLite keeps this key in an
+    index that is sorted by the first column, then by the second column, and so on.
+    A query can use this index when it filters by the first column, or by the
+    first and second columns. In most cases, a query that filters only by the
+    second column can't use it. So, put the column that you filter by most often first.
+    The same is true for [unique keys](#unique-columns).
+
 ## Defining columns
 
 In Drift, columns are declared with getters returning column types. The start of that field's value indicates
@@ -274,6 +286,11 @@ To enforce that a combination of columns is unique, override the `uniqueKeys` ge
 
 The above example would enforce that the same room can't be reserved twice on the
 same day.
+
+Drift uses the columns of each set in the same order as you write them, so the
+example above becomes `UNIQUE ("room", "on_day")`. Like with primary keys,
+this order can change how fast your queries are. See the note about
+[column order](#custom-primary-key).
 
 !!! tip "Not needed for primary keys"
     The primary key is already unique in each table, so you don't have to add a unique

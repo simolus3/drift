@@ -55,6 +55,9 @@ abstract class Table extends HasResultSet {
   /// ```
   /// The getter must return a set literal using the `=>` syntax so that the
   /// drift generator can understand the code.
+  /// Drift uses the columns in the same order as they are written in the set.
+  /// This order can change how fast queries are, because SQLite sorts the
+  /// index for this key by the first column first.
   /// Also, please note that it's an error to have an
   /// [BuildIntColumn.autoIncrement] column and a custom primary key.
   /// As an auto-incremented `IntColumn` is recognized by drift to be the
@@ -83,6 +86,8 @@ abstract class Table extends HasResultSet {
   ///
   /// The getter must return a list of set literals using the `=>` syntax so
   /// that the drift generator can understand the code.
+  /// Drift uses the columns of each set in the same order as they are written.
+  /// Like with [primaryKey], this order can change how fast queries are.
   ///
   /// Note that individual columns can also be marked as unique with
   /// [BuildGeneralColumn.unique]. This is equivalent to adding a single-element
