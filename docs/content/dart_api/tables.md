@@ -128,16 +128,19 @@ If you need a different column (or set of columns) as the primary key, override 
 This above would set the `email` column as the primary key.
 
 !!! note "Column order"
-    A primary key can have more than one column. Drift uses the columns in the
-    same order as you write them in the set. For example, `{groupId, itemId}`
-    becomes `PRIMARY KEY ("group_id", "item_id")`.
+    A primary key can have more than one column. A non-const Dart set literal
+    uses a [LinkedHashSet](https://api.dart.dev/dart-collection/LinkedHashSet-class.html)
+    by default. It keeps elements in the order they are added. Drift reads the
+    set literal and uses the columns in the order you write them. For example,
+    `{groupId, itemId}` becomes `PRIMARY KEY ("group_id", "item_id")`.
 
-    This order can change how fast your queries are. SQLite keeps this key in an
-    index that is sorted by the first column, then by the second column, and so on.
-    A query can use this index when it filters by the first column, or by the
-    first and second columns. In most cases, a query that filters only by the
-    second column can't use it. So, put the column that you filter by most often first.
-    The same is true for [unique keys](#unique-columns).
+    This order can affect query speed. SQLite usually creates an index for the
+    key. The index is sorted by the first column, then by the second, and so on.
+    SQLite can use it to look up rows that match the first column, or the first
+    and second columns. It usually cannot use it to look up rows that match only
+    the second column. SQLite chooses whether to use the index for each query.
+    Consider the columns you filter by when choosing the order.
+    The same applies to [unique keys](#unique-columns).
 
 ## Defining columns
 
