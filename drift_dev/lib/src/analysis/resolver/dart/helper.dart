@@ -325,15 +325,6 @@ class DataClassInformation {
       }
     }
 
-    if (dataClassName != null && useRowClass != null) {
-      resolver.reportError(
-        DriftAnalysisError.forDartElement(
-          element,
-          "A table can't be annotated with both @DataClassName and @UseRowClass",
-        ),
-      );
-    }
-
     var name = dataClassName?.getField('name')!.toStringValue();
     final companionName = dataClassName?.getField('companion')?.toStringValue();
     CustomParentClass? customParentClass;
@@ -365,6 +356,16 @@ class DataClassInformation {
       final type = useRowClass
           .getField('type')!
           .extractType(typeProvider, typeSystem);
+      // With dart:core's Record, drift generates a typedef that can be named.
+      if (dataClassName != null && type?.isDartCoreRecord != true) {
+        resolver.reportError(
+          DriftAnalysisError.forDartElement(
+            element,
+            "A table can't be annotated with both @DataClassName and @UseRowClass",
+          ),
+        );
+      }
+
       final constructorInExistingClass = useRowClass
           .getField('constructor')!
           .toStringValue()!;
