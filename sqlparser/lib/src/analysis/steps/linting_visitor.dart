@@ -641,6 +641,22 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
 
     bool isRowValue(Expression? expr) => expr is Tuple || expr is SubQuery;
 
+    // The number of values in a row value, or null if it is not known (a
+    // subquery whose columns could not be resolved).
+    int? rowSize(Expression expr) {
+      if (expr is Tuple) return expr.expressions.length;
+      if (expr is SubQuery) return expr.select.resolvedColumns?.length;
+      return null;
+    }
+
+    // Both sides are row values of the same size. A size that is not known is
+    // not held against the statement.
+    bool comparableRowValues(Expression left, Expression right) {
+      if (!isRowValue(left) || !isRowValue(right)) return false;
+      final leftSize = rowSize(left), rightSize = rowSize(right);
+      return leftSize == null || rightSize == null || leftSize == rightSize;
+    }
+
     var parent = e.parent;
     var isAllowed = false;
 
@@ -659,12 +675,18 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
         TokenType.equal,
         TokenType.doubleEqual,
         TokenType.lessMore,
-        TokenType.$is,
       ];
 
       if (allowedTokens.contains(parent.operator.type)) {
         isAllowed = true;
+      } else if (parent.operator.type == TokenType.exclamationEqual) {
+        isAllowed = comparableRowValues(parent.left, parent.right);
       }
+    } else if (parent is IsExpression) {
+      // `IS`, `IS NOT` and `IS [NOT] DISTINCT FROM` are comparisons too, but the
+      // parser does not represent them as binary expressions. `x IS NULL` is
+      // parsed the same way, but SQLite rejects a row value there.
+      isAllowed = comparableRowValues(parent.left, parent.right);
     } else if (parent is BetweenExpression) {
       // Allowed if all value are row values or subqueries
       isAllowed = !parent.childNodes.any((e) => !isRowValue(e));
