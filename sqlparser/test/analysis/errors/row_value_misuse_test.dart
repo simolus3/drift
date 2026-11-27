@@ -143,23 +143,77 @@ void main() {
       test(sql, () => expectMisuse(sql, 1));
     }
 
-    // The tuples on both sides of `!=` and the IS family must have one size.
+    // A row value compared with something that is not a row value.
     for (final (sql, count) in [
       ('SELECT (1, 2) != 1', 1),
       ('SELECT 1 != (1, 2)', 1),
       ('SELECT (1, 2) != NULL', 1),
-      ('SELECT (1, 2) != (1, 2, 3)', 2),
-      ('SELECT (1, 2) IS (1, 2, 3)', 2),
-      ('SELECT (1, 2) IS NOT (1, 2, 3)', 2),
-      ('SELECT (1, 2) != (SELECT 1)', 1),
-      ('SELECT (1, 2) IS (SELECT 1)', 1),
-      ('SELECT (1, 2) IS NOT (SELECT 1)', 1),
-      ('SELECT (1, 2) IS DISTINCT FROM (SELECT 1)', 1),
-      ('SELECT (1, 2) IS NOT DISTINCT FROM (SELECT 1)', 1),
-      ('SELECT (SELECT 1) != (1, 2)', 1),
+      ('SELECT (1, 2) = 1', 1),
+      ('SELECT 1 < (1, 2)', 1),
     ]) {
       test(sql, () => expectMisuse(sql, count));
     }
+  });
+
+  group('row values of different sizes', () {
+    void expectSizeMismatch(String sql, String message, {int count = 1}) {
+      final errors = SqlEngine(
+        EngineOptions(version: SqliteVersion.current),
+      ).analyze(sql).errors;
+      expect(errors, hasLength(count));
+      for (final error in errors) {
+        expect(error.type, AnalysisErrorType.rowValueSizeMismatch);
+        expect(error.message, message);
+      }
+    }
+
+    // SQLite reports "row value misused" for every one of these.
+    for (final operator in [
+      '=',
+      '==',
+      '<>',
+      '!=',
+      '<',
+      '<=',
+      '>',
+      '>=',
+      'IS',
+      'IS NOT',
+      'IS DISTINCT FROM',
+      'IS NOT DISTINCT FROM',
+    ]) {
+      test('tuples with $operator', () {
+        expectSizeMismatch(
+          'SELECT (1, 2) $operator (1, 2, 3)',
+          'Row values must have the same number of columns (2 and 3)',
+        );
+      });
+
+      test('tuple and subquery with $operator', () {
+        expectSizeMismatch(
+          'SELECT (1, 2) $operator (SELECT 1)',
+          'Row values must have the same number of columns (2 and 1)',
+        );
+        expectSizeMismatch(
+          'SELECT (SELECT 1, 2, 3) $operator (1, 2)',
+          'Row values must have the same number of columns (3 and 2)',
+        );
+      });
+    }
+
+    test('are not reported when the size of a subquery is unknown', () {
+      final errors = SqlEngine(
+        EngineOptions(version: SqliteVersion.current),
+      ).analyze('SELECT (1, 2) != (SELECT * FROM unknown_table)').errors;
+      expect(
+        errors.map((e) => e.type),
+        isNot(contains(AnalysisErrorType.rowValueSizeMismatch)),
+      );
+      expect(
+        errors.map((e) => e.type),
+        isNot(contains(AnalysisErrorType.rowValueMisuse)),
+      );
+    });
   });
 
   group('in expressions', () {

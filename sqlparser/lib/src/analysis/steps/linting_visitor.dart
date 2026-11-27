@@ -644,17 +644,11 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
     // The number of values in a row value, or null if it is not known (a
     // subquery whose columns could not be resolved).
     int? rowSize(Expression expr) {
-      if (expr is Tuple) return expr.expressions.length;
-      if (expr is SubQuery) return expr.select.resolvedColumns?.length;
-      return null;
-    }
-
-    // Both sides are row values of the same size. A size that is not known is
-    // not held against the statement.
-    bool comparableRowValues(Expression left, Expression right) {
-      if (!isRowValue(left) || !isRowValue(right)) return false;
-      final leftSize = rowSize(left), rightSize = rowSize(right);
-      return leftSize == null || rightSize == null || leftSize == rightSize;
+      return switch (expr) {
+        Tuple(:final expressions) => expressions.length,
+        SubQuery(:final select) => select.resolvedColumns?.length,
+        _ => null,
+      };
     }
 
     var parent = e.parent;
@@ -664,6 +658,9 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       // look at the surrounding case expression
       parent = parent.parent;
     }
+
+    // The two sides of a comparison, if this tuple is an operand of one.
+    Expression? left, right;
 
     if (parent is BinaryExpression) {
       // Source: https://www.sqlite.org/rowvalue.html#syntax
@@ -675,18 +672,19 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
         TokenType.equal,
         TokenType.doubleEqual,
         TokenType.lessMore,
+        TokenType.exclamationEqual,
       ];
 
       if (allowedTokens.contains(parent.operator.type)) {
-        isAllowed = true;
-      } else if (parent.operator.type == TokenType.exclamationEqual) {
-        isAllowed = comparableRowValues(parent.left, parent.right);
+        left = parent.left;
+        right = parent.right;
       }
     } else if (parent is IsExpression) {
       // `IS`, `IS NOT` and `IS [NOT] DISTINCT FROM` are comparisons too, but the
       // parser does not represent them as binary expressions. `x IS NULL` is
       // parsed the same way, but SQLite rejects a row value there.
-      isAllowed = comparableRowValues(parent.left, parent.right);
+      left = parent.left;
+      right = parent.right;
     } else if (parent is BetweenExpression) {
       // Allowed if all value are row values or subqueries
       isAllowed = !parent.childNodes.any((e) => !isRowValue(e));
@@ -709,6 +707,36 @@ class LintingVisitor extends RecursiveVisitor<void, void> {
       isAllowed = true;
     } else if (parent is SetComponent) {
       isAllowed = true;
+    }
+
+    if (left != null && right != null) {
+      // Both sides have to be row values, and of the same size. A size that is
+      // not known is not held against the statement.
+      isAllowed = isRowValue(left) && isRowValue(right);
+
+      // A subquery that resolved to no columns reads from an unknown table,
+      // which is reported on its own.
+      final leftSize = rowSize(left), rightSize = rowSize(right);
+      if (isAllowed &&
+          leftSize != null &&
+          rightSize != null &&
+          leftSize != 0 &&
+          rightSize != 0 &&
+          leftSize != rightSize) {
+        // Report once, even if both sides are tuples.
+        if (e == left || left is! Tuple) {
+          context.reportError(
+            AnalysisError(
+              type: AnalysisErrorType.rowValueSizeMismatch,
+              relevantNode: e,
+              message:
+                  'Row values must have the same number of columns '
+                  '($leftSize and $rightSize)',
+            ),
+          );
+        }
+        return;
+      }
     }
 
     if (!isAllowed) {
