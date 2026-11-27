@@ -548,6 +548,31 @@ class FooData {
     });
   });
 
+  test('rejects a data class name for an existing row class', () async {
+    final state = await TestBackend.inTest({
+      'a|lib/a.dart': '''
+import 'package:drift/drift.dart';
+
+class ExistingUser {
+  ExistingUser(int id);
+}
+
+@DataClassName('UserRow')
+@UseRowClass(ExistingUser)
+class Users extends Table {
+  IntColumn get id => integer()();
+}
+''',
+    });
+
+    final file = await state.analyze('package:a/a.dart');
+    expect(file.allErrors, [
+      isDriftError(
+        "A table can't be annotated with both @DataClassName and @UseRowClass",
+      ),
+    ]);
+  });
+
   group('records as row types', () {
     test('supported with explicit record', () async {
       final state = await TestBackend.inTest(

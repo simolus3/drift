@@ -163,6 +163,32 @@ selectAll: SELECT * FROM foo;
     );
   });
 
+  test('uses the data class name for an implicit record typedef', () async {
+    final result = await emulateDriftBuild(
+      inputs: {
+        'a|lib/main.dart': '''
+import 'package:drift/drift.dart';
+
+@DataClassName('UserRow')
+@UseRowClass(Record)
+class Users extends Table {
+  IntColumn get id => integer()();
+}
+
+@DriftDatabase(tables: [Users])
+class MyDatabase {}
+''',
+      },
+      logger: loggerThat(neverEmits(anything)),
+    );
+
+    result.checkDartOutputs({
+      'a|lib/main.drift.dart': decodedMatches(
+        contains('typedef UserRow = ({int id});'),
+      ),
+    });
+  });
+
   test('can work with existing part files', () async {
     final logger = Logger.detached('build');
     expect(logger.onRecord, neverEmits(anything));
