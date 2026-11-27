@@ -662,6 +662,40 @@ WITH RECURSIVE
     );
   });
 
+  test('COLLATE keeps the type and nullability of its operand', () {
+    engine.registerTableFromSql(
+      'CREATE TABLE collated (a INTEGER NOT NULL, b TEXT, c REAL);',
+    );
+
+    // SQLite's COLLATE operator only assigns a collating sequence, the value
+    // keeps its type: typeof(1 COLLATE NOCASE) is integer, and a NULL operand
+    // gives NULL.
+    expect(
+      resolveResultColumn('SELECT b COLLATE NOCASE FROM collated'),
+      const ResolvedType(type: BasicType.text, nullable: true),
+    );
+    expect(
+      resolveResultColumn('SELECT c COLLATE RTRIM FROM collated'),
+      const ResolvedType(type: BasicType.real, nullable: true),
+    );
+    expect(
+      resolveResultColumn('SELECT a COLLATE BINARY FROM collated'),
+      const ResolvedType(type: BasicType.int, nullable: false),
+    );
+    expect(
+      resolveResultColumn('SELECT 1 COLLATE NOCASE'),
+      const ResolvedType(type: BasicType.int),
+    );
+    expect(
+      resolveResultColumn("SELECT 'a' COLLATE NOCASE"),
+      const ResolvedType(type: BasicType.text),
+    );
+    expect(
+      resolveFirstVariable('SELECT ? COLLATE BINARY'),
+      const ResolvedType(type: BasicType.text),
+    );
+  });
+
   test('analyzes nested columns', () {
     engine.registerTableFromSql('''
       CREATE TABLE x (

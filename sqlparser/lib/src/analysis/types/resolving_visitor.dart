@@ -266,7 +266,7 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitCollateExpression(CollateExpression e, TypeExpectation arg) {
-    session._checkAndResolve(e, _textType, arg);
+    session._addRelation(CopyTypeFrom(e, e.inner));
     visit(e.inner, _expectString);
   }
 
