@@ -1629,7 +1629,7 @@ extension Parser on ParserState {
       baseWindowName: baseWindowName,
       partitionBy: partitionBy,
       orderBy: orderBy,
-      frameSpec: spec ?? (FrameSpec()..synthetic = true),
+      frameSpec: spec,
     )..setSpan(leftParen, _previous);
   }
 

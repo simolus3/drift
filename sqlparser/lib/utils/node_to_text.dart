@@ -1431,10 +1431,7 @@ base class NodeSqlBuilder extends AstVisitor<void, void> {
     }
 
     visitNullable(e.orderBy, arg);
-    // The parser fills in the default frame when none was written. Writing it
-    // out is not equivalent: SQLite refuses to extend a window whose definition
-    // has an explicit frame.
-    if (!e.frameSpec.synthetic) visit(e.frameSpec, arg);
+    visitNullable(e.frameSpec, arg);
 
     closeParen();
   }

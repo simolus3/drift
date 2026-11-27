@@ -393,7 +393,7 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
               .toSql();
 
           expect(printed, isNot(contains('RANGE')));
-          expect(windowOf(printed).frameSpec.synthetic, isTrue);
+          expect(windowOf(printed).frameSpec, isNull);
           testFormat(sql);
         });
 
@@ -419,7 +419,7 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
                   .rootNode
                   .allDescendants
                   .whereType<WindowDefinition>()) {
-            expect(window.frameSpec.synthetic, isTrue);
+            expect(window.frameSpec, isNull);
           }
         });
 
@@ -433,7 +433,7 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
               .toSql();
 
           expect(printed, contains('ROWS'));
-          expect(windowOf(printed).frameSpec.synthetic, isFalse);
+          expect(windowOf(printed).frameSpec, isNotNull);
           testFormat(sql);
         });
 
@@ -447,7 +447,7 @@ CREATE UNIQUE INDEX my_idx ON t1 (c1, c2, c3) WHERE c1 < c3;
               .toSql();
 
           expect(printed, contains('RANGE'));
-          expect(windowOf(printed).frameSpec.synthetic, isFalse);
+          expect(windowOf(printed).frameSpec, isNotNull);
           testFormat(sql);
         });
 
