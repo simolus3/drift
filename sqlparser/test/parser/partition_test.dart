@@ -9,7 +9,6 @@ final Map<String, Expression> _testCases = {
     function: identifier('row_number'),
     parameters: ExprFunctionParameters(),
     windowDefinition: WindowDefinition(
-      frameSpec: FrameSpec(),
       orderBy: OrderBy(
         terms: [OrderingTerm(expression: Reference(columnName: 'y'))],
       ),

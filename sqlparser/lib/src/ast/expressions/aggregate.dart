@@ -133,13 +133,16 @@ class WindowDefinition extends AstNode {
   final String? baseWindowName;
   List<Expression> partitionBy;
   OrderByBase? orderBy;
-  FrameSpec frameSpec;
+
+  /// The frame clause, or `null` if the window was written without one (SQLite
+  /// then uses `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`).
+  FrameSpec? frameSpec;
 
   WindowDefinition({
     this.baseWindowName,
     this.partitionBy = const [],
     this.orderBy,
-    required this.frameSpec,
+    this.frameSpec,
   });
 
   @override
@@ -151,11 +154,11 @@ class WindowDefinition extends AstNode {
   void transformChildren<A>(Transformer<A> transformer, A arg) {
     partitionBy = transformer.transformChildren(partitionBy, this, arg);
     orderBy = transformer.transformNullableChild(orderBy, this, arg);
-    frameSpec = transformer.transformChild(frameSpec, this, arg);
+    frameSpec = transformer.transformNullableChild(frameSpec, this, arg);
   }
 
   @override
-  Iterable<AstNode> get childNodes => [...partitionBy, ?orderBy, frameSpec];
+  Iterable<AstNode> get childNodes => [...partitionBy, ?orderBy, ?frameSpec];
 }
 
 class FrameSpec extends AstNode {
