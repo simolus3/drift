@@ -266,8 +266,6 @@ class TypeResolver extends RecursiveVisitor<TypeExpectation, void> {
 
   @override
   void visitCollateExpression(CollateExpression e, TypeExpectation arg) {
-    // COLLATE only picks a collating sequence, the value keeps the type and
-    // nullability of its operand.
     session._addRelation(CopyTypeFrom(e, e.inner));
     visit(e.inner, _expectString);
   }

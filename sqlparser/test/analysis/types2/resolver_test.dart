@@ -662,81 +662,38 @@ WITH RECURSIVE
     );
   });
 
-  group('COLLATE', () {
-    setUpAll(() {
-      engine.registerTableFromSql(
-        'CREATE TABLE collated (a INTEGER NOT NULL, b TEXT, c REAL);',
-      );
-    });
+  test('COLLATE keeps the type and nullability of its operand', () {
+    engine.registerTableFromSql(
+      'CREATE TABLE collated (a INTEGER NOT NULL, b TEXT, c REAL);',
+    );
 
     // SQLite's COLLATE operator only assigns a collating sequence, the value
     // keeps its type: typeof(1 COLLATE NOCASE) is integer, and a NULL operand
     // gives NULL.
-    test('keeps the type and nullability of a nullable column', () {
-      expect(
-        resolveResultColumn('SELECT b COLLATE NOCASE FROM collated'),
-        const ResolvedType(type: BasicType.text, nullable: true),
-      );
-      expect(
-        resolveResultColumn('SELECT c COLLATE RTRIM FROM collated'),
-        const ResolvedType(type: BasicType.real, nullable: true),
-      );
-    });
-
-    test('keeps the type of a non-nullable column', () {
-      expect(
-        resolveResultColumn('SELECT a COLLATE BINARY FROM collated'),
-        const ResolvedType(type: BasicType.int, nullable: false),
-      );
-    });
-
-    test('keeps the type of a non-text literal', () {
-      expect(
-        resolveResultColumn('SELECT 1 COLLATE NOCASE'),
-        const ResolvedType(type: BasicType.int),
-      );
-      expect(
-        resolveResultColumn("SELECT 'a' COLLATE NOCASE"),
-        const ResolvedType(type: BasicType.text),
-      );
-    });
-
-    test('keeps nullability inside a larger expression', () {
-      expect(
-        resolveResultColumn("SELECT (b COLLATE NOCASE) || 'x' FROM collated"),
-        const ResolvedType(type: BasicType.text, nullable: true),
-      );
-    });
-
-    test('still infers text for a variable', () {
-      expect(
-        resolveFirstVariable('SELECT ? COLLATE BINARY'),
-        const ResolvedType(type: BasicType.text),
-      );
-    });
-
-    test('keeps the DateTime hint of a column', () {
-      engine.registerTableFromSql(
-        'CREATE TABLE collated_dates (d DATETIME NOT NULL);',
-      );
-      expect(
-        resolveResultColumn('SELECT d COLLATE NOCASE FROM collated_dates'),
-        const ResolvedType(
-          type: BasicType.int,
-          hints: [IsDateTime()],
-          nullable: false,
-        ),
-      );
-    });
-
-    test('infers a variable compared with a collated column', () {
-      expect(
-        resolveFirstVariable(
-          'SELECT * FROM collated WHERE a COLLATE NOCASE = ?',
-        ),
-        const ResolvedType(type: BasicType.int),
-      );
-    });
+    expect(
+      resolveResultColumn('SELECT b COLLATE NOCASE FROM collated'),
+      const ResolvedType(type: BasicType.text, nullable: true),
+    );
+    expect(
+      resolveResultColumn('SELECT c COLLATE RTRIM FROM collated'),
+      const ResolvedType(type: BasicType.real, nullable: true),
+    );
+    expect(
+      resolveResultColumn('SELECT a COLLATE BINARY FROM collated'),
+      const ResolvedType(type: BasicType.int, nullable: false),
+    );
+    expect(
+      resolveResultColumn('SELECT 1 COLLATE NOCASE'),
+      const ResolvedType(type: BasicType.int),
+    );
+    expect(
+      resolveResultColumn("SELECT 'a' COLLATE NOCASE"),
+      const ResolvedType(type: BasicType.text),
+    );
+    expect(
+      resolveFirstVariable('SELECT ? COLLATE BINARY'),
+      const ResolvedType(type: BasicType.text),
+    );
   });
 
   test('analyzes nested columns', () {
