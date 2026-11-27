@@ -55,6 +55,11 @@ abstract class Table extends HasResultSet {
   /// ```
   /// The getter must return a set literal using the `=>` syntax so that the
   /// drift generator can understand the code.
+  /// A non-const Dart set literal uses a `LinkedHashSet` by default. It keeps
+  /// elements in the order they are added. Drift reads the set literal and
+  /// uses the columns in the order you write them.
+  /// This order can affect query speed because SQLite usually creates an index
+  /// sorted by the first column, then the second column, and so on.
   /// Also, please note that it's an error to have an
   /// [BuildIntColumn.autoIncrement] column and a custom primary key.
   /// As an auto-incremented `IntColumn` is recognized by drift to be the
@@ -83,6 +88,8 @@ abstract class Table extends HasResultSet {
   ///
   /// The getter must return a list of set literals using the `=>` syntax so
   /// that the drift generator can understand the code.
+  /// Drift uses the columns of each set in the same order as they are written.
+  /// Like with [primaryKey], this order can change how fast queries are.
   ///
   /// Note that individual columns can also be marked as unique with
   /// [BuildGeneralColumn.unique]. This is equivalent to adding a single-element

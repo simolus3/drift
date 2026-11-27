@@ -127,6 +127,21 @@ If you need a different column (or set of columns) as the primary key, override 
 
 This above would set the `email` column as the primary key.
 
+!!! note "Column order"
+    A primary key can have more than one column. A non-const Dart set literal
+    uses a [LinkedHashSet](https://api.dart.dev/dart-collection/LinkedHashSet-class.html)
+    by default. It keeps elements in the order they are added. Drift reads the
+    set literal and uses the columns in the order you write them. For example,
+    `{groupId, itemId}` becomes `PRIMARY KEY ("group_id", "item_id")`.
+
+    This order can affect query speed. SQLite usually creates an index for the
+    key. The index is sorted by the first column, then by the second, and so on.
+    SQLite can use it to look up rows that match the first column, or the first
+    and second columns. It usually cannot use it to look up rows that match only
+    the second column. SQLite chooses whether to use the index for each query.
+    Consider the columns you filter by when choosing the order.
+    The same applies to [unique keys](#unique-columns).
+
 ## Defining columns
 
 In Drift, columns are declared with getters returning column types. The start of that field's value indicates
@@ -274,6 +289,11 @@ To enforce that a combination of columns is unique, override the `uniqueKeys` ge
 
 The above example would enforce that the same room can't be reserved twice on the
 same day.
+
+Drift uses the columns of each set in the same order as you write them, so the
+example above becomes `UNIQUE ("room", "on_day")`. Like with primary keys,
+this order can change how fast your queries are. See the note about
+[column order](#custom-primary-key).
 
 !!! tip "Not needed for primary keys"
     The primary key is already unique in each table, so you don't have to add a unique
